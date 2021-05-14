@@ -45,6 +45,7 @@ arena_ptr<ast_node> make_identifier_node(memory_arena& arena, const position& po
     char* data = alloc_many<char>(arena, value.size());
     std::memcpy(data, value.data(), value.size());
 
+    ptr->id_hash = std::hash<std::string>{}(value);
     ptr->string_value = std::string_view{ data, value.size() };
     return std::move(ptr);
 }
@@ -152,6 +153,14 @@ arena_ptr<ast_node> make_compound_stmt_node(memory_arena& arena, const position&
 arena_ptr<ast_node> make_return_stmt_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& expr) {
     auto ptr = make_in_arena<ast_node>(arena);
     ptr->type = ast_type::return_stmt;
+    ptr->pos = pos;
+    ptr->children.push_back(std::move(expr));
+    return ptr;
+}
+
+arena_ptr<ast_node> make_type_expr_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& expr) {
+    auto ptr = make_in_arena<ast_node>(arena);
+    ptr->type = ast_type::type_expr;
     ptr->pos = pos;
     ptr->children.push_back(std::move(expr));
     return ptr;

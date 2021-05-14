@@ -33,6 +33,7 @@ enum class ast_type {
     compound_stmt,
     return_stmt,
 
+    type_expr,
     struct_type,
     tuple_type,
     array_type,
@@ -70,6 +71,7 @@ struct ast_node {
     type_qualifier type_qual{};
     type_id type_id{-1};
     std::string_view string_value{};
+    std::size_t id_hash{};
     float_type float_value{};
     int_type int_value{};
     std::vector<arena_ptr<ast_node>> children{};
@@ -108,6 +110,8 @@ arena_ptr<ast_node> make_stmt_list_node(memory_arena& arena, const position& pos
 arena_ptr<ast_node> make_compound_stmt_node(memory_arena& arena, const position& pos, std::vector<arena_ptr<ast_node>>&& children);
 
 arena_ptr<ast_node> make_return_stmt_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& expr);
+
+arena_ptr<ast_node> make_type_expr_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& expr);
 
 arena_ptr<ast_node> make_struct_type_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& field_list);
 

@@ -4,13 +4,13 @@ decl_list{
     arg_list(
       var_decl{
         identifier{"args"}
-        :        identifier{"string"}})
-    :    identifier{"int"}
+        :        })
+    :    
     compound_stmt{
       decl_list{
         var_decl{
           identifier{"ok"}
-          :          identifier{"bool"}}}
+          :          }}
       stmt_list{
         call_expr{
           identifier{"println"}
@@ -23,7 +23,7 @@ decl_list{
     arg_list(
       var_decl{
         identifier{"x"}
-        :        identifier{"int"}})
+        :        })
     compound_stmt{
       stmt_list{
         call_expr{

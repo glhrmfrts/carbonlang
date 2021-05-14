@@ -39,8 +39,8 @@ int main(int argc, const char* argv[]) {
         prettyprint(*ast, ast_file);
         ast_file << "\n";
 
-        type_system ts{ };
-        ts.resolve_and_check_program(*ast);
+        type_system ts{ ast_arena };
+        ts.process_ast_node(*ast);
     }
 
     return 0;

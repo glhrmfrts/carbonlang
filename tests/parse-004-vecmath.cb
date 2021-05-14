@@ -32,3 +32,22 @@ func main(argc: int, argv: []raw_string): int {
 	var ok: bool;
 	return ok;
 }
+
+func other_stuff() {
+	var a: int = 500;
+	return 244 + a;
+}
+
+func main(): int {
+	return other_stuff();
+}
+
+// other_stuff:
+// LOAD_LONG $1 500
+// LOAD_LONG $2 412
+// ADD_LONG_ABC $0 $1 $2
+// RETURN
+//
+// main:
+// CALL other_stuff
+// RETURN

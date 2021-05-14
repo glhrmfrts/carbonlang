@@ -28,34 +28,44 @@ struct parser_impl {
 
     // Section: types
 
-    arena_ptr<ast_node> parse_type_expr(bool no_error = false) {
+    arena_ptr<ast_node> parse_type_expr(bool no_error = false, bool no_wrap = false) {
         auto pos = lex->pos();
+        auto result = arena_ptr<ast_node>{nullptr, nullptr};
 
         if (TOK_CHAR == '{') {
-            return parse_struct_or_tuple_type_expr();
+            result = parse_struct_or_tuple_type_expr();
         }
-        if (TOK_CHAR == '[') {
-            return parse_array_type_expr();
+        else if (TOK_CHAR == '[') {
+            result = parse_array_type_expr();
         }
-        if (TOK_CHAR == '&') {
+        else if (TOK_CHAR == '&') {
             lex->next();
 
-            auto to_type = parse_type_expr();
+            auto to_type = parse_type_expr(false, true); // no wrap
             if (to_type) {
-                return make_type_qualifier_node(*ast_arena, pos, type_qualifier::reference, std::move(to_type));
+                result = make_type_qualifier_node(*ast_arena, pos, type_qualifier::reference, std::move(to_type));
             }
         }
-        if (TOK_CHAR == '?') {
+        else if (TOK_CHAR == '?') {
             lex->next();
 
-            auto to_type = parse_type_expr();
+            auto to_type = parse_type_expr(false, true); // no wrap
             if (to_type) {
-                return make_type_qualifier_node(*ast_arena, pos, type_qualifier::optional, std::move(to_type));
+                result = make_type_qualifier_node(*ast_arena, pos, type_qualifier::optional, std::move(to_type));
             }
         }
-        if (TOK == token_type::identifier) {
+        else if (TOK == token_type::identifier) {
             scope_guard _{ [this]() { lex->next(); } };
-            return make_identifier_node(*ast_arena, lex->pos(), lex->string_value());
+            result = make_identifier_node(*ast_arena, lex->pos(), lex->string_value());
+        }
+
+        if (result) {
+            if (!no_wrap) {
+                return make_type_expr_node(*ast_arena, pos, std::move(result));
+            }
+            else {
+                return result;
+            }
         }
 
         if (!no_error) {
