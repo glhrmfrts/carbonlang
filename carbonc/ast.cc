@@ -68,6 +68,15 @@ arena_ptr<ast_node> make_binary_expr_node(memory_arena& arena, const position& p
     return ptr;
 }
 
+arena_ptr<ast_node> make_init_expr_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& init_type, arena_ptr<ast_node>&& init_list) {
+    auto ptr = make_in_arena<ast_node>(arena);
+    ptr->type = ast_type::init_expr;
+    ptr->pos = pos;
+    ptr->children.push_back(std::move(init_type));
+    ptr->children.push_back(std::move(init_list));
+    return ptr;
+}
+
 arena_ptr<ast_node> make_call_expr_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& callee, arena_ptr<ast_node>&& arg_list) {
     auto ptr = make_in_arena<ast_node>(arena);
     ptr->type = ast_type::call_expr;
@@ -170,6 +179,15 @@ arena_ptr<ast_node> make_array_type_node(memory_arena& arena, const position& po
     ptr->pos = pos;
     ptr->children.push_back(std::move(size_expr));
     ptr->children.push_back(std::move(item_type));
+    return ptr;
+}
+
+arena_ptr<ast_node> make_type_qualifier_node(memory_arena& arena, const position& pos, type_qualifier q, arena_ptr<ast_node>&& to_type) {
+    auto ptr = make_in_arena<ast_node>(arena);
+    ptr->type = ast_type::type_qualifier;
+    ptr->pos = pos;
+    ptr->type_qual = q;
+    ptr->children.push_back(std::move(to_type));
     return ptr;
 }
 }

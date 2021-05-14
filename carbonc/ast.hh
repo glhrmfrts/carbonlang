@@ -6,6 +6,7 @@
 #include "carbonc.hh"
 #include "memory.hh"
 #include "token.hh"
+#include "type_system.hh"
 
 namespace carbon {
 
@@ -19,6 +20,7 @@ enum class ast_type {
     unary_expr,
     binary_expr,
     call_expr,
+    init_expr,
 
     type_decl,
     var_decl,
@@ -34,6 +36,7 @@ enum class ast_type {
     struct_type,
     tuple_type,
     array_type,
+    type_qualifier,
 };
 
 struct ast_node {
@@ -64,6 +67,8 @@ struct ast_node {
     ast_type type = ast_type::invalid;
     position pos{};
     token_type op{};
+    type_qualifier type_qual{};
+    type_id type_id{-1};
     std::string_view string_value{};
     float_type float_value{};
     int_type int_value{};
@@ -83,6 +88,8 @@ arena_ptr<ast_node> make_identifier_node(memory_arena& arena, const position& po
 arena_ptr<ast_node> make_unary_expr_node(memory_arena& arena, const position& pos, token_type op, arena_ptr<ast_node>&& right);
 
 arena_ptr<ast_node> make_binary_expr_node(memory_arena& arena, const position& pos, token_type op, arena_ptr<ast_node>&& left, arena_ptr<ast_node>&& right);
+
+arena_ptr<ast_node> make_init_expr_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& init_type, arena_ptr<ast_node>&& init_list);
 
 arena_ptr<ast_node> make_call_expr_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& callee, arena_ptr<ast_node>&& arg_list);
 
@@ -107,5 +114,7 @@ arena_ptr<ast_node> make_struct_type_node(memory_arena& arena, const position& p
 arena_ptr<ast_node> make_tuple_type_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& field_list);
 
 arena_ptr<ast_node> make_array_type_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& size_expr, arena_ptr<ast_node>&& item_type);
+
+arena_ptr<ast_node> make_type_qualifier_node(memory_arena& arena, const position& pos, type_qualifier q, arena_ptr<ast_node>&& to_type);
 
 }

@@ -19,3 +19,7 @@ type Nested = {
     filenames: []string,
     info: { name: string, age: int },
 };
+
+type NestedRef = & Nested;
+
+type OptionalRefToNested = ?& Nested;

@@ -28,7 +28,7 @@ struct parser_impl {
 
     // Section: types
 
-    arena_ptr<ast_node> parse_type_expr() {
+    arena_ptr<ast_node> parse_type_expr(bool no_error = false) {
         auto pos = lex->pos();
 
         if (TOK_CHAR == '{') {
@@ -58,7 +58,10 @@ struct parser_impl {
             return make_identifier_node(*ast_arena, lex->pos(), lex->string_value());
         }
 
-        throw parse_error(filename, lex->pos(), "invalid type expression");
+        if (!no_error) {
+            throw parse_error(filename, lex->pos(), "invalid type expression");
+        }
+        return { nullptr, nullptr };
     }
 
     arena_ptr<ast_node> parse_struct_or_tuple_type_expr() {
@@ -380,7 +383,7 @@ struct parser_impl {
 
     arena_ptr<ast_node> parse_call_expr() {
         auto pos = lex->pos();
-        auto expr = parse_primary_expr();
+        auto expr = parse_init_expr();
         if (TOK_CHAR == '(') {
             auto arg_list = parse_arg_list(')', [this]() {
                 return parse_expr();
@@ -388,6 +391,23 @@ struct parser_impl {
             return make_call_expr_node(*ast_arena, pos, std::move(expr), std::move(arg_list));
         }
         return expr;
+    }
+
+    arena_ptr<ast_node> parse_init_expr() {
+        auto pos = lex->pos();
+        auto init_type = parse_primary_expr();
+        if (init_type) {
+            if (init_type->type == ast_type::identifier && TOK_CHAR == '{') {
+                return parse_init_list_expr(std::move(init_type));
+            }
+        }
+        else {
+            auto try_type = parse_type_expr(true);
+            if (try_type && TOK_CHAR == '{') {
+                return parse_init_list_expr(std::move(try_type));
+            }
+        }
+        return init_type;
     }
 
     arena_ptr<ast_node> parse_primary_expr() {
@@ -427,33 +447,7 @@ struct parser_impl {
             }
             case '{': {
                 // init list
-
-                auto item_list = arena_ptr<ast_node>{ nullptr, nullptr };
-                {
-                    item_list = parse_arg_list('}', [this]() {
-                        if (TOK_CHAR == '.') {
-                            lex->next();
-                            if (TOK != token_type::identifier) {
-                                throw parse_error(filename, lex->pos(), "expected identifier in designated initializer");
-                            }
-
-                            auto id = make_identifier_node(*ast_arena, lex->pos(), lex->string_value());
-                            lex->next();
-
-                            if (TOK_CHAR != '=') {
-                                throw parse_error(filename, lex->pos(), "expected '=' in designated initializer");
-                            }
-                            lex->next();
-
-                            auto value = parse_expr();
-                            if (!value) {
-                                throw parse_error(filename, lex->pos(), "expected value in designated initializer");
-                            }
-
-                            return make_assign_stmt_node();
-                        }
-                    });
-                }
+                return parse_init_list_expr({nullptr, nullptr});
             }
             }
 
@@ -463,6 +457,44 @@ struct parser_impl {
         }
         }
         return arena_ptr<ast_node>{nullptr, nullptr};
+    }
+
+    arena_ptr<ast_node> parse_init_list_expr(arena_ptr<ast_node>&& init_type) {
+        auto pos = lex->pos();
+        auto item_list = arena_ptr<ast_node>{ nullptr, nullptr };
+        {
+            item_list = parse_arg_list('}', [this]() {
+                if (TOK_CHAR == '.') {
+                    auto pos = lex->pos();
+
+                    lex->next();
+                    if (TOK != token_type::identifier) {
+                        throw parse_error(filename, lex->pos(), "expected identifier in designated initializer");
+                    }
+
+                    auto id = make_identifier_node(*ast_arena, lex->pos(), lex->string_value());
+                    lex->next();
+
+                    if (TOK_CHAR != '=') {
+                        throw parse_error(filename, lex->pos(), "expected '=' in designated initializer");
+                    }
+                    lex->next();
+
+                    auto value = parse_expr();
+                    if (!value) {
+                        throw parse_error(filename, lex->pos(), "expected value in designated initializer");
+                    }
+
+                    // TODO: specialized node type needed?
+                    return make_var_decl_node(*ast_arena, pos, token_type::let, std::move(id), { nullptr, nullptr }, std::move(value));
+                }
+                else {
+                    return parse_expr();
+                }
+            });
+        }
+
+        return make_init_expr_node(*ast_arena, pos, std::move(init_type), std::move(item_list));
     }
 
     // Section: helpers

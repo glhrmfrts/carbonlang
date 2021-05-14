@@ -50,4 +50,13 @@ decl_list{
                 :                identifier{"string"}}
               var_decl{
                 identifier{"age"}
-                :                identifier{"int"}})}})}}}
+                :                identifier{"int"}})}})}}
+  type_decl{
+    identifier{"NestedRef"}
+    =    type_qualifier{reference,
+      identifier{"Nested"}}}
+  type_decl{
+    identifier{"OptionalRefToNested"}
+    =    type_qualifier{optional,
+      type_qualifier{reference,
+        identifier{"Nested"}}}}}

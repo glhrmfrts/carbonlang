@@ -55,6 +55,20 @@ void prettyprint(const ast_node& node, std::ostream& stream, int indent) {
         prettyprint(*node.children.back().get(), stream, indent + 1);
         stream << "}";
         break;
+    case ast_type::init_expr: {
+        stream << "init_expr{\n";
+
+        auto init_type = node.children.front().get();
+        if (init_type) {
+            do_indent(stream, indent + 1); stream << "type=";
+            prettyprint(*init_type, stream, indent + 1);
+            stream << "\n";
+        }
+
+        prettyprint(*node.children.back().get(), stream, indent + 1);
+        stream << "}";
+        break;
+    }
     case ast_type::type_decl:
         stream << "type_decl{\n";
         prettyprint(*node.children.front().get(), stream, indent + 1);
@@ -148,7 +162,7 @@ void prettyprint(const ast_node& node, std::ostream& stream, int indent) {
         prettyprint(*node.children.front().get(), stream, indent + 1);
         stream << "}";
         break;
-    case ast_type::array_type:
+    case ast_type::array_type: {
         stream << "array_type{\n";
         do_indent(stream, indent + 1);
         stream << "size=";
@@ -157,6 +171,21 @@ void prettyprint(const ast_node& node, std::ostream& stream, int indent) {
         if (size_expr) { prettyprint(*size_expr, stream, indent + 1); }
         else { stream << "dynamic"; }
 
+        stream << "\n";
+        prettyprint(*node.children.back().get(), stream, indent + 1);
+        stream << "}";
+        break;
+    }
+    case ast_type::type_qualifier:
+        stream << "type_qualifier{";
+        switch (node.type_qual) {
+        case type_qualifier::optional:
+            stream << "optional,";
+            break;
+        case type_qualifier::reference:
+            stream << "reference,";
+            break;
+        }
         stream << "\n";
         prettyprint(*node.children.back().get(), stream, indent + 1);
         stream << "}";

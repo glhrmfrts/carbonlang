@@ -63,21 +63,60 @@ decl_list{
     identifier{"main"}
     arg_list(
       var_decl{
-        identifier{"args"}
+        identifier{"argc"}
+        :        identifier{"int"}}
+      var_decl{
+        identifier{"argv"}
         :        array_type{
           size=dynamic
-          identifier{"string"}}})
+          identifier{"raw_string"}}})
     :    identifier{"int"}
     compound_stmt{
       decl_list{
         var_decl{
           identifier{"vel"}
           :          identifier{"Vector2"}
-          =          int_literal{0}}
+          =          init_expr{
+            arg_list(
+              var_decl{
+                identifier{"x"}
+                =                int_literal{0}}
+              var_decl{
+                identifier{"y"}
+                =                int_literal{0}})}}
         var_decl{
           identifier{"pos"}
           :          identifier{"Vector2"}
-          =          int_literal{0}}}
+          =          init_expr{
+            arg_list(
+              int_literal{0}
+              int_literal{0})}}
+        var_decl{
+          identifier{"state"}
+          =          init_expr{
+            type=            identifier{"State"}
+            arg_list(
+              var_decl{
+                identifier{"position"}
+                =                init_expr{
+                  arg_list(
+                    int_literal{0}
+                    int_literal{0})}}
+              var_decl{
+                identifier{"velocity"}
+                =                init_expr{
+                  arg_list(
+                    int_literal{0}
+                    int_literal{0})}})}}
+        var_decl{
+          identifier{"arr"}
+          =          init_expr{
+            type=            array_type{
+              size=              int_literal{2}
+              identifier{"float"}}
+            arg_list(
+              float_literal{1}
+              float_literal{0})}}}
       stmt_list{
         call_expr{
           identifier{"println"}
@@ -109,4 +148,4 @@ decl_list{
           :          identifier{"bool"}}}
       stmt_list{
         return_stmt{
-                    int_literal{0}}}}}}
+                    identifier{"ok"}}}}}}

@@ -6,6 +6,7 @@
 #include "prettyprint.hh"
 #include "fs.hh"
 #include "exception.hh"
+#include "type_system.hh"
 
 namespace carbon {
 
@@ -37,6 +38,9 @@ int main(int argc, const char* argv[]) {
         std::ofstream ast_file{"tests/ast/"+filename};
         prettyprint(*ast, ast_file);
         ast_file << "\n";
+
+        type_system ts{ };
+        ts.resolve_and_check_program(*ast);
     }
 
     return 0;
