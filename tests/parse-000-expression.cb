@@ -1,0 +1,8 @@
+// ok
+// "Hello, world!"
+// 2 + 2
+// 2 - 4 * number
+// 2 + 5 - 0
+// 2 * (4 + 5)
+// 2 * -5
+var foo = square(2, 5, "ok", 3*number+i);

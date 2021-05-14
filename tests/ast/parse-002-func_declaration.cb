@@ -1,0 +1,41 @@
+decl_list{
+  func_decl{
+    identifier{"main"}
+    arg_list(
+      var_decl{
+        identifier{"args"}
+        :        identifier{"string"}})
+    :    identifier{"int"}
+    compound_stmt{
+      decl_list{
+        var_decl{
+          identifier{"ok"}
+          :          identifier{"bool"}}}
+      stmt_list{
+        call_expr{
+          identifier{"println"}
+          arg_list(
+            string_literal{"Hello, world"})}
+        return_stmt{
+                    int_literal{0}}}}}
+  func_decl{
+    identifier{"subroutine"}
+    arg_list(
+      var_decl{
+        identifier{"x"}
+        :        identifier{"int"}})
+    compound_stmt{
+      stmt_list{
+        call_expr{
+          identifier{"println"}
+          arg_list(
+            string_literal{"doing something"})}}}}
+  func_decl{
+    identifier{"subroutine_no_args"}
+    arg_list()
+    compound_stmt{
+      stmt_list{
+        call_expr{
+          identifier{"println"}
+          arg_list(
+            string_literal{"doing something"})}}}}}

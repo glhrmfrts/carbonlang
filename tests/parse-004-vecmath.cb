@@ -1,0 +1,40 @@
+// example vector math for parser test
+
+import std.string;
+import std.array;
+
+type Vector2 = {x:float, y:float};
+
+func resize[T: type](arr: &&[]) {
+
+}
+
+func add(a: Vector2, b: Vector2): Vector2 {
+	return a + b;
+}
+
+func sub(a: Vector2, b: Vector2): Vector2 {
+	return a - b;
+}
+
+func mul(a: Vector2, b: Vector2) {
+	return a * b;
+}
+
+func main(argc: int, argv: []raw_string): int {
+	let vel: Vector2 = {.x=0, .y=0}; // TODO: init list
+	let pos: Vector2 = {0,0};
+
+	let state = State{
+		.position = Vector2{0,0},
+		.velocity = Vector2{0,0},
+	};
+
+	println(add(pos, vel));
+	println(sub(pos, vel));
+	println(mul(pos, vel));
+
+	var ok: bool;
+
+	return 0;
+}

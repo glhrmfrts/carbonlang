@@ -1,0 +1,8 @@
+func greeting(): string {
+    return "Hello, world"
+}
+
+func main(): int {
+    println(greeting())
+    return 0
+}

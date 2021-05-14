@@ -1,0 +1,21 @@
+// These types are 'atoms'.
+type StrategyOne;
+type StrategyTwo;
+
+type Width = int;
+
+type Vector2 = {:float, :float};
+
+type Shader = {
+    id: int,
+    source: string,
+};
+
+type ShaderList = []Shader;
+
+type Storage = [1024]char;
+
+type Nested = {
+    filenames: []string,
+    info: { name: string, age: int },
+};

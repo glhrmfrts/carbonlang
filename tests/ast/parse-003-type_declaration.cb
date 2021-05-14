@@ -1,0 +1,53 @@
+decl_list{
+  type_decl{
+    identifier{"StrategyOne"}}
+  type_decl{
+    identifier{"StrategyTwo"}}
+  type_decl{
+    identifier{"Width"}
+    =    identifier{"int"}}
+  type_decl{
+    identifier{"Vector2"}
+    =    tuple_type{
+            arg_list(
+        identifier{"float"}
+        identifier{"float"})}}
+  type_decl{
+    identifier{"Shader"}
+    =    struct_type{
+            arg_list(
+        var_decl{
+          identifier{"id"}
+          :          identifier{"int"}}
+        var_decl{
+          identifier{"source"}
+          :          identifier{"string"}})}}
+  type_decl{
+    identifier{"ShaderList"}
+    =    array_type{
+      size=dynamic
+      identifier{"Shader"}}}
+  type_decl{
+    identifier{"Storage"}
+    =    array_type{
+      size=      int_literal{1024}
+      identifier{"char"}}}
+  type_decl{
+    identifier{"Nested"}
+    =    struct_type{
+            arg_list(
+        var_decl{
+          identifier{"filenames"}
+          :          array_type{
+            size=dynamic
+            identifier{"string"}}}
+        var_decl{
+          identifier{"info"}
+          :          struct_type{
+                        arg_list(
+              var_decl{
+                identifier{"name"}
+                :                identifier{"string"}}
+              var_decl{
+                identifier{"age"}
+                :                identifier{"int"}})}})}}}

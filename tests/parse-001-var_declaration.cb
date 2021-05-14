@@ -1,0 +1,4 @@
+// variable declarations
+var bar: int;
+var name = "hello";
+var foo: raw_string = 3 * 4 + ok()

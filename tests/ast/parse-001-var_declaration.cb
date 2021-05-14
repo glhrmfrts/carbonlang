@@ -1,0 +1,19 @@
+decl_list{
+  var_decl{
+    identifier{"bar"}
+    :    identifier{"int"}}
+  var_decl{
+    identifier{"name"}
+    =    string_literal{"hello"}}
+  var_decl{
+    identifier{"foo"}
+    :    identifier{"raw_string"}
+    =    binary_expr{
+      binary_expr{
+        int_literal{3}
+        *
+        int_literal{4}}
+      +
+      call_expr{
+        identifier{"ok"}
+        arg_list()}}}}

@@ -1,0 +1,12 @@
+func print(x: raw_string) {
+    syscall_print(x, C.strlen(x));
+};
+
+func print(x: char) {
+    syscall_print(&x, 1);
+};
+
+func println(x: raw_string) {
+    print(x);
+    print('\n');
+};

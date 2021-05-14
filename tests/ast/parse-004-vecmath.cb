@@ -1,0 +1,112 @@
+decl_list{
+  type_decl{
+    identifier{"Vector2"}
+    =    struct_type{
+            arg_list(
+        var_decl{
+          identifier{"x"}
+          :          identifier{"float"}}
+        var_decl{
+          identifier{"y"}
+          :          identifier{"float"}})}}
+  func_decl{
+    identifier{"add"}
+    arg_list(
+      var_decl{
+        identifier{"a"}
+        :        identifier{"Vector2"}}
+      var_decl{
+        identifier{"b"}
+        :        identifier{"Vector2"}})
+    :    identifier{"Vector2"}
+    compound_stmt{
+      stmt_list{
+        return_stmt{
+                    binary_expr{
+            identifier{"a"}
+            +
+            identifier{"b"}}}}}}
+  func_decl{
+    identifier{"sub"}
+    arg_list(
+      var_decl{
+        identifier{"a"}
+        :        identifier{"Vector2"}}
+      var_decl{
+        identifier{"b"}
+        :        identifier{"Vector2"}})
+    :    identifier{"Vector2"}
+    compound_stmt{
+      stmt_list{
+        return_stmt{
+                    binary_expr{
+            identifier{"a"}
+            -
+            identifier{"b"}}}}}}
+  func_decl{
+    identifier{"mul"}
+    arg_list(
+      var_decl{
+        identifier{"a"}
+        :        identifier{"Vector2"}}
+      var_decl{
+        identifier{"b"}
+        :        identifier{"Vector2"}})
+    compound_stmt{
+      stmt_list{
+        return_stmt{
+                    binary_expr{
+            identifier{"a"}
+            *
+            identifier{"b"}}}}}}
+  func_decl{
+    identifier{"main"}
+    arg_list(
+      var_decl{
+        identifier{"args"}
+        :        array_type{
+          size=dynamic
+          identifier{"string"}}})
+    :    identifier{"int"}
+    compound_stmt{
+      decl_list{
+        var_decl{
+          identifier{"vel"}
+          :          identifier{"Vector2"}
+          =          int_literal{0}}
+        var_decl{
+          identifier{"pos"}
+          :          identifier{"Vector2"}
+          =          int_literal{0}}}
+      stmt_list{
+        call_expr{
+          identifier{"println"}
+          arg_list(
+            call_expr{
+              identifier{"add"}
+              arg_list(
+                identifier{"pos"}
+                identifier{"vel"})})}
+        call_expr{
+          identifier{"println"}
+          arg_list(
+            call_expr{
+              identifier{"sub"}
+              arg_list(
+                identifier{"pos"}
+                identifier{"vel"})})}
+        call_expr{
+          identifier{"println"}
+          arg_list(
+            call_expr{
+              identifier{"mul"}
+              arg_list(
+                identifier{"pos"}
+                identifier{"vel"})})}}
+      decl_list{
+        var_decl{
+          identifier{"ok"}
+          :          identifier{"bool"}}}
+      stmt_list{
+        return_stmt{
+                    int_literal{0}}}}}}

@@ -1,0 +1,16 @@
+// function declarations
+
+func main(args: string): int {
+    var ok : bool;
+    println("Hello, world");
+
+    return 0;
+};
+
+func subroutine(x: int) {
+    println("doing something");
+};
+
+func subroutine_no_args() {
+    println("doing something");
+};
