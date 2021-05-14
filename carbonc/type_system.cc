@@ -7,6 +7,8 @@ namespace carbon {
 
 namespace {
 
+static const type_id invalid_type{};
+
 void visit_tree(type_system& ts, ast_node& node);
 
 // Section: helpers
@@ -23,55 +25,80 @@ std::hash<std::string>::result_type hash(const char* v) {
     return std::hash<std::string>{}(std::string{v});
 }
 
-template <typename T> void register_integral_type(scope& ts, const char* name) {
-    auto& def = ts.type_defs.emplace_back();
+scope& curscope(type_system& ts) {
+    return ts.scopes[ts.current_scope];
+}
+
+template <typename T> void register_integral_type(type_system& ts, const char* name) {
+    type_def def;
     def.kind = type_kind::integral;
     def.name = name;
     def.name_hash = std::hash<std::string>{}(def.name);
     def.alignment = alignof(T);
     def.size = sizeof(T);
     def.is_signed = std::is_signed_v<T>;
-    ts.type_map[hash(name)] = ts.type_defs.size() - 1;
+    register_type(ts, def);
 }
 
-template <typename T> void register_real_type(scope& ts, const char* name) {
-    auto& def = ts.type_defs.emplace_back();
+template <typename T> void register_real_type(type_system& ts, const char* name) {
+    type_def def;
     def.kind = type_kind::real;
     def.name = name;
     def.name_hash = std::hash<std::string>{}(def.name);
     def.alignment = alignof(T);
     def.size = sizeof(T);
     def.is_signed = std::is_signed_v<T>;
-    ts.type_map[hash(name)] = ts.type_defs.size() - 1;
+    register_type(ts, def);
 }
 
-void register_type(scope& ts, type_def t) {
+void register_type(type_system& ts, type_def t) {
     t.name_hash = hash(t.name);
-    ts.type_defs.push_back(t);
-    ts.type_map[t.name_hash] = ts.type_defs.size() - 1;
+    curscope(ts).type_defs.push_back(t);
+    curscope(ts).type_map[t.name_hash] = { ts.current_scope, (int)(curscope(ts).type_defs.size() - 1) };
 }
 
-bool register_alias_to_type_name(scope& ts, const std::string& name, const std::string& toname) {
-    auto it = ts.type_map.find(hash(toname));
-    if (it == ts.type_map.end()) {
+type_def& get_type(type_system& ts, type_id id) {
+    return ts.scopes[id.scope].type_defs[id.type_index];
+}
+
+bool register_alias_to_type_name(type_system& ts, const std::string& name, const std::string& toname) {
+    auto it = curscope(ts).type_map.find(hash(toname));
+    if (it == curscope(ts).type_map.end()) {
         return false;
     }
 
-    type_def defcopy = ts.type_defs[it->second];
+    type_def defcopy = get_type(ts, it->second);
     defcopy.name = name;
-    defcopy.name_hash = std::hash<std::string>{}(defcopy.name);
     defcopy.alias_to = it->second;
-    ts.type_defs.push_back(defcopy);
-
-    ts.type_map[hash(name)] = ts.type_defs.size() - 1;
+    register_type(ts, defcopy);
     return true;
 }
 
-// Section: scopes
+// Section: types
 
-scope& curscope(type_system& ts) {
-    return ts.scopes[ts.current_scope];
+// is A assignable to B?
+bool is_assignable_to(type_system& ts, type_id a, type_id b) {
+    if (a == b) {
+        return true;
+    }
+
+    if (get_type(ts, a).alias_to == b) {
+        return true;
+    }
+
+    return false;
 }
+
+// is A convertible/castable to B?
+bool is_convertible_to(type_system& ts, type_id a, type_id b) {
+    return false;
+}
+
+bool compare_types_exact(const type_def& a, const type_def& b) {
+    return false;
+}
+
+// Section: scopes
 
 int enter_scope(type_system& ts, scope_kind k, ast_node* node) {
     scope sc{};
@@ -130,7 +157,7 @@ type_id find_type_by_id_hash(type_system& ts, std::size_t hash) {
 
         scope = sc.parent;
     }
-    return -1;
+    return invalid_type;
 }
 
 // Section: resolvers
@@ -147,7 +174,7 @@ type_id get_literal_node_type(type_system& ts, const ast_node& node) {
         return ts.scopes[0].type_map[hash("float")];
     }
 
-    return -1;
+    return invalid_type;
 }
 
 type_id get_value_node_type(type_system& ts, const ast_node& node) {
@@ -155,7 +182,7 @@ type_id get_value_node_type(type_system& ts, const ast_node& node) {
         return get_literal_node_type(ts, node);
     }
 
-    return -1;
+    return invalid_type;
 }
 
 type_id get_type_expr_node_type(type_system& ts, const ast_node& node) {
@@ -165,14 +192,14 @@ type_id get_type_expr_node_type(type_system& ts, const ast_node& node) {
         return find_type_by_id_hash(ts, actual->id_hash);
     }
 
-    return -1;
+    return invalid_type;
 }
 
 type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
-    if (!nodeptr) return -1;
+    if (!nodeptr) return invalid_type;
 
     auto& node = *nodeptr;
-    if (node.type_id != -1) return node.type_id;
+    if (node.type_id != invalid_type) return node.type_id;
 
     if (node.type == ast_type::type_expr) {
         node.type_id = get_type_expr_node_type(ts, node);
@@ -181,17 +208,17 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
         node.type_id = get_value_node_type(ts, node);
     }
 
-    ts.unresolved_types = node.type_id == -1;
+    ts.unresolved_types = node.type_id == invalid_type;
     return node.type_id;
 }
 
 type_id resolve_local_variable_type(type_system& ts, local_def& l) {
-    auto decl_type = l.type_node ? resolve_node_type(ts, l.type_node) : -1;
-    auto val_type = l.value_node ? resolve_node_type(ts, l.value_node) : -1;
+    auto decl_type = l.type_node ? resolve_node_type(ts, l.type_node) : type_id{};
+    auto val_type = l.value_node ? resolve_node_type(ts, l.value_node) : type_id{};
 
-    if (decl_type != -1) {
+    if (decl_type.valid()) {
         l.type_id = decl_type;
-        if (decl_type != val_type) {
+        if (!(decl_type == val_type)) {
             // TODO: check conversions / cast
         }
     }
@@ -301,33 +328,12 @@ type_system::type_system(memory_arena& arena) {
     ast_arena = &arena;
     enter_scope(*this, scope_kind::global, nullptr);
 
-    // register built-in types
-    register_integral_type<std::uint8_t>(scopes[0], "uint8");
-    register_integral_type<std::uint16_t>(scopes[0], "uint16");
-    register_integral_type<std::uint32_t>(scopes[0], "uint32");
-    register_integral_type<std::uint64_t>(scopes[0], "uint64");
-    register_integral_type<std::size_t>(scopes[0], "usize");
-
-    register_integral_type<std::int8_t>(scopes[0], "int8");
-    register_integral_type<std::int16_t>(scopes[0], "int16");
-    register_integral_type<std::int32_t>(scopes[0], "int32");
-    register_integral_type<std::int64_t>(scopes[0], "int64");
-
-    register_real_type<float>(scopes[0], "float32");
-    register_real_type<double>(scopes[0], "float64");
-
-    register_alias_to_type_name(scopes[0], "char", "int8");
-    register_alias_to_type_name(scopes[0], "uint", "uint32");
-    register_alias_to_type_name(scopes[0], "int", "int32");
-    register_alias_to_type_name(scopes[0], "bool", "int32");
-    register_alias_to_type_name(scopes[0], "float", "float32");
-    
     // void and void*
     {
         type_def tf{};
         tf.kind = type_kind::unit;
         tf.name = "()";
-        register_type(scopes[0], tf);
+        register_type(*this, tf);
     }
 
     {
@@ -336,9 +342,30 @@ type_system::type_system(memory_arena& arena) {
         tf.name = "raw_ptr";
         tf.size = sizeof(void*);
         tf.alignment = alignof(void*);
-        tf.pointer_to = scopes[0].type_map[hash("()")];
-        register_type(scopes[0], tf);
+        tf.elem_type = scopes[0].type_map[hash("()")];
+        register_type(*this, tf);
     }
+
+    // register built-in types
+    register_integral_type<std::uint8_t>(*this, "uint8");
+    register_integral_type<std::uint16_t>(*this, "uint16");
+    register_integral_type<std::uint32_t>(*this, "uint32");
+    register_integral_type<std::uint64_t>(*this, "uint64");
+    register_integral_type<std::size_t>(*this, "usize");
+
+    register_integral_type<std::int8_t>(*this, "int8");
+    register_integral_type<std::int16_t>(*this, "int16");
+    register_integral_type<std::int32_t>(*this, "int32");
+    register_integral_type<std::int64_t>(*this, "int64");
+
+    register_real_type<float>(*this, "float32");
+    register_real_type<double>(*this, "float64");
+
+    register_alias_to_type_name(*this, "char", "int8");
+    register_alias_to_type_name(*this, "uint", "uint32");
+    register_alias_to_type_name(*this, "int", "int32");
+    register_alias_to_type_name(*this, "bool", "int32");
+    register_alias_to_type_name(*this, "float", "float32");
 
 /*
     register_alias_to_type_template(*this, "raw_str", {"*", "char"});

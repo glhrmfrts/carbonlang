@@ -1,17 +1,30 @@
 decl_list{
   type_decl{
     identifier{"Vector2"}
-    =    }
+    =    type_expr{
+            struct_type{
+                arg_list(
+          var_decl{
+            identifier{"x"}
+            :            type_expr{
+                            identifier{"float"}}}
+          var_decl{
+            identifier{"y"}
+            :            type_expr{
+                            identifier{"float"}}})}}}
   func_decl{
     identifier{"add"}
     arg_list(
       var_decl{
         identifier{"a"}
-        :        }
+        :        type_expr{
+                    identifier{"Vector2"}}}
       var_decl{
         identifier{"b"}
-        :        })
-    :    
+        :        type_expr{
+                    identifier{"Vector2"}}})
+    :    type_expr{
+            identifier{"Vector2"}}
     compound_stmt{
       stmt_list{
         return_stmt{
@@ -24,11 +37,14 @@ decl_list{
     arg_list(
       var_decl{
         identifier{"a"}
-        :        }
+        :        type_expr{
+                    identifier{"Vector2"}}}
       var_decl{
         identifier{"b"}
-        :        })
-    :    
+        :        type_expr{
+                    identifier{"Vector2"}}})
+    :    type_expr{
+            identifier{"Vector2"}}
     compound_stmt{
       stmt_list{
         return_stmt{
@@ -41,10 +57,12 @@ decl_list{
     arg_list(
       var_decl{
         identifier{"a"}
-        :        }
+        :        type_expr{
+                    identifier{"Vector2"}}}
       var_decl{
         identifier{"b"}
-        :        })
+        :        type_expr{
+                    identifier{"Vector2"}}})
     compound_stmt{
       stmt_list{
         return_stmt{
@@ -57,16 +75,23 @@ decl_list{
     arg_list(
       var_decl{
         identifier{"argc"}
-        :        }
+        :        type_expr{
+                    identifier{"int"}}}
       var_decl{
         identifier{"argv"}
-        :        })
-    :    
+        :        type_expr{
+                    array_type{
+            size=dynamic
+            type_expr{
+                            identifier{"raw_string"}}}}})
+    :    type_expr{
+            identifier{"int"}}
     compound_stmt{
       decl_list{
         var_decl{
           identifier{"vel"}
-          :          
+          :          type_expr{
+                        identifier{"Vector2"}}
           =          init_expr{
             arg_list(
               var_decl{
@@ -77,7 +102,8 @@ decl_list{
                 =                int_literal{0}})}}
         var_decl{
           identifier{"pos"}
-          :          
+          :          type_expr{
+                        identifier{"Vector2"}}
           =          init_expr{
             arg_list(
               int_literal{0}
@@ -102,7 +128,11 @@ decl_list{
         var_decl{
           identifier{"arr"}
           =          init_expr{
-            type=            
+            type=            type_expr{
+                            array_type{
+                size=                int_literal{2}
+                type_expr{
+                                    identifier{"float"}}}}
             arg_list(
               float_literal{1}
               float_literal{0})}}}
@@ -134,7 +164,8 @@ decl_list{
       decl_list{
         var_decl{
           identifier{"ok"}
-          :          }}
+          :          type_expr{
+                        identifier{"bool"}}}}
       stmt_list{
         return_stmt{
                     identifier{"ok"}}}}}
@@ -145,7 +176,8 @@ decl_list{
       decl_list{
         var_decl{
           identifier{"a"}
-          :          
+          :          type_expr{
+                        identifier{"int"}}
           =          int_literal{500}}}
       stmt_list{
         return_stmt{
@@ -156,7 +188,8 @@ decl_list{
   func_decl{
     identifier{"main"}
     arg_list()
-    :    
+    :    type_expr{
+            identifier{"int"}}
     compound_stmt{
       stmt_list{
         return_stmt{

@@ -1,13 +1,15 @@
 decl_list{
   var_decl{
     identifier{"bar"}
-    :    }
+    :    type_expr{
+            identifier{"int"}}}
   var_decl{
     identifier{"name"}
     =    string_literal{"hello"}}
   var_decl{
     identifier{"foo"}
-    :    
+    :    type_expr{
+            identifier{"raw_string"}}
     =    binary_expr{
       binary_expr{
         int_literal{3}
