@@ -69,12 +69,18 @@ struct ast_node {
     position pos{};
     token_type op{};
     type_qualifier type_qual{};
-    type_id type_id{-1};
+    type_id type_id{};
     std::string_view string_value{};
     std::size_t id_hash{};
     float_type float_value{};
     int_type int_value{};
     std::vector<arena_ptr<ast_node>> children{};
+
+    // data filled by the type system
+    scope_def scope;
+    func_def func;
+    local_def local;
+    type_def type_def;
 };
 
 arena_ptr<ast_node> make_bool_literal_node(memory_arena& arena, const position& pos, bool value);

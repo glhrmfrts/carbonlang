@@ -8,6 +8,7 @@ namespace carbon {
 namespace {
 
 static const type_id invalid_type{};
+static const scope_id invalid_scope = -1;
 
 void visit_tree(type_system& ts, ast_node& node);
 
@@ -25,40 +26,47 @@ std::hash<std::string>::result_type hash(const char* v) {
     return std::hash<std::string>{}(std::string{v});
 }
 
-scope& curscope(type_system& ts) {
-    return ts.scopes[ts.current_scope];
+scope_def& curscope(type_system& ts) {
+    return ts.current_scope->scope;
+}
+
+void register_builtin_type(type_system& ts, arena_ptr<ast_node>&& node) {
+    type_def* t = &node->type_def;
+    t->name_hash = hash(t->name);
+    ts.builtin_scope->scope.type_defs.push_back(t);
+    ts.builtin_scope->scope.type_map[t->name_hash] = { ts.current_scope, (int)(curscope(ts).type_defs.size() - 1) };
+    ts.builtin_type_nodes.push_back(std::move(node));
 }
 
 template <typename T> void register_integral_type(type_system& ts, const char* name) {
-    type_def def;
+    auto node = make_in_arena<ast_node>(*ts.ast_arena);
+
+    type_def& def = node->type_def;
     def.kind = type_kind::integral;
     def.name = name;
     def.name_hash = std::hash<std::string>{}(def.name);
     def.alignment = alignof(T);
     def.size = sizeof(T);
     def.is_signed = std::is_signed_v<T>;
-    register_type(ts, def);
+
+    register_builtin_type(ts, std::move(node));
 }
 
 template <typename T> void register_real_type(type_system& ts, const char* name) {
-    type_def def;
+    auto node = make_in_arena<ast_node>(*ts.ast_arena);
+
+    type_def& def = node->type_def;
     def.kind = type_kind::real;
     def.name = name;
     def.name_hash = std::hash<std::string>{}(def.name);
     def.alignment = alignof(T);
     def.size = sizeof(T);
     def.is_signed = std::is_signed_v<T>;
-    register_type(ts, def);
-}
-
-void register_type(type_system& ts, type_def t) {
-    t.name_hash = hash(t.name);
-    curscope(ts).type_defs.push_back(t);
-    curscope(ts).type_map[t.name_hash] = { ts.current_scope, (int)(curscope(ts).type_defs.size() - 1) };
+    register_builtin_type(ts, std::move(node));
 }
 
 type_def& get_type(type_system& ts, type_id id) {
-    return ts.scopes[id.scope].type_defs[id.type_index];
+    return *id.scope->scope.type_defs[id.type_index];
 }
 
 bool register_alias_to_type_name(type_system& ts, const std::string& name, const std::string& toname) {
@@ -67,10 +75,14 @@ bool register_alias_to_type_name(type_system& ts, const std::string& name, const
         return false;
     }
 
-    type_def defcopy = get_type(ts, it->second);
-    defcopy.name = name;
-    defcopy.alias_to = it->second;
-    register_type(ts, defcopy);
+    auto node = make_in_arena<ast_node>(*ts.ast_arena);
+
+    type_def* defcopy = &node->type_def;
+
+    *defcopy = get_type(ts, it->second);
+    defcopy->name = name;
+    defcopy->alias_to = it->second;
+    register_builtin_type(ts, std::move(node));
     return true;
 }
 
@@ -100,39 +112,44 @@ bool compare_types_exact(const type_def& a, const type_def& b) {
 
 // Section: scopes
 
-int enter_scope(type_system& ts, scope_kind k, ast_node* node) {
-    scope sc{};
-    sc.kind = k;
-    sc.node = node;
-    sc.parent = ts.current_scope;
-    ts.scopes.push_back(sc);
-
-    int new_scope = ts.scopes.size() - 1;
+void add_scope(type_system& ts, ast_node& node, scope_kind k) {
+    node.scope.kind = k;
+    //node.scope.body_node = body_node;
+    node.scope.parent = ts.current_scope;
     
     // add to parent's children
-    if (ts.current_scope != -1) {
-        ts.scopes[ts.current_scope].children.push_back(new_scope);
+    if (ts.current_scope) {
+        ts.current_scope->scope.children.push_back(&node);
     }
 
-    ts.current_scope = new_scope;
-    return new_scope;
+    ts.current_scope = &node;
 }
 
-int enter_func_scope(type_system& ts, ast_node* node, type_id ret_type) {
-    enter_scope(ts, scope_kind::func_body, node);
-    curscope(ts).ret_type = ret_type;
-    return ts.current_scope;
+void add_func_scope(type_system& ts, ast_node& node) {
+    add_scope(ts, node, scope_kind::func_body);
 }
 
 void leave_scope(type_system& ts) {
     ts.current_scope = curscope(ts).parent;
 }
 
-void declare_local_symbol(type_system& ts, std::size_t hash, const local_def& ld) {
+ast_node* find_nearest_scope(type_system& ts, scope_kind kind) {
+    auto scope = ts.current_scope;
+    while (scope != nullptr) {
+        if (scope->scope.kind == kind) {
+            return scope;
+        }
+
+        scope = scope->scope.parent;
+    }
+    return nullptr;
+}
+
+void declare_local_symbol(type_system& ts, std::size_t hash, ast_node& ld) {
     symbol_info info;
     info.kind = symbol_kind::local;
     info.local_index = curscope(ts).local_defs.size();
-    curscope(ts).local_defs.push_back(ld);
+    curscope(ts).local_defs.push_back(&ld);
     curscope(ts).symbols[hash] = info;
 }
 
@@ -146,16 +163,15 @@ std::optional<symbol_info> find_symbol_in_current_scope(type_system& ts, std::si
 
 // Finds the type in scope or parents
 type_id find_type_by_id_hash(type_system& ts, std::size_t hash) {
-    int scope = ts.current_scope;
-    while (scope != -1) {
-        const auto& sc = ts.scopes[scope];
+    auto scope = ts.current_scope;
+    while (scope != nullptr) {
 
-        auto it = sc.type_map.find(hash);
-        if (it != sc.type_map.end()) {
+        auto it = scope->scope.type_map.find(hash);
+        if (it != scope->scope.type_map.end()) {
             return it->second;
         }
 
-        scope = sc.parent;
+        scope = scope->scope.parent;
     }
     return invalid_type;
 }
@@ -165,13 +181,13 @@ type_id find_type_by_id_hash(type_system& ts, std::size_t hash) {
 type_id get_literal_node_type(type_system& ts, const ast_node& node) {
     switch (node.type) {
     case ast_type::bool_literal:
-        return ts.scopes[0].type_map[hash("bool")];
+        return ts.builtin_scope->scope.type_map[hash("bool")];
         
     case ast_type::int_literal:
-        return ts.scopes[0].type_map[hash("int")];
+        return ts.builtin_scope->scope.type_map[hash("int")];
         
     case ast_type::float_literal:
-        return ts.scopes[0].type_map[hash("float")];
+        return ts.builtin_scope->scope.type_map[hash("float")];
     }
 
     return invalid_type;
@@ -195,6 +211,11 @@ type_id get_type_expr_node_type(type_system& ts, const ast_node& node) {
     return invalid_type;
 }
 
+void propagate_return_type(type_system& ts, const type_id& id) {
+    //auto scope_id = find_nearest_scope(ts, scope_kind::func_body);
+    //ts.scopes[scope_id].announced_return_types.push_back(id);
+}
+
 type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
     if (!nodeptr) return invalid_type;
 
@@ -204,6 +225,17 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
     if (node.type == ast_type::type_expr) {
         node.type_id = get_type_expr_node_type(ts, node);
     }
+    else if (node.type == ast_type::return_stmt) {
+        node.type_id = get_value_node_type(ts, *node.children.front().get());
+
+        // TODO: check if scope / sanity check
+        auto scope = find_nearest_scope(ts, scope_kind::func_body);
+        scope->func.return_statements.push_back(nodeptr);
+
+        //if (node.type_id != invalid_type) {
+            //propagate_return_type(ts, node.type_id);
+        //}
+    }
     else {
         node.type_id = get_value_node_type(ts, node);
     }
@@ -212,9 +244,9 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
     return node.type_id;
 }
 
-type_id resolve_local_variable_type(type_system& ts, local_def& l) {
-    auto decl_type = l.type_node ? resolve_node_type(ts, l.type_node) : type_id{};
-    auto val_type = l.value_node ? resolve_node_type(ts, l.value_node) : type_id{};
+type_id resolve_local_variable_type(type_system& ts, ast_node& l) {
+    auto decl_type = l.local.type_node ? resolve_node_type(ts, l.local.type_node) : type_id{};
+    auto val_type = l.local.value_node ? resolve_node_type(ts, l.local.value_node) : type_id{};
 
     if (decl_type.valid()) {
         l.type_id = decl_type;
@@ -229,13 +261,32 @@ type_id resolve_local_variable_type(type_system& ts, local_def& l) {
     return l.type_id;
 }
 
+type_id resolve_func_type(type_system& ts, ast_node& f) {
+    f.type_def.kind = type_kind::func;
+    f.type_def.size = sizeof(void*);
+    f.type_def.alignment = sizeof(void*);
+    f.type_def.is_signed = false;
+
+    f.type_def.func.arg_types.clear();
+    for (auto& arg : f.func.arguments) {
+        f.type_def.func.arg_types.push_back(arg->type_id);
+    }
+
+    resolve_node_type(ts, f.func.ret_type_node);
+    f.type_def.func.ret_type = f.func.ret_type_node->type_id;
+
+    return type_id{};
+}
+
 // Section: declarations
 
 void register_func_declaration_node(type_system& ts, ast_node& node) {
     auto& id = node.children[ast_node::child_func_decl_id];
-    auto& ret_type = node.children[ast_node::child_func_decl_ret_type];
     auto& arg_list = node.children[ast_node::child_func_decl_arg_list]->children;
     auto& body = node.children[ast_node::child_func_decl_body];
+
+    node.local.id_node = id.get();
+    node.func.ret_type_node = node.children[ast_node::child_func_decl_ret_type].get();
 
     // TODO: overload
 
@@ -247,7 +298,9 @@ void register_func_declaration_node(type_system& ts, ast_node& node) {
     }
 
     // try to resolve the return type already
-    enter_func_scope(ts, &node, resolve_node_type(ts, ret_type.get()));
+    resolve_node_type(ts, node.func.ret_type_node);
+
+    add_func_scope(ts, node);
     
     for (auto& arg : arg_list) {
         assert(arg->type == ast_type::var_decl);
@@ -256,41 +309,42 @@ void register_func_declaration_node(type_system& ts, ast_node& node) {
         auto& argtype = arg->children[ast_node::child_var_decl_type];
         auto& argvalue = arg->children[ast_node::child_var_decl_value];
 
-        local_def a;
-        a.id_node = argid.get();
-        a.type_node = argtype.get();
-        a.value_node = argvalue.get();
-        a.is_argument = true;
-        resolve_local_variable_type(ts, a);
+        arg->local.id_node = argid.get();
+        arg->local.type_node = argtype.get();
+        arg->local.value_node = argvalue.get();
+        arg->local.is_argument = true;
 
-        declare_local_symbol(ts, a.id_node->id_hash, a);
+        resolve_local_variable_type(ts, *arg);
+
+        declare_local_symbol(ts, arg->local.id_node->id_hash, *arg);
+        node.func.arguments.push_back(arg.get());
     }
 
     visit_tree(ts, *body);
 
     leave_scope(ts);
+
+    // try to resolve the func type already
+    resolve_func_type(ts, node);
+
+    declare_local_symbol(ts, node.local.id_node->id_hash, node);
 }
 
 void register_var_declaration_node(type_system& ts, ast_node& node) {
-    auto& id = node.children[ast_node::child_var_decl_id];
-    auto& ty = node.children[ast_node::child_var_decl_type];
-    auto& val = node.children[ast_node::child_var_decl_value];
+    node.local.id_node = node.children[ast_node::child_var_decl_id].get();
+    node.local.type_node = node.children[ast_node::child_var_decl_type].get();
+    node.local.value_node = node.children[ast_node::child_var_decl_value].get();
 
-    auto prev = find_symbol_in_current_scope(ts, id->id_hash);
+    auto prev = find_symbol_in_current_scope(ts, node.local.id_node->id_hash);
     if (prev) {
         //add_error(ts, "cannot redeclare '%s'", id->string_value.data());
         assert(!"cannot redeclare");
         return;
     }
 
-    local_def l{};
-    l.id_node = id.get();
-    l.type_node = ty.get();
-    l.value_node = val.get();
+    resolve_local_variable_type(ts, node);
 
-    resolve_local_variable_type(ts, l);
-
-    declare_local_symbol(ts, l.id_node->id_hash, l);
+    declare_local_symbol(ts, node.local.id_node->id_hash, node);
 }
 
 bool register_declaration_node(type_system& ts, ast_node& node) {
@@ -319,6 +373,14 @@ void visit_tree(type_system& ts, ast_node& node) {
             }
         }
         break;
+    case type_system_pass::resolve_all:
+        resolve_node_type(ts, &node);
+        for (auto& child : node.children) {
+            if (child) {
+                visit_tree(ts, *child);
+            }
+        }
+        break;
     }
 }
 
@@ -326,24 +388,29 @@ void visit_tree(type_system& ts, ast_node& node) {
 
 type_system::type_system(memory_arena& arena) {
     ast_arena = &arena;
-    enter_scope(*this, scope_kind::global, nullptr);
+    builtin_scope = new ast_node{};
+    add_scope(*this, *builtin_scope, scope_kind::builtin);
 
     // void and void*
     {
-        type_def tf{};
+        auto node = make_in_arena<ast_node>(*ast_arena);
+
+        type_def& tf = node->type_def;
         tf.kind = type_kind::unit;
         tf.name = "()";
-        register_type(*this, tf);
+        register_builtin_type(*this, std::move(node));
     }
 
     {
-        type_def tf;
+        auto node = make_in_arena<ast_node>(*ast_arena);
+
+        type_def& tf = node->type_def;
         tf.kind = type_kind::pointer;
         tf.name = "raw_ptr";
         tf.size = sizeof(void*);
         tf.alignment = alignof(void*);
-        tf.elem_type = scopes[0].type_map[hash("()")];
-        register_type(*this, tf);
+        tf.elem_type = builtin_scope->scope.type_map[hash("()")];
+        register_builtin_type(*this, std::move(node));
     }
 
     // register built-in types
@@ -397,7 +464,26 @@ type_system::type_system(memory_arena& arena) {
 
 void type_system::process_ast_node(ast_node& node) {
     this->pass = type_system_pass::resolve_literals_and_register_declarations;
+    this->code_units.push_back(&node);
+
+    add_scope(*this, node, scope_kind::global);
     visit_tree(*this, node);
+    leave_scope(*this);
+}
+
+void type_system::resolve_and_check() {
+    this->pass = type_system_pass::resolve_all;
+    /*
+    this->pass = type_system_pass::resolve_all;
+    for (auto unit : this->code_units) {
+        visit_tree(*this, *unit);
+    }
+
+    this->pass = type_system_pass::perform_checks;
+    for (auto unit : this->code_units) {
+        visit_tree(*this, *unit);
+    }*/
+
 }
 
 scope_id type_system::find_main_func_scope() {
