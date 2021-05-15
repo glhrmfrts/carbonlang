@@ -34,8 +34,19 @@ void register_builtin_type(type_system& ts, arena_ptr<ast_node>&& node) {
     type_def* t = &node->type_def;
     t->name_hash = hash(t->name);
     ts.builtin_scope->scope.type_defs.push_back(t);
-    ts.builtin_scope->scope.type_map[t->name_hash] = { ts.current_scope, (int)(curscope(ts).type_defs.size() - 1) };
+    ts.builtin_scope->scope.type_map[t->name_hash] = { ts.current_scope, (int)(ts.builtin_scope->scope.type_defs.size() - 1) };
     ts.builtin_type_nodes.push_back(std::move(node));
+}
+
+type_id register_user_type(type_system& ts, ast_node& node) {
+    type_def* t = &node.type_def;
+    t->name_hash = hash(t->name);
+    ts.current_scope->scope.type_defs.push_back(t);
+
+    type_id id = { ts.current_scope, (int)(ts.current_scope->scope.type_defs.size() - 1) };
+    ts.current_scope->scope.type_map[t->name_hash] = id;
+    ts.current_scope->scope.children.push_back(&node);
+    return id;
 }
 
 template <typename T> void register_integral_type(type_system& ts, const char* name) {
@@ -262,6 +273,8 @@ type_id resolve_local_variable_type(type_system& ts, ast_node& l) {
 }
 
 type_id resolve_func_type(type_system& ts, ast_node& f) {
+    assert(f.func.ret_type_node && !"func not declared yet");
+
     f.type_def.kind = type_kind::func;
     f.type_def.size = sizeof(void*);
     f.type_def.alignment = sizeof(void*);
@@ -275,7 +288,10 @@ type_id resolve_func_type(type_system& ts, ast_node& f) {
     resolve_node_type(ts, f.func.ret_type_node);
     f.type_def.func.ret_type = f.func.ret_type_node->type_id;
 
-    return type_id{};
+    if (!f.type_id.valid()) {
+        f.type_id = register_user_type(ts, f);
+    }
+    return f.type_id;
 }
 
 // Section: declarations
