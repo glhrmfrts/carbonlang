@@ -1,3 +1,48 @@
-func main() {
-    return 243;
+/*
+
+type Node = {
+    data: raw_string,
+    children: &&[]Node,
 };
+
+func main() {
+    let a = Node{};
+    b = &a;
+
+    _copy(a, b);
+}
+
+func len[T: type](arr: &&[]T, some: &&List) {
+    some->deinit();
+    arr->deinit();
+}
+
+asm func syscall_print(text: raw_string, size: usize): int {
+    static if (${target_os} == "windows" and ${target_arch} == "x86_64") {
+        asm {
+            push rbp
+            push rdi
+            sub rsp,16
+            lea rbp,[rsp+16]
+
+            mov rdx,[rbp-16]
+            mov rsi,[rbp-8]
+            mov rax,1
+            mov rdi,1
+            syscall
+
+            add rsp,16
+            pop rdi
+            pop rbp
+            ret
+        };
+    }
+    elseif (${target_os} == "linux") {
+
+    }
+}
+*/
+
+func main(): int {
+    return 1;
+}

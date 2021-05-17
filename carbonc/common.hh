@@ -25,4 +25,6 @@ struct scope_guard {
     std::function<void()> _func;
 };
 
+bool replace(std::string& str, const std::string& from, const std::string& to);
+
 }

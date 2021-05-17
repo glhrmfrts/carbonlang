@@ -2,6 +2,7 @@
 
 type Vector2 = {x:float, y:float};
 
+/*
 func add(a: Vector2, b: Vector2): Vector2 {
 	return a + b;
 }
@@ -41,6 +42,7 @@ func other_stuff() {
 func main(): int {
 	return other_stuff();
 }
+*/
 
 // other_stuff:
 // LOAD_LONG $1 500

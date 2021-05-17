@@ -7,10 +7,10 @@ func main(args: string): int {
     return 0;
 };
 
-func subroutine(x: int) {
+func subroutine(x: int): int {
     println("doing something");
 };
 
-func subroutine_no_args() {
+func subroutine_no_args(): int {
     println("doing something");
 };

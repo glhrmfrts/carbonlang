@@ -28,6 +28,8 @@ decl_list{
         identifier{"x"}
         :        type_expr{
                     identifier{"int"}}})
+    :    type_expr{
+            identifier{"int"}}
     compound_stmt{
       stmt_list{
         call_expr{
@@ -37,6 +39,8 @@ decl_list{
   func_decl{
     identifier{"subroutine_no_args"}
     arg_list()
+    :    type_expr{
+            identifier{"int"}}
     compound_stmt{
       stmt_list{
         call_expr{

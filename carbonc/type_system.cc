@@ -273,7 +273,7 @@ type_id resolve_local_variable_type(type_system& ts, ast_node& l) {
 }
 
 type_id resolve_func_type(type_system& ts, ast_node& f) {
-    assert(f.func.ret_type_node && !"func not declared yet");
+    assert(f.func.ret_type_node || !"func not declared yet");
 
     f.type_def.kind = type_kind::func;
     f.type_def.size = sizeof(void*);
