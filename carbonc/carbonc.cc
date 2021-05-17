@@ -67,8 +67,15 @@ int main(int argc, const char* argv[]) {
 
         type_system ts{ ast_arena };
         ts.process_ast_node(*ast);
+        ts.resolve_and_check();
 
-        codegen(*ast, "tests/asm/" + filename);
+        std::string fn{ filename.data() };
+        replace(fn, ".cb", ".asm");
+        codegen(*ast, "tests/asm/" + fn);
+
+        std::cout << ("ml64.exe tests/asm/" + fn + " /link /entry:main") << std::endl;
+        std::FILE* assembler = _popen(("ml64.exe tests/asm/"+ fn + " /link /entry:main").c_str(), "r");
+        _pclose(assembler);
     }
 
     return 0;

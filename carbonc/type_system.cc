@@ -12,6 +12,8 @@ static const scope_id invalid_scope = -1;
 
 void visit_tree(type_system& ts, ast_node& node);
 
+type_id resolve_node_type(type_system& ts, ast_node* nodeptr);
+
 // Section: helpers
 
 std::hash<std::string>::result_type hash(const std::string& v) {
@@ -105,15 +107,24 @@ bool is_assignable_to(type_system& ts, type_id a, type_id b) {
         return true;
     }
 
-    if (get_type(ts, a).alias_to == b) {
+    if (get_type(ts, a).alias_to == b || get_type(ts, b).alias_to == a) {
         return true;
     }
 
     return false;
 }
 
-// is A convertible/castable to B?
+// is A implicitly convertible to B?
 bool is_convertible_to(type_system& ts, type_id a, type_id b) {
+    if (is_assignable_to(ts, a, b)) return true;
+
+    auto& ta = get_type(ts, a);
+    auto& tb = get_type(ts, b);
+
+    if (ta.kind == tb.kind && tb.kind == type_kind::integral) {
+        return tb.size >= ta.size;
+    }
+
     return false;
 }
 
@@ -138,6 +149,13 @@ void add_scope(type_system& ts, ast_node& node, scope_kind k) {
 
 void add_func_scope(type_system& ts, ast_node& node) {
     add_scope(ts, node, scope_kind::func_body);
+}
+
+// enter existing scope
+void enter_scope(type_system& ts, ast_node& node) {
+    assert(node.scope.kind != scope_kind::invalid);
+    node.scope.parent = ts.current_scope;
+    ts.current_scope = &node;
 }
 
 void leave_scope(type_system& ts) {
@@ -189,24 +207,19 @@ type_id find_type_by_id_hash(type_system& ts, std::size_t hash) {
 
 // Section: resolvers
 
-type_id get_literal_node_type(type_system& ts, const ast_node& node) {
+type_id get_value_node_type(type_system& ts, const ast_node& node) {
     switch (node.type) {
     case ast_type::bool_literal:
         return ts.builtin_scope->scope.type_map[hash("bool")];
-        
+
     case ast_type::int_literal:
         return ts.builtin_scope->scope.type_map[hash("int")];
-        
+
     case ast_type::float_literal:
         return ts.builtin_scope->scope.type_map[hash("float")];
-    }
 
-    return invalid_type;
-}
-
-type_id get_value_node_type(type_system& ts, const ast_node& node) {
-    if (ts.pass == type_system_pass::resolve_literals_and_register_declarations) {
-        return get_literal_node_type(ts, node);
+    case ast_type::binary_expr:
+        return node.children[0]->type_id;
     }
 
     return invalid_type;
@@ -227,43 +240,12 @@ void propagate_return_type(type_system& ts, const type_id& id) {
     //ts.scopes[scope_id].announced_return_types.push_back(id);
 }
 
-type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
-    if (!nodeptr) return invalid_type;
-
-    auto& node = *nodeptr;
-    if (node.type_id != invalid_type) return node.type_id;
-
-    if (node.type == ast_type::type_expr) {
-        node.type_id = get_type_expr_node_type(ts, node);
-    }
-    else if (node.type == ast_type::return_stmt) {
-        node.type_id = get_value_node_type(ts, *node.children.front().get());
-
-        // TODO: check if scope / sanity check
-        auto scope = find_nearest_scope(ts, scope_kind::func_body);
-        scope->func.return_statements.push_back(nodeptr);
-
-        //if (node.type_id != invalid_type) {
-            //propagate_return_type(ts, node.type_id);
-        //}
-    }
-    else {
-        node.type_id = get_value_node_type(ts, node);
-    }
-
-    ts.unresolved_types = node.type_id == invalid_type;
-    return node.type_id;
-}
-
 type_id resolve_local_variable_type(type_system& ts, ast_node& l) {
     auto decl_type = l.local.type_node ? resolve_node_type(ts, l.local.type_node) : type_id{};
     auto val_type = l.local.value_node ? resolve_node_type(ts, l.local.value_node) : type_id{};
 
     if (decl_type.valid()) {
         l.type_id = decl_type;
-        if (!(decl_type == val_type)) {
-            // TODO: check conversions / cast
-        }
     }
     else {
         l.type_id = val_type;
@@ -363,39 +345,111 @@ void register_var_declaration_node(type_system& ts, ast_node& node) {
     declare_local_symbol(ts, node.local.id_node->id_hash, node);
 }
 
-bool register_declaration_node(type_system& ts, ast_node& node) {
+// Section: type checking
+
+void type_check_node(type_system& ts, ast_node* nodeptr) {
+    auto& node = *nodeptr;
     switch (node.type) {
-    case ast_type::func_decl:
-        register_func_declaration_node(ts, node);
-        return true;
-    case ast_type::var_decl:
-        register_var_declaration_node(ts, node);
-        return true;
+    case ast_type::binary_expr: {
+        auto left_type = node.children[0]->type_id;
+        auto right_type = node.children[0]->type_id;
+        if (!is_convertible_to(ts, right_type, left_type)) {
+            assert(!"NOT CONVERTIBLE");
+        }
+        break;
     }
-    return false;
+    default:
+        break;
+    }
 }
 
 // Section: main visitor
 
+void visit_children(type_system& ts, ast_node& node) {
+    for (auto& child : node.children) {
+        if (child) {
+            visit_tree(ts, *child);
+        }
+    }
+}
+
+type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
+    if (!nodeptr) return invalid_type;
+
+    auto& node = *nodeptr;
+    bool check_for_unresolved = true;
+
+    switch (node.type) {
+    case ast_type::type_expr:
+        if (node.type_id != invalid_type) return node.type_id;
+
+        node.type_id = get_type_expr_node_type(ts, node);
+        break;
+    case ast_type::return_stmt: {
+        if (node.type_id != invalid_type) return node.type_id;
+
+        node.type_id = resolve_node_type(ts, node.children.front().get());
+
+        // TODO: check if scope / sanity check
+        if (ts.pass == type_system_pass::resolve_literals_and_register_declarations) {
+            auto scope = find_nearest_scope(ts, scope_kind::func_body);
+            scope->func.return_statements.push_back(nodeptr);
+        }
+        break;
+    }
+    case ast_type::func_decl: {
+        if (ts.pass == type_system_pass::resolve_literals_and_register_declarations) {
+            register_func_declaration_node(ts, node);
+        }
+        else {
+            enter_scope(ts, node);
+            visit_children(ts, node);
+            leave_scope(ts);
+            resolve_func_type(ts, node);
+        }
+        break;
+    }
+    case ast_type::var_decl: {
+        if (ts.pass == type_system_pass::resolve_literals_and_register_declarations) {
+            register_var_declaration_node(ts, node);
+        }
+        else {
+            resolve_local_variable_type(ts, node);
+        }
+        break;
+    }
+    case ast_type::bool_literal:
+    case ast_type::int_literal:
+    case ast_type::float_literal:
+    case ast_type::binary_expr: {
+        if (node.type_id != invalid_type) return node.type_id;
+
+        node.type_id = get_value_node_type(ts, node);
+        visit_children(ts, node);
+        break;
+    }
+    default: {
+        visit_children(ts, node);
+        check_for_unresolved = false;
+        break;
+    }
+    }
+
+    if (check_for_unresolved) {
+        ts.unresolved_types = ts.unresolved_types || (node.type_id == invalid_type);
+    }
+    return node.type_id;
+}
+
 void visit_tree(type_system& ts, ast_node& node) {
     switch (ts.pass) {
     case type_system_pass::resolve_literals_and_register_declarations:
+    case type_system_pass::resolve_all: {
         resolve_node_type(ts, &node);
-        if (!register_declaration_node(ts, node)) {
-            for (auto& child : node.children) {
-                if (child) {
-                    visit_tree(ts, *child);
-                }
-            }
-        }
         break;
-    case type_system_pass::resolve_all:
-        resolve_node_type(ts, &node);
-        for (auto& child : node.children) {
-            if (child) {
-                visit_tree(ts, *child);
-            }
-        }
+    }
+    case type_system_pass::perform_checks:
+        type_check_node(ts, &node);
         break;
     }
 }
@@ -489,17 +543,21 @@ void type_system::process_ast_node(ast_node& node) {
 
 void type_system::resolve_and_check() {
     this->pass = type_system_pass::resolve_all;
-    /*
-    this->pass = type_system_pass::resolve_all;
-    for (auto unit : this->code_units) {
-        visit_tree(*this, *unit);
+
+    for (int i = 0; i < 1000; i++) {
+        this->unresolved_types = false;
+        for (auto unit : this->code_units) {
+            enter_scope(*this, *unit);
+            visit_tree(*this, *unit);
+            leave_scope(*this);
+        }
+        if (!this->unresolved_types) break;
     }
 
     this->pass = type_system_pass::perform_checks;
     for (auto unit : this->code_units) {
         visit_tree(*this, *unit);
-    }*/
-
+    }
 }
 
 scope_id type_system::find_main_func_scope() {

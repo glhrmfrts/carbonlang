@@ -43,6 +43,10 @@ asm func syscall_print(text: raw_string, size: usize): int {
 }
 */
 
+func other_stuff(): int {
+    return 2 + 3;
+}
+
 func main(): int {
-    return 1;
+    return 1 + 2 + 4;
 }

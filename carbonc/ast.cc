@@ -30,8 +30,9 @@ arena_ptr<ast_node> make_string_literal_node(memory_arena& arena, const position
     ptr->type = ast_type::string_literal;
     ptr->pos = pos;
 
-    char* data = alloc_many<char>(arena, value.size());
+    char* data = alloc_many<char>(arena, value.size() + 1);
     std::memcpy(data, value.data(), value.size());
+    data[value.size()] = '\0';
 
     ptr->string_value = std::string_view{ data, value.size() };
     return std::move(ptr);
@@ -42,8 +43,9 @@ arena_ptr<ast_node> make_identifier_node(memory_arena& arena, const position& po
     ptr->type = ast_type::identifier;
     ptr->pos = pos;
 
-    char* data = alloc_many<char>(arena, value.size());
+    char* data = alloc_many<char>(arena, value.size() + 1);
     std::memcpy(data, value.data(), value.size());
+    data[value.size()] = '\0';
 
     ptr->id_hash = std::hash<std::string>{}(value);
     ptr->string_value = std::string_view{ data, value.size() };

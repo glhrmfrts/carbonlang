@@ -1,48 +1,29 @@
 #include <fstream>
 #include <cstdarg>
 #include "codegen.hh"
+#include "codegen_x64.hh"
+#include "emitter_x64_windows.hh"
 #include "common.hh"
 
 namespace carbon {
 
-enum gen_register {
-    invalid,
-    rax,
-    rbx,
-    rcx,
-    rdx,
-    r8,
-    r9,
-    eax,
-    ebx,
-    ecx,
-    edx,
-    r8d,
-    r9d,
-};
-
-struct gen_register_sizes {
-    gen_register r64;
-    gen_register r32;
-    gen_register r16;
-    gen_register r8high;
-    gen_register r8low;
-};
-
 struct exprarg {
-    gen_register dest;
+    gen_register dest = invalid;
+    bool parent_is_binary = false;
 };
 
-static const gen_register arg_registers[] = {
+static const gen_register register_args[] = {
     ecx, edx, r8d, r9d,
     rcx, rdx, r8, r9,
 };
 
-static const gen_register_sizes rsizes[] = {
+static const gen_register_sizes register_sizes[] = {
     {},
     {rax, eax, invalid, invalid, invalid},
     {},
     {},
+    {rdx, edx, invalid, invalid, invalid},
+    {rdi, edi, invalid, invalid, invalid},
     {},
     {},
     {},
@@ -54,25 +35,10 @@ static const gen_register_sizes rsizes[] = {
     {},
 };
 
-static const char* rnames[] = {
-    "invalid",
-    "rax",
-    "rbx",
-    "rcx",
-    "rdx",
-    "r8",
-    "r9",
-    "eax",
-    "ebx",
-    "ecx",
-    "edx",
-    "r8d",
-    "r9d",
-};
 
-auto rfortype(gen_register r, type_id tid) {
+auto register_for_type(gen_register r, type_id tid) {
     auto tdef = tid.scope->scope.type_defs[tid.type_index];
-    auto sizes = rsizes[r];
+    auto sizes = register_sizes[r];
     switch (tdef->size) {
     case 1:
         return sizes.r8low;
@@ -87,47 +53,19 @@ auto rfortype(gen_register r, type_id tid) {
 
 struct generator {
     std::string_view filename;
-    std::ofstream asm_file;
+    std::unique_ptr<emitter> em;
 
     void generate_program(ast_node& node) {
-        std::string fn{filename.data()};
-        replace(fn, ".cb", ".asm");
-        asm_file.open(fn);
+        em->begin_data_segment();
 
-        emit_data_segment();
+        em->begin_code_segment();
         emit_code_segment(node);
 
-        asm_file << "END";
-        asm_file.close();
-    }
-
-    void emit_data_segment() {
-        asm_file << ".data\n";
+        em->end();
     }
 
     void emit_code_segment(ast_node& node) {
-        asm_file << ".code\n";
-
         generate_node(node);
-    }
-
-    template <typename T> void emit(T&& single) {
-        asm_file << single;
-    }
-
-    template <typename Arg, typename... Args> void emit(Arg&& arg, Args&&... args) {
-        emit(arg);
-        emit(std::forward<Args>(args)...);
-    }
-
-    void emitf(const char* fmt, ...) {
-        static char buffer[1024];
-        std::va_list args;
-        va_start(args, fmt);
-        std::vsnprintf(buffer, sizeof(buffer), fmt, args);
-        va_end(args);
-        emit(buffer);
-        emit("\n");
     }
 
     void generate_node(ast_node& node, exprarg* arg = nullptr) {
@@ -141,6 +79,9 @@ struct generator {
         case ast_type::int_literal:
             generate_int_literal(node, arg);
             break;
+        case ast_type::binary_expr:
+            generate_binary_expr(node, arg);
+            break;
         default:
             for (auto& child : node.children) {
                 if (child) {
@@ -151,13 +92,13 @@ struct generator {
     }
 
     void generate_func(ast_node& node) {
-        emit(node.local.id_node->string_value, " PROC\n");
+        em->begin_func(node.local.id_node->string_value.data());
         for (auto& child : node.children) {
             if (child) {
                 generate_node(*child);
             }
         }
-        emit(node.local.id_node->string_value, " ENDP\n");
+        em->end_func();
     }
 
     void generate_return_stmt(ast_node& node) {
@@ -166,17 +107,67 @@ struct generator {
             exprarg arg = { rax };
             generate_node(*expr, &arg);
         }
-        emit(" ret\n");
+        else {
+            em->mov_literal(eax, 0);
+        }
+        em->ret();
+    }
+
+    void generate_binary_expr(ast_node& node, exprarg* arg) {
+        auto& left = node.children[0];
+        auto& right = node.children[1];
+
+        bool left_is_binary = left->type == ast_type::binary_expr;
+        bool right_is_binary = right->type == ast_type::binary_expr;
+
+        if (left_is_binary)
+        {
+            {
+                exprarg childarg = { arg->dest, true };
+                generate_node(*left, &childarg);
+            }
+            {
+                exprarg childarg = { rdx, true };
+                generate_node(*right, &childarg);
+            }
+        }
+        else
+        {
+            {
+                exprarg childarg = { arg->dest, true };
+                generate_node(*right, &childarg);
+            }
+            {
+                exprarg childarg = { rdx, true };
+                generate_node(*left, &childarg);
+            }
+        }
+
+        gen_register rb = register_for_type((arg->dest == rax) ? rdx : rax, node.type_id);
+        gen_register rdest = register_for_type(arg->dest, node.type_id);
+
+        switch (token_to_char(node.op)) {
+        case '+':
+            em->add(rdest, rb);
+            break;
+        case '-':
+            em->sub(rdest, rb);
+            break;
+        case '*':
+            em->imul(rdest, rb);
+            break;
+        }
     }
 
     void generate_int_literal(ast_node& node, exprarg* arg) {
-        emitf(" mov %s,%d", rnames[rfortype(arg->dest, node.type_id)], node.int_value);
+        em->mov_literal(register_for_type(arg->dest, node.type_id), node.int_value);
     }
 };
 
 void codegen(ast_node& node, std::string_view filename) {
-    generator gen;
+    generator gen{};
     gen.filename = filename;
+    gen.em = std::make_unique<emitter>(filename);
     gen.generate_program(node);
 }
 
