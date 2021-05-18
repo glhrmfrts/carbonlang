@@ -36,9 +36,17 @@ struct gen_offset {
     }
 };
 
-using gen_destination = std::variant<gen_register, gen_offset>;
+struct gen_data_offset {
+    std::string_view label;
 
-using gen_operand = std::variant<gen_register, gen_offset, std::int32_t>;
+    bool operator ==(const gen_data_offset& other) const {
+        return label == other.label;
+    }
+};
+
+using gen_destination = std::variant<gen_register, gen_data_offset, gen_offset>;
+
+using gen_operand = std::variant<gen_register, gen_offset, gen_data_offset, std::int32_t>;
 
 struct gen_register_sizes {
     gen_register r64;

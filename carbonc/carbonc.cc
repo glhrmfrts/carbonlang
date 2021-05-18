@@ -44,7 +44,7 @@ int main(int argc, const char* argv[]) {
         ts.process_ast_node(*ast);
     }
 
-    for (const std::string& filename : {"compile-000-main.cb", "compile-001-local_vars.cb", "compile-002-func_call.cb"}) {
+    for (const std::string& filename : {"compile-000-main.cb", "compile-001-local_vars.cb", "compile-002-func_call.cb", "compile-003-strings.cb"}) {
         std::string src;
         if (!read_file_text("tests/" + filename, src)) continue;
 

@@ -96,6 +96,25 @@ bool register_alias_to_type_name(type_system& ts, const std::string& name, const
     return true;
 }
 
+bool register_pointer_type(type_system& ts, const std::string& name, const std::string& toname) {
+    auto it = curscope(ts).type_map.find(hash(toname));
+    if (it == curscope(ts).type_map.end()) {
+        return false;
+    }
+
+    auto node = make_in_arena<ast_node>(*ts.ast_arena);
+
+    type_def& tf = node->type_def;
+    tf.kind = type_kind::pointer;
+    tf.name = string_hash{ name };
+    tf.size = sizeof(void*);
+    tf.alignment = alignof(void*);
+    tf.elem_type = it->second;
+
+    register_builtin_type(ts, std::move(node));
+    return true;
+}
+
 // Section: types
 
 // is A assignable to B?
@@ -237,6 +256,9 @@ type_id get_value_node_type(type_system& ts, const ast_node& node) {
 
     case ast_type::float_literal:
         return ts.builtin_scope->scope.type_map[hash("float")];
+
+    case ast_type::string_literal:
+        return ts.builtin_scope->scope.type_map[hash("raw_string")];
 
     case ast_type::binary_expr:
         return node.children[0]->type_id;
@@ -530,6 +552,7 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
     case ast_type::bool_literal:
     case ast_type::int_literal:
     case ast_type::float_literal:
+    case ast_type::string_literal:
     case ast_type::binary_expr: {
         if (node.type_id != invalid_type) return node.type_id;
 
@@ -619,6 +642,8 @@ type_system::type_system(memory_arena& arena) {
     register_alias_to_type_name(*this, "int", "int32");
     register_alias_to_type_name(*this, "bool", "int32");
     register_alias_to_type_name(*this, "float", "float32");
+
+    register_pointer_type(*this, "raw_string", "int8");
 
 /*
     register_alias_to_type_template(*this, "raw_str", {"*", "char"});

@@ -40,6 +40,10 @@ enum class ast_type {
     type_qualifier,
 };
 
+struct global_data {
+    std::string label;
+};
+
 struct ast_node {
     static constexpr std::size_t child_binary_expr_left = 0;
     static constexpr std::size_t child_binary_expr_right = 1;
@@ -83,6 +87,7 @@ struct ast_node {
     type_def type_def;
     lvalue lvalue;
     call_info call;
+    global_data global_data;
 };
 
 arena_ptr<ast_node> make_bool_literal_node(memory_arena& arena, const position& pos, bool value);

@@ -48,6 +48,11 @@ std::string tostr(const gen_destination& d) {
         [](gen_register r) -> std::string {
             return register_names[r];
         },
+        [](gen_data_offset r) -> std::string {
+            std::string result = "OFFSET:";
+            result.append(r.label);
+            return result;
+        },
         [](gen_offset r) -> std::string {
             auto result = "[" + std::string{register_names[r.reg]};
             if (r.offset < 0) {
@@ -68,6 +73,11 @@ std::string tostr(const gen_operand& d) {
         [](gen_register r) -> std::string {
             return register_names[r];
         },
+        [](gen_data_offset r) -> std::string {
+            std::string result = "OFFSET:";
+            result.append(r.label);
+            return result;
+        },
         [](gen_offset r) -> std::string {
             auto result = "[" + std::string{register_names[r.reg]};
             if (r.offset < 0) {
@@ -83,13 +93,18 @@ std::string tostr(const gen_operand& d) {
         [](std::int32_t v) -> std::string {
             return std::to_string(v);
         }
-        }, d);
+    }, d);
 }
 
 std::string tostr_sized(const gen_destination& d) {
     return std::visit(overload{
         [](gen_register r) -> std::string {
             return register_names[r];
+        },
+        [](gen_data_offset r) -> std::string {
+            std::string result = "OFFSET:";
+            result.append(r.label);
+            return result;
         },
         [](gen_offset r) -> std::string {
             auto ptrsize = std::string{ptrsizes[r.op_size]};
@@ -104,13 +119,18 @@ std::string tostr_sized(const gen_destination& d) {
             }
             return result + "]";
         }
-        }, d);
+    }, d);
 }
 
 std::string tostr_sized(const gen_operand& d) {
     return std::visit(overload{
         [](gen_register r) -> std::string {
             return register_names[r];
+        },
+        [](gen_data_offset r) -> std::string {
+            std::string result = "OFFSET:";
+            result.append(r.label);
+            return result;
         },
         [](gen_offset r) -> std::string {
             auto ptrsize = std::string{ptrsizes[r.op_size]};
@@ -147,6 +167,10 @@ void emitter::end() {
 
 void emitter::begin_data_segment() {
     out_file << ".data\n";
+}
+
+void emitter::add_string_data(std::string_view label, std::string_view data) {
+    emitln("%s DB '%s',00H", label.data(), data.data());
 }
 
 void emitter::begin_code_segment() {

@@ -21,6 +21,8 @@ struct emitter {
 
     void begin_data_segment();
 
+    void add_string_data(std::string_view label, std::string_view data);
+
     void begin_code_segment();
 
     void begin_func(const char* func_name);

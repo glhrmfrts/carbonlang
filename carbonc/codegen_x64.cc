@@ -124,16 +124,50 @@ struct generator {
     std::string_view filename;
     std::unique_ptr<emitter> em;
     std::vector<gen_register> arg_registers;
+    std::vector<std::pair<std::string_view, std::string>> global_strings;
+
+    std::string find_or_add_global_string_data(std::string_view data) {
+        for (const auto& str : global_strings) {
+            if (data == str.first) {
+                return str.second;
+            }
+        }
+
+        auto label = "$cbstr" + std::to_string(global_strings.size());
+        auto new_pair = std::make_pair(data, label);
+        global_strings.push_back(new_pair);
+        em->add_string_data(label, data);
+        return label;
+    }
 
     void generate_program(ast_node& node) {
         arg_registers = em->get_argument_registers();
 
         em->begin_data_segment();
+        generate_node_data(node);
 
         em->begin_code_segment();
         generate_node(node);
 
         em->end();
+    }
+
+    void generate_node_data(ast_node& node) {
+        switch (node.type) {
+        case ast_type::string_literal:
+            generate_string_literal_data(node);
+            break;
+        default:
+            for (auto& child : node.children) {
+                if (child) {
+                    generate_node_data(*child);
+                }
+            }
+        }
+    }
+
+    void generate_string_literal_data(ast_node& node) {
+        node.global_data.label = find_or_add_global_string_data(node.string_value);
     }
 
     void generate_node(ast_node& node, exprarg* arg = nullptr) {
@@ -152,12 +186,15 @@ struct generator {
             break;
         case ast_type::binary_expr:
             generate_binary_expr(node, arg);
+            break;      
+        case ast_type::identifier:
+            generate_identifier(node, arg);
             break;
         case ast_type::int_literal:
             generate_int_literal(node, arg);
-            break;        
-        case ast_type::identifier:
-            generate_identifier(node, arg);
+            break;  
+        case ast_type::string_literal:
+            generate_string_literal(node, arg);
             break;
         default:
             for (auto& child : node.children) {
@@ -334,6 +371,11 @@ struct generator {
         else {
             em->mov(adest, node.int_value);
         }
+    }
+
+    void generate_string_literal(ast_node& node, exprarg* arg) {
+        auto adest = adjust_for_type(arg->dest, node.type_id);
+        em->lea(adest, gen_data_offset{ node.global_data.label });
     }
 };
 
