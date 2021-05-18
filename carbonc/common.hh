@@ -25,6 +25,15 @@ struct scope_guard {
     std::function<void()> _func;
 };
 
+struct string_hash {
+    std::string str;
+    std::size_t hash;
+
+    string_hash() {}
+
+    string_hash(std::string str);
+};
+
 bool replace(std::string& str, const std::string& from, const std::string& to);
 
 }

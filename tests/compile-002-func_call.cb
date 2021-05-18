@@ -1,0 +1,15 @@
+func other_stuff(): int {
+    return 2 + 3;
+}
+
+func foobar(a: int, b: int, c: int): int {
+    let value = 50;
+    let j = other_stuff();
+    return value * j + a + b + c;
+}
+
+func main(): int {
+    let val = 30;
+    let ok = foobar(val, 100, 0);
+    return val + ok;
+}

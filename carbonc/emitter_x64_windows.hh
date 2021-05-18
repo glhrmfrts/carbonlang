@@ -2,7 +2,7 @@
 
 #include <string_view>
 #include <fstream>
-#include <stack>
+#include <vector>
 #include "codegen_x64.hh"
 
 namespace carbon {
@@ -14,6 +14,8 @@ struct emitter {
     std::ofstream out_file;
 
     explicit emitter(std::string_view filename);
+
+    std::vector<gen_register> get_argument_registers();
 
     void end();
 
@@ -27,17 +29,23 @@ struct emitter {
 
     void ret();
 
-    void mov(gen_register reg, gen_register src);
+    void call(const char* func_name);
 
-    void mov_offset(gen_register reg, gen_register src, std::size_t offs);
+    void push(gen_operand reg);
 
-    void mov_literal(gen_register reg, std::int32_t val);
+    void pop(gen_operand reg);
 
-    void add(gen_register a, gen_register b);
+    void lea(gen_destination dst, gen_destination op);
 
-    void sub(gen_register a, gen_register b);
+    void mov(gen_destination reg, gen_operand src);
 
-    void imul(gen_register a, gen_register b);
+    void add(gen_destination a, gen_operand b);
+
+    void sub(gen_destination a, gen_operand b);
+
+    void imul(gen_destination a, gen_operand b);
+
+    void xor(gen_destination a, gen_operand b);
 
     void emit(const char* fmt, ...);
 

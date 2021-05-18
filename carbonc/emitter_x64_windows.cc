@@ -1,4 +1,5 @@
 #include <cstdarg>
+#include <string>
 #include "emitter_x64_windows.hh"
 #include "common.hh"
 
@@ -13,6 +14,8 @@ static const char* register_names[] = {
     "rcx",
     "rdx",
     "rdi",
+    "rbp",
+    "rsp",
     "r8",
     "r9",
     "eax",
@@ -20,36 +23,122 @@ static const char* register_names[] = {
     "ecx",
     "edx",
     "edi",
+    "ebp",
+    "esp",
     "r8d",
     "r9d",
 };
 
-template <typename T> bool emit_if_stack(emitter* em, const char* fmt, T&& stack) {
-    if (!stack.empty()) {
-        auto val = stack.top();
-        stack.pop();
+static std::unordered_map<std::size_t, const char*> ptrsizes = {
+    {1, "BYTE PTR"},
+    {2, "WORD PTR"},
+    {4, "DWORD PTR"},
+    {8, "QWORD PTR"},
+};
 
-        em->emit(fmt, val);
-        return true;
-    }
-    return false;
+static const std::vector<gen_register> register_args = {
+    rcx, rdx, r8, r9,
+};
+
+template <class... Ts> struct overload : Ts... { using Ts::operator()...; };
+template <class... Ts> overload(Ts...)->overload<Ts...>;
+
+std::string tostr(const gen_destination& d) {
+    return std::visit(overload{
+        [](gen_register r) -> std::string {
+            return register_names[r];
+        },
+        [](gen_offset r) -> std::string {
+            auto result = "[" + std::string{register_names[r.reg]};
+            if (r.offset < 0) {
+                result.append("-");
+                result.append(std::to_string(-r.offset));
+            }
+            else {
+                result.append("+");
+                result.append(std::to_string(r.offset));
+            }
+            return result + "]";
+        }
+    }, d);
 }
 
-template <typename T> bool emit_if_register_stack(emitter* em, const char* fmt, T&& stack) {
-    if (!stack.empty()) {
-        auto val = stack.top();
-        stack.pop();
+std::string tostr(const gen_operand& d) {
+    return std::visit(overload{
+        [](gen_register r) -> std::string {
+            return register_names[r];
+        },
+        [](gen_offset r) -> std::string {
+            auto result = "[" + std::string{register_names[r.reg]};
+            if (r.offset < 0) {
+                result.append("-");
+                result.append(std::to_string(-r.offset));
+            }
+            else {
+                result.append("+");
+                result.append(std::to_string(r.offset));
+            }
+            return result + "]";
+        },
+        [](std::int32_t v) -> std::string {
+            return std::to_string(v);
+        }
+        }, d);
+}
 
-        em->emit(fmt, register_names[val]);
-        return true;
-    }
-    return false;
+std::string tostr_sized(const gen_destination& d) {
+    return std::visit(overload{
+        [](gen_register r) -> std::string {
+            return register_names[r];
+        },
+        [](gen_offset r) -> std::string {
+            auto ptrsize = std::string{ptrsizes[r.op_size]};
+            auto result = ptrsize + " [" + std::string{register_names[r.reg]};
+            if (r.offset < 0) {
+                result.append("-");
+                result.append(std::to_string(-r.offset));
+            }
+            else {
+                result.append("+");
+                result.append(std::to_string(r.offset));
+            }
+            return result + "]";
+        }
+        }, d);
+}
+
+std::string tostr_sized(const gen_operand& d) {
+    return std::visit(overload{
+        [](gen_register r) -> std::string {
+            return register_names[r];
+        },
+        [](gen_offset r) -> std::string {
+            auto ptrsize = std::string{ptrsizes[r.op_size]};
+            auto result = ptrsize + " [" + std::string{ register_names[r.reg] };
+            if (r.offset < 0) {
+                result.append("-");
+                result.append(std::to_string(-r.offset));
+            }
+            else {
+                result.append("+");
+                result.append(std::to_string(r.offset));
+            }
+            return result + "]";
+        },
+        [](std::int32_t v) -> std::string {
+            return std::to_string(v);
+        }
+    }, d);
 }
 
 }
 
 emitter::emitter(std::string_view filename) {
     out_file = std::ofstream{ std::string{filename} };
+}
+
+std::vector<gen_register> emitter::get_argument_registers() {
+    return register_args;
 }
 
 void emitter::end() {
@@ -77,28 +166,40 @@ void emitter::ret() {
     out_file << " ret\n";
 }
 
-void emitter::mov(gen_register reg, gen_register src) {
-    emitln(" mov %s,%s", register_names[reg], register_names[src]);
+void emitter::call(const char* func_name) {
+    emitln(" call %s", func_name);
 }
 
-void emitter::mov_offset(gen_register reg, gen_register src, std::size_t offs) {
-    emitln(" mov %s,[%s+%lu]", register_names[reg], register_names[src], offs);
+void emitter::push(gen_operand reg) {
+    emitln(" push %s", tostr_sized(reg).c_str());
 }
 
-void emitter::mov_literal(gen_register reg, std::int32_t val) {
-    emitln(" mov %s,%d", register_names[reg], val);
+void emitter::pop(gen_operand reg) {
+    emitln(" pop %s", tostr_sized(reg).c_str());
 }
 
-void emitter::add(gen_register a, gen_register b) {
-    emitln(" add %s,%s", register_names[a], register_names[b]);
+void emitter::lea(gen_destination reg, gen_destination src) {
+    emitln(" lea %s,%s", tostr(reg).c_str(), tostr(src).c_str());
 }
 
-void emitter::sub(gen_register a, gen_register b) {
-    emitln(" sub %s,%s", register_names[a], register_names[b]);
+void emitter::mov(gen_destination reg, gen_operand src) {
+    emitln(" mov %s,%s", tostr_sized(reg).c_str(), tostr_sized(src).c_str());
 }
 
-void emitter::imul(gen_register a, gen_register b) {
-    emitln(" imul %s,%s", register_names[a], register_names[b]);
+void emitter::add(gen_destination a, gen_operand b) {
+    emitln(" add %s,%s", tostr_sized(a).c_str(), tostr_sized(b).c_str());
+}
+
+void emitter::sub(gen_destination a, gen_operand b) {
+    emitln(" sub %s,%s", tostr_sized(a).c_str(), tostr_sized(b).c_str());
+}
+
+void emitter::imul(gen_destination a, gen_operand b) {
+    emitln(" imul %s,%s", tostr_sized(a).c_str(), tostr_sized(b).c_str());
+}
+
+void emitter::xor(gen_destination a, gen_operand b) {
+    emitln(" xor %s,%s", tostr_sized(a).c_str(), tostr_sized(b).c_str());
 }
 
 void emitter::emit(const char* fmt, ...) {

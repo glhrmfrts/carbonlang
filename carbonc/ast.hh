@@ -81,6 +81,8 @@ struct ast_node {
     func_def func;
     local_def local;
     type_def type_def;
+    lvalue lvalue;
+    call_info call;
 };
 
 arena_ptr<ast_node> make_bool_literal_node(memory_arena& arena, const position& pos, bool value);

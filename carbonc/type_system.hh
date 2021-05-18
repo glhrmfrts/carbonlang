@@ -4,10 +4,14 @@
 #include <string>
 #include <unordered_map>
 #include "memory.hh"
+#include "common.hh"
 
 namespace carbon {
 
 struct ast_node;
+struct scope_def;
+struct type_def;
+struct local_def;
 
 enum class type_qualifier {
     optional,
@@ -27,16 +31,16 @@ enum class type_kind {
     func,
 };
 
-using scope_id = int;
-
 struct type_id {
-    ast_node* scope = nullptr;
+    scope_def* scope = nullptr;
     int type_index = -1;
 
     bool operator ==(const type_id& other) { return scope == other.scope && type_index == other.type_index; }
     bool operator !=(const type_id& other) { return !(*this == other); }
 
-    inline bool valid() { return scope != nullptr && type_index != -1; }
+    type_def& get();
+
+    bool valid() const;
 };
 
 struct type_flags {
@@ -57,8 +61,8 @@ struct type_def {
         type_id ret_type{};
     };
 
-    std::string name;
-    std::hash<std::string>::result_type name_hash;
+    string_hash name;
+    string_hash mangled_name;
     //std::vector<type_qualifier> qualifiers;
 
     type_kind kind{};
@@ -73,24 +77,43 @@ struct type_def {
     type_flags::type flags = 0;
     type_id alias_to{};
     type_id elem_type{};
+
+    ast_node* self = nullptr;
 };
 
 struct local_def {
-    ast_node* id_node;
-    ast_node* type_node;
-    ast_node* value_node;
+    ast_node* self = nullptr;
+    ast_node* id_node = nullptr;
+    ast_node* type_node = nullptr;
+    ast_node* value_node = nullptr;
     bool is_argument = false;
+    std::int32_t frame_offset = 0;
 };
 
 enum class symbol_kind {
     local,
+    top_level_func,
 };
 
 struct symbol_info {
     symbol_kind kind;
+    scope_def* scope;
 
     // if kind == local
     int local_index = -1;
+};
+
+struct lvalue {
+    ast_node* self = nullptr;
+    symbol_info symbol{};
+};
+
+struct call_info {
+    ast_node* self;
+    ast_node* func_node;
+    std::vector<ast_node*> args;
+    string_hash mangled_name;
+    type_id func_type_id{};
 };
 
 enum class scope_kind {
@@ -105,17 +128,19 @@ struct scope_def {
     scope_kind kind{};
 
     std::vector<type_def*> type_defs;
-    std::vector<ast_node*> local_defs;
+    std::vector<local_def*> local_defs;
 
     std::unordered_map<std::size_t, type_id> type_map;
     std::unordered_map<std::size_t, symbol_info> symbols;
 
-    std::vector<ast_node*> children;
-    ast_node* parent = nullptr;
-    ast_node* body_node;
+    std::vector<scope_def*> children;
+    scope_def* parent = nullptr;
+    ast_node* self = nullptr;
+    ast_node* body_node = nullptr;
 };
 
 struct func_def {
+    ast_node* self;
     ast_node* ret_type_node;
     std::vector<ast_node*> arguments;
     std::vector<ast_node*> return_statements;
@@ -125,6 +150,7 @@ enum class type_system_pass {
     resolve_literals_and_register_declarations,
     resolve_all,
     perform_checks,
+    final_analysis,
 };
 
 struct type_system {
@@ -132,7 +158,7 @@ struct type_system {
     std::vector<arena_ptr<ast_node>> builtin_type_nodes;
 
     //std::vector<ast_node*> scopes;
-    ast_node* current_scope = nullptr;
+    scope_def* current_scope = nullptr;
 
     bool unresolved_types = false;
     type_system_pass pass{};
@@ -145,8 +171,6 @@ struct type_system {
     void process_ast_node(ast_node& node);
 
     void resolve_and_check();
-
-    scope_id find_main_func_scope();
 };
 
 }
