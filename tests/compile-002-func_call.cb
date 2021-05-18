@@ -10,6 +10,6 @@ func foobar(a: int, b: int, c: int): int {
 
 func main(): int {
     let val = 30;
-    let ok = foobar(val, 100, 0);
+    let ok = foobar(val, foobar(1, foobar(4, 5, 6), 3), 0);
     return val + ok;
 }

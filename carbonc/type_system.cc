@@ -573,8 +573,61 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
     return node.type_id;
 }
 
+std::pair<arena_ptr<ast_node>, arena_ptr<ast_node>> make_temp_variable_for_call(type_system& ts, ast_node& call) {
+    // TODO: obviously need better stuff here
+    static int temp_count = 0;
+
+    // generate the temp ID
+    std::string tempname = "$cb temp" + std::to_string(temp_count++);
+    auto id_node = make_identifier_node(*ts.ast_arena, {}, std::move(tempname));
+
+    auto val_node = make_call_expr_node(*ts.ast_arena, {}, std::move(call.children[ast_node::child_call_expr_callee]), std::move(call.children[ast_node::child_call_expr_arg_list]));
+    // The call might have a pre-children of itself
+    val_node->pre_children = std::move(call.pre_children);
+
+    // Generate and register the declaration of the temp
+    auto decl = make_var_decl_node(*ts.ast_arena, {}, token_type::let, std::move(id_node), { nullptr, nullptr }, std::move(val_node));
+    register_var_declaration_node(ts, *decl);
+
+    // Make a reference to use as the new argument
+    auto ref = make_identifier_node(*ts.ast_arena, {}, std::move(tempname));
+    resolve_node_type(ts, ref.get());
+
+    return std::make_pair(std::move(decl), std::move(ref));
+}
+
 void final_analysis(type_system& ts, ast_node* nodeptr) {
     if (!nodeptr) return;
+
+    auto& node = *nodeptr;
+    switch (node.type) {
+    case ast_type::func_decl: {
+        enter_scope(ts, node);
+        visit_children(ts, node);
+        leave_scope(ts);
+        break;
+    }
+    case ast_type::call_expr: {
+        // transform nested call expressions into temporary variables
+        visit_children(ts, node);
+        for (std::size_t i = 0; i < node.call.args.size(); i++) {
+            auto arg = node.call.args[i];
+            if (arg->type == ast_type::call_expr) {
+                auto [temp, ref] = make_temp_variable_for_call(ts, *arg);
+
+                node.call.args[i] = ref.get();
+                node.children[ast_node::child_call_expr_arg_list]->children[i] = std::move(ref);
+
+                node.pre_children.push_back(std::move(temp));
+            }
+        }
+        break;
+    }
+    default: {
+        visit_children(ts, node);
+        break;
+    }
+    }
 }
 
 void visit_tree(type_system& ts, ast_node& node) {
@@ -697,12 +750,20 @@ void type_system::resolve_and_check() {
 
     this->pass = type_system_pass::perform_checks;
     for (auto unit : this->code_units) {
-        visit_tree(*this, *unit);
+        for (auto unit : this->code_units) {
+            enter_scope(*this, *unit);
+            visit_tree(*this, *unit);
+            leave_scope(*this);
+        }
     }
 
     this->pass = type_system_pass::final_analysis;
     for (auto unit : this->code_units) {
-        visit_tree(*this, *unit);
+        for (auto unit : this->code_units) {
+            enter_scope(*this, *unit);
+            visit_tree(*this, *unit);
+            leave_scope(*this);
+        }
     }
 }
 

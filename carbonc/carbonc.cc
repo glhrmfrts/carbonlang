@@ -39,9 +39,6 @@ int main(int argc, const char* argv[]) {
         std::ofstream ast_file{"tests/ast/"+filename};
         prettyprint(*ast, ast_file);
         ast_file << "\n";
-
-        type_system ts{ ast_arena };
-        ts.process_ast_node(*ast);
     }
 
     for (const std::string& filename : {"compile-000-main.cb", "compile-001-local_vars.cb", "compile-002-func_call.cb", "compile-003-strings.cb"}) {

@@ -171,6 +171,12 @@ struct generator {
     }
 
     void generate_node(ast_node& node, exprarg* arg = nullptr) {
+        for (auto& child : node.pre_children) {
+            if (child) {
+                generate_node(*child);
+            }
+        }
+
         switch (node.type) {
         case ast_type::func_decl:
             generate_func(node);

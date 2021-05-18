@@ -34,8 +34,18 @@ main PROC
  lea rbp,[rsp+0]
  sub rsp,32
  mov DWORD PTR [rbp-8],30
+ mov r8d,6
+ mov edx,5
+ mov ecx,4
+ call foobar_Aint32_Aint32_Aint32
+ mov DWORD PTR [rbp-16],eax
+ mov r8d,3
+ mov edx,DWORD PTR [rbp-16]
+ mov ecx,1
+ call foobar_Aint32_Aint32_Aint32
+ mov DWORD PTR [rbp-20],eax
  xor r8d,r8d
- mov edx,100
+ mov edx,DWORD PTR [rbp-20]
  mov ecx,DWORD PTR [rbp-8]
  call foobar_Aint32_Aint32_Aint32
  mov DWORD PTR [rbp-12],eax

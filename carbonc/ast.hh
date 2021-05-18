@@ -68,6 +68,10 @@ struct ast_node {
 
     static constexpr std::size_t child_array_type_size_expr = 0;
     static constexpr std::size_t child_array_type_item_type = 1;
+
+    ast_node(const ast_node&) = delete;
+
+    ast_node& operator=(const ast_node&) = delete;
     
     ast_type type = ast_type::invalid;
     position pos{};
@@ -78,7 +82,9 @@ struct ast_node {
     std::size_t id_hash{};
     float_type float_value{};
     int_type int_value{};
+    std::vector<arena_ptr<ast_node>> pre_children{};
     std::vector<arena_ptr<ast_node>> children{};
+    std::vector<arena_ptr<ast_node>> temps{};
 
     // data filled by the type system
     scope_def scope;
