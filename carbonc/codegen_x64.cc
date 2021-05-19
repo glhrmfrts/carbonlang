@@ -8,13 +8,19 @@
 #include "common.hh"
 #include "type_system.hh"
 #include <stack>
+#include <optional>
 
 namespace carbon {
+
+struct gen_node_data {
+    int func_num_temp_registers;
+    std::optional<gen_register> bin_temp_register;
+};
 
 static const gen_register_sizes register_sizes[] = {
     {},
     {rax, eax, invalid, invalid, invalid},
-    {},
+    {rbx, ebx, invalid, invalid, invalid},
     {rcx, ecx, invalid, invalid, invalid},
     {rdx, edx, invalid, invalid, invalid},
     {rdi, edi, invalid, invalid, invalid},
@@ -123,8 +129,20 @@ struct generator {
     std::string_view filename;
     std::unique_ptr<emitter> em;
     std::vector<gen_register> arg_registers;
+    std::vector<gen_register> temp_registers;
     std::vector<std::pair<std::string_view, std::string>> global_strings;
     std::stack<std::pair<gen_operand, finalizer_func>> operand_stack;
+    std::unordered_map<std::size_t, gen_node_data> node_data;
+    type_system* ts;
+    int used_temp_registers = 0;
+
+    explicit generator(std::unique_ptr<emitter>&& em, type_system* ts, std::string_view fn) {
+        this->em = std::move(em);
+        this->ts = ts;
+        this->filename = fn;
+        arg_registers = em->get_argument_registers();
+        temp_registers = em->get_temp_registers();
+    }
 
     // Section: helpers
 
@@ -163,6 +181,72 @@ struct generator {
 
     gen_destination local_var_destination(local_def& local) {
         return gen_offset{ rbp, local.frame_offset, 0 };
+    }
+
+    std::optional<gen_register> use_temp_register() {
+        if (used_temp_registers >= temp_registers.size()) {
+            return {};
+        }
+        
+        auto next_reg = temp_registers[used_temp_registers];
+        used_temp_registers++;
+
+        auto func_node = ts->find_nearest_scope(scope_kind::func_body)->self;
+        auto& ndata = node_data[func_node->node_id];
+        ndata.func_num_temp_registers = std::max(ndata.func_num_temp_registers, used_temp_registers);
+        return next_reg;
+    }
+
+    void free_temp_register() {
+        used_temp_registers--;
+    }
+
+    // Section: pre analysis
+
+    void pre_analysis(ast_node& node) {
+        ts->enter_scope(node);
+        analyse_node(node);
+        ts->leave_scope();
+    }
+
+    void analyse_node(ast_node& node) {
+        switch (node.type) {
+        case ast_type::func_decl: {
+            ts->enter_scope(node);
+            {
+                for (auto& child : node.children) {
+                    if (child) { analyse_node(*child); }
+                }
+            }
+            ts->leave_scope();
+            break;
+        }
+        case ast_type::binary_expr: {
+            // create temporary variables for nested expressions
+            auto& left = node.children[0];
+            auto& right = node.children[1];
+            std::optional<gen_register> temp_reg;
+
+            if (!is_primary_expr(*right)) {
+                temp_reg = use_temp_register();
+                if (!temp_reg) {
+                    ts->create_temp_variable_for_binary_expr(node);
+                }
+            }
+
+            {
+                for (auto& child : node.children) {
+                    if (child) { analyse_node(*child); }
+                }
+            }
+
+            if (temp_reg) {
+                free_temp_register(*temp_reg);
+            }
+
+            break;
+        }
+        }
     }
 
     // Section: generators
@@ -345,7 +429,7 @@ struct generator {
 
         gen_destination leftdest = rax;
         if (node.local.self) {
-            // needs temp variable
+            // needs spill temp variable
             leftdest = adjust_for_type(local_var_destination(node.local), node.type_id);
         }
 
@@ -406,6 +490,7 @@ void codegen(ast_node& node, std::string_view filename) {
     generator gen{};
     gen.filename = filename;
     gen.em = std::make_unique<emitter>(filename);
+    gen.pre_analysis(node);
     gen.generate_program(node);
 }
 

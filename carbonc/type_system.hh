@@ -171,6 +171,14 @@ struct type_system {
     void process_ast_node(ast_node& node);
 
     void resolve_and_check();
+
+    void enter_scope(ast_node& node);
+
+    void leave_scope();
+
+    scope_def* find_nearest_scope(scope_kind kind);
+
+    void create_temp_variable_for_binary_expr(ast_node& node);
 };
 
 }

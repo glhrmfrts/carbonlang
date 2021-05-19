@@ -178,7 +178,7 @@ void leave_scope(type_system& ts) {
     ts.current_scope = curscope(ts).parent;
 }
 
-scope_def* find_nearest_scope(type_system& ts, scope_kind kind) {
+scope_def* find_nearest_scope_local(type_system& ts, scope_kind kind) {
     auto scope = ts.current_scope;
     while (scope != nullptr) {
         if (scope->kind == kind) {
@@ -464,7 +464,7 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
 
         // TODO: check if scope / sanity check
         if (ts.pass == type_system_pass::resolve_literals_and_register_declarations) {
-            auto scope = find_nearest_scope(ts, scope_kind::func_body);
+            auto scope = find_nearest_scope_local(ts, scope_kind::func_body);
             scope->self->func.return_statements.push_back(nodeptr);
         }
         break;
@@ -597,17 +597,7 @@ std::pair<arena_ptr<ast_node>, arena_ptr<ast_node>> make_temp_variable_for_call(
 }
 
 void make_temp_variable_for_binary_expr(type_system& ts, ast_node& node) {
-    std::string tempname = "$cb temp" + std::to_string(temp_count++);
-    auto id_node = make_identifier_node(*ts.ast_arena, {}, std::move(tempname));
 
-    node.local.self = &node;
-    node.local.id_node = id_node.get();
-    node.local.value_node = node.children[0].get();
-    node.local.type_node = nullptr;
-
-    resolve_local_variable_type(ts, node);
-    declare_local_symbol(ts, node.local.id_node->id_hash, node);
-    node.temps.push_back(std::move(id_node));
 }
 
 void final_analysis(type_system& ts, ast_node* nodeptr) {
@@ -640,17 +630,6 @@ void final_analysis(type_system& ts, ast_node* nodeptr) {
                     node.pre_children.push_back(std::move(temp));
                 }
             }
-        }
-        break;
-    }
-    case ast_type::binary_expr: {
-        // create temporary variables for nested expressions
-        visit_children(ts, node);
-
-        auto& left = node.children[0];
-        auto& right = node.children[1];
-        if (!is_primary_expr(*right)) {
-            make_temp_variable_for_binary_expr(ts, node);
         }
         break;
     }
@@ -763,7 +742,7 @@ void type_system::process_ast_node(ast_node& node) {
 
     add_scope(*this, node, scope_kind::global);
     visit_tree(*this, node);
-    leave_scope(*this);
+    leave_scope();
 }
 
 void type_system::resolve_and_check() {
@@ -772,9 +751,9 @@ void type_system::resolve_and_check() {
     for (int i = 0; i < 1000; i++) {
         this->unresolved_types = false;
         for (auto unit : this->code_units) {
-            enter_scope(*this, *unit);
+            enter_scope(*unit);
             visit_tree(*this, *unit);
-            leave_scope(*this);
+            leave_scope();
         }
         if (!this->unresolved_types) break;
     }
@@ -782,20 +761,46 @@ void type_system::resolve_and_check() {
     this->pass = type_system_pass::perform_checks;
     for (auto unit : this->code_units) {
         for (auto unit : this->code_units) {
-            enter_scope(*this, *unit);
+            enter_scope(*unit);
             visit_tree(*this, *unit);
-            leave_scope(*this);
+            leave_scope();
         }
     }
 
     this->pass = type_system_pass::final_analysis;
     for (auto unit : this->code_units) {
         for (auto unit : this->code_units) {
-            enter_scope(*this, *unit);
+            enter_scope(*unit);
             visit_tree(*this, *unit);
-            leave_scope(*this);
+            leave_scope();
         }
     }
+}
+
+void type_system::enter_scope(ast_node& node) {
+    enter_scope(node);
+}
+
+void type_system::leave_scope() {
+    leave_scope();
+}
+
+void type_system::create_temp_variable_for_binary_expr(ast_node& node) {
+    std::string tempname = "$cb temp" + std::to_string(temp_count++);
+    auto id_node = make_identifier_node(*ast_arena, {}, std::move(tempname));
+
+    node.local.self = &node;
+    node.local.id_node = id_node.get();
+    node.local.value_node = node.children[0].get();
+    node.local.type_node = nullptr;
+
+    resolve_local_variable_type(*this, node);
+    declare_local_symbol(*this, node.local.id_node->id_hash, node);
+    node.temps.push_back(std::move(id_node));
+}
+
+scope_def* type_system::find_nearest_scope(scope_kind kind) {
+    return find_nearest_scope_local(*this, kind);
 }
 
 type_def& type_id::get() { return *scope->type_defs[type_index]; }

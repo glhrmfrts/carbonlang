@@ -26,8 +26,10 @@ struct scope_guard {
 };
 
 struct string_hash {
+    using hash_type = std::size_t;
+
     std::string str;
-    std::size_t hash;
+    hash_type hash;
 
     string_hash() {}
 

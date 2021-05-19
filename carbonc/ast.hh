@@ -73,6 +73,7 @@ struct ast_node {
 
     ast_node& operator=(const ast_node&) = delete;
     
+    std::size_t node_id = 0;
     ast_type type = ast_type::invalid;
     position pos{};
     token_type op{};
