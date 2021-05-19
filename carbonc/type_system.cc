@@ -573,10 +573,10 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
     return node.type_id;
 }
 
-std::pair<arena_ptr<ast_node>, arena_ptr<ast_node>> make_temp_variable_for_call(type_system& ts, ast_node& call) {
-    // TODO: obviously need better stuff here
-    static int temp_count = 0;
+// TODO: obviously need better stuff here
+static int temp_count = 0;
 
+std::pair<arena_ptr<ast_node>, arena_ptr<ast_node>> make_temp_variable_for_call(type_system& ts, ast_node& call) {
     // generate the temp ID
     std::string tempname = "$cb temp" + std::to_string(temp_count++);
     auto id_node = make_identifier_node(*ts.ast_arena, {}, std::move(tempname));
@@ -596,6 +596,20 @@ std::pair<arena_ptr<ast_node>, arena_ptr<ast_node>> make_temp_variable_for_call(
     return std::make_pair(std::move(decl), std::move(ref));
 }
 
+void make_temp_variable_for_binary_expr(type_system& ts, ast_node& node) {
+    std::string tempname = "$cb temp" + std::to_string(temp_count++);
+    auto id_node = make_identifier_node(*ts.ast_arena, {}, std::move(tempname));
+
+    node.local.self = &node;
+    node.local.id_node = id_node.get();
+    node.local.value_node = node.children[0].get();
+    node.local.type_node = nullptr;
+
+    resolve_local_variable_type(ts, node);
+    declare_local_symbol(ts, node.local.id_node->id_hash, node);
+    node.temps.push_back(std::move(id_node));
+}
+
 void final_analysis(type_system& ts, ast_node* nodeptr) {
     if (!nodeptr) return;
 
@@ -610,16 +624,33 @@ void final_analysis(type_system& ts, ast_node* nodeptr) {
     case ast_type::call_expr: {
         // transform nested call expressions into temporary variables
         visit_children(ts, node);
-        for (std::size_t i = 0; i < node.call.args.size(); i++) {
-            auto arg = node.call.args[i];
-            if (arg->type == ast_type::call_expr) {
-                auto [temp, ref] = make_temp_variable_for_call(ts, *arg);
 
-                node.call.args[i] = ref.get();
-                node.children[ast_node::child_call_expr_arg_list]->children[i] = std::move(ref);
+        if (node.call.args.size() > 1) {
+            for (std::size_t i = 0; i < node.call.args.size(); i++) {
+                auto arg = node.call.args[i];
 
-                node.pre_children.push_back(std::move(temp));
+                // If the call expression is at the end of the parent call,
+                // there is no problem.
+                if (arg->type == ast_type::call_expr && i < node.call.args.size()-1) {
+                    auto [temp, ref] = make_temp_variable_for_call(ts, *arg);
+
+                    node.call.args[i] = ref.get();
+                    node.children[ast_node::child_call_expr_arg_list]->children[i] = std::move(ref);
+
+                    node.pre_children.push_back(std::move(temp));
+                }
             }
+        }
+        break;
+    }
+    case ast_type::binary_expr: {
+        // create temporary variables for nested expressions
+        visit_children(ts, node);
+
+        auto& left = node.children[0];
+        auto& right = node.children[1];
+        if (!is_primary_expr(*right)) {
+            make_temp_variable_for_binary_expr(ts, node);
         }
         break;
     }

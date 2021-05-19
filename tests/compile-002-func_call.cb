@@ -8,8 +8,14 @@ func foobar(a: int, b: int, c: int): int {
     return value * j + a + b + c;
 }
 
+func f(x: int): int {
+    return x*2;
+}
+
 func main(): int {
-    let val = 30;
-    let ok = foobar(val, foobar(1, foobar(4, 5, 6), 3), 0);
-    return val + ok;
+    //let val = 30;
+    //let ok = foobar(val, foobar(1, foobar(4, 5, 6), 3), 0);
+
+    let i = 3;
+    return (i*7) + (50*f(1)) + (f(2)*70 + 23 + (f(3)*4));
 }

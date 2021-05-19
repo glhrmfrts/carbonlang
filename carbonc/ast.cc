@@ -201,4 +201,17 @@ arena_ptr<ast_node> make_type_qualifier_node(memory_arena& arena, const position
     ptr->children.push_back(std::move(to_type));
     return ptr;
 }
+
+bool is_primary_expr(ast_node& node) {
+    switch (node.type) {
+    case ast_type::bool_literal:
+    case ast_type::int_literal:
+    case ast_type::float_literal:
+    case ast_type::string_literal:
+    case ast_type::identifier:
+        return true;
+    default:
+        return false;
+    }
+}
 }

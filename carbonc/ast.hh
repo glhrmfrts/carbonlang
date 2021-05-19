@@ -140,4 +140,6 @@ arena_ptr<ast_node> make_array_type_node(memory_arena& arena, const position& po
 
 arena_ptr<ast_node> make_type_qualifier_node(memory_arena& arena, const position& pos, type_qualifier q, arena_ptr<ast_node>&& to_type);
 
+bool is_primary_expr(ast_node& node);
+
 }

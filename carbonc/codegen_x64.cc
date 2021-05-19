@@ -7,12 +7,9 @@
 #include "emitter_x64_windows.hh"
 #include "common.hh"
 #include "type_system.hh"
+#include <stack>
 
 namespace carbon {
-
-struct exprarg {
-    gen_destination dest;
-};
 
 static const gen_register_sizes register_sizes[] = {
     {},
@@ -121,10 +118,15 @@ std::pair<std::int32_t, std::int32_t> get_func_stack_frame_size(ast_node& node) 
 }
 
 struct generator {
+    using finalizer_func = std::function<void(const gen_destination&, const gen_operand&)>;
+
     std::string_view filename;
     std::unique_ptr<emitter> em;
     std::vector<gen_register> arg_registers;
     std::vector<std::pair<std::string_view, std::string>> global_strings;
+    std::stack<std::pair<gen_operand, finalizer_func>> operand_stack;
+
+    // Section: helpers
 
     std::string find_or_add_global_string_data(std::string_view data) {
         for (const auto& str : global_strings) {
@@ -140,6 +142,31 @@ struct generator {
         return label;
     }
 
+    void provide_operand(const gen_operand& op, finalizer_func&& f) {
+        operand_stack.push({ op, std::move(f) });
+    }
+
+    void finalize_expr(const gen_destination& dest, finalizer_func&& f = {}) {
+        if (!operand_stack.empty()) {
+            auto op = std::move(operand_stack.top());
+            operand_stack.pop();
+
+            if (f) {
+                f(dest, op.first);
+            }
+            else {
+                // call default finalizer
+                op.second(dest, op.first);
+            }
+        }
+    }
+
+    gen_destination local_var_destination(local_def& local) {
+        return gen_offset{ rbp, local.frame_offset, 0 };
+    }
+
+    // Section: generators
+
     void generate_program(ast_node& node) {
         arg_registers = em->get_argument_registers();
 
@@ -151,6 +178,8 @@ struct generator {
 
         em->end();
     }
+
+    // Section: data generators
 
     void generate_node_data(ast_node& node) {
         switch (node.type) {
@@ -170,7 +199,9 @@ struct generator {
         node.global_data.label = find_or_add_global_string_data(node.string_value);
     }
 
-    void generate_node(ast_node& node, exprarg* arg = nullptr) {
+    // Section: code generators
+
+    void generate_node(ast_node& node) {
         for (auto& child : node.pre_children) {
             if (child) {
                 generate_node(*child);
@@ -188,19 +219,19 @@ struct generator {
             generate_return_stmt(node);
             break;
         case ast_type::call_expr:
-            generate_call_expr(node, arg);
+            generate_call_expr(node);
             break;
         case ast_type::binary_expr:
-            generate_binary_expr(node, arg);
+            generate_binary_expr(node);
             break;      
         case ast_type::identifier:
-            generate_identifier(node, arg);
+            generate_identifier(node);
             break;
         case ast_type::int_literal:
-            generate_int_literal(node, arg);
+            generate_int_literal(node);
             break;  
         case ast_type::string_literal:
-            generate_string_literal(node, arg);
+            generate_string_literal(node);
             break;
         default:
             for (auto& child : node.children) {
@@ -233,10 +264,11 @@ struct generator {
             }
         }
 
+        em->push(rbp);
+        em->lea(rbp, gen_offset{ rsp, 0, 0 });
+
         if (stack_size > 0) {
             // resize buffer
-            em->push(rbp);
-            em->lea(rbp, gen_offset{ rsp, 0, 0 });
             em->sub(rsp, stack_size);
         }
 
@@ -248,9 +280,9 @@ struct generator {
 
         if (stack_size > 0) {
             em->add(rsp, stack_size);
-            em->pop(rbp);
         }
 
+        em->pop(rbp);
         em->ret();
         em->end_func();
     }
@@ -258,130 +290,115 @@ struct generator {
     void generate_var(ast_node& node) {
         if (node.local.value_node) {
             std::size_t size = node.type_id.get().size;
-            exprarg arg = { gen_offset{ rbp, node.local.frame_offset, size } };
-            generate_node(*node.local.value_node, &arg);
+            generate_node(*node.local.value_node);
+            finalize_expr(gen_offset{ rbp, node.local.frame_offset, size });
         }
     }
 
     void generate_return_stmt(ast_node& node) {
         auto& expr = node.children[0];
         if (expr) {
-            exprarg arg = { rax };
-            generate_node(*expr, &arg);
+            generate_node(*expr);
+            finalize_expr(rax);
         }
         else {
             em->mov(eax, 0);
         }
     }
 
-    void generate_call_expr(ast_node& node, exprarg* arg) {
+    void generate_call_expr(ast_node& node) {
         if (!node.call.args.empty()) {
             for (std::size_t i = node.call.args.size(); i > 0; i--) {
                 auto dest = gen_register{ arg_registers[i - 1] };
-                exprarg arg = { dest };
-                generate_node(*node.call.args[i - 1], &arg);
+                generate_node(*node.call.args[i - 1]);
+                finalize_expr(dest);
             }
         }
         em->call(node.call.mangled_name.str.c_str());
 
-        if (!(arg->dest == adjust_for_type(gen_destination{ rax }, node.type_id))) {
-            em->mov(
-                adjust_for_type(arg->dest, node.type_id),
-                toop(adjust_for_type(gen_destination{ rax }, node.type_id))
-            );
+        auto op = toop(adjust_for_type(gen_destination{ rax }, node.type_id));
+        provide_operand(op, [this, &node, op](auto&& dest, auto&&) {
+            auto adest = adjust_for_type(dest, node.type_id);
+            if (!(toop(adest) == op)) {
+                em->mov(adest, op);
+            }
+        });
+    }
+
+    void emit_binary_op(token_type op, const gen_destination& dest, const gen_operand& operand) {
+        switch (token_to_char(op)) {
+        case '+':
+            em->add(dest, operand);
+            break;
+        case '-':
+            em->sub(dest, operand);
+            break;
+        case '*':
+            em->imul(dest, operand);
+            break;
         }
     }
 
-    void generate_binary_expr(ast_node& node, exprarg* arg) {
+    void generate_binary_expr(ast_node& node) {
         auto& left = node.children[0];
         auto& right = node.children[1];
 
-        bool left_is_binary = left->type == ast_type::binary_expr;
-        bool right_is_binary = right->type == ast_type::binary_expr;
-
-        bool needsmove = false;
-
-        gen_destination ldest;
-        if (std::holds_alternative<gen_register>(arg->dest)) {
-            ldest = arg->dest;
-        }
-        else {
-            ldest = rax;
-            needsmove = true;
+        gen_destination leftdest = rax;
+        if (node.local.self) {
+            // needs temp variable
+            leftdest = adjust_for_type(local_var_destination(node.local), node.type_id);
         }
 
-        if (left_is_binary)
-        {
-            {
-                exprarg childarg = { ldest };
-                generate_node(*left, &childarg);
+        generate_node(*left);
+        finalize_expr(leftdest);
+
+        generate_node(*right);
+        finalize_expr(rax, [this, &node, leftdest](auto&&, auto&& op) {
+            auto arax = adjust_for_type(rax, node.type_id);
+            if (!(op == toop(arax))) {
+                emit_binary_op(node.op, arax, op);
             }
-            {
-                exprarg childarg = { rdx };
-                generate_node(*right, &childarg);
+            else {
+                emit_binary_op(node.op, arax, toop(leftdest));
             }
-        }
-        else
-        {
-            {
-                exprarg childarg = { ldest };
-                generate_node(*right, &childarg);
+        });
+
+        auto op = toop(adjust_for_type(rax, node.type_id));
+        provide_operand(op, [this, &node, op](auto&& dest, auto&&) {
+            auto adest = adjust_for_type(dest, node.type_id);
+            if (!(toop(adest) == op)) {
+                em->mov(adest, op);
             }
-            {
-                exprarg childarg = { rdx };
-                generate_node(*left, &childarg);
-            }
-        }
-
-        auto rb = adjust_for_type((ldest == gen_destination{ rax }) ? rdx : rax, node.type_id);
-        auto rdest = adjust_for_type(ldest, node.type_id);
-
-        switch (token_to_char(node.op)) {
-        case '+':
-            em->add(rdest, toop(rb));
-            break;
-        case '-':
-            em->sub(rdest, toop(rb));
-            break;
-        case '*':
-            em->imul(rdest, toop(rb));
-            break;
-        }
-
-        if (needsmove) {
-            em->mov(adjust_for_type(arg->dest, node.type_id), toop(rdest));
-        }
+        });
     }
 
-    void generate_identifier(ast_node& node, exprarg* arg) {
+    void generate_identifier(ast_node& node) {
         if (node.lvalue.symbol.kind == symbol_kind::local) {
             auto local = node.lvalue.symbol.scope->local_defs[node.lvalue.symbol.local_index];
-
-            /*gen_register reg = rbp;
-            if (local->is_argument) {
-                reg = rsp;
-            }*/
-
-            em->mov(
-                adjust_for_type(arg->dest, node.type_id),
-                toop(adjust_for_type(gen_offset{ rbp, local->frame_offset, 0 }, node.type_id))
-            );
+            auto op = toop(adjust_for_type(local_var_destination(*local), node.type_id));
+            provide_operand(op, [this, &node, op](auto&& dest, auto&&) {
+                em->mov(adjust_for_type(dest, node.type_id), op);
+            });
         }
     }
 
-    void generate_int_literal(ast_node& node, exprarg* arg) {
-        auto adest = adjust_for_type(arg->dest, node.type_id);
-        if (node.int_value == 0) {
-            em->xor(adest, toop(adest));
-        }
-        else {
-            em->mov(adest, node.int_value);
-        }
+    void generate_int_literal(ast_node& node) {
+        provide_operand(gen_operand{ node.int_value }, [this, &node](const gen_destination& dest, auto&&) {
+            auto adest = adjust_for_type(dest, node.type_id);
+            if (node.int_value == 0) {
+                em->xor(adest, toop(adest));
+            }
+            else {
+                em->mov(adest, node.int_value);
+            }
+        });
     }
 
-    void generate_string_literal(ast_node& node, exprarg* arg) {
-        auto adest = adjust_for_type(arg->dest, node.type_id);
-        em->lea(adest, gen_data_offset{ node.global_data.label });
+    void generate_string_literal(ast_node& node) {
+        auto op = gen_data_offset{ node.global_data.label };
+        provide_operand(op, [this, op, &node](const gen_destination& dest, auto&&) {
+            em->lea(adjust_for_type(dest, node.type_id), op);
+        });
     }
 };
 
