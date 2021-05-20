@@ -4,6 +4,8 @@
 #include "memory.hh"
 #include "common.hh"
 #include "exception.hh"
+#include <set>
+#include <optional>
 
 namespace carbon {
 
@@ -276,9 +278,60 @@ struct parser_impl {
             return parse_type_decl();
         case token_type::asm_:
             return parse_asm_stmt();
+        case token_type::extern_:
+            return parse_linkage_decl();
         default:
             return arena_ptr<ast_node>{nullptr, nullptr};
         }
+    }
+
+    std::optional<func_linkage> parse_func_linkage() {
+        if (TOK == token_type::identifier) {
+            if (lex->string_value() == "C") {
+                lex->next();
+                return func_linkage::external_c;
+            }
+        }
+        return {};
+    }
+
+    arena_ptr<ast_node> parse_linkage_decl() {
+        auto pos = lex->pos();
+        lex->next(); // eat the 'extern'
+
+        func_linkage linkage = func_linkage::external_carbon;
+        if (TOK_CHAR == '(') {
+            lex->next();
+            auto linkopt = parse_func_linkage();
+            if (linkopt) {
+                linkage = *linkopt;
+            }
+
+            if (TOK_CHAR != ')') {
+                throw parse_error(filename, lex->pos(), "expecting closing ')' in function linkage declaration");
+            }
+            lex->next();
+        }
+
+        auto content = arena_ptr<ast_node>{ nullptr, nullptr };
+        if (TOK == token_type::func) {
+            content = parse_func_decl();
+        }
+        else if (TOK_CHAR == '{') {
+            lex->next();
+
+            auto decls = parse_decl_list();
+            if (TOK_CHAR != '}') {
+                throw parse_error(filename, lex->pos(), "expecting closing '}' in function linkage declaration");
+            }
+            lex->next();
+            content = std::move(decls);
+        }
+        else {
+            throw parse_error(filename, lex->pos(), "invalid linkage specifier declaration");
+        }
+
+        return make_linkage_specifier_node(*ast_arena, pos, linkage, std::move(content));
     }
 
     arena_ptr<ast_node> parse_type_decl() {
@@ -343,7 +396,7 @@ struct parser_impl {
             body = parse_compound_stmt();
         }
 
-        return make_func_decl_node(*ast_arena, pos, std::move(id), std::move(arg_list), std::move(ret_type), std::move(body));
+        return make_func_decl_node(*ast_arena, pos, std::move(id), std::move(arg_list), std::move(ret_type), std::move(body), func_linkage::local_carbon);
     }
 
     arena_ptr<ast_node> parse_var_decl(token_type kind) {

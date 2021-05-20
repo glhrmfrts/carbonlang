@@ -40,6 +40,7 @@ void register_builtin_type(type_system& ts, arena_ptr<ast_node>&& node) {
 
 type_id register_user_type(type_system& ts, ast_node& node) {
     type_def* t = &node.type_def;
+    t->self = &node;
     ts.current_scope->type_defs.push_back(t);
 
     type_id id = { ts.current_scope, (int)(ts.current_scope->type_defs.size() - 1) };
@@ -300,15 +301,18 @@ type_id resolve_local_variable_type(type_system& ts, ast_node& l) {
     return l.type_id;
 }
 
-string_hash mangle_func_name(type_system& ts, std::string_view username, const std::vector<ast_node*>& args) {
+string_hash mangle_func_name(type_system& ts, std::string_view username, const std::vector<ast_node*>& args, func_linkage linkage) {
     //assert(f.type_id != invalid_type);
 
     std::string name = std::string{ username };
-    for (auto& arg : args) {
-        assert(arg->type_id != invalid_type);
-        auto tdef = arg->type_id.get();
-        name.append("_A");
-        name.append(tdef.mangled_name.str);
+
+    if (linkage == func_linkage::local_carbon || linkage == func_linkage::external_carbon) {
+        for (auto& arg : args) {
+            assert(arg->type_id != invalid_type);
+            auto tdef = arg->type_id.get();
+            name.append("_A");
+            name.append(tdef.mangled_name.str);
+        }
     }
     //name.append("_R");
     //name.append(f.func.ret_type_node->type_id.get().mangled_name.str);
@@ -374,7 +378,9 @@ void register_func_declaration_node(type_system& ts, ast_node& node) {
     // try to resolve the return type already
     resolve_node_type(ts, node.func.ret_type_node);
 
-    add_func_scope(ts, node, *body);
+    if (body) {
+        add_func_scope(ts, node, *body);
+    }
     
     for (auto& arg : arg_list) {
         assert(arg->type == ast_type::var_decl);
@@ -391,13 +397,17 @@ void register_func_declaration_node(type_system& ts, ast_node& node) {
 
         resolve_local_variable_type(ts, *arg);
 
-        declare_local_symbol(ts, arg->local.id_node->id_hash, *arg);
+        if (body) {
+            declare_local_symbol(ts, arg->local.id_node->id_hash, *arg);
+        }
+
         node.func.arguments.push_back(arg.get());
     }
 
-    visit_tree(ts, *body);
-
-    leave_scope_local(ts);
+    if (body) {
+        visit_tree(ts, *body);
+        leave_scope_local(ts);
+    }
 
     // try to resolve the func type already
     resolve_func_type(ts, node);
@@ -473,6 +483,16 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
         }
         break;
     }
+    case ast_type::linkage_specifier: {
+        check_for_unresolved = false;
+        for (auto& child : node.children) {
+            if (child) {
+                child->func.linkage = node.func.linkage;
+                visit_tree(ts, *child);
+            }
+        }
+        break;
+    }
     case ast_type::func_decl: {
         if (ts.pass == type_system_pass::resolve_literals_and_register_declarations) {
             register_func_declaration_node(ts, node);
@@ -482,19 +502,29 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
                 resolve_local_variable_type(ts, *arg);
             }
 
-            enter_scope_local(ts, node);
+            auto& body = node.children[ast_node::child_func_decl_body];
+
+            if (body) {
+                enter_scope_local(ts, node);
+            }
 
             visit_tree(ts, *node.children[ast_node::child_func_decl_arg_list]);
             visit_tree(ts, *node.children[ast_node::child_func_decl_ret_type]);
-            visit_tree(ts, *node.children[ast_node::child_func_decl_body]);
 
-            leave_scope_local(ts);
+            if (body) {
+                visit_tree(ts, *body);
+                leave_scope_local(ts);
+            }
+            else if (node.func.linkage == func_linkage::local_carbon) {
+                // TODO: error
+                assert(!"func linkage error");
+            }
 
             resolve_func_type(ts, node);
 
             if (node.type_id != invalid_type && ts.current_scope->kind == scope_kind::global && node.type_def.mangled_name.str.empty()) {
                 // this means the function type was resolved, so mangle the name and declare it
-                node.type_def.mangled_name = mangle_func_name(ts, node.local.id_node->string_value, node.func.arguments);
+                node.type_def.mangled_name = mangle_func_name(ts, node.local.id_node->string_value, node.func.arguments, node.func.linkage);
                 declare_top_level_func(ts, node.type_def.mangled_name.hash, node);
             }
         }
@@ -523,12 +553,15 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
         if (node.call.func_node->type == ast_type::identifier) {
             if (args_resolved) {
                 // both args and func resolved
-                node.call.mangled_name = mangle_func_name(ts, node.call.func_node->string_value, node.call.args);
-                auto sym = find_symbol(ts, node.call.mangled_name.hash);
-                if (sym && sym->kind == symbol_kind::top_level_func) {
-                    auto local = sym->scope->local_defs[sym->local_index];
-                    node.type_id = local->self->type_def.func.ret_type;
-                    node.call.func_type_id = local->self->type_id;
+                for (const auto& linkage : { func_linkage::local_carbon, func_linkage::external_c }) {
+                    node.call.mangled_name = mangle_func_name(ts, node.call.func_node->string_value, node.call.args, linkage);
+                    auto sym = find_symbol(ts, node.call.mangled_name.hash);
+                    if (sym && sym->kind == symbol_kind::top_level_func) {
+                        auto local = sym->scope->local_defs[sym->local_index];
+                        node.type_id = local->self->type_def.func.ret_type;
+                        node.call.func_type_id = local->self->type_id;
+                        break;
+                    }
                 }
             }
         }
@@ -610,9 +643,9 @@ void final_analysis(type_system& ts, ast_node* nodeptr) {
     auto& node = *nodeptr;
     switch (node.type) {
     case ast_type::func_decl: {
-        enter_scope_local(ts, node);
+        if (node.scope.body_node) { enter_scope_local(ts, node); }
         visit_children(ts, node);
-        leave_scope_local(ts);
+        if (node.scope.body_node) { leave_scope_local(ts); }
         break;
     }
     case ast_type::call_expr: {

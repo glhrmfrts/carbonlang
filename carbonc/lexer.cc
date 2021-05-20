@@ -137,6 +137,9 @@ struct lexer_impl {
             if (!std::strcmp("return", l.string)) {
                 return token_type::return_;
             }
+            if (!std::strcmp("extern", l.string)) {
+                return token_type::extern_;
+            }
             break;
         }
         return token_type::identifier;

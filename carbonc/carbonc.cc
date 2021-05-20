@@ -15,8 +15,11 @@ namespace carbon {
 int main(int argc, const char* argv[]) {
     memory_arena ast_arena{ 1024*1024 };
 
-    for (const std::string& filename : {"parse-000-expression.cb", "parse-001-var_declaration.cb", "parse-002-func_declaration.cb",
-                                        "parse-003-type_declaration.cb", "parse-004-vecmath.cb", "parse-005-asm.cb"}) {
+    auto parser_test_files = { 
+        "parse-000-expression.cb", "parse-001-var_declaration.cb", "parse-002-func_declaration.cb",
+        "parse-003-type_declaration.cb", "parse-004-vecmath.cb", "parse-005-asm.cb", "parse-006-externfunc.cb"
+    };
+    for (const std::string& filename : parser_test_files) {
         std::string src;
         if (!read_file_text("tests/"+filename, src)) continue;
 
@@ -42,8 +45,11 @@ int main(int argc, const char* argv[]) {
         ast_file << "\n";
     }
 
-    for (const std::string& filename : {"compile-000-main.cb", "compile-001-local_vars.cb", "compile-002-func_call.cb", "compile-003-strings.cb",
-                                        "compile-004-asm.cb"}) {
+    auto compiler_test_files = {
+        "compile-000-main.cb", "compile-001-local_vars.cb", "compile-002-func_call.cb", "compile-003-strings.cb",
+        "compile-004-asm.cb", "compile-005-externfunc.cb"
+    };
+    for (const std::string& filename : compiler_test_files) {
         std::string src;
         if (!read_file_text("tests/" + filename, src)) continue;
 

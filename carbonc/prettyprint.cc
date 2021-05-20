@@ -202,6 +202,12 @@ void prettyprint(const ast_node& node, std::ostream& stream, int indent) {
         prettyprint(*node.children.back().get(), stream, indent + 1);
         stream << "}";
         break;
+    case ast_type::linkage_specifier:
+        stream << "linkage_specifier{\n";
+        do_indent(stream, indent + 1);
+        prettyprint(*node.children.front().get(), stream, indent + 1);
+        stream << "}";
+        break;
     }
 }
 

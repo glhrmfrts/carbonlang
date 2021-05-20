@@ -21,6 +21,8 @@ struct emitter {
 
     void add_global_func_decl(const char* name);
 
+    void add_extern_func_decl(const char* name);
+
     void end();
 
     void begin_data_segment();

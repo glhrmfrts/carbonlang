@@ -1,0 +1,9 @@
+extern(C) func puts(cstr: raw_string): int;
+
+func println(cstr: raw_string): int {
+	return puts(cstr);
+}
+
+func main(): int {
+	return println("hello world from Carbon extern func!");
+}

@@ -15,7 +15,8 @@ namespace carbon {
 
 struct gen_node_data {
     std::optional<gen_register> bin_temp_register{};
-    std::set<gen_register> func_used_temp_registers;
+    std::set<gen_register> func_used_temp_registers{};
+    bool func_calls_extern_c = false;
 };
 
 static const gen_register_sizes register_sizes[] = {
@@ -147,6 +148,10 @@ struct generator {
         std::int32_t call_arg_size = 0;
         find_max_call_arg_size(*node.scope.body_node, call_arg_size);
 
+        if (node_data[node.node_id].func_calls_extern_c) {
+            call_arg_size = std::max(call_arg_size, 32);
+        }
+
         std::int32_t own_arg_size = 0;
         std::int32_t local_size = 0;
         for (auto& local : node.scope.local_defs) {
@@ -221,14 +226,29 @@ struct generator {
     void analyse_node(ast_node& node) {
         switch (node.type) {
         case ast_type::func_decl: {
-            em->add_global_func_decl(node.type_def.mangled_name.str.c_str());
-            ts->enter_scope(node);
-            {
-                for (auto& child : node.children) {
-                    if (child) { analyse_node(*child); }
+            auto name = node.type_def.mangled_name.str.c_str();
+            if (node.scope.body_node) {
+                em->add_global_func_decl(name);
+
+                ts->enter_scope(node);
+                {
+                    for (auto& child : node.children) {
+                        if (child) { analyse_node(*child); }
+                    }
                 }
+                ts->leave_scope();
             }
-            ts->leave_scope();
+            else {
+                em->add_extern_func_decl(name);
+            }
+            break;
+        }
+        case ast_type::call_expr: {
+            auto func_node = node.call.func_type_id.get().self;
+            if (func_node->func.linkage == func_linkage::external_c) {
+                auto curscope = ts->find_nearest_scope(scope_kind::func_body);
+                node_data[curscope->self->node_id].func_calls_extern_c = true;
+            }
             break;
         }
         case ast_type::binary_expr: {
@@ -350,6 +370,8 @@ struct generator {
     }
 
     void generate_func(ast_node& node) {
+        if (!node.scope.body_node) return;
+
         auto& ndata = node_data[node.node_id];
 
         auto [local_size,call_arg_size] = get_func_stack_frame_size(node);

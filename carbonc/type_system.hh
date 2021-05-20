@@ -13,6 +13,12 @@ struct scope_def;
 struct type_def;
 struct local_def;
 
+enum class func_linkage {
+    local_carbon,
+    external_carbon,
+    external_c,
+};
+
 enum class type_qualifier {
     optional,
     reference,
@@ -144,6 +150,7 @@ struct func_def {
     ast_node* ret_type_node;
     std::vector<ast_node*> arguments;
     std::vector<ast_node*> return_statements;
+    func_linkage linkage;
 };
 
 enum class type_system_pass {

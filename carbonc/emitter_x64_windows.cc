@@ -193,6 +193,10 @@ void emitter::add_global_func_decl(const char* name) {
     out_file << "global " << name << "\n";
 }
 
+void emitter::add_extern_func_decl(const char* name) {
+    out_file << "extern " << name << "\n";
+}
+
 void emitter::begin_data_segment() {
     out_file << "section .data\n";
 }

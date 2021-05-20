@@ -23,6 +23,7 @@ enum class token_type : unsigned int {
     var,
     func,
     return_,
+    extern_,
     const_,
     pure,
     type,

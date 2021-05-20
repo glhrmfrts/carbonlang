@@ -123,11 +123,14 @@ arena_ptr<ast_node> make_var_decl_node(memory_arena& arena, const position& pos,
     return ptr;
 }
 
-arena_ptr<ast_node> make_func_decl_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& id, arena_ptr<ast_node>&& arg_list, arena_ptr<ast_node>&& ret_type, arena_ptr<ast_node>&& body) {
+arena_ptr<ast_node> make_func_decl_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& id, arena_ptr<ast_node>&& arg_list,
+    arena_ptr<ast_node>&& ret_type, arena_ptr<ast_node>&& body, func_linkage linkage) {
+
     auto ptr = make_in_arena<ast_node>(arena);
     ptr->node_id = node_id_gen++;
     ptr->type = ast_type::func_decl;
     ptr->pos = pos;
+    ptr->func.linkage = linkage;
     ptr->children.push_back(std::move(id));
     ptr->children.push_back(std::move(arg_list));
     ptr->children.push_back(std::move(ret_type));
@@ -238,6 +241,16 @@ arena_ptr<ast_node> make_type_qualifier_node(memory_arena& arena, const position
     ptr->pos = pos;
     ptr->type_qual = q;
     ptr->children.push_back(std::move(to_type));
+    return ptr;
+}
+
+arena_ptr<ast_node> make_linkage_specifier_node(memory_arena& arena, const position& pos, func_linkage l, arena_ptr<ast_node>&& content) {
+    auto ptr = make_in_arena<ast_node>(arena);
+    ptr->node_id = node_id_gen++;
+    ptr->type = ast_type::linkage_specifier;
+    ptr->pos = pos;
+    ptr->func.linkage = l;
+    ptr->children.push_back(std::move(content));
     return ptr;
 }
 

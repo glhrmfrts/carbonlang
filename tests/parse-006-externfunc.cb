@@ -1,0 +1,7 @@
+extern(C) func puts(x :raw_string): int;
+
+extern(C) {
+
+func printf(x :raw_string): int;
+
+}
