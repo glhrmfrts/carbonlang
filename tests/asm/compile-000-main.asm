@@ -2,7 +2,7 @@
 .code
 main PROC
  push rbp
- lea rbp,[rsp+0]
+ lea rbp,QWORD PTR [rsp+0]
  mov eax,157
  pop rbp
  ret

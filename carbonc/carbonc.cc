@@ -68,7 +68,7 @@ int main(int argc, const char* argv[]) {
 
         std::string fn{ filename.data() };
         replace(fn, ".cb", ".asm");
-        codegen(*ast, "tests/asm/" + fn);
+        codegen(*ast, &ts, "tests/asm/" + fn);
 
         std::cout << ("ml64.exe tests/asm/" + fn + " /link /entry:main") << std::endl;
         std::FILE* assembler = _popen(("ml64.exe tests/asm/"+ fn + " /link /entry:main").c_str(), "r");

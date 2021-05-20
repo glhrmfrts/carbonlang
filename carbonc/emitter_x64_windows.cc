@@ -14,19 +14,33 @@ static const char* register_names[] = {
     "rcx",
     "rdx",
     "rdi",
+    "rsi",
     "rbp",
     "rsp",
     "r8",
     "r9",
+    "r10",
+    "r11",
+    "r12",
+    "r13",
+    "r14",
+    "r15",
     "eax",
     "ebx",
     "ecx",
     "edx",
     "edi",
+    "esi",
     "ebp",
     "esp",
     "r8d",
     "r9d",
+    "r10d",
+    "r11d",
+    "r12d",
+    "r13d",
+    "r14d",
+    "r15d",
 };
 
 static std::unordered_map<std::size_t, const char*> ptrsizes = {
@@ -38,6 +52,10 @@ static std::unordered_map<std::size_t, const char*> ptrsizes = {
 
 static const std::vector<gen_register> register_args = {
     rcx, rdx, r8, r9,
+};
+
+static const std::vector<gen_register> register_temp = {
+    r10, r11, r12, r13, r14, r15,
 };
 
 template <class... Ts> struct overload : Ts... { using Ts::operator()...; };
@@ -161,6 +179,10 @@ std::vector<gen_register> emitter::get_argument_registers() {
     return register_args;
 }
 
+std::vector<gen_register> emitter::get_temp_registers() {
+    return register_temp;
+}
+
 void emitter::end() {
     out_file << "END\n";
 }
@@ -203,7 +225,7 @@ void emitter::pop(gen_operand reg) {
 }
 
 void emitter::lea(gen_destination reg, gen_destination src) {
-    emitln(" lea %s,%s", tostr(reg).c_str(), tostr(src).c_str());
+    emitln(" lea %s,%s", tostr_sized(reg).c_str(), tostr_sized(src).c_str());
 }
 
 void emitter::mov(gen_destination reg, gen_operand src) {

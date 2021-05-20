@@ -1,6 +1,6 @@
 static int i = 3;
 
-int f(x) {
+int f(int x) {
     return x*2;
 }
 

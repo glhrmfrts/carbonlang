@@ -17,6 +17,8 @@ struct emitter {
 
     std::vector<gen_register> get_argument_registers();
 
+    std::vector<gen_register> get_temp_registers();
+
     void end();
 
     void begin_data_segment();

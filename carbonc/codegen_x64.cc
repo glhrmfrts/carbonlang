@@ -9,12 +9,13 @@
 #include "type_system.hh"
 #include <stack>
 #include <optional>
+#include <set>
 
 namespace carbon {
 
 struct gen_node_data {
-    int func_num_temp_registers;
-    std::optional<gen_register> bin_temp_register;
+    std::optional<gen_register> bin_temp_register{};
+    std::set<gen_register> func_used_temp_registers;
 };
 
 static const gen_register_sizes register_sizes[] = {
@@ -24,10 +25,17 @@ static const gen_register_sizes register_sizes[] = {
     {rcx, ecx, invalid, invalid, invalid},
     {rdx, edx, invalid, invalid, invalid},
     {rdi, edi, invalid, invalid, invalid},
+    {rsi, esi, invalid, invalid, invalid},
     {rbp, ebp, invalid, invalid, invalid},
     {rsp, esp, invalid, invalid, invalid},
     {r8, r8d, invalid, invalid, invalid},
     {r9, r9d, invalid, invalid, invalid},
+    {r10, r10d, invalid, invalid, invalid},
+    {r11, r11d, invalid, invalid, invalid},
+    {r12, r12d, invalid, invalid, invalid},
+    {r13, r13d, invalid, invalid, invalid},
+    {r14, r14d, invalid, invalid, invalid},
+    {r15, r15d, invalid, invalid, invalid},
     {},
     {},
     {},
@@ -96,33 +104,6 @@ void find_max_call_arg_size(ast_node& node, std::int32_t& sz) {
     }
 }
 
-std::pair<std::int32_t, std::int32_t> get_func_stack_frame_size(ast_node& node) {
-    assert(node.type == ast_type::func_decl);
-
-    std::int32_t call_arg_size = 0;
-    find_max_call_arg_size(*node.scope.body_node, call_arg_size);
-
-    std::int32_t own_arg_size = 0;
-    std::int32_t local_size = 0;
-    for (auto& local : node.scope.local_defs) {
-        auto& tdef = local->self->type_id.get();
-        if (local->is_argument) {
-            local->frame_offset = own_arg_size + 8; // offset from rbp + space for the return-instruction pointer
-            own_arg_size += std::int32_t(tdef.size);
-            own_arg_size = align(own_arg_size, std::int32_t(tdef.alignment));
-        }
-        else {
-            local->frame_offset = -(local_size + 8); // offset from rbp + space for pushed rbp
-            local_size += std::int32_t(tdef.size);
-            local_size = align(local_size, std::int32_t(tdef.alignment));
-        }
-    }
-
-    local_size = align(local_size, 16);
-    call_arg_size = align(call_arg_size, 16);
-    return std::make_pair(local_size, call_arg_size);
-}
-
 struct generator {
     using finalizer_func = std::function<void(const gen_destination&, const gen_operand&)>;
 
@@ -160,6 +141,34 @@ struct generator {
         return label;
     }
 
+    std::pair<std::int32_t, std::int32_t> get_func_stack_frame_size(ast_node& node) {
+        assert(node.type == ast_type::func_decl);
+
+        std::int32_t call_arg_size = 0;
+        find_max_call_arg_size(*node.scope.body_node, call_arg_size);
+
+        std::int32_t own_arg_size = 0;
+        std::int32_t local_size = 0;
+        for (auto& local : node.scope.local_defs) {
+            auto& tdef = local->self->type_id.get();
+            if (local->is_argument) {
+                local->frame_offset = own_arg_size + 8; // offset from rbp + space for the return-instruction pointer
+                own_arg_size += std::int32_t(tdef.size);
+                own_arg_size = align(own_arg_size, std::int32_t(tdef.alignment));
+            }
+            else {
+                local->frame_offset = -(local_size + 8); // offset from rbp + space for pushed rbp
+                local_size += std::int32_t(tdef.size);
+                local_size = align(local_size, std::int32_t(tdef.alignment));
+            }
+        }
+
+        local_size = align(local_size, 16);
+        call_arg_size = align(call_arg_size, 16);
+        return std::make_pair(local_size, call_arg_size);
+    }
+
+
     void provide_operand(const gen_operand& op, finalizer_func&& f) {
         operand_stack.push({ op, std::move(f) });
     }
@@ -193,7 +202,7 @@ struct generator {
 
         auto func_node = ts->find_nearest_scope(scope_kind::func_body)->self;
         auto& ndata = node_data[func_node->node_id];
-        ndata.func_num_temp_registers = std::max(ndata.func_num_temp_registers, used_temp_registers);
+        ndata.func_used_temp_registers.insert(next_reg);
         return next_reg;
     }
 
@@ -232,6 +241,9 @@ struct generator {
                 if (!temp_reg) {
                     ts->create_temp_variable_for_binary_expr(node);
                 }
+                else {
+                    node_data[node.node_id].bin_temp_register = temp_reg;
+                }
             }
 
             {
@@ -241,11 +253,18 @@ struct generator {
             }
 
             if (temp_reg) {
-                free_temp_register(*temp_reg);
+                free_temp_register();
             }
 
             break;
         }
+        default:
+            {
+                for (auto& child : node.children) {
+                    if (child) { analyse_node(*child); }
+                }
+            }
+            break;
         }
     }
 
@@ -327,6 +346,8 @@ struct generator {
     }
 
     void generate_func(ast_node& node) {
+        auto& ndata = node_data[node.node_id];
+
         auto [local_size,call_arg_size] = get_func_stack_frame_size(node);
         std::int32_t stack_size = local_size + call_arg_size;
 
@@ -337,6 +358,7 @@ struct generator {
             em->begin_func(node.type_def.mangled_name.str.c_str());
         }
 
+        std::int32_t temp_regs_offset = node_data[node.node_id].func_used_temp_registers.size() * 8;
         if (!node.func.arguments.empty()) {
             // move arguments from registers to stack
             for (std::size_t i = node.func.arguments.size(); i > 0; i--) {
@@ -344,12 +366,19 @@ struct generator {
                 auto src = adjust_for_type(gen_register{ arg_registers[i - 1] }, arg->type_id);
                 auto dest = adjust_for_type(gen_offset{ rsp, arg->local.frame_offset, 0 }, arg->type_id);
                 em->mov(dest, toop(src));
-                arg->local.frame_offset += 8; // space for the rbp about to be pushed
+                arg->local.frame_offset += 8 + temp_regs_offset; // space for the rbp about to be pushed
             }
         }
 
         em->push(rbp);
-        em->lea(rbp, gen_offset{ rsp, 0, 0 });
+
+        std::vector<gen_register> temp_regs;
+        for (const auto& reg : ndata.func_used_temp_registers) {
+            em->push(reg);
+            temp_regs.push_back(reg);
+        }
+
+        em->lea(rbp, gen_offset{ rsp, 0, 8 });
 
         if (stack_size > 0) {
             // resize buffer
@@ -364,6 +393,10 @@ struct generator {
 
         if (stack_size > 0) {
             em->add(rsp, stack_size);
+        }
+
+        for (std::size_t i = temp_regs.size(); i > 0; i--) {
+            em->pop(temp_regs[i - 1]);
         }
 
         em->pop(rbp);
@@ -426,11 +459,15 @@ struct generator {
     void generate_binary_expr(ast_node& node) {
         auto& left = node.children[0];
         auto& right = node.children[1];
-
+        auto& ndata = node_data[node.node_id];
         gen_destination leftdest = rax;
+
         if (node.local.self) {
             // needs spill temp variable
-            leftdest = adjust_for_type(local_var_destination(node.local), node.type_id);
+            leftdest = local_var_destination(node.local);
+        }
+        else if (ndata.bin_temp_register) {
+            leftdest = *ndata.bin_temp_register;
         }
 
         generate_node(*left);
@@ -440,10 +477,26 @@ struct generator {
         finalize_expr(rax, [this, &node, leftdest](auto&&, auto&& op) {
             auto arax = adjust_for_type(rax, node.type_id);
             if (!(op == toop(arax))) {
-                emit_binary_op(node.op, arax, op);
+                auto actual_op = op;
+                /*
+                if (std::holds_alternative<gen_offset>(op)) {
+                    auto arcx = adjust_for_type(rcx, node.children[1]->type_id);
+                    em->mov(arcx, actual_op); // reload temp variable
+                    actual_op = toop(arcx);
+                }
+                */
+                emit_binary_op(node.op, arax, actual_op);
             }
             else {
-                emit_binary_op(node.op, arax, toop(leftdest));
+                auto actual_temp = adjust_for_type(leftdest, node.children[0]->type_id);
+                /*
+                if (std::holds_alternative<gen_offset>(leftdest)) {
+                    auto arcx = adjust_for_type(rcx, node.children[0]->type_id);
+                    em->mov(arcx, toop(actual_temp)); // reload temp variable
+                    actual_temp = arcx;
+                }
+                */
+                emit_binary_op(node.op, arax, toop(actual_temp));
             }
         });
 
@@ -486,10 +539,8 @@ struct generator {
     }
 };
 
-void codegen(ast_node& node, std::string_view filename) {
-    generator gen{};
-    gen.filename = filename;
-    gen.em = std::make_unique<emitter>(filename);
+void codegen(ast_node& node, type_system* ts, std::string_view filename) {
+    generator gen{std::make_unique<emitter>(filename), ts, filename};
     gen.pre_analysis(node);
     gen.generate_program(node);
 }
