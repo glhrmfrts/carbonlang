@@ -18,12 +18,20 @@ func main(argc: int, argv: []raw_string): int {
 	let vel: Vector2 = {.x=0, .y=0}; // TODO: init list
 	let pos: Vector2 = {0,0};
 
+	let pos   = Vector2{0,0};
+	let vel   = Vector2{0,0};
 	let state = State{
 		.position = {0,0},
 		.velocity = {0,0},
 	};
 
-	let arr = [2]float{1.0, 0.0};
+	let state = State{
+		.position = {0,0},
+		.velocity = {0,0},
+	};
+
+	let arr  = []float{1.0, 0.0};
+	let arr2 = []float{1.0, 0.0};
 
 	println(add(pos, vel));
 	println(sub(pos, vel));
