@@ -1,50 +1,51 @@
-.data
-.code
-other_stuff PROC
+global other_stuff
+global foobar_Aint32_Aint32_Aint32
+global f_Aint32
+global main
+section .data
+section .code
+other_stuff:
  push rbp
- lea rbp,QWORD PTR [rsp+0]
+ lea rbp,qword [rsp+0]
  mov eax,2
  add eax,3
  pop rbp
  ret
-other_stuff ENDP
-foobar_Aint32_Aint32_Aint32 PROC
- mov DWORD PTR [rsp+16],r8d
- mov DWORD PTR [rsp+12],edx
- mov DWORD PTR [rsp+8],ecx
+foobar_Aint32_Aint32_Aint32:
+ mov dword [rsp+16],r8d
+ mov dword [rsp+12],edx
+ mov dword [rsp+8],ecx
  push rbp
- lea rbp,QWORD PTR [rsp+0]
+ lea rbp,qword [rsp+0]
  sub rsp,16
- mov DWORD PTR [rbp-8],50
+ mov dword [rbp-8],50
  call other_stuff
- mov DWORD PTR [rbp-12],eax
- mov eax,DWORD PTR [rbp-8]
- imul eax,DWORD PTR [rbp-12]
- add eax,DWORD PTR [rbp+16]
- add eax,DWORD PTR [rbp+20]
- add eax,DWORD PTR [rbp+24]
+ mov dword [rbp-12],eax
+ mov eax,dword [rbp-8]
+ imul eax,dword [rbp-12]
+ add eax,dword [rbp+16]
+ add eax,dword [rbp+20]
+ add eax,dword [rbp+24]
  add rsp,16
  pop rbp
  ret
-foobar_Aint32_Aint32_Aint32 ENDP
-f_Aint32 PROC
- mov DWORD PTR [rsp+8],ecx
+f_Aint32:
+ mov dword [rsp+8],ecx
  push rbp
- lea rbp,QWORD PTR [rsp+0]
- mov eax,DWORD PTR [rbp+16]
+ lea rbp,qword [rsp+0]
+ mov eax,dword [rbp+16]
  imul eax,2
  pop rbp
  ret
-f_Aint32 ENDP
-main PROC
+main:
  push rbp
  push r10
  push r11
  push r12
- lea rbp,QWORD PTR [rsp+0]
+ lea rbp,qword [rsp+0]
  sub rsp,32
- mov DWORD PTR [rbp-8],3
- mov eax,DWORD PTR [rbp-8]
+ mov dword [rbp-8],3
+ mov eax,dword [rbp-8]
  imul eax,7
  mov r11d,eax
  mov r12d,50
@@ -69,5 +70,3 @@ main PROC
  pop r10
  pop rbp
  ret
-main ENDP
-END

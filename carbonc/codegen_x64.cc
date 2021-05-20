@@ -221,6 +221,7 @@ struct generator {
     void analyse_node(ast_node& node) {
         switch (node.type) {
         case ast_type::func_decl: {
+            em->add_global_func_decl(node.type_def.mangled_name.str.c_str());
             ts->enter_scope(node);
             {
                 for (auto& child : node.children) {
@@ -320,6 +321,9 @@ struct generator {
             break;
         case ast_type::return_stmt:
             generate_return_stmt(node);
+            break;
+        case ast_type::asm_stmt:
+            generate_asm_stmt(node);
             break;
         case ast_type::call_expr:
             generate_call_expr(node);
@@ -421,6 +425,10 @@ struct generator {
         else {
             em->mov(eax, 0);
         }
+    }
+
+    void generate_asm_stmt(ast_node& node) {
+        em->emitln("%s", node.string_value.data());
     }
 
     void generate_call_expr(ast_node& node) {

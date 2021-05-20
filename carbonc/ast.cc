@@ -173,9 +173,24 @@ arena_ptr<ast_node> make_compound_stmt_node(memory_arena& arena, const position&
 
 arena_ptr<ast_node> make_return_stmt_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& expr) {
     auto ptr = make_in_arena<ast_node>(arena);
+    ptr->node_id = node_id_gen++;
     ptr->type = ast_type::return_stmt;
     ptr->pos = pos;
     ptr->children.push_back(std::move(expr));
+    return ptr;
+}
+
+arena_ptr<ast_node> make_asm_stmt_node(memory_arena& arena, const position& pos, std::string&& value) {
+    auto ptr = make_in_arena<ast_node>(arena);
+    ptr->node_id = node_id_gen++;
+    ptr->type = ast_type::asm_stmt;
+    ptr->pos = pos;
+
+    char* data = alloc_many<char>(arena, value.size() + 1);
+    std::memcpy(data, value.data(), value.size());
+    data[value.size()] = '\0';
+
+    ptr->string_value = std::string_view{ data, value.size() };
     return ptr;
 }
 

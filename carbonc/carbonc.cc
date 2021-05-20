@@ -1,6 +1,7 @@
 #include <iostream>
 #include <fstream>
 #include <cstdio>
+#include <chrono>
 #include "common.hh"
 #include "parser.hh"
 #include "prettyprint.hh"
@@ -15,7 +16,7 @@ int main(int argc, const char* argv[]) {
     memory_arena ast_arena{ 1024*1024 };
 
     for (const std::string& filename : {"parse-000-expression.cb", "parse-001-var_declaration.cb", "parse-002-func_declaration.cb",
-                                        "parse-003-type_declaration.cb", "parse-004-vecmath.cb"}) {
+                                        "parse-003-type_declaration.cb", "parse-004-vecmath.cb", "parse-005-asm.cb"}) {
         std::string src;
         if (!read_file_text("tests/"+filename, src)) continue;
 
@@ -41,9 +42,13 @@ int main(int argc, const char* argv[]) {
         ast_file << "\n";
     }
 
-    for (const std::string& filename : {"compile-000-main.cb", "compile-001-local_vars.cb", "compile-002-func_call.cb", "compile-003-strings.cb"}) {
+    for (const std::string& filename : {"compile-000-main.cb", "compile-001-local_vars.cb", "compile-002-func_call.cb", "compile-003-strings.cb",
+                                        "compile-004-asm.cb"}) {
         std::string src;
         if (!read_file_text("tests/" + filename, src)) continue;
+
+        auto timebegin = std::chrono::system_clock::now();
+        std::cout << "compiling file: " << filename << "\n";
 
         parser p{ ast_arena, src, "tests/" + filename };
         arena_ptr<ast_node> ast{ nullptr, nullptr };
@@ -70,9 +75,12 @@ int main(int argc, const char* argv[]) {
         replace(fn, ".cb", ".asm");
         codegen(*ast, &ts, "tests/asm/" + fn);
 
-        std::cout << ("ml64.exe tests/asm/" + fn + " /link /entry:main") << std::endl;
-        std::FILE* assembler = _popen(("ml64.exe tests/asm/"+ fn + " /link /entry:main").c_str(), "r");
-        _pclose(assembler);
+        auto dur = std::chrono::system_clock::now() - timebegin;
+        std::cout << "compilation took " << std::chrono::duration_cast<std::chrono::milliseconds>(dur).count() << "ms\n\n";
+
+        //std::cout << ("ml64.exe tests/asm/" + fn + " /link /entry:main") << std::endl;
+        //std::FILE* assembler = _popen(("ml64.exe tests/asm/"+ fn + " /link /entry:main").c_str(), "r");
+        //_pclose(assembler);
     }
 
     return 0;

@@ -154,6 +154,8 @@ struct parser_impl {
         switch (TOK) {
         case token_type::return_:
             return parse_return_stmt();
+        case token_type::asm_:
+            return parse_asm_stmt();
         }
 
         return parse_expr();
@@ -237,6 +239,29 @@ struct parser_impl {
         return make_return_stmt_node(*ast_arena, pos, std::move(expr));
     }
 
+    arena_ptr<ast_node> parse_asm_stmt() {
+        auto pos = lex->pos();
+        lex->next(); // eat the 'asm'
+
+        if (TOK_CHAR == '%') {
+            lex->next();
+            if (TOK_CHAR == '{') {
+                lex->advance_char(1);
+                lex->consume_string_until("}%asm");
+                
+                auto res = make_asm_stmt_node(*ast_arena, pos, lex->long_string_value());
+                lex->next();
+                return res;
+            }
+            else {
+                throw parse_error(filename, lex->pos(), "expecting a '{' in asm statement");
+            }
+        }
+        else {
+            throw parse_error(filename, lex->pos(), "expecting a '%' in asm statement");
+        }
+    }
+
     // Section: declarations
 
     arena_ptr<ast_node> parse_decl() {
@@ -249,6 +274,8 @@ struct parser_impl {
             return parse_func_decl();
         case token_type::type:
             return parse_type_decl();
+        case token_type::asm_:
+            return parse_asm_stmt();
         default:
             return arena_ptr<ast_node>{nullptr, nullptr};
         }

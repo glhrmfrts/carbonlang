@@ -19,7 +19,13 @@ struct lexer {
 
     token_type next();
 
+    void advance_char(std::size_t count);
+
+    void consume_string_until(const char* chars);
+
     std::string string_value();
+
+    std::string long_string_value();
 
     float_type float_value();
 

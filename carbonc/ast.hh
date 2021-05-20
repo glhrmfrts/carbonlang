@@ -32,6 +32,7 @@ enum class ast_type {
 
     compound_stmt,
     return_stmt,
+    asm_stmt,
 
     type_expr,
     struct_type,
@@ -130,6 +131,8 @@ arena_ptr<ast_node> make_stmt_list_node(memory_arena& arena, const position& pos
 arena_ptr<ast_node> make_compound_stmt_node(memory_arena& arena, const position& pos, std::vector<arena_ptr<ast_node>>&& children);
 
 arena_ptr<ast_node> make_return_stmt_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& expr);
+
+arena_ptr<ast_node> make_asm_stmt_node(memory_arena& arena, const position& pos, std::string&& value);
 
 arena_ptr<ast_node> make_type_expr_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& expr);
 

@@ -109,6 +109,37 @@ decl_list{
               int_literal{0}
               int_literal{0})}}
         var_decl{
+          identifier{"pos"}
+          =          init_expr{
+            type=            identifier{"Vector2"}
+            arg_list(
+              int_literal{0}
+              int_literal{0})}}
+        var_decl{
+          identifier{"vel"}
+          =          init_expr{
+            type=            identifier{"Vector2"}
+            arg_list(
+              int_literal{0}
+              int_literal{0})}}
+        var_decl{
+          identifier{"state"}
+          =          init_expr{
+            type=            identifier{"State"}
+            arg_list(
+              var_decl{
+                identifier{"position"}
+                =                init_expr{
+                  arg_list(
+                    int_literal{0}
+                    int_literal{0})}}
+              var_decl{
+                identifier{"velocity"}
+                =                init_expr{
+                  arg_list(
+                    int_literal{0}
+                    int_literal{0})}})}}
+        var_decl{
           identifier{"state"}
           =          init_expr{
             type=            identifier{"State"}
@@ -130,7 +161,18 @@ decl_list{
           =          init_expr{
             type=            type_expr{
                             array_type{
-                size=                int_literal{2}
+                size=dynamic
+                type_expr{
+                                    identifier{"float"}}}}
+            arg_list(
+              float_literal{1}
+              float_literal{0})}}
+        var_decl{
+          identifier{"arr2"}
+          =          init_expr{
+            type=            type_expr{
+                            array_type{
+                size=dynamic
                 type_expr{
                                     identifier{"float"}}}}
             arg_list(

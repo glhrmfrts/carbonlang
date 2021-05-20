@@ -18,6 +18,7 @@ static std::unordered_map<int, token_type> stb_to_token = {
 struct lexer_impl {
     std::array<char, 1024*1024> store;
     std::string_view src;
+    std::string long_string;
     stb_lexer l;
     token_type tok;
 
@@ -35,6 +36,57 @@ struct lexer_impl {
             return (tok = token_type::eof);
         }
         return (tok = transform_c_lexer_token(l.token));
+    }
+
+    void advance_char(std::size_t count) {
+        l.parse_point += count;
+    }
+
+    void consume_string_until(const char* chars) {
+        enum { LIMIT = 0xffffff };
+
+        std::size_t len = std::strlen(chars);
+        long_string.clear();
+
+        char* begin = l.parse_point;
+        char* end = nullptr;
+
+        for (int i = 0; i < LIMIT; i++) {
+            char* before = l.parse_point;
+
+            if (!(*l.parse_point)) {
+                // TODO: error
+                break;
+            }
+
+            if (*l.parse_point == chars[0]) {
+                l.parse_point++;
+
+                bool all_equal = true;
+                for (int ci = 1; ci < len; ci++) {
+                    if (*l.parse_point != chars[ci]) {
+                        all_equal = false;
+                        break;
+                    }
+                    else {
+                        l.parse_point++;
+                    }
+                }
+
+                if (all_equal) {
+                    end = l.parse_point - len;
+                    break;
+                }
+                else {
+                    l.parse_point = before;
+                }
+            }
+            l.parse_point++;
+        }
+
+        if (end != nullptr) {
+            long_string.append(begin, end - begin);
+        }
     }
 
     token_type transform_c_lexer_token(int ct) const {
@@ -57,6 +109,9 @@ struct lexer_impl {
             }
             if (!std::strcmp("var", l.string)) {
                 return token_type::var;
+            }
+            if (!std::strcmp("asm", l.string)) {
+                return token_type::asm_;
             }
             break;
         case 4:
@@ -91,6 +146,10 @@ struct lexer_impl {
         return std::string{ l.string, std::size_t(l.string_len) };
     }
 
+    std::string long_string_value() {
+        return long_string;
+    }
+
     float_type float_value() {
         return l.real_number;
     }
@@ -113,7 +172,13 @@ token_type lexer::current() const { return _impl->current(); }
 
 token_type lexer::next() { return _impl->next(); }
 
+void lexer::advance_char(std::size_t count) { _impl->advance_char(count); }
+
+void lexer::consume_string_until(const char* chars) { _impl->consume_string_until(chars); }
+
 std::string lexer::string_value() { return _impl->string_value(); }
+
+std::string lexer::long_string_value() { return _impl->long_string_value(); }
 
 float_type lexer::float_value() { return _impl->float_value(); }
 

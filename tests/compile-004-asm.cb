@@ -1,0 +1,15 @@
+asm %{
+extern puts
+}%asm;
+
+func println(x: raw_string): int {
+	asm %{
+		sub rsp,32
+		call puts
+		add rsp,32
+	}%asm;
+}
+
+func main(): int {
+	return println("hello world from Carbon asm!");
+}

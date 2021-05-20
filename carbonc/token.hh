@@ -26,6 +26,7 @@ enum class token_type : unsigned int {
     const_,
     pure,
     type,
+    asm_,
 };
 
 struct position {

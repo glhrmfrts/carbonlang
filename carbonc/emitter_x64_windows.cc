@@ -44,10 +44,10 @@ static const char* register_names[] = {
 };
 
 static std::unordered_map<std::size_t, const char*> ptrsizes = {
-    {1, "BYTE PTR"},
-    {2, "WORD PTR"},
-    {4, "DWORD PTR"},
-    {8, "QWORD PTR"},
+    {1, "byte"},
+    {2, "word"},
+    {4, "dword"},
+    {8, "qword"},
 };
 
 static const std::vector<gen_register> register_args = {
@@ -120,8 +120,9 @@ std::string tostr_sized(const gen_destination& d) {
             return register_names[r];
         },
         [](gen_data_offset r) -> std::string {
-            std::string result = "OFFSET:";
+            std::string result = "[";
             result.append(r.label);
+            result.append("]");
             return result;
         },
         [](gen_offset r) -> std::string {
@@ -146,8 +147,9 @@ std::string tostr_sized(const gen_operand& d) {
             return register_names[r];
         },
         [](gen_data_offset r) -> std::string {
-            std::string result = "OFFSET:";
+            std::string result = "[";
             result.append(r.label);
+            result.append("]");
             return result;
         },
         [](gen_offset r) -> std::string {
@@ -184,28 +186,32 @@ std::vector<gen_register> emitter::get_temp_registers() {
 }
 
 void emitter::end() {
-    out_file << "END\n";
+    //out_file << "END\n";
+}
+
+void emitter::add_global_func_decl(const char* name) {
+    out_file << "global " << name << "\n";
 }
 
 void emitter::begin_data_segment() {
-    out_file << ".data\n";
+    out_file << "section .data\n";
 }
 
 void emitter::add_string_data(std::string_view label, std::string_view data) {
-    emitln("%s DB '%s',00H", label.data(), data.data());
+    emitln("%s: db '%s',0", label.data(), data.data());
 }
 
 void emitter::begin_code_segment() {
-    out_file << ".code\n";
+    out_file << "section .code\n";
 }
 
 void emitter::begin_func(const char* func_name) {
     current_func = func_name;
-    out_file << func_name << " PROC\n";
+    out_file << func_name << ":\n";
 }
 
 void emitter::end_func() {
-    out_file << current_func << " ENDP\n";
+    //out_file << current_func << " ENDP\n";
 }
 
 void emitter::ret() {

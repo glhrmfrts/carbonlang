@@ -150,6 +150,12 @@ void prettyprint(const ast_node& node, std::ostream& stream, int indent) {
         prettyprint(*node.children.front().get(), stream, indent + 1);
         stream << "}";
         break;
+    case ast_type::asm_stmt:
+        stream << "asm_stmt{\n";
+        do_indent(stream, indent + 1);
+        stream << node.string_value;
+        stream << "}";
+        break;
     case ast_type::type_expr:
         stream << "type_expr{\n";
         do_indent(stream, indent + 1);

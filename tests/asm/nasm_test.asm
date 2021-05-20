@@ -1,9 +1,9 @@
 global main
 section .data
-section .code
+section .text
 main:
  push rbp
- lea rbp,qword [rsp+0]
+ lea rbp,qword [rsp]
  mov eax,157
  pop rbp
  ret
