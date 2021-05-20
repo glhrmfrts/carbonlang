@@ -2,7 +2,9 @@
 
 Carbon is a statically-strongly-typed programming language.
 
-![logo](https://raw.githubusercontent.com/glhrmfrts/carbon/main/carbon.png?token=AB5TS2LFTL34ORBEDAHZ2X3AUX6UU)
+<p align="center">
+<img src="https://github.com/glhrmfrts/carbon/blob/main/carbon.png">
+</p>
 
 ## Hello world
 
