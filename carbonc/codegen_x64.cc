@@ -534,8 +534,19 @@ struct generator {
     void generate_string_literal(ast_node& node) {
         auto op = gen_data_offset{ node.global_data.label };
         provide_operand(op, [this, op, &node](const gen_destination& dest, auto&&) {
-            em->lea(adjust_for_type(dest, node.type_id), op);
+            load_address(adjust_for_type(dest, node.type_id), op, node.type_id);
         });
+    }
+
+    void load_address(const gen_destination& dest, const gen_destination& op, type_id tid) {
+        if (std::holds_alternative<gen_register>(dest)) {
+            em->lea(dest, op);
+        }
+        else {
+            auto arax = adjust_for_type(rax, tid);
+            em->lea(arax, op);
+            em->mov(dest, toop(arax));
+        }
     }
 };
 
