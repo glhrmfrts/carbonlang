@@ -130,6 +130,9 @@ struct lexer_impl {
             if (!std::strcmp("type", l.string)) {
                 return token_type::type;
             }
+            if (!std::strcmp("cast", l.string)) {
+                return token_type::cast_;
+            }
             break;
         case 5:
             if (!std::strcmp("false", l.string)) {

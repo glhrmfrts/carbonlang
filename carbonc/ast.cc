@@ -95,6 +95,16 @@ arena_ptr<ast_node> make_call_expr_node(memory_arena& arena, const position& pos
     return ptr;
 }
 
+arena_ptr<ast_node> make_cast_expr_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& type_expr, arena_ptr<ast_node>&& value) {
+    auto ptr = make_in_arena<ast_node>(arena);
+    ptr->node_id = node_id_gen++;
+    ptr->type = ast_type::cast_expr;
+    ptr->pos = pos;
+    ptr->children.push_back(std::move(type_expr));
+    ptr->children.push_back(std::move(value));
+    return ptr;
+}
+
 arena_ptr<ast_node> make_import_decl_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& mod, arena_ptr<ast_node>&& alias) {
     auto ptr = make_in_arena<ast_node>(arena);
     ptr->node_id = node_id_gen++;
@@ -292,6 +302,39 @@ bool is_primary_expr(ast_node& node) {
         return true;
     default:
         return false;
+    }
+}
+
+std::string build_identifier_value(const std::vector<std::string>& parts) {
+    std::string result;
+    for (std::size_t i = 0; i < parts.size(); i++) {
+        result.append(parts[i]);
+        if (i < parts.size() - 1) {
+            result.append("::");
+        }
+    }
+    return result;
+}
+
+std::string visibility_name(token_type op) {
+    switch (op) {
+    case token_type::public_:
+        return "public";
+    case token_type::private_:
+        return "private";
+    case token_type::internal_:
+        return "internal";
+    }
+}
+
+std::string func_linkage_name(func_linkage l) {
+    switch (l) {
+    case func_linkage::external_c:
+        return "extern(C)";
+    case func_linkage::external_carbon:
+        return "extern";
+    case func_linkage::local_carbon:
+        return "local";
     }
 }
 }

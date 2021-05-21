@@ -2,7 +2,7 @@ func alloc(size: usize): raw_ptr {
 	return malloc(size);
 }
 
-func dealloc(ptr: raw_ptr) {
+func dealloc(ptr: raw_ptr): int {
 	free(ptr);
 }
 
@@ -23,9 +23,13 @@ pop rdi
 	}%asm;
 }
 
+func copy(dest: raw_string, src: raw_string, size: usize) {
+	copy(cast[raw_ptr]dest, cast[raw_ptr]src, size);
+}
+
 private extern(C) {
 
 func malloc(size: usize): raw_ptr;
-func free(ptr: raw_ptr);
+func free(ptr: raw_ptr): int;
 
 }

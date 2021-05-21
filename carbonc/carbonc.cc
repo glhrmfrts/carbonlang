@@ -12,10 +12,80 @@
 
 namespace carbon {
 
+void compile_file(type_system& ts, ast_node& target, const std::string& filename) {
+    std::string src;
+    if (!read_file_text(filename, src)) return;
+
+    auto timebegin = std::chrono::system_clock::now();
+    std::cout << "compiling file: " << filename << "\n";
+
+    parser p{ *ts.ast_arena, src, filename };
+    arena_ptr<ast_node> ast{ nullptr, nullptr };
+
+    try {
+        ast = p.parse_code_unit();
+    }
+    catch (const parse_error& e) {
+        std::cerr << "carbonc - parse error: " << e.what() << "\n";
+
+        auto upuntil = src.substr(0, e.pos.src_offs);
+        auto firstline = upuntil.find_last_of('\n');
+        auto line = src.substr(firstline, (src.find_first_of('\n', e.pos.src_offs) - firstline) + 20);
+
+        std::cerr << "                       " << line << "\n";
+        return;
+    }
+
+    ts.process_code_unit(*ast);
+    target.children.push_back(std::move(ast));
+
+    auto dur = std::chrono::system_clock::now() - timebegin;
+    std::cout << "compilation took " << std::chrono::duration_cast<std::chrono::milliseconds>(dur).count() << "ms\n\n";
+}
+
+void process_directory(type_system& ts, ast_node& target, const std::string& dir) {
+    std::cout << "processing directory: " << dir << "\n";
+    for (const auto& file : list(dir)) {
+        if (file.find(".cb") != std::string::npos) {
+            compile_file(ts, target, join(dir, file));
+        }
+
+        if (is_directory(join(dir, file))) {
+            process_directory(ts, target, join(dir, file));
+        }
+    }
+}
+
+int run_project_mode() {
+    auto timebegin = std::chrono::system_clock::now();
+    std::cout << "compiling project: std " << "\n";
+
+    memory_arena ast_arena{ 1024 * 1024 };
+    type_system ts{ ast_arena };
+
+    auto target_node = make_in_arena<ast_node>(ast_arena);
+    target_node->type = ast_type::target;
+
+    process_directory(ts, *target_node, "std");
+    ts.resolve_and_check();
+
+    ensure_directory_exists("../_carbon/build/std.asm");
+    codegen(*target_node, &ts, "../_carbon/build/std.asm");
+
+    auto dur = std::chrono::system_clock::now() - timebegin;
+    std::cout << "compilation took " << std::chrono::duration_cast<std::chrono::milliseconds>(dur).count() << "ms\n\n";
+
+    return 0;
+}
+
 int main(int argc, const char* argv[]) {
     memory_arena ast_arena{ 1024*1024 };
 
-    auto parser_test_files = { 
+    if (true) {
+        return run_project_mode();
+    }
+
+    auto parser_test_files = {
         "parse-000-expression.cb", "parse-001-var_declaration.cb", "parse-002-func_declaration.cb",
         "parse-003-type_declaration.cb", "parse-004-vecmath.cb", "parse-005-asm.cb", "parse-006-externfunc.cb",
         "parse-007-import.cb"

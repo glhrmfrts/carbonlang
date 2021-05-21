@@ -193,6 +193,12 @@ struct generator {
         }
     }
 
+    void discard_expr() {
+        while (!operand_stack.empty()) {
+            operand_stack.pop();
+        }
+    }
+
     gen_destination local_var_destination(local_def& local) {
         return gen_offset{ rbp, local.frame_offset, 0 };
     }
@@ -218,9 +224,11 @@ struct generator {
     // Section: pre analysis
 
     void pre_analysis(ast_node& node) {
-        ts->enter_scope(node);
-        analyse_node(node);
-        ts->leave_scope();
+        for (auto& unit : node.children) {
+            ts->enter_scope(*unit);
+            analyse_node(*unit);
+            ts->leave_scope();
+        }
     }
 
     void analyse_node(ast_node& node) {
@@ -333,6 +341,9 @@ struct generator {
         }
 
         switch (node.type) {
+        case ast_type::import_decl:
+        case ast_type::type_expr:
+            break;
         case ast_type::func_decl:
             generate_func(node);
             break;
@@ -359,6 +370,14 @@ struct generator {
             break;  
         case ast_type::string_literal:
             generate_string_literal(node);
+            break;
+        case ast_type::stmt_list:
+            for (auto& child : node.children) {
+                if (child) {
+                    generate_node(*child);
+                    discard_expr();
+                }
+            }
             break;
         default:
             for (auto& child : node.children) {

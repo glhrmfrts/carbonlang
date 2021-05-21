@@ -2,6 +2,21 @@ code_unit{
   tests/parse-007-import.cb
   decl_list{
     import_decl{
-            identifier{""}}
+      identifier{"std::io"}}
     import_decl{
-            identifier{""}      identifier{""}}}}
+      identifier{"std::filesystem"}
+      identifier{"fs"}}
+    visibility_specifier{
+      private
+      linkage_specifier{
+        extern
+        decl_list{
+          func_decl{
+            identifier{"puts"}
+            arg_list(
+              var_decl{
+                identifier{"c"}
+                :type_expr{
+                  identifier{"raw_string"}}})
+            :type_expr{
+              identifier{"int"}}}}}}}}

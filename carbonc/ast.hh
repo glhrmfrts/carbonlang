@@ -21,6 +21,7 @@ enum class ast_type {
     binary_expr,
     call_expr,
     init_expr,
+    cast_expr,
 
     type_decl,
     var_decl,
@@ -44,6 +45,7 @@ enum class ast_type {
     visibility_specifier,
 
     code_unit,
+    target,
 };
 
 struct global_data {
@@ -86,7 +88,7 @@ struct ast_node {
     type_qualifier type_qual{};
     type_id type_id{};
     std::string_view string_value{};
-    std::size_t id_hash{};
+    //std::size_t id_hash{};
     float_type float_value{};
     int_type int_value{};
     std::vector<std::string> id_parts{};
@@ -121,6 +123,8 @@ arena_ptr<ast_node> make_binary_expr_node(memory_arena& arena, const position& p
 arena_ptr<ast_node> make_init_expr_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& init_type, arena_ptr<ast_node>&& init_list);
 
 arena_ptr<ast_node> make_call_expr_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& callee, arena_ptr<ast_node>&& arg_list);
+
+arena_ptr<ast_node> make_cast_expr_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& type_expr, arena_ptr<ast_node>&& value);
 
 arena_ptr<ast_node> make_import_decl_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& mod, arena_ptr<ast_node>&& alias);
 
@@ -159,5 +163,11 @@ arena_ptr<ast_node> make_visibility_specifier_node(memory_arena& arena, const po
 arena_ptr<ast_node> make_code_unit_node(memory_arena& arena, const position& pos, const std::string& filename, arena_ptr<ast_node>&& decls);
 
 bool is_primary_expr(ast_node& node);
+
+std::string build_identifier_value(const std::vector<std::string>& parts);
+
+std::string visibility_name(token_type op);
+
+std::string func_linkage_name(func_linkage l);
 
 }

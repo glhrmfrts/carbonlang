@@ -1,11 +1,11 @@
-import std.memory as mem;
+import std::memory as mem;
 
 func copy(str: raw_string): raw_string {
 	return copy(str, len(str));
 }
 
 func copy(str: raw_string, size: usize): raw_string {
-	//let newstr = [raw_string](mem::alloc(size+1));
+	let newstr = cast[raw_string] mem::alloc(size+1);
 	mem::copy(newstr, str, size);
 	//newstr[size] = '\0';
 	return newstr;

@@ -33,6 +33,7 @@ enum class token_type : unsigned int {
     internal_,
     import_,
     as_,
+    cast_,
     coloncolon,
 };
 

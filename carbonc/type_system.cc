@@ -2,6 +2,8 @@
 #include <optional>
 #include "type_system.hh"
 #include "ast.hh"
+#include "fs.hh"
+#include <fstream>
 
 namespace carbon {
 
@@ -12,6 +14,10 @@ static const type_id invalid_type{};
 void visit_tree(type_system& ts, ast_node& node);
 
 type_id resolve_node_type(type_system& ts, ast_node* nodeptr);
+
+void declare_type_symbol(type_system& ts, const string_hash& hash);
+
+type_id get_type_expr_node_type(type_system& ts, const ast_node& node);
 
 // Section: helpers
 
@@ -34,7 +40,7 @@ scope_def& curscope(type_system& ts) {
 void register_builtin_type(type_system& ts, arena_ptr<ast_node>&& node) {
     type_def* t = &node->type_def;
     ts.builtin_scope->scope.type_defs.push_back(t);
-    ts.builtin_scope->scope.type_map[t->name.hash] = { ts.current_scope, (int)(ts.builtin_scope->scope.type_defs.size() - 1) };
+    declare_type_symbol(ts, t->name);
     ts.builtin_type_nodes.push_back(std::move(node));
 }
 
@@ -44,7 +50,7 @@ type_id register_user_type(type_system& ts, ast_node& node) {
     ts.current_scope->type_defs.push_back(t);
 
     type_id id = { ts.current_scope, (int)(ts.current_scope->type_defs.size() - 1) };
-    ts.current_scope->type_map[t->name.hash] = id;
+    declare_type_symbol(ts, t->name);
     ts.current_scope->children.push_back(&node.scope);
     return id;
 }
@@ -81,28 +87,31 @@ type_def& get_type(type_system& ts, type_id id) {
 }
 
 bool register_alias_to_type_name(type_system& ts, const std::string& name, const std::string& toname) {
-    auto it = curscope(ts).type_map.find(hash(toname));
-    if (it == curscope(ts).type_map.end()) {
+    auto it = curscope(ts).symbols.find(string_hash{ toname });
+    if (it == curscope(ts).symbols.end()) {
         return false;
     }
 
-    auto node = make_in_arena<ast_node>(*ts.ast_arena);
+    auto tid = type_id{ it->second.scope, it->second.type_index };
 
+    auto node = make_in_arena<ast_node>(*ts.ast_arena);
     type_def* defcopy = &node->type_def;
 
-    *defcopy = get_type(ts, it->second);
+    *defcopy = get_type(ts, tid);
     defcopy->name = name;
     defcopy->mangled_name = string_hash{ name };
-    defcopy->alias_to = it->second;
+    defcopy->alias_to = tid;
     register_builtin_type(ts, std::move(node));
     return true;
 }
 
 bool register_pointer_type(type_system& ts, const std::string& name, const std::string& toname) {
-    auto it = curscope(ts).type_map.find(hash(toname));
-    if (it == curscope(ts).type_map.end()) {
+    auto it = curscope(ts).symbols.find(string_hash{ toname });
+    if (it == curscope(ts).symbols.end()) {
         return false;
     }
+
+    auto tid = type_id{ it->second.scope, it->second.type_index };
 
     auto node = make_in_arena<ast_node>(*ts.ast_arena);
 
@@ -112,7 +121,7 @@ bool register_pointer_type(type_system& ts, const std::string& name, const std::
     tf.mangled_name = string_hash{ name };
     tf.size = sizeof(void*);
     tf.alignment = alignof(void*);
-    tf.elem_type = it->second;
+    tf.elem_type = tid;
 
     register_builtin_type(ts, std::move(node));
     return true;
@@ -163,6 +172,26 @@ void add_scope(type_system& ts, ast_node& node, scope_kind k) {
     }
 
     ts.current_scope = &node.scope;
+
+    if (k == scope_kind::code_unit) {
+        auto fn = std::string{ node.string_value };
+
+        std::string obase, ext;
+        split_extension(fn, obase, ext);
+
+        auto base = obase;
+        while (replace(base, "/", "::"));
+        while (replace(base, "\\", "::"));
+
+        ts.modules[base] = ts.current_scope;
+
+        auto partstr = obase;
+        while (replace(partstr, "\\", "/"));
+        auto parts = split(partstr, '/');
+
+        ts.current_scope->self_module_key = base;
+        ts.current_scope->self_module_parts = parts;
+    }
 }
 
 void add_func_scope(type_system& ts, ast_node& node, ast_node& body_node) {
@@ -193,7 +222,7 @@ scope_def* find_nearest_scope_local(type_system& ts, scope_kind kind) {
     return nullptr;
 }
 
-void declare_local_symbol(type_system& ts, std::size_t hash, ast_node& ld) {
+void declare_local_symbol(type_system& ts, const string_hash& hash, ast_node& ld) {
     symbol_info info;
     info.kind = symbol_kind::local;
     info.scope = ts.current_scope;
@@ -202,7 +231,7 @@ void declare_local_symbol(type_system& ts, std::size_t hash, ast_node& ld) {
     curscope(ts).symbols[hash] = info;
 }
 
-void declare_top_level_func(type_system& ts, std::size_t hash, ast_node& ld) {
+void declare_top_level_func(type_system& ts, const string_hash& hash, ast_node& ld) {
     symbol_info info;
     info.kind = symbol_kind::top_level_func;
     info.scope = ts.current_scope;
@@ -211,7 +240,15 @@ void declare_top_level_func(type_system& ts, std::size_t hash, ast_node& ld) {
     curscope(ts).symbols[hash] = info;
 }
 
-std::optional<symbol_info> find_symbol_in_current_scope(type_system& ts, std::size_t hash) {
+void declare_type_symbol(type_system& ts, const string_hash& hash) {
+    symbol_info info;
+    info.kind = symbol_kind::type;
+    info.scope = ts.current_scope;
+    info.type_index = curscope(ts).type_defs.size() - 1;
+    curscope(ts).symbols[hash] = info;
+}
+
+std::optional<symbol_info> find_symbol_in_current_scope(type_system& ts, const string_hash& hash) {
     auto it = curscope(ts).symbols.find(hash);
     if (it == curscope(ts).symbols.end()) {
         return std::nullopt;
@@ -219,12 +256,37 @@ std::optional<symbol_info> find_symbol_in_current_scope(type_system& ts, std::si
     return it->second;
 }
 
-std::optional<symbol_info> find_symbol(type_system& ts, std::size_t hash) {
+std::optional<symbol_info> find_symbol(type_system& ts, const std::pair<string_hash, string_hash>& pair) {
     auto scope = ts.current_scope;
     while (scope != nullptr) {
-        auto it = scope->symbols.find(hash);
+
+        auto it = scope->symbols.find(pair.second);
         if (it != scope->symbols.end()) {
             return it->second;
+        }
+
+        if (pair.first.str.empty()) {
+            for (const auto& imp : scope->imports) {
+                if (!imp.alias) {
+                    auto impscope = ts.modules[imp.qual_name];
+
+                    auto it = impscope->symbols.find(pair.second);
+                    if (it != impscope->symbols.end()) {
+                        return it->second;
+                    }
+                }
+            }
+        }
+        else {
+            auto mod = scope->imports_map.find(pair.first);
+            if (mod != scope->imports_map.end()) {
+                auto impscope = ts.modules[scope->imports[mod->second].qual_name];
+
+                auto it = impscope->symbols.find(pair.second);
+                if (it != impscope->symbols.end()) {
+                    return it->second;
+                }
+            }
         }
 
         scope = scope->parent;
@@ -233,52 +295,75 @@ std::optional<symbol_info> find_symbol(type_system& ts, std::size_t hash) {
 }
 
 // Finds the type in scope or parents
-type_id find_type_by_id_hash(type_system& ts, std::size_t hash) {
-    auto scope = ts.current_scope;
-    while (scope != nullptr) {
-
-        auto it = scope->type_map.find(hash);
-        if (it != scope->type_map.end()) {
-            return it->second;
-        }
-
-        scope = scope->parent;
+type_id find_type_by_id_hash(type_system& ts, const std::pair<string_hash, string_hash>& pair) {
+    auto sym = find_symbol(ts, pair);
+    if (sym && sym->kind == symbol_kind::type) {
+        return type_id{ sym->scope, sym->type_index };
     }
     return invalid_type;
 }
 
 // Section: resolvers
 
+type_id to_type_id(const symbol_info& info) {
+    return { info.scope, info.type_index };
+}
+
 type_id get_value_node_type(type_system& ts, const ast_node& node) {
     switch (node.type) {
-    case ast_type::bool_literal:
-        return ts.builtin_scope->scope.type_map[hash("bool")];
-
-    case ast_type::int_literal:
-        return ts.builtin_scope->scope.type_map[hash("int")];
-
-    case ast_type::float_literal:
-        return ts.builtin_scope->scope.type_map[hash("float")];
-
-    case ast_type::string_literal:
-        return ts.builtin_scope->scope.type_map[hash("raw_string")];
-
-    case ast_type::binary_expr:
+    case ast_type::bool_literal: {
+        auto sym = ts.builtin_scope->scope.symbols[string_hash{ "bool" }];
+        return to_type_id(sym);
+    }
+    case ast_type::int_literal: {
+        auto sym = ts.builtin_scope->scope.symbols[string_hash{ "int" }];
+        return to_type_id(sym);
+    }
+    case ast_type::float_literal: {
+        auto sym = ts.builtin_scope->scope.symbols[string_hash{ "float" }];
+        return to_type_id(sym);
+    }
+    case ast_type::string_literal: {
+        auto sym = ts.builtin_scope->scope.symbols[string_hash{ "raw_string" }];
+        return to_type_id(sym);
+    }
+    case ast_type::cast_expr: {
+        // TODO: check cast is possible and reasonable
+        return get_type_expr_node_type(ts, *node.children[0]);
+    }
+    case ast_type::binary_expr: {
         if (node.children[0]->type_id == invalid_type || node.children[1]->type_id == invalid_type) {
             return invalid_type;
         }
 
         return node.children[0]->type_id;
     }
+    }
 
     return invalid_type;
+}
+
+std::pair<string_hash, string_hash> separate_module_identifier(const std::vector<std::string>& parts) {
+    if (parts.empty()) return {};
+
+    std::string mod, id;
+    for (std::size_t i = 0; i < parts.size(); i++) {
+        if (i == parts.size() - 1) {
+            id.append(parts[i]);
+        }
+        else {
+            mod.append(parts[i]);
+        }
+    }
+
+    return std::make_pair(string_hash{ mod }, string_hash{ id });
 }
 
 type_id get_type_expr_node_type(type_system& ts, const ast_node& node) {
     auto& actual = node.children[0];
     switch (actual->type) {
     case ast_type::identifier:
-        return find_type_by_id_hash(ts, actual->id_hash);
+        return find_type_by_id_hash(ts, separate_module_identifier(actual->id_parts));
     }
 
     return invalid_type;
@@ -303,23 +388,26 @@ type_id resolve_local_variable_type(type_system& ts, ast_node& l) {
     return l.type_id;
 }
 
-string_hash mangle_func_name(type_system& ts, std::string_view username, const std::vector<ast_node*>& args, func_linkage linkage) {
+string_hash mangle_func_name(type_system& ts, const std::vector<std::string>& id_parts, const std::vector<ast_node*>& args, func_linkage linkage) {
     //assert(f.type_id != invalid_type);
 
-    std::string name = std::string{ username };
-
     if (linkage == func_linkage::local_carbon || linkage == func_linkage::external_carbon) {
+        std::string name = "cb";
+        for (const auto& part : id_parts) {
+            name.append("_N");
+            name.append(part);
+        }
         for (auto& arg : args) {
             assert(arg->type_id != invalid_type);
             auto tdef = arg->type_id.get();
             name.append("_A");
             name.append(tdef.mangled_name.str);
         }
+        return string_hash{ name };
     }
-    //name.append("_R");
-    //name.append(f.func.ret_type_node->type_id.get().mangled_name.str);
-
-    return string_hash{ name };
+    else {
+        return string_hash{ id_parts.back() };
+    }
 }
 
 // TODO: deduce type from return statements
@@ -368,14 +456,22 @@ void register_func_declaration_node(type_system& ts, ast_node& node) {
     node.local.id_node = id.get();
     node.func.ret_type_node = node.children[ast_node::child_func_decl_ret_type].get();
 
-    // TODO: overload
+    if (!node.func.ret_type_node) {
+        auto id_void = make_identifier_node(*ts.ast_arena, {}, { "void" });
+        auto ret_type = make_type_expr_node(*ts.ast_arena, {}, std::move(id_void));
+        node.func.ret_type_node = ret_type.get();
+        node.temps.push_back(std::move(ret_type));
+    }
 
+    // TODO: overload
+    /*
     auto prev = find_symbol_in_current_scope(ts, id->id_hash);
     if (prev) {
         //add_error(ts, "cannot redeclare '%s'", id->string_value.data());
         assert(!"cannot redeclare");
         return;
     }
+    */
 
     // try to resolve the return type already
     resolve_node_type(ts, node.func.ret_type_node);
@@ -400,7 +496,7 @@ void register_func_declaration_node(type_system& ts, ast_node& node) {
         resolve_local_variable_type(ts, *arg);
 
         if (body) {
-            declare_local_symbol(ts, arg->local.id_node->id_hash, *arg);
+            declare_local_symbol(ts, { arg->local.id_node->id_parts.front() }, *arg);
         }
 
         node.func.arguments.push_back(arg.get());
@@ -421,7 +517,8 @@ void register_var_declaration_node(type_system& ts, ast_node& node) {
     node.local.type_node = node.children[ast_node::child_var_decl_type].get();
     node.local.value_node = node.children[ast_node::child_var_decl_value].get();
 
-    auto prev = find_symbol_in_current_scope(ts, node.local.id_node->id_hash);
+    auto id = string_hash{ build_identifier_value(node.local.id_node->id_parts) };
+    auto prev = find_symbol_in_current_scope(ts, id);
     if (prev) {
         //add_error(ts, "cannot redeclare '%s'", id->string_value.data());
         assert(!"cannot redeclare");
@@ -430,7 +527,7 @@ void register_var_declaration_node(type_system& ts, ast_node& node) {
 
     resolve_local_variable_type(ts, node);
 
-    declare_local_symbol(ts, node.local.id_node->id_hash, node);
+    declare_local_symbol(ts, id, node);
 }
 
 // Section: type checking
@@ -461,6 +558,15 @@ void visit_children(type_system& ts, ast_node& node) {
     }
 }
 
+template <typename F> void for_each_child_recur(ast_node& node, ast_type type, F f) {
+    for (auto& child : node.children) {
+        if (child) {
+            if (child->type == type) { f(*child); }
+            for_each_child_recur(*child, type, f);
+        }
+    }
+}
+
 type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
     if (!nodeptr) return invalid_type;
 
@@ -468,6 +574,23 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
     bool check_for_unresolved = true;
 
     switch (node.type) {
+    case ast_type::import_decl: {
+        check_for_unresolved = false;
+        auto scope = ts.current_scope;
+        auto qual_name = string_hash{ build_identifier_value(node.children[0]->id_parts) };
+
+        std::optional<string_hash> aliastr{};
+        if (node.children[1]) {
+            aliastr = string_hash{ build_identifier_value(node.children[1]->id_parts) };
+            scope->imports_map[*aliastr] = scope->imports.size();
+        }
+        else {
+            scope->imports_map[qual_name] = scope->imports.size();
+        }
+
+        scope->imports.push_back(scope_import{ qual_name, aliastr });
+        break;
+    }
     case ast_type::type_expr:
         if (node.type_id != invalid_type) return node.type_id;
 
@@ -487,12 +610,10 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
     }
     case ast_type::linkage_specifier: {
         check_for_unresolved = false;
-        for (auto& child : node.children) {
-            if (child) {
-                child->func.linkage = node.func.linkage;
-                visit_tree(ts, *child);
-            }
-        }
+        for_each_child_recur(node, ast_type::func_decl, [&node](ast_node& child) {
+            child.func.linkage = node.func.linkage;
+        });
+        visit_children(ts, node);
         break;
     }
     case ast_type::func_decl: {
@@ -524,10 +645,19 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
 
             resolve_func_type(ts, node);
 
-            if (node.type_id != invalid_type && ts.current_scope->kind == scope_kind::global && node.type_def.mangled_name.str.empty()) {
+            if (node.type_id != invalid_type && ts.current_scope->kind == scope_kind::code_unit && node.type_def.mangled_name.str.empty()) {
                 // this means the function type was resolved, so mangle the name and declare it
-                node.type_def.mangled_name = mangle_func_name(ts, node.local.id_node->string_value, node.func.arguments, node.func.linkage);
-                declare_top_level_func(ts, node.type_def.mangled_name.hash, node);
+
+                /*
+                 TODO: mangle the func name with the module name in the final pass
+                auto parts = ts.current_scope->self_module_parts;
+                for (const auto& part : node.local.id_node->id_parts) {
+                    parts.push_back(part);
+                }
+                */
+
+                node.type_def.mangled_name = mangle_func_name(ts, node.local.id_node->id_parts, node.func.arguments, node.func.linkage);
+                declare_top_level_func(ts, node.type_def.mangled_name, node);
             }
         }
         break;
@@ -556,8 +686,10 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
             if (args_resolved) {
                 // both args and func resolved
                 for (const auto& linkage : { func_linkage::local_carbon, func_linkage::external_c }) {
-                    node.call.mangled_name = mangle_func_name(ts, node.call.func_node->string_value, node.call.args, linkage);
-                    auto sym = find_symbol(ts, node.call.mangled_name.hash);
+                    auto pair = separate_module_identifier(node.call.func_node->id_parts);
+                    node.call.mangled_name = mangle_func_name(ts, { pair.second.str }, node.call.args, linkage);
+
+                    auto sym = find_symbol(ts, { pair.first, node.call.mangled_name });
                     if (sym && sym->kind == symbol_kind::top_level_func) {
                         auto local = sym->scope->local_defs[sym->local_index];
                         node.type_id = local->self->type_def.func.ret_type;
@@ -582,7 +714,7 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
     case ast_type::identifier: {
         if (node.type_id != invalid_type) return node.type_id;
 
-        auto sym = find_symbol(ts, node.id_hash);
+        auto sym = find_symbol(ts, separate_module_identifier(node.id_parts));
         if (sym && sym->kind == symbol_kind::local) {
             auto local = sym->scope->local_defs[sym->local_index];
 
@@ -596,6 +728,7 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
     case ast_type::int_literal:
     case ast_type::float_literal:
     case ast_type::string_literal:
+    case ast_type::cast_expr:
     case ast_type::binary_expr: {
         visit_children(ts, node);
         node.type_id = get_value_node_type(ts, node);
@@ -679,13 +812,101 @@ void final_analysis(type_system& ts, ast_node* nodeptr) {
     }
 }
 
+void spit_declaration(type_system& ts, ast_node& node, std::ofstream& file) {
+    switch (node.type) {
+    case ast_type::import_decl: {
+        file << "import " << build_identifier_value(node.children[0]->id_parts);
+        if (node.children[1]) {
+            file << " as " << build_identifier_value(node.children[1]->id_parts);
+        }
+        file << ";\n";
+        break;
+    }
+    case ast_type::linkage_specifier: {
+        for (auto& child : node.children) {
+            if (child) {
+                child->func.linkage = node.func.linkage;
+                spit_declaration(ts, *child, file);
+            }
+        }
+        break;
+    }
+    case ast_type::func_decl: {
+        auto linkage = node.func.linkage;
+        if (linkage == func_linkage::local_carbon) {
+            linkage = func_linkage::external_carbon;
+        }
+        file << func_linkage_name(linkage) << " " << build_identifier_value(node.children[0]->id_parts);
+        file << "(";
+
+        file << "):";
+        spit_declaration(ts, *node.children[ast_node::child_func_decl_ret_type], file);
+        file << ";\n";
+        break;
+    }
+    case ast_type::visibility_specifier: {
+        if (node.op == token_type::public_) {
+            for (auto& child : node.children) {
+                if (child) {
+                    spit_declaration(ts, *child, file);
+                }
+            }
+        }
+        break;
+    }
+    default: {
+        for (auto& child : node.children) {
+            if (child) {
+                spit_declaration(ts, *child, file);
+            }
+        }
+        break;
+    }
+    }
+}
+
+void create_interface_file(type_system& ts, ast_node& unit) {
+    auto path = "_carbon/interface/" + std::string{ unit.string_value };
+    replace(path, ".cb", ".cbi");
+    ensure_directory_exists(path);
+    std::ofstream ifile{ path };
+    for (auto& child : unit.children) {
+        if (child) {
+            spit_declaration(ts, *child, ifile);
+        }
+    }
+}
+
+void resolve_imports(type_system& ts, ast_node& node) {
+    if (node.scope.kind != scope_kind::invalid) {
+        for (auto& imp : node.scope.imports) {
+            if (imp.qual_name.hash == node.scope.self_module_key.hash) {
+                assert(!"TODO: error self import");
+                continue;
+            }
+
+            if (ts.modules.find(imp.qual_name) == ts.modules.end()) {
+                assert(!"TODO: look for interface file");
+                continue;
+            }
+        }
+    }
+    visit_children(ts, node);
+}
+
 void visit_tree(type_system& ts, ast_node& node) {
     switch (ts.pass) {
+    case type_system_pass::create_interface_files:
+        create_interface_file(ts, node);
+        break;
     case type_system_pass::resolve_literals_and_register_declarations:
     case type_system_pass::resolve_all: {
         resolve_node_type(ts, &node);
         break;
     }
+    case type_system_pass::resolve_imports:
+        resolve_imports(ts, node);
+        break;
     case type_system_pass::perform_checks:
         type_check_node(ts, &node);
         break;
@@ -708,7 +929,8 @@ type_system::type_system(memory_arena& arena) {
 
         type_def& tf = node->type_def;
         tf.kind = type_kind::unit;
-        tf.name = string_hash{ "()" };
+        tf.name = string_hash{ "void" };
+        tf.mangled_name = string_hash{ "void" };
         register_builtin_type(*this, std::move(node));
     }
 
@@ -718,9 +940,10 @@ type_system::type_system(memory_arena& arena) {
         type_def& tf = node->type_def;
         tf.kind = type_kind::pointer;
         tf.name = string_hash{ "raw_ptr" };
+        tf.mangled_name = string_hash{ "raw_ptr" };
         tf.size = sizeof(void*);
         tf.alignment = alignof(void*);
-        tf.elem_type = builtin_scope->scope.type_map[hash("()")];
+        tf.elem_type = { builtin_scope->scope.symbols[string_hash{"void"}].scope, 0 };
         register_builtin_type(*this, std::move(node));
     }
 
@@ -775,18 +998,26 @@ type_system::type_system(memory_arena& arena) {
 */
 }
 
-void type_system::process_ast_node(ast_node& node) {
+void type_system::process_code_unit(ast_node& node) {
     this->pass = type_system_pass::resolve_literals_and_register_declarations;
     this->code_units.push_back(&node);
 
-    add_scope(*this, node, scope_kind::global);
+    add_scope(*this, node, scope_kind::code_unit);
     visit_tree(*this, node);
     leave_scope();
 }
 
 void type_system::resolve_and_check() {
-    this->pass = type_system_pass::resolve_all;
+    this->pass = type_system_pass::resolve_imports;
+    for (auto unit : this->code_units) {
+        for (auto unit : this->code_units) {
+            enter_scope(*unit);
+            visit_tree(*this, *unit);
+            leave_scope();
+        }
+    }
 
+    this->pass = type_system_pass::resolve_all;
     for (int i = 0; i < 1000; i++) {
         this->unresolved_types = false;
         for (auto unit : this->code_units) {
@@ -839,7 +1070,7 @@ void type_system::create_temp_variable_for_binary_expr(ast_node& node) {
     node.local.type_node = nullptr;
 
     resolve_local_variable_type(*this, node);
-    declare_local_symbol(*this, node.local.id_node->id_hash, node);
+    declare_local_symbol(*this, { node.local.id_node->id_parts.front() }, node);
     node.temps.push_back(std::move(id_node));
 }
 

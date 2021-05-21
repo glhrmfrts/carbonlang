@@ -1,4 +1,4 @@
-func println(c: raw_string) {
+func println(c: raw_string): int {
 	puts(c);
 }
 

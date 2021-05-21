@@ -1,5 +1,6 @@
 #pragma once
 
+#include <optional>
 #include <vector>
 #include <string>
 #include <unordered_map>
@@ -99,6 +100,7 @@ struct local_def {
 enum class symbol_kind {
     local,
     top_level_func,
+    type,
 };
 
 struct symbol_info {
@@ -107,6 +109,9 @@ struct symbol_info {
 
     // if kind == local
     int local_index = -1;
+
+    // if kind == type
+    int type_index = -1;
 };
 
 struct lvalue {
@@ -122,10 +127,15 @@ struct call_info {
     type_id func_type_id{};
 };
 
+struct scope_import {
+    string_hash qual_name;
+    std::optional<string_hash> alias;
+};
+
 enum class scope_kind {
     invalid,
     builtin,
-    global,
+    code_unit,
     func_body,
     block,
 };
@@ -135,9 +145,12 @@ struct scope_def {
 
     std::vector<type_def*> type_defs;
     std::vector<local_def*> local_defs;
+    std::vector<scope_import> imports;
+    string_hash self_module_key;
+    std::vector<std::string> self_module_parts;
 
-    std::unordered_map<std::size_t, type_id> type_map;
-    std::unordered_map<std::size_t, symbol_info> symbols;
+    std::unordered_map<string_hash, symbol_info> symbols;
+    std::unordered_map<string_hash, int> imports_map;
 
     std::vector<scope_def*> children;
     scope_def* parent = nullptr;
@@ -155,9 +168,11 @@ struct func_def {
 
 enum class type_system_pass {
     resolve_literals_and_register_declarations,
+    resolve_imports,
     resolve_all,
     perform_checks,
     final_analysis,
+    create_interface_files,
 };
 
 struct type_system {
@@ -173,9 +188,11 @@ struct type_system {
     memory_arena* ast_arena;
     std::vector<ast_node*> code_units;
 
+    std::unordered_map<string_hash, scope_def*> modules;
+
     explicit type_system(memory_arena&);
 
-    void process_ast_node(ast_node& node);
+    void process_code_unit(ast_node& node);
 
     void resolve_and_check();
 

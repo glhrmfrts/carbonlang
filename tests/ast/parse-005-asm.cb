@@ -7,27 +7,27 @@ extern puts
 
 }
     func_decl{
-      identifier{""}
+      identifier{"println"}
       arg_list(
         var_decl{
-          identifier{""}
-          :          type_expr{
-                        identifier{""}}})
-      :      type_expr{
-                identifier{""}}
-      compound_stmt{
+          identifier{"x"}
+          :type_expr{
+            identifier{"raw_string"}}})
+      :type_expr{
+        identifier{"int"}}
+compound_stmt{
         decl_list{
           asm_stmt{
             call puts }}}}
     func_decl{
-      identifier{""}
+      identifier{"main"}
       arg_list()
-      :      type_expr{
-                identifier{""}}
-      compound_stmt{
+      :type_expr{
+        identifier{"int"}}
+compound_stmt{
         stmt_list{
           return_stmt{
                         call_expr{
-              identifier{""}
+              identifier{"println"}
               arg_list(
                 string_literal{"hello world from Carbon asm!"})}}}}}}}

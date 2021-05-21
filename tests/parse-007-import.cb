@@ -1,2 +1,6 @@
 import std::io;
 import std::filesystem as fs;
+
+private extern {
+	func puts(c: raw_string): int;
+}

@@ -2,22 +2,22 @@ code_unit{
   tests/parse-001-var_declaration.cb
   decl_list{
     var_decl{
-      identifier{""}
-      :      type_expr{
-                identifier{""}}}
+      identifier{"bar"}
+      :type_expr{
+        identifier{"int"}}}
     var_decl{
-      identifier{""}
-      =      string_literal{"hello"}}
+      identifier{"name"}
+      =string_literal{"hello"}}
     var_decl{
-      identifier{""}
-      :      type_expr{
-                identifier{""}}
-      =      binary_expr{
+      identifier{"foo"}
+      :type_expr{
+        identifier{"raw_string"}}
+      =binary_expr{
         binary_expr{
           int_literal{3}
           *
           int_literal{4}}
         +
         call_expr{
-          identifier{""}
+          identifier{"ok"}
           arg_list()}}}}}

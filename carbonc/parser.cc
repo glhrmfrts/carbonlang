@@ -304,6 +304,7 @@ struct parser_impl {
         auto pos = lex->pos();
         auto spec = lex->current();
         auto content = arena_ptr<ast_node>{ nullptr, nullptr };
+        lex->next();
 
         if (TOK_CHAR == '{') {
             lex->next();
@@ -525,6 +526,33 @@ struct parser_impl {
             return make_unary_expr_node(*ast_arena, pos, op, parse_expr());
         }
         
+        return parse_cast_expr();
+    }
+
+    arena_ptr<ast_node> parse_cast_expr() {
+        auto pos = lex->pos();
+        if (TOK == token_type::cast_) {
+            lex->next();
+
+            if (TOK_CHAR != '[') {
+                throw parse_error(filename, lex->pos(), "invalid cast expression");
+            }
+            lex->next();
+
+            auto type_expr = parse_type_expr();
+            if (TOK_CHAR != ']') {
+                throw parse_error(filename, lex->pos(), "invalid cast expression");
+            }
+            lex->next();
+
+            auto value = parse_call_expr();
+            if (!value) {
+                throw parse_error(filename, lex->pos(), "invalid cast expression");
+            }
+
+            return make_cast_expr_node(*ast_arena, pos, std::move(type_expr), std::move(value));
+        }
+
         return parse_call_expr();
     }
 
