@@ -1,5 +1,0 @@
-using std;
-
-func main(argc: int, argv: &[]string) {
-
-}

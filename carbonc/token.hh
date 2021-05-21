@@ -28,6 +28,12 @@ enum class token_type : unsigned int {
     pure,
     type,
     asm_,
+    private_,
+    public_,
+    internal_,
+    import_,
+    as_,
+    coloncolon,
 };
 
 struct position {

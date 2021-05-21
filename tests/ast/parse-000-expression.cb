@@ -1,16 +1,18 @@
-decl_list{
-  var_decl{
-    identifier{"foo"}
-    =    call_expr{
-      identifier{"square"}
-      arg_list(
-        int_literal{2}
-        int_literal{5}
-        string_literal{"ok"}
-        binary_expr{
+code_unit{
+  tests/parse-000-expression.cb
+  decl_list{
+    var_decl{
+      identifier{""}
+      =      call_expr{
+        identifier{""}
+        arg_list(
+          int_literal{2}
+          int_literal{5}
+          string_literal{"ok"}
           binary_expr{
-            int_literal{3}
-            *
-            identifier{"number"}}
-          +
-          identifier{"i"}})}}}
+            binary_expr{
+              int_literal{3}
+              *
+              identifier{""}}
+            +
+            identifier{""}})}}}}

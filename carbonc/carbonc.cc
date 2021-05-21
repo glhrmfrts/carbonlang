@@ -17,7 +17,8 @@ int main(int argc, const char* argv[]) {
 
     auto parser_test_files = { 
         "parse-000-expression.cb", "parse-001-var_declaration.cb", "parse-002-func_declaration.cb",
-        "parse-003-type_declaration.cb", "parse-004-vecmath.cb", "parse-005-asm.cb", "parse-006-externfunc.cb"
+        "parse-003-type_declaration.cb", "parse-004-vecmath.cb", "parse-005-asm.cb", "parse-006-externfunc.cb",
+        "parse-007-import.cb"
     };
     for (const std::string& filename : parser_test_files) {
         std::string src;
@@ -27,7 +28,7 @@ int main(int argc, const char* argv[]) {
         arena_ptr<ast_node> ast{ nullptr, nullptr };
 
         try {
-            ast = p.parse_decl_list();
+            ast = p.parse_code_unit();
         }
         catch (const parse_error& e) {
             std::cerr << "carbonc - parse error: " << e.what() << "\n";
@@ -45,6 +46,7 @@ int main(int argc, const char* argv[]) {
         ast_file << "\n";
     }
 
+#if 0
     auto compiler_test_files = {
         "compile-000-main.cb", "compile-001-local_vars.cb", "compile-002-func_call.cb", "compile-003-strings.cb",
         "compile-004-asm.cb", "compile-005-externfunc.cb"
@@ -88,6 +90,7 @@ int main(int argc, const char* argv[]) {
         //std::FILE* assembler = _popen(("ml64.exe tests/asm/"+ fn + " /link /entry:main").c_str(), "r");
         //_pclose(assembler);
     }
+#endif
 
     return 0;
 }

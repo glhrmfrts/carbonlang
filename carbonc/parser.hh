@@ -15,6 +15,8 @@ struct parser {
 
     ~parser();
 
+    arena_ptr<ast_node> parse_code_unit();
+
     arena_ptr<ast_node> parse_decl_list();
 
     arena_ptr<ast_node> parse_expr();

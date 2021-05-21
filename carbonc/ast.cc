@@ -45,18 +45,12 @@ arena_ptr<ast_node> make_string_literal_node(memory_arena& arena, const position
     return std::move(ptr);
 }
 
-arena_ptr<ast_node> make_identifier_node(memory_arena& arena, const position& pos, std::string&& value) {
+arena_ptr<ast_node> make_identifier_node(memory_arena& arena, const position& pos, const std::vector<std::string>& values) {
     auto ptr = make_in_arena<ast_node>(arena);
     ptr->node_id = node_id_gen++;
     ptr->type = ast_type::identifier;
     ptr->pos = pos;
-
-    char* data = alloc_many<char>(arena, value.size() + 1);
-    std::memcpy(data, value.data(), value.size());
-    data[value.size()] = '\0';
-
-    ptr->id_hash = std::hash<std::string>{}(value);
-    ptr->string_value = std::string_view{ data, value.size() };
+    ptr->id_parts = values;
     return std::move(ptr);
 }
 
@@ -98,6 +92,16 @@ arena_ptr<ast_node> make_call_expr_node(memory_arena& arena, const position& pos
     ptr->pos = pos;
     ptr->children.push_back(std::move(callee));
     ptr->children.push_back(std::move(arg_list));
+    return ptr;
+}
+
+arena_ptr<ast_node> make_import_decl_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& mod, arena_ptr<ast_node>&& alias) {
+    auto ptr = make_in_arena<ast_node>(arena);
+    ptr->node_id = node_id_gen++;
+    ptr->type = ast_type::import_decl;
+    ptr->pos = pos;
+    ptr->children.push_back(std::move(mod));
+    ptr->children.push_back(std::move(alias));
     return ptr;
 }
 
@@ -251,6 +255,30 @@ arena_ptr<ast_node> make_linkage_specifier_node(memory_arena& arena, const posit
     ptr->pos = pos;
     ptr->func.linkage = l;
     ptr->children.push_back(std::move(content));
+    return ptr;
+}
+
+arena_ptr<ast_node> make_visibility_specifier_node(memory_arena& arena, const position& pos, token_type spec, arena_ptr<ast_node>&& content) {
+    auto ptr = make_in_arena<ast_node>(arena);
+    ptr->node_id = node_id_gen++;
+    ptr->type = ast_type::visibility_specifier;
+    ptr->pos = pos;
+    ptr->op = spec;
+    ptr->children.push_back(std::move(content));
+    return ptr;
+}
+
+arena_ptr<ast_node> make_code_unit_node(memory_arena& arena, const position& pos, const std::string& filename, arena_ptr<ast_node>&& decls) {
+    auto ptr = make_in_arena<ast_node>(arena);
+    ptr->node_id = node_id_gen++;
+    ptr->type = ast_type::code_unit;
+    ptr->pos = pos;
+    char* data = alloc_many<char>(arena, filename.size() + 1);
+    std::memcpy(data, filename.data(), filename.size());
+    data[filename.size()] = '\0';
+
+    ptr->string_value = std::string_view{ data, filename.size() };
+    ptr->children.push_back(std::move(decls));
     return ptr;
 }
 

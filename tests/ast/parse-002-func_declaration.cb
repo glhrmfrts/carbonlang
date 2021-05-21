@@ -1,49 +1,51 @@
-decl_list{
-  func_decl{
-    identifier{"main"}
-    arg_list(
-      var_decl{
-        identifier{"args"}
-        :        type_expr{
-                    identifier{"string"}}})
-    :    type_expr{
-            identifier{"int"}}
-    compound_stmt{
-      decl_list{
+code_unit{
+  tests/parse-002-func_declaration.cb
+  decl_list{
+    func_decl{
+      identifier{""}
+      arg_list(
         var_decl{
-          identifier{"ok"}
+          identifier{""}
           :          type_expr{
-                        identifier{"bool"}}}}
-      stmt_list{
-        call_expr{
-          identifier{"println"}
-          arg_list(
-            string_literal{"Hello, world"})}
-        return_stmt{
-                    int_literal{0}}}}}
-  func_decl{
-    identifier{"subroutine"}
-    arg_list(
-      var_decl{
-        identifier{"x"}
-        :        type_expr{
-                    identifier{"int"}}})
-    :    type_expr{
-            identifier{"int"}}
-    compound_stmt{
-      stmt_list{
-        call_expr{
-          identifier{"println"}
-          arg_list(
-            string_literal{"doing something"})}}}}
-  func_decl{
-    identifier{"subroutine_no_args"}
-    arg_list()
-    :    type_expr{
-            identifier{"int"}}
-    compound_stmt{
-      stmt_list{
-        call_expr{
-          identifier{"println"}
-          arg_list(
-            string_literal{"doing something"})}}}}}
+                        identifier{""}}})
+      :      type_expr{
+                identifier{""}}
+      compound_stmt{
+        decl_list{
+          var_decl{
+            identifier{""}
+            :            type_expr{
+                            identifier{""}}}}
+        stmt_list{
+          call_expr{
+            identifier{""}
+            arg_list(
+              string_literal{"Hello, world"})}
+          return_stmt{
+                        int_literal{0}}}}}
+    func_decl{
+      identifier{""}
+      arg_list(
+        var_decl{
+          identifier{""}
+          :          type_expr{
+                        identifier{""}}})
+      :      type_expr{
+                identifier{""}}
+      compound_stmt{
+        stmt_list{
+          call_expr{
+            identifier{""}
+            arg_list(
+              string_literal{"doing something"})}}}}
+    func_decl{
+      identifier{""}
+      arg_list()
+      :      type_expr{
+                identifier{""}}
+      compound_stmt{
+        stmt_list{
+          call_expr{
+            identifier{""}
+            arg_list(
+              string_literal{"doing something"})}}}}}}

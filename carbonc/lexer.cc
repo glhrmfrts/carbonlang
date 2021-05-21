@@ -13,6 +13,7 @@ static std::unordered_map<int, token_type> stb_to_token = {
     {CLEX_intlit, token_type::int_literal},
     {CLEX_floatlit, token_type::float_literal},
     {CLEX_dqstring, token_type::string_literal},
+    {CLEX_coloncolon, token_type::coloncolon},
 };
 
 struct lexer_impl {
@@ -103,6 +104,11 @@ struct lexer_impl {
 
     token_type transform_c_lexer_identifier() const {
         switch (l.string_len) {
+        case 2:
+            if (!std::strcmp("as", l.string)) {
+                return token_type::as_;
+            }
+            break;
         case 3:
             if (!std::strcmp("let", l.string)) {
                 return token_type::let;
@@ -139,6 +145,22 @@ struct lexer_impl {
             }
             if (!std::strcmp("extern", l.string)) {
                 return token_type::extern_;
+            }
+            if (!std::strcmp("public", l.string)) {
+                return token_type::public_;
+            }
+            if (!std::strcmp("import", l.string)) {
+                return token_type::import_;
+            }
+            break;
+        case 7:
+            if (!std::strcmp("private", l.string)) {
+                return token_type::private_;
+            }
+            break;
+        case 8:
+            if (!std::strcmp("internal", l.string)) {
+                return token_type::internal_;
             }
             break;
         }

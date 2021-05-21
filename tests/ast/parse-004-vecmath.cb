@@ -1,240 +1,242 @@
-decl_list{
-  type_decl{
-    identifier{"Vector2"}
-    =    type_expr{
-            struct_type{
+code_unit{
+  tests/parse-004-vecmath.cb
+  decl_list{
+    type_decl{
+      identifier{""}
+      =      type_expr{
+                struct_type{
+                    arg_list(
+            var_decl{
+              identifier{""}
+              :              type_expr{
+                                identifier{""}}}
+            var_decl{
+              identifier{""}
+              :              type_expr{
+                                identifier{""}}})}}}
+    func_decl{
+      identifier{""}
+      arg_list(
+        var_decl{
+          identifier{""}
+          :          type_expr{
+                        identifier{""}}}
+        var_decl{
+          identifier{""}
+          :          type_expr{
+                        identifier{""}}})
+      :      type_expr{
+                identifier{""}}
+      compound_stmt{
+        stmt_list{
+          return_stmt{
+                        binary_expr{
+              identifier{""}
+              +
+              identifier{""}}}}}}
+    func_decl{
+      identifier{""}
+      arg_list(
+        var_decl{
+          identifier{""}
+          :          type_expr{
+                        identifier{""}}}
+        var_decl{
+          identifier{""}
+          :          type_expr{
+                        identifier{""}}})
+      :      type_expr{
+                identifier{""}}
+      compound_stmt{
+        stmt_list{
+          return_stmt{
+                        binary_expr{
+              identifier{""}
+              -
+              identifier{""}}}}}}
+    func_decl{
+      identifier{""}
+      arg_list(
+        var_decl{
+          identifier{""}
+          :          type_expr{
+                        identifier{""}}}
+        var_decl{
+          identifier{""}
+          :          type_expr{
+                        identifier{""}}})
+      compound_stmt{
+        stmt_list{
+          return_stmt{
+                        binary_expr{
+              identifier{""}
+              *
+              identifier{""}}}}}}
+    func_decl{
+      identifier{""}
+      arg_list(
+        var_decl{
+          identifier{""}
+          :          type_expr{
+                        identifier{""}}}
+        var_decl{
+          identifier{""}
+          :          type_expr{
+                        array_type{
+              size=dynamic
+              type_expr{
+                                identifier{""}}}}})
+      :      type_expr{
+                identifier{""}}
+      compound_stmt{
+        decl_list{
+          var_decl{
+            identifier{""}
+            :            type_expr{
+                            identifier{""}}
+            =            init_expr{
+              arg_list(
+                var_decl{
+                  identifier{""}
+                  =                  int_literal{0}}
+                var_decl{
+                  identifier{""}
+                  =                  int_literal{0}})}}
+          var_decl{
+            identifier{""}
+            :            type_expr{
+                            identifier{""}}
+            =            init_expr{
+              arg_list(
+                int_literal{0}
+                int_literal{0})}}
+          var_decl{
+            identifier{""}
+            =            init_expr{
+              type=              identifier{""}
+              arg_list(
+                int_literal{0}
+                int_literal{0})}}
+          var_decl{
+            identifier{""}
+            =            init_expr{
+              type=              identifier{""}
+              arg_list(
+                int_literal{0}
+                int_literal{0})}}
+          var_decl{
+            identifier{""}
+            =            init_expr{
+              type=              identifier{""}
+              arg_list(
+                var_decl{
+                  identifier{""}
+                  =                  init_expr{
+                    arg_list(
+                      int_literal{0}
+                      int_literal{0})}}
+                var_decl{
+                  identifier{""}
+                  =                  init_expr{
+                    arg_list(
+                      int_literal{0}
+                      int_literal{0})}})}}
+          var_decl{
+            identifier{""}
+            =            init_expr{
+              type=              identifier{""}
+              arg_list(
+                var_decl{
+                  identifier{""}
+                  =                  init_expr{
+                    arg_list(
+                      int_literal{0}
+                      int_literal{0})}}
+                var_decl{
+                  identifier{""}
+                  =                  init_expr{
+                    arg_list(
+                      int_literal{0}
+                      int_literal{0})}})}}
+          var_decl{
+            identifier{""}
+            =            init_expr{
+              type=              type_expr{
+                                array_type{
+                  size=dynamic
+                  type_expr{
+                                        identifier{""}}}}
+              arg_list(
+                float_literal{1}
+                float_literal{0})}}
+          var_decl{
+            identifier{""}
+            =            init_expr{
+              type=              type_expr{
+                                array_type{
+                  size=dynamic
+                  type_expr{
+                                        identifier{""}}}}
+              arg_list(
+                float_literal{1}
+                float_literal{0})}}}
+        stmt_list{
+          call_expr{
+            identifier{""}
+            arg_list(
+              call_expr{
+                identifier{""}
                 arg_list(
+                  identifier{""}
+                  identifier{""})})}
+          call_expr{
+            identifier{""}
+            arg_list(
+              call_expr{
+                identifier{""}
+                arg_list(
+                  identifier{""}
+                  identifier{""})})}
+          call_expr{
+            identifier{""}
+            arg_list(
+              call_expr{
+                identifier{""}
+                arg_list(
+                  identifier{""}
+                  identifier{""})})}}
+        decl_list{
           var_decl{
-            identifier{"x"}
+            identifier{""}
             :            type_expr{
-                            identifier{"float"}}}
+                            identifier{""}}}}
+        stmt_list{
+          return_stmt{
+                        identifier{""}}}}}
+    func_decl{
+      identifier{""}
+      arg_list()
+      compound_stmt{
+        decl_list{
           var_decl{
-            identifier{"y"}
+            identifier{""}
             :            type_expr{
-                            identifier{"float"}}})}}}
-  func_decl{
-    identifier{"add"}
-    arg_list(
-      var_decl{
-        identifier{"a"}
-        :        type_expr{
-                    identifier{"Vector2"}}}
-      var_decl{
-        identifier{"b"}
-        :        type_expr{
-                    identifier{"Vector2"}}})
-    :    type_expr{
-            identifier{"Vector2"}}
-    compound_stmt{
-      stmt_list{
-        return_stmt{
-                    binary_expr{
-            identifier{"a"}
-            +
-            identifier{"b"}}}}}}
-  func_decl{
-    identifier{"sub"}
-    arg_list(
-      var_decl{
-        identifier{"a"}
-        :        type_expr{
-                    identifier{"Vector2"}}}
-      var_decl{
-        identifier{"b"}
-        :        type_expr{
-                    identifier{"Vector2"}}})
-    :    type_expr{
-            identifier{"Vector2"}}
-    compound_stmt{
-      stmt_list{
-        return_stmt{
-                    binary_expr{
-            identifier{"a"}
-            -
-            identifier{"b"}}}}}}
-  func_decl{
-    identifier{"mul"}
-    arg_list(
-      var_decl{
-        identifier{"a"}
-        :        type_expr{
-                    identifier{"Vector2"}}}
-      var_decl{
-        identifier{"b"}
-        :        type_expr{
-                    identifier{"Vector2"}}})
-    compound_stmt{
-      stmt_list{
-        return_stmt{
-                    binary_expr{
-            identifier{"a"}
-            *
-            identifier{"b"}}}}}}
-  func_decl{
-    identifier{"main"}
-    arg_list(
-      var_decl{
-        identifier{"argc"}
-        :        type_expr{
-                    identifier{"int"}}}
-      var_decl{
-        identifier{"argv"}
-        :        type_expr{
-                    array_type{
-            size=dynamic
-            type_expr{
-                            identifier{"raw_string"}}}}})
-    :    type_expr{
-            identifier{"int"}}
-    compound_stmt{
-      decl_list{
-        var_decl{
-          identifier{"vel"}
-          :          type_expr{
-                        identifier{"Vector2"}}
-          =          init_expr{
-            arg_list(
-              var_decl{
-                identifier{"x"}
-                =                int_literal{0}}
-              var_decl{
-                identifier{"y"}
-                =                int_literal{0}})}}
-        var_decl{
-          identifier{"pos"}
-          :          type_expr{
-                        identifier{"Vector2"}}
-          =          init_expr{
-            arg_list(
-              int_literal{0}
-              int_literal{0})}}
-        var_decl{
-          identifier{"pos"}
-          =          init_expr{
-            type=            identifier{"Vector2"}
-            arg_list(
-              int_literal{0}
-              int_literal{0})}}
-        var_decl{
-          identifier{"vel"}
-          =          init_expr{
-            type=            identifier{"Vector2"}
-            arg_list(
-              int_literal{0}
-              int_literal{0})}}
-        var_decl{
-          identifier{"state"}
-          =          init_expr{
-            type=            identifier{"State"}
-            arg_list(
-              var_decl{
-                identifier{"position"}
-                =                init_expr{
-                  arg_list(
-                    int_literal{0}
-                    int_literal{0})}}
-              var_decl{
-                identifier{"velocity"}
-                =                init_expr{
-                  arg_list(
-                    int_literal{0}
-                    int_literal{0})}})}}
-        var_decl{
-          identifier{"state"}
-          =          init_expr{
-            type=            identifier{"State"}
-            arg_list(
-              var_decl{
-                identifier{"position"}
-                =                init_expr{
-                  arg_list(
-                    int_literal{0}
-                    int_literal{0})}}
-              var_decl{
-                identifier{"velocity"}
-                =                init_expr{
-                  arg_list(
-                    int_literal{0}
-                    int_literal{0})}})}}
-        var_decl{
-          identifier{"arr"}
-          =          init_expr{
-            type=            type_expr{
-                            array_type{
-                size=dynamic
-                type_expr{
-                                    identifier{"float"}}}}
-            arg_list(
-              float_literal{1}
-              float_literal{0})}}
-        var_decl{
-          identifier{"arr2"}
-          =          init_expr{
-            type=            type_expr{
-                            array_type{
-                size=dynamic
-                type_expr{
-                                    identifier{"float"}}}}
-            arg_list(
-              float_literal{1}
-              float_literal{0})}}}
-      stmt_list{
-        call_expr{
-          identifier{"println"}
-          arg_list(
-            call_expr{
-              identifier{"add"}
-              arg_list(
-                identifier{"pos"}
-                identifier{"vel"})})}
-        call_expr{
-          identifier{"println"}
-          arg_list(
-            call_expr{
-              identifier{"sub"}
-              arg_list(
-                identifier{"pos"}
-                identifier{"vel"})})}
-        call_expr{
-          identifier{"println"}
-          arg_list(
-            call_expr{
-              identifier{"mul"}
-              arg_list(
-                identifier{"pos"}
-                identifier{"vel"})})}}
-      decl_list{
-        var_decl{
-          identifier{"ok"}
-          :          type_expr{
-                        identifier{"bool"}}}}
-      stmt_list{
-        return_stmt{
-                    identifier{"ok"}}}}}
-  func_decl{
-    identifier{"other_stuff"}
-    arg_list()
-    compound_stmt{
-      decl_list{
-        var_decl{
-          identifier{"a"}
-          :          type_expr{
-                        identifier{"int"}}
-          =          int_literal{500}}}
-      stmt_list{
-        return_stmt{
-                    binary_expr{
-            int_literal{244}
-            +
-            identifier{"a"}}}}}}
-  func_decl{
-    identifier{"main"}
-    arg_list()
-    :    type_expr{
-            identifier{"int"}}
-    compound_stmt{
-      stmt_list{
-        return_stmt{
-                    call_expr{
-            identifier{"other_stuff"}
-            arg_list()}}}}}}
+                            identifier{""}}
+            =            int_literal{500}}}
+        stmt_list{
+          return_stmt{
+                        binary_expr{
+              int_literal{244}
+              +
+              identifier{""}}}}}}
+    func_decl{
+      identifier{""}
+      arg_list()
+      :      type_expr{
+                identifier{""}}
+      compound_stmt{
+        stmt_list{
+          return_stmt{
+                        call_expr{
+              identifier{""}
+              arg_list()}}}}}}}

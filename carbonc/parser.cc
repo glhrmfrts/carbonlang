@@ -28,6 +28,15 @@ struct parser_impl {
     explicit parser_impl(memory_arena& arena, std::string_view src, const std::string& fn)
         : ast_arena{ &arena }, lex{ std::make_unique<lexer>(src) }, filename{ fn }, ctx_stack{ {parse_context::root} }, func_body_level{ 0 } {}
 
+    arena_ptr<ast_node> parse_code_unit() {
+        auto pos = lex->pos();
+        auto decls = parse_decl_list();
+        if (decls) {
+            return make_code_unit_node(*ast_arena, pos, filename, std::move(decls));
+        }
+        return arena_ptr<ast_node>{nullptr, nullptr};
+    }
+
     // Section: types
 
     arena_ptr<ast_node> parse_type_expr(bool no_error = false, bool no_wrap = false) {
@@ -58,7 +67,7 @@ struct parser_impl {
         }
         else if (TOK == token_type::identifier) {
             scope_guard _{ [this]() { lex->next(); } };
-            result = make_identifier_node(*ast_arena, lex->pos(), lex->string_value());
+            result = make_identifier_node(*ast_arena, lex->pos(), { lex->string_value() });
         }
 
         if (result) {
@@ -113,7 +122,7 @@ struct parser_impl {
             return make_struct_type_node(*ast_arena, pos, std::move(field_list));
         }
         else if (field_list->children.empty()) {
-            return make_identifier_node(*ast_arena, lex->pos(), "void");
+            return make_identifier_node(*ast_arena, lex->pos(), { "void" });
         }
     }
 
@@ -276,13 +285,41 @@ struct parser_impl {
             return parse_func_decl();
         case token_type::type:
             return parse_type_decl();
+        case token_type::import_:
+            return parse_import_decl();
         case token_type::asm_:
             return parse_asm_stmt();
         case token_type::extern_:
             return parse_linkage_decl();
+        case token_type::public_:
+        case token_type::private_:
+        case token_type::internal_:
+            return parse_visibility_specifier_decl();
         default:
             return arena_ptr<ast_node>{nullptr, nullptr};
         }
+    }
+
+    arena_ptr<ast_node> parse_visibility_specifier_decl() {
+        auto pos = lex->pos();
+        auto spec = lex->current();
+        auto content = arena_ptr<ast_node>{ nullptr, nullptr };
+
+        if (TOK_CHAR == '{') {
+            lex->next();
+
+            auto decls = parse_decl_list();
+            if (TOK_CHAR != '}') {
+                throw parse_error(filename, lex->pos(), "expecting closing '}' in function linkage declaration");
+            }
+            lex->next();
+            content = std::move(decls);
+        }
+        else {
+            content = parse_decl();
+        }
+
+        return make_visibility_specifier_node(*ast_arena, pos, spec, std::move(content));
     }
 
     std::optional<func_linkage> parse_func_linkage() {
@@ -334,6 +371,26 @@ struct parser_impl {
         return make_linkage_specifier_node(*ast_arena, pos, linkage, std::move(content));
     }
 
+    arena_ptr<ast_node> parse_import_decl() {
+        auto pos = lex->pos();
+        lex->next(); // eat the 'import'
+
+        auto id = parse_qualified_identifier();
+        auto alias = arena_ptr<ast_node>{ nullptr, nullptr };
+
+        if (TOK == token_type::as_) {
+            lex->next();
+            if (TOK != token_type::identifier) {
+                throw parse_error(filename, lex->pos(), "expecting identifier in import declaration alias");
+            }
+            
+            alias = make_identifier_node(*ast_arena, lex->pos(), { lex->string_value() });
+            lex->next();
+        }
+
+        return make_import_decl_node(*ast_arena, pos, std::move(id), std::move(alias));
+    }
+
     arena_ptr<ast_node> parse_type_decl() {
         auto pos = lex->pos();
         lex->next(); // eat the 'type'
@@ -341,7 +398,7 @@ struct parser_impl {
         if (TOK != token_type::identifier) {
             throw parse_error(filename, lex->pos(), "expected identifier in type declaration");
         }
-        auto id = make_identifier_node(*ast_arena, lex->pos(), lex->string_value());
+        auto id = make_identifier_node(*ast_arena, lex->pos(), { lex->string_value() });
         lex->next();
 
         auto contents = arena_ptr<ast_node>{ nullptr, nullptr };
@@ -364,7 +421,7 @@ struct parser_impl {
         if (TOK != token_type::identifier) {
             throw parse_error(filename, lex->pos(), "expected identifier in func declaration");
         }
-        auto id = make_identifier_node(*ast_arena, lex->pos(), lex->string_value());
+        auto id = make_identifier_node(*ast_arena, lex->pos(), { lex->string_value() });
         lex->next();
 
         auto arg_list = arena_ptr<ast_node>{ nullptr, nullptr };
@@ -408,7 +465,7 @@ struct parser_impl {
         if (TOK != token_type::identifier) {
             throw parse_error(filename, lex->pos(), "expected identifier in variable declaration");
         }
-        auto id = make_identifier_node(*ast_arena, lex->pos(), lex->string_value());
+        auto id = make_identifier_node(*ast_arena, lex->pos(), { lex->string_value() });
         lex->next();
 
         arena_ptr<ast_node> var_type{nullptr, nullptr};
@@ -520,8 +577,7 @@ struct parser_impl {
             return make_string_literal_node(*ast_arena, lex->pos(), lex->string_value());
         }
         case token_type::identifier: {
-            scope_guard _{ [this]() { lex->next(); } };
-            return make_identifier_node(*ast_arena, lex->pos(), lex->string_value());
+            return parse_qualified_identifier();
         }
         default: {
             char c = TOK_CHAR;
@@ -562,7 +618,7 @@ struct parser_impl {
                         throw parse_error(filename, lex->pos(), "expected identifier in designated initializer");
                     }
 
-                    auto id = make_identifier_node(*ast_arena, lex->pos(), lex->string_value());
+                    auto id = make_identifier_node(*ast_arena, lex->pos(), { lex->string_value() });
                     lex->next();
 
                     if (TOK_CHAR != '=') {
@@ -588,6 +644,24 @@ struct parser_impl {
     }
 
     // Section: helpers
+
+    arena_ptr<ast_node> parse_qualified_identifier() {
+        enum { LIMIT = 32 };
+        int i = 0;
+
+        std::vector<std::string> id_parts = { lex->string_value() };
+        lex->next();
+        
+        while (TOK == token_type::coloncolon && i++ < LIMIT) {
+            lex->next();
+            if (TOK != token_type::identifier) {
+                throw parse_error(filename, lex->pos(), "expecting identifier");
+            }
+            id_parts.push_back(lex->string_value());
+            lex->next();
+        }
+        return make_identifier_node(*ast_arena, lex->pos(), id_parts);
+    }
 
     arena_ptr<ast_node> parse_arg_list(char end, std::function<arena_ptr<ast_node>()> parse_arg) {
         enum { LIMIT = 32 };
@@ -635,6 +709,8 @@ parser::parser(memory_arena& arena, std::string_view src, const std::string& fil
 parser::~parser() { delete _impl; }
 
 arena_ptr<ast_node> parser::parse_decl_list() { return _impl->parse_decl_list(); }
+
+arena_ptr<ast_node> parser::parse_code_unit() { return _impl->parse_code_unit(); }
 
 arena_ptr<ast_node> parser::parse_expr() { return _impl->parse_expr(); }
 

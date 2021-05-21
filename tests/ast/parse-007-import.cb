@@ -1,0 +1,7 @@
+code_unit{
+  tests/parse-007-import.cb
+  decl_list{
+    import_decl{
+            identifier{""}}
+    import_decl{
+            identifier{""}      identifier{""}}}}

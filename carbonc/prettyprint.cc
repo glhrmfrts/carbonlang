@@ -208,6 +208,30 @@ void prettyprint(const ast_node& node, std::ostream& stream, int indent) {
         prettyprint(*node.children.front().get(), stream, indent + 1);
         stream << "}";
         break;
+    case ast_type::visibility_specifier:
+        stream << "visibility_specifier{\n";
+        do_indent(stream, indent + 1);
+        prettyprint(*node.children.front().get(), stream, indent + 1);
+        stream << "}";
+        break;
+    case ast_type::import_decl: {
+        stream << "import_decl{\n";
+        do_indent(stream, indent + 1);
+        prettyprint(*node.children.front().get(), stream, indent + 1);
+        auto& alias = node.children.back();
+        if (alias) {
+            prettyprint(*alias, stream, indent + 1);
+        }
+        stream << "}";
+        break;
+    }
+    case ast_type::code_unit:
+        stream << "code_unit{\n";
+        do_indent(stream, indent + 1);
+        stream << node.string_value << "\n";
+        prettyprint(*node.children.front().get(), stream, indent + 1);
+        stream << "}";
+        break;
     }
 }
 

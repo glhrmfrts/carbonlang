@@ -287,6 +287,8 @@ enum
    CLEX_shleq, CLEX_shreq,
 #endif
 
+   CLEX_coloncolon,
+
    CLEX_first_unused_token
 
 #undef Y
@@ -637,6 +639,12 @@ int stb_c_lexer_get_token(stb_lexer *lexer)
       single_char:
          // not an identifier, return the character as itself
          return stb__clex_token(lexer, *p, p, p);
+
+      case ':':
+         if (p+1 != lexer->eof) {
+            if (p[1] == ':') return stb__clex_token(lexer, CLEX_coloncolon, p,p+1);
+         }
+         goto single_char;
 
       case '+':
          if (p+1 != lexer->eof) {

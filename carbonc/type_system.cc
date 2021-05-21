@@ -92,6 +92,7 @@ bool register_alias_to_type_name(type_system& ts, const std::string& name, const
 
     *defcopy = get_type(ts, it->second);
     defcopy->name = name;
+    defcopy->mangled_name = string_hash{ name };
     defcopy->alias_to = it->second;
     register_builtin_type(ts, std::move(node));
     return true;
@@ -108,6 +109,7 @@ bool register_pointer_type(type_system& ts, const std::string& name, const std::
     type_def& tf = node->type_def;
     tf.kind = type_kind::pointer;
     tf.name = string_hash{ name };
+    tf.mangled_name = string_hash{ name };
     tf.size = sizeof(void*);
     tf.alignment = alignof(void*);
     tf.elem_type = it->second;
@@ -620,7 +622,7 @@ static int temp_count = 0;
 std::pair<arena_ptr<ast_node>, arena_ptr<ast_node>> make_temp_variable_for_call(type_system& ts, ast_node& call) {
     // generate the temp ID
     std::string tempname = "$cb temp" + std::to_string(temp_count++);
-    auto id_node = make_identifier_node(*ts.ast_arena, {}, std::move(tempname));
+    auto id_node = make_identifier_node(*ts.ast_arena, {}, { std::move(tempname) });
 
     auto val_node = make_call_expr_node(*ts.ast_arena, {}, std::move(call.children[ast_node::child_call_expr_callee]), std::move(call.children[ast_node::child_call_expr_arg_list]));
     // The call might have a pre-children of itself
@@ -631,7 +633,7 @@ std::pair<arena_ptr<ast_node>, arena_ptr<ast_node>> make_temp_variable_for_call(
     register_var_declaration_node(ts, *decl);
 
     // Make a reference to use as the new argument
-    auto ref = make_identifier_node(*ts.ast_arena, {}, std::move(tempname));
+    auto ref = make_identifier_node(*ts.ast_arena, {}, { std::move(tempname) });
     resolve_node_type(ts, ref.get());
 
     return std::make_pair(std::move(decl), std::move(ref));
@@ -829,7 +831,7 @@ void type_system::leave_scope() {
 
 void type_system::create_temp_variable_for_binary_expr(ast_node& node) {
     std::string tempname = "$cb temp" + std::to_string(temp_count++);
-    auto id_node = make_identifier_node(*ast_arena, {}, std::move(tempname));
+    auto id_node = make_identifier_node(*ast_arena, {}, { std::move(tempname) });
 
     node.local.self = &node;
     node.local.id_node = id_node.get();

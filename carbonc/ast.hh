@@ -25,6 +25,7 @@ enum class ast_type {
     type_decl,
     var_decl,
     func_decl,
+    import_decl,
 
     arg_list,
     decl_list,
@@ -40,6 +41,9 @@ enum class ast_type {
     array_type,
     type_qualifier,
     linkage_specifier,
+    visibility_specifier,
+
+    code_unit,
 };
 
 struct global_data {
@@ -85,6 +89,7 @@ struct ast_node {
     std::size_t id_hash{};
     float_type float_value{};
     int_type int_value{};
+    std::vector<std::string> id_parts{};
     std::vector<arena_ptr<ast_node>> pre_children{};
     std::vector<arena_ptr<ast_node>> children{};
     std::vector<arena_ptr<ast_node>> temps{};
@@ -107,7 +112,7 @@ arena_ptr<ast_node> make_int_literal_node(memory_arena& arena, const position& p
 
 arena_ptr<ast_node> make_string_literal_node(memory_arena& arena, const position& pos, std::string&& value);
 
-arena_ptr<ast_node> make_identifier_node(memory_arena& arena, const position& pos, std::string&& value);
+arena_ptr<ast_node> make_identifier_node(memory_arena& arena, const position& pos, const std::vector<std::string>& values);
 
 arena_ptr<ast_node> make_unary_expr_node(memory_arena& arena, const position& pos, token_type op, arena_ptr<ast_node>&& right);
 
@@ -116,6 +121,8 @@ arena_ptr<ast_node> make_binary_expr_node(memory_arena& arena, const position& p
 arena_ptr<ast_node> make_init_expr_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& init_type, arena_ptr<ast_node>&& init_list);
 
 arena_ptr<ast_node> make_call_expr_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& callee, arena_ptr<ast_node>&& arg_list);
+
+arena_ptr<ast_node> make_import_decl_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& mod, arena_ptr<ast_node>&& alias);
 
 arena_ptr<ast_node> make_type_decl_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& id, arena_ptr<ast_node>&& contents);
 
@@ -146,6 +153,10 @@ arena_ptr<ast_node> make_array_type_node(memory_arena& arena, const position& po
 arena_ptr<ast_node> make_type_qualifier_node(memory_arena& arena, const position& pos, type_qualifier q, arena_ptr<ast_node>&& to_type);
 
 arena_ptr<ast_node> make_linkage_specifier_node(memory_arena& arena, const position& pos, func_linkage l, arena_ptr<ast_node>&& content);
+
+arena_ptr<ast_node> make_visibility_specifier_node(memory_arena& arena, const position& pos, token_type spec, arena_ptr<ast_node>&& content);
+
+arena_ptr<ast_node> make_code_unit_node(memory_arena& arena, const position& pos, const std::string& filename, arena_ptr<ast_node>&& decls);
 
 bool is_primary_expr(ast_node& node);
 

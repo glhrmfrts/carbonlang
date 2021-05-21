@@ -1,0 +1,31 @@
+func alloc(size: usize): raw_ptr {
+	return malloc(size);
+}
+
+func dealloc(ptr: raw_ptr) {
+	free(ptr);
+}
+
+func copy(dest: raw_ptr, src: raw_ptr, size: usize) {
+	asm%{
+
+push rdi
+push rsi
+
+mov rdi,rcx
+mov rsi,rdx
+mov rcx,r8
+rep movsb
+
+pop rsi
+pop rdi
+
+	}%asm;
+}
+
+private extern(C) {
+
+func malloc(size: usize): raw_ptr;
+func free(ptr: raw_ptr);
+
+}

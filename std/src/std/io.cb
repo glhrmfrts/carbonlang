@@ -1,0 +1,9 @@
+func println(c: raw_string) {
+	puts(c);
+}
+
+private extern(C) {
+
+func puts(c: raw_string): int;
+
+}

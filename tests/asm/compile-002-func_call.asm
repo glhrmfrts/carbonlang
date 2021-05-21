@@ -1,6 +1,6 @@
 global other_stuff
-global foobar_Aint32_Aint32_Aint32
-global f_Aint32
+global foobar_Aint_Aint_Aint
+global f_Aint
 global main
 section .data
 section .code
@@ -11,7 +11,7 @@ other_stuff:
  add eax,3
  pop rbp
  ret
-foobar_Aint32_Aint32_Aint32:
+foobar_Aint_Aint_Aint:
  mov dword [rsp+16],r8d
  mov dword [rsp+12],edx
  mov dword [rsp+8],ecx
@@ -29,7 +29,7 @@ foobar_Aint32_Aint32_Aint32:
  add rsp,16
  pop rbp
  ret
-f_Aint32:
+f_Aint:
  mov dword [rsp+8],ecx
  push rbp
  lea rbp,qword [rsp+0]
@@ -50,17 +50,17 @@ main:
  mov r11d,eax
  mov r12d,50
  mov ecx,1
- call f_Aint32
+ call f_Aint
  imul eax,r12d
  add eax,r11d
  mov r10d,eax
  mov ecx,2
- call f_Aint32
+ call f_Aint
  imul eax,70
  add eax,23
  mov r11d,eax
  mov ecx,3
- call f_Aint32
+ call f_Aint
  imul eax,4
  add eax,r11d
  add eax,r10d

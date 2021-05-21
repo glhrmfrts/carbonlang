@@ -1,22 +1,24 @@
-decl_list{
-  linkage_specifier{
-        func_decl{
-      identifier{"puts"}
-      arg_list(
-        var_decl{
-          identifier{"x"}
-          :          type_expr{
-                        identifier{"raw_string"}}})
-      :      type_expr{
-                identifier{"int"}}}}
-  linkage_specifier{
-        decl_list{
-      func_decl{
-        identifier{"printf"}
+code_unit{
+  tests/parse-006-externfunc.cb
+  decl_list{
+    linkage_specifier{
+            func_decl{
+        identifier{""}
         arg_list(
           var_decl{
-            identifier{"x"}
+            identifier{""}
             :            type_expr{
-                            identifier{"raw_string"}}})
+                            identifier{""}}})
         :        type_expr{
-                    identifier{"int"}}}}}}
+                    identifier{""}}}}
+    linkage_specifier{
+            decl_list{
+        func_decl{
+          identifier{""}
+          arg_list(
+            var_decl{
+              identifier{""}
+              :              type_expr{
+                                identifier{""}}})
+          :          type_expr{
+                        identifier{""}}}}}}}
