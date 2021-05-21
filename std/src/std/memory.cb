@@ -2,13 +2,12 @@ func alloc(size: usize): raw_ptr {
 	return malloc(size);
 }
 
-func dealloc(ptr: raw_ptr): int {
+func dealloc(ptr: raw_ptr) {
 	free(ptr);
 }
 
 func copy(dest: raw_ptr, src: raw_ptr, size: usize) {
 	asm%{
-
 push rdi
 push rsi
 
@@ -19,12 +18,11 @@ rep movsb
 
 pop rsi
 pop rdi
-
 	}%asm;
 }
 
 func copy(dest: raw_string, src: raw_string, size: usize) {
-	copy(cast[raw_ptr]dest, cast[raw_ptr]src, size);
+	copy(cast[raw_ptr] dest, cast[raw_ptr] src, size);
 }
 
 private extern(C) {

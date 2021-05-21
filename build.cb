@@ -1,6 +1,0 @@
-import build_framework;
-
-func main(): int {
-    
-    return 0;
-}
