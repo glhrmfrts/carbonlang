@@ -1,11 +1,14 @@
+/// Allocates [size] bytes of memory and returns the address.
 func alloc(size: usize): raw_ptr {
 	return malloc(size);
 }
 
+/// Deallocates the memory pointed by [ptr].
 func dealloc(ptr: raw_ptr) {
 	free(ptr);
 }
 
+/// Copies [size] bytes from [src] to [dest].
 func copy(dest: raw_ptr, src: raw_ptr, size: usize) {
 	asm%{
 push rdi
@@ -21,8 +24,18 @@ pop rdi
 	}%asm;
 }
 
-func copy(dest: raw_string, src: raw_string, size: usize) {
-	copy(cast[raw_ptr] dest, cast[raw_ptr] src, size);
+/// Stores [count] amount of [value] in [dest].
+func set(dest: raw_ptr, value: char, count: usize) {
+	asm%{
+push rdi
+
+mov rdi,rcx
+mov rax,rdx
+mov rcx,r8
+rep stosb
+
+pop rdi
+	}%asm;
 }
 
 private extern(C) {

@@ -595,11 +595,13 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
         if (node.type_id != invalid_type) return node.type_id;
 
         node.type_id = get_type_expr_node_type(ts, node);
+        report_type_error(node.type_id, node.pos, "cannot resolve type %s", node_to_string(node));
         break;
     case ast_type::return_stmt: {
         if (node.type_id != invalid_type) return node.type_id;
 
         node.type_id = resolve_node_type(ts, node.children.front().get());
+        complement_error(node.type_id, node.pos, "in return statement of function %s", node_to_string(node));
 
         // TODO: check if scope / sanity check
         if (ts.pass == type_system_pass::resolve_literals_and_register_declarations) {
@@ -644,6 +646,7 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
             }
 
             resolve_func_type(ts, node);
+            complement_error(node.type_id, node.pos, "in function declaration %s", node_to_string(node));
 
             if (node.type_id != invalid_type && ts.current_scope->kind == scope_kind::code_unit && node.type_def.mangled_name.str.empty()) {
                 // this means the function type was resolved, so mangle the name and declare it
@@ -676,6 +679,7 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
         bool args_resolved = true;
         for (auto& arg : node.call.args) {
             resolve_node_type(ts, arg);
+            complement_error(arg->type_id, arg->pos, "in the #%d argument for function %s", node_to_string(node));
             if (arg->type_id == invalid_type) {
                 args_resolved = false;
                 break;
@@ -700,6 +704,7 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
             }
         }
 
+        report_type_error(node.type_id, node.pos, "cannot resolve type of function call %s", node_to_string(node));
         break;
     }
     case ast_type::var_decl: {
@@ -708,6 +713,7 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
         }
         else {
             resolve_local_variable_type(ts, node);
+            complement_error(node.type_id, node.pos, "in variable declaration %s", node_to_string(node));
         }
         break;
     }
@@ -721,6 +727,10 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
             node.lvalue.self = &node;
             node.lvalue.symbol = *sym;
             node.type_id = local->self->type_id;
+            report_type_error(node.type_id, node.pos, "cannot resolve type of symbol %s", node_to_string(node));
+        }
+        else {
+            report_type_error(node.type_id, node.pos, "undefined symbol '%s'", node_to_string(node));
         }
         break;
     }
@@ -1018,7 +1028,7 @@ void type_system::resolve_and_check() {
     }
 
     this->pass = type_system_pass::resolve_all;
-    for (int i = 0; i < 1000; i++) {
+    for (int i = 0; i < 100; i++) {
         this->unresolved_types = false;
         for (auto unit : this->code_units) {
             enter_scope(*unit);
@@ -1026,7 +1036,7 @@ void type_system::resolve_and_check() {
             leave_scope();
         }
         if (this->unresolved_types) {
-            printf("unresolved types\n");
+            //printf("unresolved types\n");
         }
         else {
             break;

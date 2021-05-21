@@ -6,9 +6,17 @@ func copy(str: raw_string): raw_string {
 
 func copy(str: raw_string, size: usize): raw_string {
 	let newstr = cast[raw_string] mem::alloc(size+1);
-	mem::copy(newstr, str, size);
+	copy(newstr, str, size);
 	//newstr[size] = '\0';
 	return newstr;
+}
+
+func copy(dest: raw_string, src: raw_string, size: usize) {
+	mem::copy(cast[raw_ptr] dest, cast[raw_ptr] src, size);
+}
+
+func set(dest: raw_string, value: char, count: usize) {
+	mem::set(cast[raw_ptr] dest, value, count);
 }
 
 func len(str: raw_string): usize {

@@ -19,46 +19,19 @@ struct gen_node_data {
     bool func_calls_extern_c = false;
 };
 
-static const gen_register_sizes register_sizes[] = {
-    {},
-    {rax, eax, invalid, invalid, invalid},
-    {rbx, ebx, invalid, invalid, invalid},
-    {rcx, ecx, invalid, invalid, invalid},
-    {rdx, edx, invalid, invalid, invalid},
-    {rdi, edi, invalid, invalid, invalid},
-    {rsi, esi, invalid, invalid, invalid},
-    {rbp, ebp, invalid, invalid, invalid},
-    {rsp, esp, invalid, invalid, invalid},
-    {r8, r8d, invalid, invalid, invalid},
-    {r9, r9d, invalid, invalid, invalid},
-    {r10, r10d, invalid, invalid, invalid},
-    {r11, r11d, invalid, invalid, invalid},
-    {r12, r12d, invalid, invalid, invalid},
-    {r13, r13d, invalid, invalid, invalid},
-    {r14, r14d, invalid, invalid, invalid},
-    {r15, r15d, invalid, invalid, invalid},
-    {},
-    {},
-    {},
-    {},
-    {},
-    {},
-    {},
-};
-
 gen_destination adjust_for_type(gen_destination dest, type_id tid) {
     auto tdef = tid.scope->type_defs[tid.type_index];
     if (std::holds_alternative<gen_register>(dest)) {
-        auto sizes = register_sizes[std::get<gen_register>(dest)];
+        auto reg = std::get<gen_register>(dest);
         switch (tdef->size) {
         case 1:
-            return sizes.r8low;
+            return gen_register(reg + 16*3);
         case 2:
-            return sizes.r16;
+            return gen_register(reg + 16*2);
         case 4:
-            return sizes.r32;
+            return gen_register(reg + 16);
         case 8:
-            return sizes.r64;
+            return reg;
         }
     }
     else if (std::holds_alternative<gen_offset>(dest)) {
