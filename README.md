@@ -6,6 +6,13 @@ Carbon is a statically-strongly-typed programming language.
 <img src="https://github.com/glhrmfrts/carbon/blob/main/carbon.png">
 </p>
 
+## TODO
+
+- type checking and errors
+- pointer deref / assignment
+- stack arguments / more than 4 args
+- structs
+
 ## Hello world
 
 ```go
