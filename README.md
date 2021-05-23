@@ -8,10 +8,17 @@ Carbon is a statically-strongly-typed programming language.
 
 ## TODO
 
-- type checking and errors
-- pointer deref / assignment
+- assignment
+- pointer deref / indexing
 - stack arguments / more than 4 args
-- structs
+- structs / tuples / user types
+- if statements
+- for/while statements
+- global vars (?)
+- more/better type checking and errors
+- floating point types support
+- investigate entry points for receiving command-line args
+- integrate linking process
 
 ## Hello world
 
