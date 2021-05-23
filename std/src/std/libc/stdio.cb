@@ -1,0 +1,6 @@
+extern(C) {
+
+func puts(c: raw_string): int;
+func putc(c: char, stream: raw_ptr): int;
+
+}

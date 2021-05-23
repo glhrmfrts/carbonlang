@@ -12,12 +12,19 @@
 
 namespace carbon {
 
+std::string get_source_code_near(const std::string& src, const position& pos) {
+    auto upuntil = src.substr(0, pos.src_offs);
+    auto firstline = upuntil.find_last_of('\n');
+    auto line = src.substr(firstline + 1, (src.find_first_of('\n', pos.src_offs) - firstline - 1));
+    return line;
+}
+
 void compile_file(type_system& ts, ast_node& target, const std::string& filename) {
     std::string src;
     if (!read_file_text(filename, src)) return;
 
     auto timebegin = std::chrono::system_clock::now();
-    std::cout << "compiling file: " << filename << "\n";
+    std::cout << "carbonc - parsing file: " << filename << "\n";
 
     parser p{ *ts.ast_arena, src, filename };
     arena_ptr<ast_node> ast{ nullptr, nullptr };
@@ -27,11 +34,7 @@ void compile_file(type_system& ts, ast_node& target, const std::string& filename
     }
     catch (const parse_error& e) {
         std::cerr << "carbonc - parse error: " << e.what() << "\n";
-
-        auto upuntil = src.substr(0, e.pos.src_offs);
-        auto firstline = upuntil.find_last_of('\n');
-        auto line = src.substr(firstline, (src.find_first_of('\n', e.pos.src_offs) - firstline) + 20);
-
+        auto line = get_source_code_near(src, e.pos);
         std::cerr << "                       " << line << "\n";
         return;
     }
@@ -40,11 +43,10 @@ void compile_file(type_system& ts, ast_node& target, const std::string& filename
     target.children.push_back(std::move(ast));
 
     auto dur = std::chrono::system_clock::now() - timebegin;
-    std::cout << "compilation took " << std::chrono::duration_cast<std::chrono::milliseconds>(dur).count() << "ms\n\n";
+    std::cout << "carbonc - parsing time: " << std::chrono::duration_cast<std::chrono::milliseconds>(dur).count() << "ms\n\n";
 }
 
 void process_directory(type_system& ts, ast_node& target, const std::string& dir) {
-    std::cout << "processing directory: " << dir << "\n";
     for (const auto& file : list(dir)) {
         if (file.find(".cb") != std::string::npos) {
             compile_file(ts, target, join(dir, file));
@@ -58,7 +60,7 @@ void process_directory(type_system& ts, ast_node& target, const std::string& dir
 
 int run_project_mode() {
     auto timebegin = std::chrono::system_clock::now();
-    std::cout << "compiling project: std " << "\n";
+    std::cout << "carbonc - compiling target: std " << "\n\n";
 
     memory_arena ast_arena{ 1024 * 1024 };
     type_system ts{ ast_arena };
@@ -67,13 +69,59 @@ int run_project_mode() {
     target_node->type = ast_type::target;
 
     process_directory(ts, *target_node, "std");
-    ts.resolve_and_check();
+
+    {
+        auto ctimebegin = std::chrono::system_clock::now();
+        std::cout << "carbonc - type checking " << "\n";
+        ts.resolve_and_check();
+        auto cdur = std::chrono::system_clock::now() - ctimebegin;
+        std::cout << "carbonc - type checking time: " << std::chrono::duration_cast<std::chrono::milliseconds>(cdur).count() << "ms\n\n";
+    }
+
+    if (!ts.errors.empty()) {
+        int errcount = 0;
+        int maxerrs = 10;
+
+        for (const auto& err : ts.errors) {
+            if (errcount >= maxerrs) break;
+
+            // TODO: please
+            std::cerr << "----------------------------------------------------------------------------------\n";
+            std::string src;
+            if (!read_file_text(err.filename, src)) return 1;
+
+            std::cerr << err.msg << "";
+            auto line = get_source_code_near(src, err.pos);
+            std::cerr << "\n[" << err.filename << ":" << err.pos.line_number << "] " << line << "\n";
+
+            int extra_offs = err.filename.size() + std::to_string(err.pos.line_number).size() + 4;
+            for (int i = 1; i < err.pos.col_offs + extra_offs; i++) {
+                std::cerr << " ";
+            }
+            std::cerr << "^\n";
+            errcount++;
+        }
+
+        if (ts.errors.size() > errcount) {
+            std::cerr << "----------------------------------------------------------------------------------\n";
+            std::cerr << "carbonc - more " << (ts.errors.size() - errcount) << " errors were found, but only " << maxerrs << " were reported\n";
+            std::cerr << "carbonc - use the '--maxerrors {n}' option to change the error limit\n";
+        }
+        return 1;
+    }
 
     ensure_directory_exists("../_carbon/build/std.asm");
-    codegen(*target_node, &ts, "../_carbon/build/std.asm");
+
+    {
+        auto ctimebegin = std::chrono::system_clock::now();
+        std::cout << "carbonc - generating: std.asm " << "\n";
+        codegen(*target_node, &ts, "../_carbon/build/std.asm");
+        auto cdur = std::chrono::system_clock::now() - ctimebegin;
+        std::cout << "carbonc - code generation time: " << std::chrono::duration_cast<std::chrono::milliseconds>(cdur).count() << "ms\n\n";
+    }
 
     auto dur = std::chrono::system_clock::now() - timebegin;
-    std::cout << "compilation took " << std::chrono::duration_cast<std::chrono::milliseconds>(dur).count() << "ms\n\n";
+    std::cout << "carbonc - compilation time: " << std::chrono::duration_cast<std::chrono::milliseconds>(dur).count() << "ms\n";
 
     return 0;
 }

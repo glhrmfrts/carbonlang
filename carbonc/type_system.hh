@@ -6,6 +6,7 @@
 #include <unordered_map>
 #include "memory.hh"
 #include "common.hh"
+#include "token.hh"
 
 namespace carbon {
 
@@ -13,6 +14,7 @@ struct ast_node;
 struct scope_def;
 struct type_def;
 struct local_def;
+struct func_def;
 
 enum class func_linkage {
     local_carbon,
@@ -86,6 +88,7 @@ struct type_def {
     type_id elem_type{};
 
     ast_node* self = nullptr;
+    type_id id{};
 };
 
 struct local_def {
@@ -94,12 +97,15 @@ struct local_def {
     ast_node* type_node = nullptr;
     ast_node* value_node = nullptr;
     bool is_argument = false;
+    int arg_index = 0; // if is_argument
+    ast_node* arg_func_node = nullptr; // if is_argument
     std::int32_t frame_offset = 0;
 };
 
 enum class symbol_kind {
     local,
     top_level_func,
+    overloaded_func_base,
     type,
 };
 
@@ -112,6 +118,9 @@ struct symbol_info {
 
     // if kind == type
     int type_index = -1;
+    
+    // if kind == overloaded_func_base
+    std::vector<func_def*> overload_funcs;
 };
 
 struct lvalue {
@@ -164,6 +173,8 @@ struct func_def {
     std::vector<ast_node*> arguments;
     std::vector<ast_node*> return_statements;
     func_linkage linkage;
+    bool args_unresolved = false;
+    string_hash base_symbol;
 };
 
 enum class type_system_pass {
@@ -173,6 +184,12 @@ enum class type_system_pass {
     perform_checks,
     final_analysis,
     create_interface_files,
+};
+
+struct type_error {
+    position pos;
+    std::string filename;
+    std::string msg;
 };
 
 struct type_system {
@@ -189,6 +206,13 @@ struct type_system {
     std::vector<ast_node*> code_units;
 
     std::unordered_map<string_hash, scope_def*> modules;
+    std::vector<type_error> errors;
+    type_error current_error{};
+
+    type_id void_type{};
+    type_id raw_ptr_type{};
+    type_id uintptr_type{};
+    type_id ptrdiff_type{};
 
     explicit type_system(memory_arena&);
 

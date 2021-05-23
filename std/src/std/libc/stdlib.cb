@@ -1,0 +1,9 @@
+extern(C) {
+
+func exit(status: int);
+func free(ptr: raw_ptr): int;
+func malloc(size: usize): raw_ptr;
+func rand(): int;
+func system(c: raw_string): int;
+
+}

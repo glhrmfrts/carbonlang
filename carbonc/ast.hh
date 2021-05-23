@@ -104,6 +104,7 @@ struct ast_node {
     lvalue lvalue;
     call_info call;
     global_data global_data;
+    bool type_error = false;
 };
 
 arena_ptr<ast_node> make_bool_literal_node(memory_arena& arena, const position& pos, bool value);

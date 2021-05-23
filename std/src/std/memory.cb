@@ -1,16 +1,18 @@
+import std::libc::stdlib;
+
 /// Allocates [size] bytes of memory and returns the address.
 func alloc(size: usize): raw_ptr {
-	return malloc(size);
+    return malloc(size);
 }
 
 /// Deallocates the memory pointed by [ptr].
 func dealloc(ptr: raw_ptr) {
-	free(ptr);
+    free(ptr);
 }
 
 /// Copies [size] bytes from [src] to [dest].
 func copy(dest: raw_ptr, src: raw_ptr, size: usize) {
-	asm%{
+    asm%{
 push rdi
 push rsi
 
@@ -21,12 +23,12 @@ rep movsb
 
 pop rsi
 pop rdi
-	}%asm;
+    }%asm;
 }
 
 /// Stores [count] amount of [value] in [dest].
 func set(dest: raw_ptr, value: char, count: usize) {
-	asm%{
+    asm%{
 push rdi
 
 mov rdi,rcx
@@ -35,12 +37,5 @@ mov rcx,r8
 rep stosb
 
 pop rdi
-	}%asm;
-}
-
-private extern(C) {
-
-func malloc(size: usize): raw_ptr;
-func free(ptr: raw_ptr): int;
-
+    }%asm;
 }
