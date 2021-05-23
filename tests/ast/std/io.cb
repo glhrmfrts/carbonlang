@@ -1,0 +1,20 @@
+code_unit{
+  std/io.cb
+  decl_list{
+    import_decl{
+      identifier{"std::libc::stdio"}}
+    func_decl{
+      identifier{"println"}
+      arg_list(
+        var_decl{
+          identifier{"c"}
+          :type_expr{
+            identifier{"raw_string"}}})
+      :type_expr{
+        identifier{"void"}}
+compound_stmt{
+        stmt_list{
+          call_expr{
+            identifier{"puts"}
+            arg_list(
+              identifier{"c"})}}}}}}

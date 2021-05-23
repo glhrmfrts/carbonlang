@@ -39,6 +39,13 @@ void compile_file(type_system& ts, ast_node& target, const std::string& filename
         return;
     }
 
+    if (true) {
+        ensure_directory_exists("../../tests/ast/" + filename);
+        std::ofstream ast_file{ "../../tests/ast/" + filename };
+        prettyprint(*ast, ast_file);
+        ast_file << "\n";
+    }
+
     ts.process_code_unit(*ast);
     target.children.push_back(std::move(ast));
 

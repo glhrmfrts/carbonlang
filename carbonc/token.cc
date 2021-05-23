@@ -15,6 +15,8 @@ struct token_properties {
 static std::unordered_map<token_type, token_properties> token_props = {
     {token_type::not, { UNARY_OP, 0 }},
 
+    {token_from_char('='), { BINARY_OP, 400 }},
+
     {token_type::or, { BINARY_OP, 490 }},
     {token_type::and, { BINARY_OP, 500 }},
 

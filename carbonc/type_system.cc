@@ -4,6 +4,7 @@
 #include "ast.hh"
 #include "fs.hh"
 #include <fstream>
+#include <numeric>
 
 namespace carbon {
 
@@ -75,6 +76,8 @@ template <typename T> void register_integral_type(type_system& ts, const char* n
     def.alignment = alignof(T);
     def.size = sizeof(T);
     def.is_signed = std::is_signed_v<T>;
+    def.numeric.max = std::numeric_limits<T>::max();
+    def.numeric.min = std::numeric_limits<T>::min();
 
     register_builtin_type(ts, std::move(node));
 }
@@ -167,6 +170,32 @@ bool is_convertible_to(type_system& ts, type_id a, type_id b) {
     }
 
     return false;
+}
+
+std::optional<std::string> get_conversion_error_detail(type_system& ts, type_id a, type_id b) {
+    auto& ta = get_type(ts, a);
+    auto& tb = get_type(ts, b);
+
+    if (ta.kind == tb.kind && tb.kind == type_kind::integral) {
+        if (tb.size < ta.size) {
+            return std::string{ "narrowing conversion might overflow, if you are sure about it, make an explicit cast" };
+        }
+    }
+
+    return {};
+}
+
+void try_coerce_to(type_system& ts, ast_node& from, type_id to) {
+    auto& ta = get_type(ts, from.type_id);
+    auto& tb = get_type(ts, to);
+
+    if (ta.kind == tb.kind && tb.kind == type_kind::integral) {
+        if (tb.size < ta.size) {
+            if (from.type == ast_type::int_literal && from.int_value < tb.numeric.max) {
+                from.type_id = to;
+            }
+        }
+    }
 }
 
 // Section: cast checking
@@ -387,10 +416,21 @@ type_id find_type_by_id_hash(type_system& ts, const std::pair<string_hash, strin
 
 std::string node_to_string(const ast_node& node) {
     switch (node.type) {
+    case ast_type::int_literal:
+        return std::to_string(node.int_value);
+    case ast_type::float_literal:
+        return std::to_string(node.float_value);
+    case ast_type::string_literal:
+        return "\"" + (std::string{node.string_value}) + "\"";
     case ast_type::identifier:
         return build_identifier_value(node.id_parts);
     case ast_type::type_expr:
         return node_to_string(*node.children[0]);
+    case ast_type::index_expr: {
+        auto leftstr = node_to_string(*node.children[0]);
+        auto rightstr = node_to_string(*node.children[1]);
+        return leftstr + "[" + rightstr + "]";
+    }
     }
     return "";
 }
@@ -429,7 +469,7 @@ template <typename... Args> void unk_type_error(type_system& ts, type_id tid, co
         snprintf(msgb, sizeof(msgb), fmt, std::forward<Args>(args)...);
 
         const char* filename = find_nearest_scope_local(ts, scope_kind::code_unit)->self->string_value.data();
-        snprintf(wholeb, sizeof(wholeb), "carbonc - ERROR - %s\n\n[%s:%d:%d]\t%s\n", filename, filename, pos.line_number, pos.col_offs, msgb);
+        snprintf(wholeb, sizeof(wholeb), "carbonc - ERROR - %s\n\n[%s:%d:%d] %s\n", filename, filename, pos.line_number, pos.col_offs, msgb);
         ts.current_error = { pos, std::string{filename}, std::string{wholeb} };
     }
 }
@@ -445,7 +485,7 @@ template <typename... Args> void complement_error(type_system& ts, const positio
         snprintf(msgb, sizeof(msgb), fmt, std::forward<Args>(args)...);
 
         const char* filename = find_nearest_scope_local(ts, scope_kind::code_unit)->self->string_value.data();
-        snprintf(wholeb, sizeof(wholeb), "[%s:%d:%d]\t%s\n", filename, pos.line_number, pos.col_offs, msgb);
+        snprintf(wholeb, sizeof(wholeb), "[%s:%d:%d] %s\n", filename, pos.line_number, pos.col_offs, msgb);
         ts.current_error.msg.append(wholeb);
     }
 }
@@ -930,6 +970,47 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
         //report_type_error(node.type_id, node.pos, "cannot resolve type of function call %s", node_to_string(node));
         break;
     }
+    case ast_type::index_expr: {
+        resolve_node_type(ts, node.children[0].get());
+        resolve_node_type(ts, node.children[1].get());
+        bool arr = node.children[0]->type_id.get().kind == type_kind::array;
+        bool ptr = node.children[0]->type_id.get().kind == type_kind::pointer;
+        bool arr_or_ptr = arr || ptr;
+
+        bool error = false;
+        {
+            const char* msg = "left-side of index expression has type '%s', it must be an array or pointer";
+            if (!node.children[0]->type_id.valid()) {
+                complement_error(ts, node.pos, msg, type_to_string(node.children[0]->type_id).c_str());
+                error = true;
+            }
+            else if (!arr_or_ptr) {
+                add_type_error(ts, node.pos, msg, type_to_string(node.children[0]->type_id).c_str());
+                error = true;
+            }
+        }
+
+        {
+            const char* msg = "right-side of index expression has type '%s', it must be an integer";
+            if (!node.children[1]->type_id.valid()) {
+                complement_error(ts, node.pos, msg, type_to_string(node.children[1]->type_id).c_str());
+                error = true;
+            }
+            else if (arr_or_ptr && !(node.children[1]->type_id.get().kind == type_kind::integral)) {
+                add_type_error(ts, node.pos, msg, type_to_string(node.children[1]->type_id).c_str());
+                error = true;
+            }
+        }
+
+        node.type_error = error;
+        if (!error) {
+            node.lvalue.self = &node;
+            if (arr_or_ptr) {
+                node.type_id = node.children[0]->type_id.get().elem_type;
+            }
+        }
+        break;
+    }
     case ast_type::var_decl: {
         if (ts.pass == type_system_pass::resolve_literals_and_register_declarations) {
             register_var_declaration_node(ts, node);
@@ -968,10 +1049,47 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
     case ast_type::int_literal:
     case ast_type::float_literal:
     case ast_type::string_literal:
+        node.type_id = get_value_node_type(ts, node);
+        break;
+
     case ast_type::cast_expr:
-    case ast_type::binary_expr: {
         visit_children(ts, node);
         node.type_id = get_value_node_type(ts, node);
+        break;
+
+    case ast_type::binary_expr: {
+        visit_children(ts, node);
+        if (token_to_char(node.op) == '=') {
+            node.type_error = (node.children[0]->type_error || node.children[1]->type_error);
+            if ((!node.children[0]->type_id.valid() || node.children[0]->type_error) || (!node.children[1]->type_id.valid() || node.children[1]->type_error)) {
+                complement_error(ts, node.pos, "in assignment of '%s'", node_to_string(*node.children[0]).c_str());
+            }
+            else if (!(node.children[0]->lvalue.self)) {
+                add_type_error(ts, node.pos, "left-side of assignment must be an lvalue (identifier, index expression)");
+            }
+
+            if (!is_convertible_to(ts, node.children[1]->type_id, node.children[0]->type_id)) {
+                try_coerce_to(ts, *node.children[1], node.children[0]->type_id);
+
+                if (!is_convertible_to(ts, node.children[1]->type_id, node.children[0]->type_id)) {
+                    add_type_error(ts, node.children[1]->pos, "cannot convert type '%s' to '%s'",
+                        type_to_string(node.children[1]->type_id).c_str(),
+                        type_to_string(node.children[0]->type_id).c_str());
+
+                    auto detail = get_conversion_error_detail(ts, node.children[1]->type_id, node.children[0]->type_id);
+                    if (detail) {
+                        complement_error(ts, node.pos, detail->c_str());
+                    }
+
+                    complement_error(ts, node.pos, "in assignment of '%s'", node_to_string(*node.children[0]).c_str());
+                    node.type_error = true;
+                }
+            }
+        }
+        else {
+            node.type_error = (node.children[0]->type_error || node.children[1]->type_error);
+            node.type_id = get_value_node_type(ts, node);
+        }
         break;
     }
     default: {

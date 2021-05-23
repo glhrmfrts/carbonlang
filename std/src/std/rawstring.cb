@@ -8,7 +8,8 @@ func copy(str: raw_string): raw_string {
 func copy(str: raw_string, size: usize): raw_string {
     let newstr = cast[raw_string] mem::alloc(size+1);
     copy(newstr, str, size);
-    //newstr[size] = '\0';
+    newstr[0] = 10;
+    newstr[size] = 0;
     return newstr;
 }
 

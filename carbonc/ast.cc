@@ -95,6 +95,16 @@ arena_ptr<ast_node> make_call_expr_node(memory_arena& arena, const position& pos
     return ptr;
 }
 
+arena_ptr<ast_node> make_index_expr_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& left, arena_ptr<ast_node>&& index) {
+    auto ptr = make_in_arena<ast_node>(arena);
+    ptr->node_id = node_id_gen++;
+    ptr->type = ast_type::index_expr;
+    ptr->pos = pos;
+    ptr->children.push_back(std::move(left));
+    ptr->children.push_back(std::move(index));
+    return ptr;
+}
+
 arena_ptr<ast_node> make_cast_expr_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& type_expr, arena_ptr<ast_node>&& value) {
     auto ptr = make_in_arena<ast_node>(arena);
     ptr->node_id = node_id_gen++;

@@ -20,6 +20,7 @@ enum class ast_type {
     unary_expr,
     binary_expr,
     call_expr,
+    index_expr,
     init_expr,
     cast_expr,
 
@@ -124,6 +125,8 @@ arena_ptr<ast_node> make_binary_expr_node(memory_arena& arena, const position& p
 arena_ptr<ast_node> make_init_expr_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& init_type, arena_ptr<ast_node>&& init_list);
 
 arena_ptr<ast_node> make_call_expr_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& callee, arena_ptr<ast_node>&& arg_list);
+
+arena_ptr<ast_node> make_index_expr_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& left, arena_ptr<ast_node>&& index);
 
 arena_ptr<ast_node> make_cast_expr_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& type_expr, arena_ptr<ast_node>&& value);
 

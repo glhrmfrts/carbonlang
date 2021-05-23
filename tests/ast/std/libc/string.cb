@@ -1,0 +1,15 @@
+code_unit{
+  std/libc/string.cb
+  decl_list{
+    linkage_specifier{
+      extern(C)
+      decl_list{
+        func_decl{
+          identifier{"strlen"}
+          arg_list(
+            var_decl{
+              identifier{"s"}
+              :type_expr{
+                identifier{"raw_string"}}})
+          :type_expr{
+            identifier{"usize"}}}}}}}

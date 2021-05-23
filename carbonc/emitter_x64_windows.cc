@@ -104,14 +104,21 @@ std::string tostr(const gen_destination& d) {
             return result;
         },
         [](gen_offset r) -> std::string {
-            auto result = "[" + std::string{register_names[r.reg]};
-            if (r.offset < 0) {
-                result.append("-");
-                result.append(std::to_string(-r.offset));
-            }
-            else {
-                result.append("+");
-                result.append(std::to_string(r.offset));
+            std::string result = "[";
+            for (const auto& it : r.expr) {
+                if (auto reg = std::get_if<gen_register>(&it); reg) {
+                    result.append(std::string{ register_names[*reg] });
+                }
+                if (auto ch = std::get_if<char>(&it); ch) {
+                    result.append(ch, 1);
+                }
+                if (auto off = std::get_if<std::int32_t>(&it); off) {
+                    result.append(std::to_string(*off));
+                }
+                if (auto d = std::get_if<gen_data_offset>(&it); d) {
+                    result.append("OFFSET:");
+                    result.append(d->label);
+                }
             }
             return result + "]";
         }
@@ -129,14 +136,21 @@ std::string tostr(const gen_operand& d) {
             return result;
         },
         [](gen_offset r) -> std::string {
-            auto result = "[" + std::string{register_names[r.reg]};
-            if (r.offset < 0) {
-                result.append("-");
-                result.append(std::to_string(-r.offset));
-            }
-            else {
-                result.append("+");
-                result.append(std::to_string(r.offset));
+            std::string result = "[";
+            for (const auto& it : r.expr) {
+                if (auto reg = std::get_if<gen_register>(&it); reg) {
+                    result.append(std::string{ register_names[*reg] });
+                }
+                if (auto ch = std::get_if<char>(&it); ch) {
+                    result.append(ch, 1);
+                }
+                if (auto off = std::get_if<std::int32_t>(&it); off) {
+                    result.append(std::to_string(*off));
+                }
+                if (auto d = std::get_if<gen_data_offset>(&it); d) {
+                    result.append("OFFSET:");
+                    result.append(d->label);
+                }
             }
             return result + "]";
         },
@@ -158,15 +172,21 @@ std::string tostr_sized(const gen_destination& d) {
             return result;
         },
         [](gen_offset r) -> std::string {
-            auto ptrsize = std::string{ptrsizes[r.op_size]};
-            auto result = ptrsize + " [" + std::string{register_names[r.reg]};
-            if (r.offset < 0) {
-                result.append("-");
-                result.append(std::to_string(-r.offset));
-            }
-            else {
-                result.append("+");
-                result.append(std::to_string(r.offset));
+            std::string result = std::string{ptrsizes[r.op_size]} + " [";
+            for (const auto& it : r.expr) {
+                if (auto reg = std::get_if<gen_register>(&it); reg) {
+                    result.append(std::string{ register_names[*reg] });
+                }
+                if (auto ch = std::get_if<char>(&it); ch) {
+                    result.append(ch, 1);
+                }
+                if (auto off = std::get_if<std::int32_t>(&it); off) {
+                    result.append(std::to_string(*off));
+                }
+                if (auto d = std::get_if<gen_data_offset>(&it); d) {
+                    result.append("OFFSET:");
+                    result.append(d->label);
+                }
             }
             return result + "]";
         }
@@ -185,15 +205,21 @@ std::string tostr_sized(const gen_operand& d) {
             return result;
         },
         [](gen_offset r) -> std::string {
-            auto ptrsize = std::string{ptrsizes[r.op_size]};
-            auto result = ptrsize + " [" + std::string{ register_names[r.reg] };
-            if (r.offset < 0) {
-                result.append("-");
-                result.append(std::to_string(-r.offset));
-            }
-            else {
-                result.append("+");
-                result.append(std::to_string(r.offset));
+            std::string result = std::string{ptrsizes[r.op_size]} + " [";
+            for (const auto& it : r.expr) {
+                if (auto reg = std::get_if<gen_register>(&it); reg) {
+                    result.append(std::string{ register_names[*reg] });
+                }
+                if (auto ch = std::get_if<char>(&it); ch) {
+                    result.append(ch, 1);
+                }
+                if (auto off = std::get_if<std::int32_t>(&it); off) {
+                    result.append(std::to_string(*off));
+                }
+                if (auto d = std::get_if<gen_data_offset>(&it); d) {
+                    result.append("OFFSET:");
+                    result.append(d->label);
+                }
             }
             return result + "]";
         },

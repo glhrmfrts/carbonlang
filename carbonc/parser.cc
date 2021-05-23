@@ -545,7 +545,7 @@ struct parser_impl {
             }
             lex->next();
 
-            auto value = parse_call_expr();
+            auto value = parse_call_or_index_expr();
             if (!value) {
                 throw parse_error(filename, lex->pos(), "invalid cast expression");
             }
@@ -553,17 +553,29 @@ struct parser_impl {
             return make_cast_expr_node(*ast_arena, pos, std::move(type_expr), std::move(value));
         }
 
-        return parse_call_expr();
+        return parse_call_or_index_expr();
     }
 
-    arena_ptr<ast_node> parse_call_expr() {
+    arena_ptr<ast_node> parse_call_or_index_expr() {
         auto pos = lex->pos();
         auto expr = parse_init_expr();
-        if (TOK_CHAR == '(') {
-            auto arg_list = parse_arg_list(')', [this]() {
-                return parse_expr();
-            });
-            return make_call_expr_node(*ast_arena, pos, std::move(expr), std::move(arg_list));
+        while (TOK_CHAR == '(' || TOK_CHAR == '[') {
+            if (TOK_CHAR == '(') {
+                auto arg_list = parse_arg_list(')', [this]() {
+                    return parse_expr();
+                });
+                expr = make_call_expr_node(*ast_arena, pos, std::move(expr), std::move(arg_list));
+            }
+            else {
+                lex->next();
+                auto index_expr = parse_expr();
+                if (TOK_CHAR != ']') {
+                    throw parse_error(filename, lex->pos(), "expected closing ']' in index expression");
+                }
+                lex->next();
+                
+                expr = make_index_expr_node(*ast_arena, pos, std::move(expr), std::move(index_expr));
+            }
         }
         return expr;
     }

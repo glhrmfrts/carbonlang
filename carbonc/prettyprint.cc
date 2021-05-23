@@ -55,6 +55,13 @@ void prettyprint(const ast_node& node, std::ostream& stream, int indent, bool do
         prettyprint(*node.children.back().get(), stream, indent + 1);
         stream << "}";
         break;
+    case ast_type::index_expr:
+        stream << "index_expr{\n";
+        prettyprint(*node.children.front().get(), stream, indent + 1);
+        stream << "\n";
+        prettyprint(*node.children.back().get(), stream, indent + 1);
+        stream << "}";
+        break;
     case ast_type::init_expr: {
         stream << "init_expr{\n";
 

@@ -60,6 +60,11 @@ struct type_flags {
 };
 
 struct type_def {
+    struct numeric_type {
+        std::uint64_t max;
+        std::int64_t min;
+    };
+
     struct array_type {
         std::size_t size;
         bool is_static;
@@ -80,6 +85,7 @@ struct type_def {
     std::size_t alignment = 0;
     bool is_signed = false;
 
+    numeric_type numeric;
     array_type array;
     func_type func;
 
