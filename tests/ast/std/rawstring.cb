@@ -27,6 +27,15 @@ compound_stmt{
                   arg_list(
                     identifier{"str"})})}}}}}
     func_decl{
+      identifier{"get_val"}
+      arg_list()
+      :type_expr{
+        identifier{"int"}}
+compound_stmt{
+        stmt_list{
+          return_stmt{
+                        int_literal{0}}}}}
+    func_decl{
       identifier{"copy"}
       arg_list(
         var_decl{
@@ -54,15 +63,17 @@ compound_stmt{
           binary_expr{
             index_expr{
               identifier{"newstr"}
-              int_literal{0}}
-            =
-            int_literal{10}}
-          binary_expr{
-            index_expr{
-              identifier{"newstr"}
               identifier{"size"}}
             =
-            int_literal{0}}
+            index_expr{
+              identifier{"newstr"}
+              binary_expr{
+                int_literal{0}
+                +
+                binary_expr{
+                  int_literal{1}
+                  *
+                  int_literal{2}}}}}
           return_stmt{
                         identifier{"newstr"}}}}}
     func_decl{

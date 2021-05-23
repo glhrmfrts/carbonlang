@@ -137,6 +137,7 @@ struct lvalue {
 struct call_info {
     ast_node* self;
     ast_node* func_node;
+    func_def* funcdef;
     std::vector<ast_node*> args;
     string_hash mangled_name;
     type_id func_type_id{};
@@ -207,6 +208,7 @@ struct type_system {
 
     bool unresolved_types = false;
     type_system_pass pass{};
+    int subpass = 0;
 
     memory_arena* ast_arena;
     std::vector<ast_node*> code_units;
@@ -233,6 +235,10 @@ struct type_system {
     scope_def* find_nearest_scope(scope_kind kind);
 
     void create_temp_variable_for_binary_expr(ast_node& node);
+
+    void create_temp_variable_for_index_expr(ast_node& node);
+
+    void create_temp_variable_for_call_arg(ast_node& node, ast_node& arg, int idx);
 };
 
 }

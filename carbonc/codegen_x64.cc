@@ -223,6 +223,12 @@ struct generator {
         }
     }
 
+    void analyse_children(ast_node& node) {
+        for (auto& child : node.children) {
+            if (child) { analyse_node(*child); }
+        }
+    }
+
     void analyse_node(ast_node& node) {
         switch (node.type) {
         case ast_type::func_decl: {
@@ -231,11 +237,7 @@ struct generator {
                 em->add_global_func_decl(name);
 
                 ts->enter_scope(node);
-                {
-                    for (auto& child : node.children) {
-                        if (child) { analyse_node(*child); }
-                    }
-                }
+                analyse_children(node);
                 ts->leave_scope();
             }
             else {
@@ -248,6 +250,30 @@ struct generator {
             if (func_node->func.linkage == func_linkage::external_c) {
                 auto curscope = ts->find_nearest_scope(scope_kind::func_body);
                 node_data[curscope->self->node_id].func_calls_extern_c = true;
+            }
+
+            analyse_children(node);
+
+            // Generate temp variables for nested calls
+            if (node.call.args.size() > 1) {
+                for (std::size_t i = 0; i < node.call.args.size(); i++) {
+                    auto arg = node.call.args[i];
+
+                    // If the call expression is at the end of the parent call,
+                    // there is no problem.
+                    if (arg->type == ast_type::call_expr && i < node.call.args.size() - 1) {
+                        ts->create_temp_variable_for_call_arg(node, *arg, i);
+                    }
+                }
+            }
+            break;
+        }
+        case ast_type::index_expr: {
+            analyse_children(node);
+
+            // Generate temp variables for index expressions
+            if (!is_primary_expr(*node.children[0])) {
+                ts->create_temp_variable_for_index_expr(node);
             }
             break;
         }
@@ -267,16 +293,11 @@ struct generator {
                 }
             }
 
-            {
-                for (auto& child : node.children) {
-                    if (child) { analyse_node(*child); }
-                }
-            }
+            analyse_children(node);
 
             if (temp_reg) {
                 free_temp_register();
             }
-
             break;
         }
         default:
@@ -410,7 +431,9 @@ struct generator {
             }
         }
 
-        em->push(rbp);
+        bool needs_rbp = (!(stack_size == 0 && node.func.arguments.empty()));
+
+        if (needs_rbp) em->push(rbp);
 
         std::vector<gen_register> temp_regs;
         for (const auto& reg : ndata.func_used_temp_registers) {
@@ -418,7 +441,7 @@ struct generator {
             temp_regs.push_back(reg);
         }
 
-        em->mov(rbp, rsp);
+        if (needs_rbp) em->mov(rbp, rsp);
 
         if (stack_size > 0) {
             // resize buffer
@@ -439,7 +462,8 @@ struct generator {
             em->pop(temp_regs[i - 1]);
         }
 
-        em->pop(rbp);
+        if (needs_rbp) em->pop(rbp);
+
         em->ret();
         em->end_func();
     }
@@ -480,7 +504,7 @@ struct generator {
         if (std::holds_alternative<gen_offset>(op)) {
             gen_offset& offs = std::get<gen_offset>(op);
             auto offset_expr = gen_offset{ elem_size, std::vector<gen_offset_expr>{
-                offs.expr[0], '+', rax, '*', std::int32_t(elem_size), '+', offs.expr.back()
+                offs.expr[0], '+', rax, '*', std::int32_t(elem_size), offs.expr[1], offs.expr[2]
             }};
             provide_operand(offset_expr, [this, offset_expr](auto&& dest, auto&&) {
                 em->mov(dest, offset_expr);
@@ -522,12 +546,33 @@ struct generator {
     }
 
     void generate_assignment(ast_node& node) {
-        generate_node(*node.children[0]);
-        auto dest = operand_stack.top();
-        operand_stack.pop();
+        auto& ndata = node_data[node.node_id];
+        if (node.local.self || ndata.bin_temp_register) {
+            gen_destination rightdest = rax;
+            if (node.local.self) {
+                // needs spill temp variable
+                rightdest = local_var_destination(node.local);
+            }
+            else if (ndata.bin_temp_register) {
+                rightdest = *ndata.bin_temp_register;
+            }
+            generate_node(*node.children[1]);
+            finalize_expr(rightdest);
 
-        generate_node(*node.children[1]);
-        finalize_expr(todest(dest.first));
+            generate_node(*node.children[0]);
+            auto dest = operand_stack.top().first;
+            operand_stack.pop();
+
+            em->mov(todest(dest), toop(rightdest));
+        }
+        else {
+            generate_node(*node.children[0]);
+            auto dest = operand_stack.top();
+            operand_stack.pop();
+
+            generate_node(*node.children[1]);
+            finalize_expr(todest(dest.first));
+        }
     }
 
     void generate_binary_expr(ast_node& node) {

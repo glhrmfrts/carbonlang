@@ -5,10 +5,11 @@ func copy(str: raw_string): raw_string {
     return copy(str, len(str));
 }
 
+func get_val(): int { return 0; }
+
 func copy(str: raw_string, size: usize): raw_string {
     let newstr = cast[raw_string] mem::alloc(size+1);
     copy(newstr, str, size);
-    newstr[0] = 10;
     newstr[size] = 0;
     return newstr;
 }

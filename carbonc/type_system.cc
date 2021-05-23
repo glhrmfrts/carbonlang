@@ -173,6 +173,9 @@ bool is_convertible_to(type_system& ts, type_id a, type_id b) {
 }
 
 std::optional<std::string> get_conversion_error_detail(type_system& ts, type_id a, type_id b) {
+    if (!a.valid()) return {};
+    if (!b.valid()) return {};
+
     auto& ta = get_type(ts, a);
     auto& tb = get_type(ts, b);
 
@@ -186,6 +189,9 @@ std::optional<std::string> get_conversion_error_detail(type_system& ts, type_id 
 }
 
 void try_coerce_to(type_system& ts, ast_node& from, type_id to) {
+    if (!from.type_id.valid()) return;
+    if (!to.valid()) return;
+
     auto& ta = get_type(ts, from.type_id);
     auto& tb = get_type(ts, to);
 
@@ -410,6 +416,13 @@ type_id find_type_by_id_hash(type_system& ts, const std::pair<string_hash, strin
         return type_id{ sym->scope, sym->type_index };
     }
     return invalid_type;
+}
+
+local_def* get_symbol_local(const symbol_info& sym) {
+    if (sym.scope && sym.local_index > -1) {
+        return sym.scope->local_defs[sym.local_index];
+    }
+    return nullptr;
 }
 
 // Section: type errors
@@ -871,14 +884,6 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
             if (node.type_id != invalid_type && ts.current_scope->kind == scope_kind::code_unit && node.type_def.mangled_name.str.empty()) {
                 // this means the function type was resolved, so mangle the name and declare it
 
-                /*
-                 TODO: mangle the func name with the module name in the final pass
-                auto parts = ts.current_scope->self_module_parts;
-                for (const auto& part : node.local.id_node->id_parts) {
-                    parts.push_back(part);
-                }
-                */
-
                 node.type_def.mangled_name = mangle_func_name(ts, node.local.id_node->id_parts, node.func.arguments, node.func.linkage);
 
                 auto bsym = find_symbol_in_current_scope(ts, node.func.base_symbol);
@@ -942,6 +947,7 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
                         auto local = sym->scope->local_defs[sym->local_index];
                         node.type_id = local->self->type_def.func.ret_type;
                         node.call.func_type_id = local->self->type_id;
+                        node.call.funcdef = &local->self->func;
                         break;
                     }
                 }
@@ -971,10 +977,17 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
         break;
     }
     case ast_type::index_expr: {
+        if (ts.pass == type_system_pass::resolve_literals_and_register_declarations) break;
+
         resolve_node_type(ts, node.children[0].get());
         resolve_node_type(ts, node.children[1].get());
-        bool arr = node.children[0]->type_id.get().kind == type_kind::array;
-        bool ptr = node.children[0]->type_id.get().kind == type_kind::pointer;
+        bool arr = false;
+        bool ptr = false;
+
+        if (node.children[0]->type_id.valid()) {
+            arr = node.children[0]->type_id.get().kind == type_kind::array;
+            ptr = node.children[0]->type_id.get().kind == type_kind::pointer;
+        }
         bool arr_or_ptr = arr || ptr;
 
         bool error = false;
@@ -1029,7 +1042,7 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
 
         auto sym = find_symbol(ts, separate_module_identifier(node.id_parts));
         if (sym && sym->kind == symbol_kind::local) {
-            auto local = sym->scope->local_defs[sym->local_index];
+            auto local = get_symbol_local(*sym);
 
             node.lvalue.self = &node;
             node.lvalue.symbol = *sym;
@@ -1059,13 +1072,23 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
 
     case ast_type::binary_expr: {
         visit_children(ts, node);
+
+        node.type_error = (node.children[0]->type_error || node.children[1]->type_error);
         if (token_to_char(node.op) == '=') {
-            node.type_error = (node.children[0]->type_error || node.children[1]->type_error);
+            
             if ((!node.children[0]->type_id.valid() || node.children[0]->type_error) || (!node.children[1]->type_id.valid() || node.children[1]->type_error)) {
                 complement_error(ts, node.pos, "in assignment of '%s'", node_to_string(*node.children[0]).c_str());
             }
             else if (!(node.children[0]->lvalue.self)) {
                 add_type_error(ts, node.pos, "left-side of assignment must be an lvalue (identifier, index expression)");
+            }
+
+            if (node.children[0]->type == ast_type::identifier) {
+                auto local = get_symbol_local(node.children[0]->lvalue.symbol);
+                if (local && local->self->op == token_type::let) {
+                    add_type_error(ts, node.children[0]->pos, "cannot re-assign a 'let' value, use 'var' instead");
+                    node.type_error = true;
+                }
             }
 
             if (!is_convertible_to(ts, node.children[1]->type_id, node.children[0]->type_id)) {
@@ -1112,8 +1135,8 @@ static int temp_count = 0;
 
 std::pair<arena_ptr<ast_node>, arena_ptr<ast_node>> make_temp_variable_for_call(type_system& ts, ast_node& call) {
     // generate the temp ID
-    std::string tempname = "$cb temp" + std::to_string(temp_count++);
-    auto id_node = make_identifier_node(*ts.ast_arena, {}, { std::move(tempname) });
+    std::string tempname = "$cbT" + std::to_string(temp_count++);
+    auto id_node = make_identifier_node(*ts.ast_arena, {}, { tempname });
 
     auto val_node = make_call_expr_node(*ts.ast_arena, {}, std::move(call.children[ast_node::child_call_expr_callee]), std::move(call.children[ast_node::child_call_expr_arg_list]));
     // The call might have a pre-children of itself
@@ -1124,7 +1147,23 @@ std::pair<arena_ptr<ast_node>, arena_ptr<ast_node>> make_temp_variable_for_call(
     register_var_declaration_node(ts, *decl);
 
     // Make a reference to use as the new argument
-    auto ref = make_identifier_node(*ts.ast_arena, {}, { std::move(tempname) });
+    auto ref = make_identifier_node(*ts.ast_arena, {}, { tempname });
+    resolve_node_type(ts, ref.get());
+
+    return std::make_pair(std::move(decl), std::move(ref));
+}
+
+std::pair<arena_ptr<ast_node>, arena_ptr<ast_node>> make_temp_variable_for_index_expr(type_system& ts, arena_ptr<ast_node>&& lhs) {
+    // generate the temp ID
+    std::string tempname = "$cbT" + std::to_string(temp_count++);
+    auto id_node = make_identifier_node(*ts.ast_arena, {}, { tempname });
+
+    // Generate and register the declaration of the temp
+    auto decl = make_var_decl_node(*ts.ast_arena, {}, token_type::let, std::move(id_node), { nullptr, nullptr }, std::move(lhs));
+    register_var_declaration_node(ts, *decl);
+
+    // Make a reference to use as the new argument
+    auto ref = make_identifier_node(*ts.ast_arena, {}, { tempname });
     resolve_node_type(ts, ref.get());
 
     return std::make_pair(std::move(decl), std::move(ref));
@@ -1136,6 +1175,18 @@ void final_analysis(type_system& ts, ast_node* nodeptr) {
     auto& node = *nodeptr;
     switch (node.type) {
     case ast_type::func_decl: {
+        // remangle the function name with the fully qualified module name
+        if ((node.func.linkage == func_linkage::external_carbon || node.func.linkage == func_linkage::local_carbon)
+            && !node.func.args_unresolved) {
+
+            auto parts = ts.current_scope->self_module_parts;
+            for (const auto& part : node.local.id_node->id_parts) {
+                parts.push_back(part);
+            }
+            
+            node.type_def.mangled_name = mangle_func_name(ts, parts, node.func.arguments, node.func.linkage);
+        }
+
         if (node.scope.body_node) { enter_scope_local(ts, node); }
         visit_children(ts, node);
         if (node.scope.body_node) { leave_scope_local(ts); }
@@ -1145,21 +1196,9 @@ void final_analysis(type_system& ts, ast_node* nodeptr) {
         // transform nested call expressions into temporary variables
         visit_children(ts, node);
 
-        if (node.call.args.size() > 1) {
-            for (std::size_t i = 0; i < node.call.args.size(); i++) {
-                auto arg = node.call.args[i];
-
-                // If the call expression is at the end of the parent call,
-                // there is no problem.
-                if (arg->type == ast_type::call_expr && i < node.call.args.size()-1) {
-                    auto [temp, ref] = make_temp_variable_for_call(ts, *arg);
-
-                    node.call.args[i] = ref.get();
-                    node.children[ast_node::child_call_expr_arg_list]->children[i] = std::move(ref);
-
-                    node.pre_children.push_back(std::move(temp));
-                }
-            }
+        // update the called function mangled name
+        if (node.call.funcdef) {
+            node.call.mangled_name = node.call.funcdef->self->type_def.mangled_name;
         }
         break;
     }
@@ -1390,6 +1429,7 @@ void type_system::process_code_unit(ast_node& node) {
 
 void type_system::resolve_and_check() {
     this->pass = type_system_pass::resolve_imports;
+    this->subpass = 0;
     for (auto unit : this->code_units) {
         enter_scope(*unit);
         visit_tree(*this, *unit);
@@ -1398,6 +1438,7 @@ void type_system::resolve_and_check() {
 
     this->pass = type_system_pass::resolve_all;
     for (int i = 0; i < 100; i++) {
+        this->subpass = i;
         this->unresolved_types = false;
         for (auto unit : this->code_units) {
             clear_type_errors(*this, *unit);
@@ -1414,6 +1455,7 @@ void type_system::resolve_and_check() {
     }
 
     this->pass = type_system_pass::perform_checks;
+    this->subpass = 0;
     for (auto unit : this->code_units) {
         clear_type_errors(*this, *unit);
         enter_scope(*unit);
@@ -1421,11 +1463,14 @@ void type_system::resolve_and_check() {
         leave_scope();
     }
 
-    this->pass = type_system_pass::final_analysis;
-    for (auto unit : this->code_units) {
-        enter_scope(*unit);
-        visit_tree(*this, *unit);
-        leave_scope();
+    for (int i = 0; i < 2; i++) {
+        this->pass = type_system_pass::final_analysis;
+        this->subpass = i;
+        for (auto unit : this->code_units) {
+            enter_scope(*unit);
+            visit_tree(*this, *unit);
+            leave_scope();
+        }
     }
 
     if (!current_error.msg.empty()) {
@@ -1442,8 +1487,8 @@ void type_system::leave_scope() {
 }
 
 void type_system::create_temp_variable_for_binary_expr(ast_node& node) {
-    std::string tempname = "$cb temp" + std::to_string(temp_count++);
-    auto id_node = make_identifier_node(*ast_arena, {}, { std::move(tempname) });
+    std::string tempname = "$cbT" + std::to_string(temp_count++);
+    auto id_node = make_identifier_node(*ast_arena, {}, { tempname });
 
     node.local.self = &node;
     node.local.id_node = id_node.get();
@@ -1453,6 +1498,21 @@ void type_system::create_temp_variable_for_binary_expr(ast_node& node) {
     resolve_local_variable_type(*this, node);
     declare_local_symbol(*this, { node.local.id_node->id_parts.front() }, node);
     node.temps.push_back(std::move(id_node));
+}
+
+void type_system::create_temp_variable_for_index_expr(ast_node& node) {
+    auto [temp, ref] = make_temp_variable_for_index_expr(*this, std::move(node.children[0]));
+    node.children[0] = std::move(ref);
+    node.pre_children.push_back(std::move(temp));
+}
+
+void type_system::create_temp_variable_for_call_arg(ast_node& call, ast_node& arg, int idx) {
+    auto [temp, ref] = make_temp_variable_for_call(*this, arg);
+
+    call.call.args[idx] = ref.get();
+    call.children[ast_node::child_call_expr_arg_list]->children[idx] = std::move(ref);
+
+    call.pre_children.push_back(std::move(temp));
 }
 
 scope_def* type_system::find_nearest_scope(scope_kind kind) {
