@@ -43,16 +43,11 @@ func main(): int {
     let newtext = copy(text);
     *newtext = 'K';
     newtext[6] = 'G';
-    if (len(newtext) == 12) {
+    if ((len(newtext) == 11 || 2+7 > 5) && (4*9*9) >= 7) {
         println(text);
         println(newtext);
     }
-    else if (true) {
-        println("10 > 4");
-    }
-    else {
-        print_the_char('J', 0);
-    }
+
     let result = longfunc(1, 1, 1, 1, 1, 1, 1, 1);
     //system("start C:\\code");
     return result;

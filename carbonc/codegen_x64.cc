@@ -15,11 +15,15 @@ namespace carbon {
 
 struct gen_node_data {
     std::optional<gen_register> bin_temp_register{};
+    std::string bin_self_label;
+    std::string bin_target_label;
+    bool bin_invert_jump;
 
     std::set<gen_register> func_used_temp_registers{};
     bool func_calls_extern_c = false;
     std::int32_t func_call_arg_size;
 
+    std::string if_body_label;
     std::string if_else_label;
     std::string if_end_label;
 };
@@ -261,11 +265,14 @@ struct generator {
             auto scope = ts->find_nearest_scope(scope_kind::func_body);
             auto& funcname = scope->self->type_def.mangled_name.str;
             auto& ndata = node_data[node.node_id];
+            ndata.if_body_label = funcname + "_if" + std::to_string(node.node_id) + "_body";
             ndata.if_else_label = funcname + "_if" + std::to_string(node.node_id) + "_else";
 
             if (node.children.size() == 3) {
                 ndata.if_end_label = funcname + "_if" + std::to_string(node.node_id) + "_end";
             }
+
+            set_bool_op_targets(*node.children[0], ndata.if_body_label, ndata.if_else_label);
 
             analyse_children(node);
             break;
@@ -308,7 +315,7 @@ struct generator {
             auto& right = node.children[1];
             std::optional<gen_register> temp_reg;
 
-            if (!is_primary_expr(*right)) {
+            if (!is_primary_expr(*right) && !is_bool_binary_op(*left) && !is_logic_binary_op(*left)) {
                 temp_reg = use_temp_register();
                 if (!temp_reg) {
                     ts->create_temp_variable_for_binary_expr(node);
@@ -332,6 +339,70 @@ struct generator {
                 }
             }
             break;
+        }
+    }
+
+    std::string generate_label_for_short_circuit(ast_node& node) {
+        auto scope = ts->find_nearest_scope(scope_kind::func_body);
+        auto& funcname = scope->self->type_def.mangled_name.str;
+        auto& ndata = node_data[node.node_id];
+        ndata.bin_self_label = funcname + "_short" + std::to_string(node.node_id);
+        return ndata.bin_self_label;
+    }
+
+    void set_bool_op_target(ast_node& node, bool invert_jump, const std::string& label) {
+        auto& ndata = node_data[node.node_id];
+        ndata.bin_invert_jump = invert_jump;
+        ndata.bin_target_label = label;
+    }
+
+    // (a>5) && (b<4)
+    //
+    // (a>5) || (b<4)
+    //
+    // ((a<5 || a>5) && a<10) && (b<4)
+    //
+    // ((a<5 && a>5) && a<10) || (b<4)
+
+    void set_bool_op_targets(ast_node& node, const std::string& true_label, const std::string& false_label) {
+        if (node.type == ast_type::binary_expr && node.op == token_type::andand) {
+            set_bool_op_target(*node.children[0], true, false_label);
+            if (is_logic_binary_op(*node.children[0])) {
+                if (node.children[0]->op == token_type::oror) {
+                    auto right_label = generate_label_for_short_circuit(*node.children[1]);
+                    set_bool_op_targets(*node.children[0], right_label, false_label);
+                }
+                else {
+                    set_bool_op_targets(*node.children[0], true_label, false_label);
+                }
+            }
+            set_bool_op_targets(*node.children[1], true_label, false_label);
+        }
+        else if (node.type == ast_type::binary_expr && node.op == token_type::oror) {
+            set_bool_op_target(*node.children[0], false, true_label);
+            if (is_logic_binary_op(*node.children[0])) {
+                if (node.children[0]->op == token_type::andand) {
+                    auto right_label = generate_label_for_short_circuit(*node.children[1]);
+                    set_bool_op_targets(*node.children[0], true_label, right_label);
+                }
+                else {
+                    set_bool_op_targets(*node.children[0], true_label, false_label);
+                }
+            }
+            set_bool_op_targets(*node.children[1], true_label, false_label);
+        }
+        else if (node.type == ast_type::unary_expr && node.op == token_type::not_) {
+            if (is_logic_binary_op(*node.children[0])) {
+                // invert the labels
+                set_bool_op_targets(*node.children[0], false_label, true_label);
+            }
+            else if (is_bool_binary_op(*node.children[0])) {
+                // invert the jump
+                set_bool_op_target(node, false, false_label);
+            }
+        }
+        else {
+            set_bool_op_target(node, true, false_label);
         }
     }
 
@@ -519,46 +590,14 @@ struct generator {
         }
     }
 
-    void emit_jump_for_if_op(token_type op, const std::string& label) {
-        std::string inst;
-        switch (token_to_char(op)) {
-        case '>':
-            inst = "jle";
-            break;
-        case '<':
-            inst = "jge";
-            break;
-        }
-
-        switch (op) {
-        case token_type::gteq:
-            inst = "jl";
-            break;
-        case token_type::lteq:
-            inst = "jg";
-            break;
-        case token_type::eqeq:
-            inst = "jne";
-            break;
-        case token_type::neq:
-            inst = "je";
-            break;
-        }
-
-        if (!inst.empty()) {
-            em->emitln(" %s %s", inst.c_str(), label.c_str());
-        }
-        else {
-            assert(!"unreachable emit_jump_for_if_op");
-        }
-    }
-
     void generate_if_stmt(ast_node& node) {
         auto& ndata = node_data[node.node_id];
 
         generate_node(*node.children[0]);
-        emit_jump_for_if_op(node.children[0]->op, ndata.if_else_label);
 
+        if (!ndata.if_body_label.empty()) {
+            em->label(ndata.if_body_label.c_str());
+        }
         generate_node(*node.children[1]);
         if (node.children.size() == 3) {
             em->jmp(ndata.if_end_label.c_str());
@@ -633,25 +672,6 @@ struct generator {
         });
     }
 
-    void emit_binary_op(token_type op, const gen_destination& dest, const gen_operand& operand) {
-        switch (token_to_char(op)) {
-        case '+':
-            em->add(dest, operand);
-            break;
-        case '-':
-            em->sub(dest, operand);
-            break;
-        case '*':
-            em->imul(dest, operand);
-            break;
-        default:
-            if (is_bool_binary_op(op)) {
-                em->cmp(toop(dest), operand);
-            }
-            break;
-        }
-    }
-
     void generate_assignment(ast_node& node) {
         auto& ndata = node_data[node.node_id];
         if (node.local.self || ndata.bin_temp_register) {
@@ -682,6 +702,67 @@ struct generator {
         }
     }
 
+    void emit_jump_for_bool_op(token_type op, bool invert, const std::string& label) {
+        std::string inst;
+        switch (token_to_char(op)) {
+        case '>':
+            if (invert) inst = "jle";
+            else inst = "jg";
+            break;
+        case '<':
+            if (invert) inst = "jge";
+            else inst = "jl";
+            break;
+        }
+
+        switch (op) {
+        case token_type::gteq:
+            if (invert) inst = "jl";
+            else inst = "jge";
+            break;
+        case token_type::lteq:
+            if (invert) inst = "jg";
+            else inst = "jle";
+            break;
+        case token_type::eqeq:
+            if (invert) inst = "jne";
+            else inst = "je";
+            break;
+        case token_type::neq:
+            if (invert) inst = "je";
+            else inst = "jne";
+            break;
+        }
+
+        if (!inst.empty()) {
+            em->emitln(" %s %s", inst.c_str(), label.c_str());
+        }
+        else {
+            assert(!"unreachable emit_jump_for_if_op");
+        }
+    }
+
+    void emit_binary_op(ast_node& node, const gen_destination& dest, const gen_operand& operand) {
+        auto& ndata = node_data[node.node_id];
+        switch (token_to_char(node.op)) {
+        case '+':
+            em->add(dest, operand);
+            break;
+        case '-':
+            em->sub(dest, operand);
+            break;
+        case '*':
+            em->imul(dest, operand);
+            break;
+        default:
+            if (is_bool_binary_op(node.op)) {
+                em->cmp(toop(dest), operand);
+                emit_jump_for_bool_op(node.op, ndata.bin_invert_jump, ndata.bin_target_label);
+            }
+            break;
+        }
+    }
+
     void generate_binary_expr(ast_node& node) {
         if (token_to_char(node.op) == '=') {
             generate_assignment(node);
@@ -691,6 +772,11 @@ struct generator {
         auto& left = node.children[0];
         auto& right = node.children[1];
         auto& ndata = node_data[node.node_id];
+
+        if (!ndata.bin_self_label.empty()) {
+            em->label(ndata.bin_self_label.c_str());
+        }
+
         gen_destination leftdest = rax;
 
         if (node.local.self) {
@@ -717,7 +803,7 @@ struct generator {
                     actual_op = toop(arcx);
                 }
                 */
-                emit_binary_op(node.op, arax, actual_op);
+                emit_binary_op(node, arax, actual_op);
             }
             else {
                 auto actual_temp = adjust_for_type(leftdest, node.children[0]->type_id);
@@ -728,7 +814,7 @@ struct generator {
                     actual_temp = arcx;
                 }
                 */
-                emit_binary_op(node.op, arax, toop(actual_temp));
+                emit_binary_op(node, arax, toop(actual_temp));
             }
         });
 

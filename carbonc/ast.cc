@@ -237,7 +237,9 @@ arena_ptr<ast_node> make_if_stmt_node(memory_arena& arena, const position& pos, 
     ptr->pos = pos;
     ptr->children.push_back(std::move(cond));
     ptr->children.push_back(std::move(body));
-    ptr->children.push_back(std::move(elsebody));
+    if (elsebody) {
+        ptr->children.push_back(std::move(elsebody));
+    }
     return ptr;
 }
 
@@ -334,6 +336,13 @@ bool is_primary_expr(ast_node& node) {
     default:
         return false;
     }
+}
+
+bool is_logic_binary_op(ast_node& node) {
+    if (node.type == ast_type::binary_expr) {
+        return is_logic_binary_op(node.op);
+    }
+    return false;
 }
 
 bool is_bool_binary_op(ast_node& node) {

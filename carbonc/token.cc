@@ -13,12 +13,12 @@ struct token_properties {
 };
 
 static std::unordered_map<token_type, token_properties> token_props = {
-    {token_type::not, { UNARY_OP, 0 }},
+    {token_type::not_, { UNARY_OP, 0 }},
 
     {token_from_char('='), { BINARY_OP, 400 }},
 
-    {token_type::or, { BINARY_OP, 490 }},
-    {token_type::and, { BINARY_OP, 500 }},
+    {token_type::oror, { BINARY_OP, 490 }},
+    {token_type::andand, { BINARY_OP, 500 }},
 
     {token_from_char('|'), { BINARY_OP, 580 }},
     {token_from_char('^'), { BINARY_OP, 590 }},
@@ -49,6 +49,10 @@ bool is_unary_op(token_type t) {
 
 bool is_binary_op(token_type t) {
     return token_props[t].flags & BINARY_OP;
+}
+
+bool is_logic_binary_op(token_type t) {
+    return (t == token_type::andand || t == token_type::oror);
 }
 
 bool is_bool_binary_op(token_type t) {

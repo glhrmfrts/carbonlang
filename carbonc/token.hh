@@ -11,9 +11,9 @@ enum class token_type : unsigned int {
     char_literal,
     string_literal,
     identifier,
-    not,
-    and,
-    or,
+    not_,
+    andand,
+    oror,
     eqeq,
     neq,
     gteq,
@@ -52,6 +52,8 @@ struct position {
 bool is_unary_op(token_type t);
 
 bool is_binary_op(token_type t);
+
+bool is_logic_binary_op(token_type t);
 
 bool is_bool_binary_op(token_type t);
 

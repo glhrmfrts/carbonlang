@@ -175,6 +175,8 @@ arena_ptr<ast_node> make_code_unit_node(memory_arena& arena, const position& pos
 
 bool is_primary_expr(ast_node& node);
 
+bool is_logic_binary_op(ast_node& node);
+
 bool is_bool_binary_op(ast_node& node);
 
 std::string build_identifier_value(const std::vector<std::string>& parts);

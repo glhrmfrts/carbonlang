@@ -665,6 +665,25 @@ type_id get_value_node_type(type_system& ts, ast_node& node) {
             return ts.bool_type;
         }
 
+        if (is_logic_binary_op(node.op)) {
+            if (node.children[0]->type_id != ts.bool_type) {
+                node.type_error = true;
+                add_type_error(ts, node.children[0]->pos,
+                    "operand of logic operators (&&, ||) has type '%s', it must be 'bool'",
+                    type_to_string(node.children[0]->type_id).c_str());
+                return invalid_type;
+            }
+            if (node.children[1]->type_id != ts.bool_type) {
+                node.type_error = true;
+                add_type_error(ts, node.children[1]->pos,
+                    "operand of logic operators (&&, ||) has type '%s', it must be 'bool'",
+                    type_to_string(node.children[1]->type_id).c_str());
+                return invalid_type;
+            }
+            node.type_error = false;
+            return ts.bool_type;
+        }
+
         node.type_error = false;
         return node.children[0]->type_id;
     }
@@ -1011,7 +1030,9 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
             }
         }
 
-        if (!node.type_error && !is_bool_binary_op(*node.children[0])) {
+        // TODO: recursively do this
+
+        if (!node.type_error && !is_bool_binary_op(*node.children[0]) && !is_logic_binary_op(*node.children[0])) {
             node.children[0] = make_binary_expr_node(
                 *ts.ast_arena,
                 node.children[0]->pos,
