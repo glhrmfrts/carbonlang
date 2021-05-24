@@ -24,20 +24,30 @@ func len(str: raw_string): usize {
     return strlen(str);
 }
 
+// test stuff
+
 import std::io;
 import std::libc::stdio;
+import std::libc::stdlib;
 
 func print_the_char(v: char, d: char) {
     puts(&v);
 }
 
+func longfunc(a: int, b: int, c: int, d: int, e: int, f: int, g: int, h: int): int {
+    return a + b + c + d + e + f + g + h;
+}
+
 func main(): int {
     let text = "hello world";
     let newtext = copy(text);
-    *newtext = 42;
-    newtext[6] = 42;
+    *newtext = 'K';
+    newtext[6] = 'G';
     println(text);
     println(newtext);
     print_the_char('a', 0);
-    return 0;
+    let result = longfunc(1, 1, 1, 1, 1, 1, 1, 1);
+
+    system("start C:\\code");
+    return result;
 }

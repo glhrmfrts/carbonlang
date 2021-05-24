@@ -125,6 +125,8 @@ compound_stmt{
       identifier{"std::io"}}
     import_decl{
       identifier{"std::libc::stdio"}}
+    import_decl{
+      identifier{"std::libc::stdlib"}}
     func_decl{
       identifier{"print_the_char"}
       arg_list(
@@ -144,6 +146,68 @@ compound_stmt{
               unary_expr{
                 &
                 identifier{"v"}})}}}}
+    func_decl{
+      identifier{"longfunc"}
+      arg_list(
+        var_decl{
+          identifier{"a"}
+          :type_expr{
+            identifier{"int"}}}
+        var_decl{
+          identifier{"b"}
+          :type_expr{
+            identifier{"int"}}}
+        var_decl{
+          identifier{"c"}
+          :type_expr{
+            identifier{"int"}}}
+        var_decl{
+          identifier{"d"}
+          :type_expr{
+            identifier{"int"}}}
+        var_decl{
+          identifier{"e"}
+          :type_expr{
+            identifier{"int"}}}
+        var_decl{
+          identifier{"f"}
+          :type_expr{
+            identifier{"int"}}}
+        var_decl{
+          identifier{"g"}
+          :type_expr{
+            identifier{"int"}}}
+        var_decl{
+          identifier{"h"}
+          :type_expr{
+            identifier{"int"}}})
+      :type_expr{
+        identifier{"int"}}
+compound_stmt{
+        stmt_list{
+          return_stmt{
+                        binary_expr{
+              binary_expr{
+                binary_expr{
+                  binary_expr{
+                    binary_expr{
+                      binary_expr{
+                        binary_expr{
+                          identifier{"a"}
+                          +
+                          identifier{"b"}}
+                        +
+                        identifier{"c"}}
+                      +
+                      identifier{"d"}}
+                    +
+                    identifier{"e"}}
+                  +
+                  identifier{"f"}}
+                +
+                identifier{"g"}}
+              +
+              identifier{"h"}}}}}}
     func_decl{
       identifier{"main"}
       arg_list()
@@ -166,13 +230,13 @@ compound_stmt{
               *
               identifier{"newtext"}}
             =
-            int_literal{42}}
+            }
           binary_expr{
             index_expr{
               identifier{"newtext"}
               int_literal{6}}
             =
-            int_literal{42}}
+            }
           call_expr{
             identifier{"println"}
             arg_list(
@@ -185,6 +249,25 @@ compound_stmt{
             identifier{"print_the_char"}
             arg_list(
               
-              int_literal{0})}
+              int_literal{0})}}
+        decl_list{
+          var_decl{
+            identifier{"result"}
+            =call_expr{
+              identifier{"longfunc"}
+              arg_list(
+                int_literal{1}
+                int_literal{1}
+                int_literal{1}
+                int_literal{1}
+                int_literal{1}
+                int_literal{1}
+                int_literal{1}
+                int_literal{1})}}}
+        stmt_list{
+          call_expr{
+            identifier{"system"}
+            arg_list(
+              string_literal{"start C:\code"})}
           return_stmt{
-                        int_literal{0}}}}}}}
+                        identifier{"result"}}}}}}}

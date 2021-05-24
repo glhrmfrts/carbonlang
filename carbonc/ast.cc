@@ -316,6 +316,7 @@ bool is_primary_expr(ast_node& node) {
     case ast_type::bool_literal:
     case ast_type::int_literal:
     case ast_type::float_literal:
+    case ast_type::char_literal:
     case ast_type::string_literal:
     case ast_type::identifier:
         return true;

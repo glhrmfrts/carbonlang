@@ -10,7 +10,7 @@ Carbon is a statically-strongly-typed programming language.
 
 -X assignment
 -X pointer deref / indexing
-- stack arguments / more than 4 args
+-X stack arguments / more than 4 args
 - if statements
 - for/while statements
 - structs / tuples / user types

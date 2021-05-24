@@ -17,6 +17,7 @@ struct gen_node_data {
     std::optional<gen_register> bin_temp_register{};
     std::set<gen_register> func_used_temp_registers{};
     bool func_calls_extern_c = false;
+    std::int32_t func_call_arg_size;
 };
 
 gen_destination adjust_for_type(gen_destination dest, type_id tid) {
@@ -74,9 +75,9 @@ void find_max_call_arg_size(ast_node& node, std::int32_t& sz) {
         std::int32_t args_size = 0;
         for (auto& arg : node.call.args) {
             auto tdef = arg->type_id.get();
-            std::int32_t asize = std::min(8,std::int32_t(tdef.size));
+            std::int32_t asize = 8;// std::min(8, std::int32_t(tdef.size));
             args_size += asize;
-            args_size = align(args_size, std::int32_t(tdef.alignment));
+            args_size = align(args_size, 8);//align(args_size, std::int32_t(tdef.alignment));
         }
         sz = std::max(sz, args_size);
     }
@@ -97,6 +98,7 @@ struct generator {
     std::vector<std::pair<std::string_view, std::string>> global_strings;
     std::stack<std::pair<gen_operand, finalizer_func>> operand_stack;
     std::unordered_map<std::size_t, gen_node_data> node_data;
+    std::int32_t current_temp_regs_offset = 0;
     type_system* ts;
     int used_temp_registers = 0;
 
@@ -134,14 +136,16 @@ struct generator {
             call_arg_size = std::max(call_arg_size, 32);
         }
 
+        // NOTE: on windows, it seems arguments are always 8 bytes aligned, no matter their sizes
+
         std::int32_t own_arg_size = 0;
         std::int32_t local_size = 0;
         for (auto& local : node.scope.local_defs) {
             auto& tdef = local->self->type_id.get();
             if (local->is_argument) {
                 local->frame_offset = own_arg_size + 8; // offset from rbp + space for the return-instruction pointer
-                own_arg_size += std::int32_t(tdef.size);
-                own_arg_size = align(own_arg_size, std::int32_t(tdef.alignment));
+                own_arg_size += 8;// std::int32_t(tdef.size);
+                own_arg_size = align(own_arg_size, 8);// align(own_arg_size, std::int32_t(tdef.alignment));
             }
             else {
                 local->frame_offset = -(local_size + 8); // offset from rbp + space for pushed rbp
@@ -421,6 +425,7 @@ struct generator {
 
         auto [local_size,call_arg_size] = get_func_stack_frame_size(node);
         std::int32_t stack_size = local_size + call_arg_size;
+        ndata.func_call_arg_size = call_arg_size;
 
         if (node.local.id_node->id_parts.front() == "main") {
             em->begin_func(node.local.id_node->id_parts.front().c_str());
@@ -430,14 +435,20 @@ struct generator {
         }
 
         std::int32_t temp_regs_offset = node_data[node.node_id].func_used_temp_registers.size() * 8;
+        current_temp_regs_offset = temp_regs_offset;
+
         if (!node.func.arguments.empty()) {
             // move arguments from registers to stack
-            for (std::size_t i = node.func.arguments.size(); i > 0; i--) {
+            std::size_t max_reg_args = std::min(arg_registers.size(), node.func.arguments.size());
+            for (std::size_t i = max_reg_args; i > 0; i--) {
                 auto arg = node.func.arguments[i - 1];
                 auto src = adjust_for_type(gen_register{ arg_registers[i - 1] }, arg->type_id);
                 auto dest = adjust_for_type(gen_offset{ 0, {rsp, '+', arg->local.frame_offset} }, arg->type_id);
                 em->mov(dest, toop(src));
-                arg->local.frame_offset += 8 + temp_regs_offset; // space for the rbp about to be pushed
+            }
+
+            for (auto arg : node.func.arguments) {
+                arg->local.frame_offset += 8 + temp_regs_offset; // space for the rbp about to be pushed + temp registers
             }
         }
 
@@ -520,7 +531,17 @@ struct generator {
 
     void generate_call_expr(ast_node& node) {
         if (!node.call.args.empty()) {
-            for (std::size_t i = node.call.args.size(); i > 0; i--) {
+            if (node.call.args.size() > arg_registers.size()) {
+                for (std::size_t i = node.call.args.size(); i > arg_registers.size(); i--) {
+                    std::int32_t offs = (i - 1) * 8;
+                    auto dest = gen_offset{ 0, { rsp, '+', offs } };
+                    generate_node(*node.call.args[i - 1]);
+                    finalize_expr(dest);
+                }
+            }
+
+            std::size_t max_reg_args = std::min(arg_registers.size(), node.call.args.size());
+            for (std::size_t i = max_reg_args; i > 0; i--) {
                 auto dest = gen_register{ arg_registers[i - 1] };
                 generate_node(*node.call.args[i - 1]);
                 finalize_expr(dest);
@@ -653,11 +674,14 @@ struct generator {
         generate_node(*node.children[0]);
         auto op = operand_stack.top().first;
         operand_stack.pop();
-        em->lea(rax, todest(op));
 
-        provide_operand(rax, [this](auto&& dest, auto&&) {
-            if (!(dest == gen_destination{ rax })) {
-                em->mov(dest, rax);
+        provide_operand(op, [this, op, &node](auto&& dest, auto&&) {
+            if (!std::holds_alternative<gen_register>(dest)) {
+                em->lea(rax, todest(op));
+                em->mov(adjust_for_type(dest, node.type_id), rax);
+            }
+            else {
+                em->lea(adjust_for_type(dest, node.type_id), todest(op));
             }
         });
     }
