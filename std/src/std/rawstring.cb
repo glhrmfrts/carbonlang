@@ -43,11 +43,17 @@ func main(): int {
     let newtext = copy(text);
     *newtext = 'K';
     newtext[6] = 'G';
-    println(text);
-    println(newtext);
-    print_the_char('a', 0);
+    if (len(newtext) == 12) {
+        println(text);
+        println(newtext);
+    }
+    else if (true) {
+        println("10 > 4");
+    }
+    else {
+        print_the_char('J', 0);
+    }
     let result = longfunc(1, 1, 1, 1, 1, 1, 1, 1);
-
-    system("start C:\\code");
+    //system("start C:\\code");
     return result;
 }

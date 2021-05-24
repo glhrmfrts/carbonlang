@@ -35,6 +35,10 @@ enum class token_type : unsigned int {
     import_,
     as_,
     cast_,
+    if_,
+    else_,
+    for_,
+    while_,
     coloncolon,
 };
 
@@ -48,6 +52,8 @@ struct position {
 bool is_unary_op(token_type t);
 
 bool is_binary_op(token_type t);
+
+bool is_bool_binary_op(token_type t);
 
 bool is_right_assoc(token_type t);
 

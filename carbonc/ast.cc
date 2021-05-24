@@ -230,6 +230,17 @@ arena_ptr<ast_node> make_asm_stmt_node(memory_arena& arena, const position& pos,
     return ptr;
 }
 
+arena_ptr<ast_node> make_if_stmt_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& cond, arena_ptr<ast_node>&& body, arena_ptr<ast_node>&& elsebody) {
+    auto ptr = make_in_arena<ast_node>(arena);
+    ptr->node_id = node_id_gen++;
+    ptr->type = ast_type::if_stmt;
+    ptr->pos = pos;
+    ptr->children.push_back(std::move(cond));
+    ptr->children.push_back(std::move(body));
+    ptr->children.push_back(std::move(elsebody));
+    return ptr;
+}
+
 arena_ptr<ast_node> make_type_expr_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& expr) {
     auto ptr = make_in_arena<ast_node>(arena);
     ptr->node_id = node_id_gen++;
@@ -323,6 +334,13 @@ bool is_primary_expr(ast_node& node) {
     default:
         return false;
     }
+}
+
+bool is_bool_binary_op(ast_node& node) {
+    if (node.type == ast_type::binary_expr) {
+        return is_bool_binary_op(node.op);
+    }
+    return false;
 }
 
 std::string build_identifier_value(const std::vector<std::string>& parts) {

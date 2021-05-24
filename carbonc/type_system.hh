@@ -240,6 +240,7 @@ struct type_system {
     type_id raw_ptr_type{};
     type_id uintptr_type{};
     type_id ptrdiff_type{};
+    type_id bool_type{};
 
     type_template* ptr_type_template;
 

@@ -37,6 +37,7 @@ enum class ast_type {
     compound_stmt,
     return_stmt,
     asm_stmt,
+    if_stmt,
 
     type_expr,
     struct_type,
@@ -154,6 +155,8 @@ arena_ptr<ast_node> make_return_stmt_node(memory_arena& arena, const position& p
 
 arena_ptr<ast_node> make_asm_stmt_node(memory_arena& arena, const position& pos, std::string&& value);
 
+arena_ptr<ast_node> make_if_stmt_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& cond, arena_ptr<ast_node>&& body, arena_ptr<ast_node>&& elsebody);
+
 arena_ptr<ast_node> make_type_expr_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& expr);
 
 arena_ptr<ast_node> make_struct_type_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& field_list);
@@ -171,6 +174,8 @@ arena_ptr<ast_node> make_visibility_specifier_node(memory_arena& arena, const po
 arena_ptr<ast_node> make_code_unit_node(memory_arena& arena, const position& pos, const std::string& filename, arena_ptr<ast_node>&& decls);
 
 bool is_primary_expr(ast_node& node);
+
+bool is_bool_binary_op(ast_node& node);
 
 std::string build_identifier_value(const std::vector<std::string>& parts);
 

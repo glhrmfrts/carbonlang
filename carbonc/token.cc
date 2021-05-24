@@ -51,6 +51,24 @@ bool is_binary_op(token_type t) {
     return token_props[t].flags & BINARY_OP;
 }
 
+bool is_bool_binary_op(token_type t) {
+    switch (token_to_char(t)) {
+    case '>':
+    case '<':
+        return true;
+    }
+
+    switch (t) {
+    case token_type::gteq:
+    case token_type::lteq:
+    case token_type::eqeq:
+    case token_type::neq:
+        return true;
+    }
+
+    return false;
+}
+
 bool is_right_assoc(token_type t) {
     return token_props[t].flags & RIGHT_ASSOC;
 }

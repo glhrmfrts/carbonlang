@@ -15,9 +15,13 @@ namespace carbon {
 
 struct gen_node_data {
     std::optional<gen_register> bin_temp_register{};
+
     std::set<gen_register> func_used_temp_registers{};
     bool func_calls_extern_c = false;
     std::int32_t func_call_arg_size;
+
+    std::string if_else_label;
+    std::string if_end_label;
 };
 
 gen_destination adjust_for_type(gen_destination dest, type_id tid) {
@@ -253,6 +257,19 @@ struct generator {
             }
             break;
         }
+        case ast_type::if_stmt: {
+            auto scope = ts->find_nearest_scope(scope_kind::func_body);
+            auto& funcname = scope->self->type_def.mangled_name.str;
+            auto& ndata = node_data[node.node_id];
+            ndata.if_else_label = funcname + "_if" + std::to_string(node.node_id) + "_else";
+
+            if (node.children.size() == 3) {
+                ndata.if_end_label = funcname + "_if" + std::to_string(node.node_id) + "_end";
+            }
+
+            analyse_children(node);
+            break;
+        }
         case ast_type::call_expr: {
             auto func_node = node.call.func_type_id.get().self;
             if (func_node->func.linkage == func_linkage::external_c) {
@@ -371,6 +388,9 @@ struct generator {
         case ast_type::var_decl:
             generate_var(node);
             break;
+        case ast_type::if_stmt:
+            generate_if_stmt(node);
+            break;
         case ast_type::return_stmt:
             generate_return_stmt(node);
             break;
@@ -393,6 +413,7 @@ struct generator {
             generate_identifier(node);
             break;
         case ast_type::int_literal:
+        case ast_type::bool_literal:
             generate_int_literal(node);
             break;
         case ast_type::char_literal:
@@ -498,6 +519,60 @@ struct generator {
         }
     }
 
+    void emit_jump_for_if_op(token_type op, const std::string& label) {
+        std::string inst;
+        switch (token_to_char(op)) {
+        case '>':
+            inst = "jle";
+            break;
+        case '<':
+            inst = "jge";
+            break;
+        }
+
+        switch (op) {
+        case token_type::gteq:
+            inst = "jl";
+            break;
+        case token_type::lteq:
+            inst = "jg";
+            break;
+        case token_type::eqeq:
+            inst = "jne";
+            break;
+        case token_type::neq:
+            inst = "je";
+            break;
+        }
+
+        if (!inst.empty()) {
+            em->emitln(" %s %s", inst.c_str(), label.c_str());
+        }
+        else {
+            assert(!"unreachable emit_jump_for_if_op");
+        }
+    }
+
+    void generate_if_stmt(ast_node& node) {
+        auto& ndata = node_data[node.node_id];
+
+        generate_node(*node.children[0]);
+        emit_jump_for_if_op(node.children[0]->op, ndata.if_else_label);
+
+        generate_node(*node.children[1]);
+        if (node.children.size() == 3) {
+            em->jmp(ndata.if_end_label.c_str());
+
+            em->label(ndata.if_else_label.c_str());
+            generate_node(*node.children[2]);
+
+            em->label(ndata.if_end_label.c_str());
+        }
+        else {
+            em->label(ndata.if_else_label.c_str());
+        }
+    }
+
     void generate_return_stmt(ast_node& node) {
         auto& expr = node.children[0];
         if (expr) {
@@ -569,6 +644,11 @@ struct generator {
         case '*':
             em->imul(dest, operand);
             break;
+        default:
+            if (is_bool_binary_op(op)) {
+                em->cmp(toop(dest), operand);
+            }
+            break;
         }
     }
 
@@ -626,7 +706,8 @@ struct generator {
 
         generate_node(*right);
         finalize_expr(rax, [this, &node, leftdest](auto&&, auto&& op) {
-            auto arax = adjust_for_type(rax, node.type_id);
+            auto atype = (is_bool_binary_op(node.op)) ? node.children[0]->type_id : node.type_id;
+            auto arax = adjust_for_type(rax, atype);
             if (!(op == toop(arax))) {
                 auto actual_op = op;
                 /*

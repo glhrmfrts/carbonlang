@@ -15,6 +15,10 @@ static std::unordered_map<int, token_type> stb_to_token = {
     {CLEX_charlit, token_type::char_literal},
     {CLEX_dqstring, token_type::string_literal},
     {CLEX_coloncolon, token_type::coloncolon},
+    {CLEX_eq, token_type::eqeq},
+    {CLEX_noteq, token_type::neq},
+    {CLEX_greatereq, token_type::gteq},
+    {CLEX_lesseq, token_type::lteq}
 };
 
 struct lexer_impl {
@@ -110,6 +114,9 @@ struct lexer_impl {
             if (!std::strcmp("as", l.string)) {
                 return token_type::as_;
             }
+            if (!std::strcmp("if", l.string)) {
+                return token_type::if_;
+            }
             break;
         case 3:
             if (!std::strcmp("let", l.string)) {
@@ -120,6 +127,9 @@ struct lexer_impl {
             }
             if (!std::strcmp("asm", l.string)) {
                 return token_type::asm_;
+            }
+            if (!std::strcmp("for", l.string)) {
+                return token_type::for_;
             }
             break;
         case 4:
@@ -135,6 +145,9 @@ struct lexer_impl {
             if (!std::strcmp("cast", l.string)) {
                 return token_type::cast_;
             }
+            if (!std::strcmp("else", l.string)) {
+                return token_type::else_;
+            }
             break;
         case 5:
             if (!std::strcmp("false", l.string)) {
@@ -142,6 +155,9 @@ struct lexer_impl {
             }
             if (!std::strcmp("const", l.string)) {
                 return token_type::const_;
+            }
+            if (!std::strcmp("while", l.string)) {
+                return token_type::while_;
             }
             break;
         case 6:

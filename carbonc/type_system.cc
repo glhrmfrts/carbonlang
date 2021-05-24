@@ -65,7 +65,7 @@ type_id register_user_type(type_system& ts, ast_node& node) {
     return id;
 }
 
-template <typename T> void register_integral_type(type_system& ts, const char* name) {
+template <typename T> type_id register_integral_type(type_system& ts, const char* name) {
     auto node = make_in_arena<ast_node>(*ts.ast_arena);
 
     type_def& def = node->type_def;
@@ -77,11 +77,10 @@ template <typename T> void register_integral_type(type_system& ts, const char* n
     def.is_signed = std::is_signed_v<T>;
     def.numeric.max = std::numeric_limits<T>::max();
     def.numeric.min = std::numeric_limits<T>::min();
-
-    register_builtin_type(ts, std::move(node));
+    return register_builtin_type(ts, std::move(node));
 }
 
-template <typename T> void register_real_type(type_system& ts, const char* name) {
+template <typename T> type_id register_real_type(type_system& ts, const char* name) {
     auto node = make_in_arena<ast_node>(*ts.ast_arena);
 
     type_def& def = node->type_def;
@@ -91,7 +90,7 @@ template <typename T> void register_real_type(type_system& ts, const char* name)
     def.alignment = alignof(T);
     def.size = sizeof(T);
     def.is_signed = std::is_signed_v<T>;
-    register_builtin_type(ts, std::move(node));
+    return register_builtin_type(ts, std::move(node));
 }
 
 type_def& get_type(type_system& ts, type_id id) {
@@ -211,6 +210,10 @@ bool is_convertible_to(type_system& ts, type_id a, type_id b) {
     }
 
     return false;
+}
+
+bool is_comparable(type_system& ts, type_id a, type_id b) {
+    return is_convertible_to(ts, a, b) || is_convertible_to(ts, b, a);
 }
 
 std::optional<std::string> get_conversion_error_detail(type_system& ts, type_id a, type_id b) {
@@ -640,10 +643,29 @@ type_id get_value_node_type(type_system& ts, ast_node& node) {
         return to_type;
     }
     case ast_type::binary_expr: {
-        if (node.children[0]->type_id == invalid_type || node.children[1]->type_id == invalid_type) {
+        if (node.children[0]->type_id == invalid_type || node.children[1]->type_id == invalid_type ||
+            node.children[0]->type_error || node.children[1]->type_error) {
             return invalid_type;
         }
 
+        if (is_bool_binary_op(node.op)) {
+            if (!is_comparable(ts, node.children[0]->type_id, node.children[1]->type_id)) {
+                try_coerce_to(ts, *node.children[1], node.children[0]->type_id);
+
+                if (!is_comparable(ts, node.children[0]->type_id, node.children[1]->type_id)) {
+                    node.type_error = true;
+                    add_type_error(ts, node.pos, "cannot compare types '%s' and '%s", 
+                        type_to_string(node.children[0]->type_id).c_str(), type_to_string(node.children[1]->type_id).c_str()
+                    );
+                    return invalid_type;
+                }   
+            }
+
+            node.type_error = false;
+            return ts.bool_type;
+        }
+
+        node.type_error = false;
         return node.children[0]->type_id;
     }
     }
@@ -970,6 +992,34 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
         if (ts.pass == type_system_pass::resolve_literals_and_register_declarations) {
             auto scope = find_nearest_scope_local(ts, scope_kind::func_body);
             scope->self->func.return_statements.push_back(nodeptr);
+        }
+        break;
+    }
+    case ast_type::if_stmt: {
+        check_for_unresolved = false;
+        visit_children(ts, node);
+
+        if (!node.children[0]->type_id.valid() || node.children[0]->type_error) {
+            complement_error(ts, node.pos, "in if statement condition");
+            node.type_error = true;
+        }
+        else if (!is_convertible_to(ts, node.children[0]->type_id, ts.bool_type)) {
+            try_coerce_to(ts, *node.children[0], ts.bool_type);
+            if (!is_convertible_to(ts, node.children[0]->type_id, ts.bool_type)) {
+                add_type_error(ts, node.pos, "if statement condition must have bool type or be convertible to bool");
+                node.type_error = true;
+            }
+        }
+
+        if (!node.type_error && !is_bool_binary_op(*node.children[0])) {
+            node.children[0] = make_binary_expr_node(
+                *ts.ast_arena,
+                node.children[0]->pos,
+                token_type::neq,
+                std::move(node.children[0]),
+                make_bool_literal_node(*ts.ast_arena, node.children[0]->pos, 0)
+            );
+            resolve_node_type(ts, node.children[0].get());
         }
         break;
     }
@@ -1576,6 +1626,7 @@ type_system::type_system(memory_arena& arena) {
     register_integral_type<std::uint32_t>(*this, "uint32");
     register_integral_type<std::uint64_t>(*this, "uint64");
     register_integral_type<std::size_t>(*this, "usize");
+    bool_type = register_integral_type<bool>(*this, "bool");
 
     register_integral_type<std::int8_t>(*this, "int8");
     register_integral_type<std::int16_t>(*this, "int16");
@@ -1588,7 +1639,6 @@ type_system::type_system(memory_arena& arena) {
     register_alias_to_type_name(*this, "char", "int8");
     register_alias_to_type_name(*this, "uint", "uint32");
     register_alias_to_type_name(*this, "int", "int32");
-    register_alias_to_type_name(*this, "bool", "int32");
     register_alias_to_type_name(*this, "float", "float32");
 
     register_pointer_type(*this, "raw_string", "int8");

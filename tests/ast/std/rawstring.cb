@@ -237,19 +237,7 @@ compound_stmt{
               int_literal{6}}
             =
             }
-          call_expr{
-            identifier{"println"}
-            arg_list(
-              identifier{"text"})}
-          call_expr{
-            identifier{"println"}
-            arg_list(
-              identifier{"newtext"})}
-          call_expr{
-            identifier{"print_the_char"}
-            arg_list(
-              
-              int_literal{0})}}
+          }
         decl_list{
           var_decl{
             identifier{"result"}
@@ -265,9 +253,5 @@ compound_stmt{
                 int_literal{1}
                 int_literal{1})}}}
         stmt_list{
-          call_expr{
-            identifier{"system"}
-            arg_list(
-              string_literal{"start C:\code"})}
           return_stmt{
                         identifier{"result"}}}}}}}

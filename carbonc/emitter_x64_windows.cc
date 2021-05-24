@@ -374,6 +374,18 @@ void emitter::xor(gen_destination a, gen_operand b) {
     emitln(" xor %s,%s", tostr_sized(a).c_str(), tostr_sized(b).c_str());
 }
 
+void emitter::jmp(const char* label) {
+    emitln(" jmp %s", label);
+}
+
+void emitter::cmp(gen_operand a, gen_operand b) {
+    emitln(" cmp %s,%s", tostr_sized(a).c_str(), tostr_sized(b).c_str());
+}
+
+void emitter::label(const char* label) {
+    emitln("%s:", label);
+}
+
 void emitter::emit(const char* fmt, ...) {
     static char buffer[1024];
     std::va_list args;

@@ -57,6 +57,12 @@ struct emitter {
 
     void xor(gen_destination a, gen_operand b);
 
+    void jmp(const char* label);
+
+    void cmp(gen_operand a, gen_operand b);
+
+    void label(const char* label);
+
     void emit(const char* fmt, ...);
 
     void emitln(const char* fmt, ...);

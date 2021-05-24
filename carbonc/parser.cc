@@ -171,6 +171,8 @@ struct parser_impl {
         }
 
         switch (TOK) {
+        case token_type::if_:
+            return parse_if_stmt();
         case token_type::return_:
             return parse_return_stmt();
         case token_type::asm_:
@@ -248,6 +250,32 @@ struct parser_impl {
         }
 
         return make_stmt_list_node(*ast_arena, pos, std::move(stmts));
+    }
+
+    arena_ptr<ast_node> parse_if_stmt() {
+        auto pos = lex->pos();
+        lex->next(); // eat the 'if'
+
+        if (TOK_CHAR == '(') {
+            lex->next();
+            auto cond = parse_expr();
+            if (TOK_CHAR != ')') {
+                throw parse_error(filename, lex->pos(), "expected closing ')' in if statement condition");
+            }
+            lex->next();
+
+            auto body = parse_stmt();
+            auto elsebody = arena_ptr<ast_node>{ nullptr, nullptr };
+            if (TOK == token_type::else_) {
+                lex->next();
+                elsebody = parse_stmt();
+            }
+
+            return make_if_stmt_node(*ast_arena, pos, std::move(cond), std::move(body), std::move(elsebody));
+        }
+
+        throw parse_error(filename, lex->pos(), "expected opening '(' in if statement condition");
+        return arena_ptr<ast_node>{nullptr, nullptr};
     }
 
     arena_ptr<ast_node> parse_return_stmt() {
