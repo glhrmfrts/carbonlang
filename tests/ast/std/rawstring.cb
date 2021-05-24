@@ -27,15 +27,6 @@ compound_stmt{
                   arg_list(
                     identifier{"str"})})}}}}}
     func_decl{
-      identifier{"get_val"}
-      arg_list()
-      :type_expr{
-        identifier{"int"}}
-compound_stmt{
-        stmt_list{
-          return_stmt{
-                        int_literal{0}}}}}
-    func_decl{
       identifier{"copy"}
       arg_list(
         var_decl{
@@ -65,15 +56,7 @@ compound_stmt{
               identifier{"newstr"}
               identifier{"size"}}
             =
-            index_expr{
-              identifier{"newstr"}
-              binary_expr{
-                int_literal{0}
-                +
-                binary_expr{
-                  int_literal{1}
-                  *
-                  int_literal{2}}}}}
+            int_literal{0}}
           return_stmt{
                         identifier{"newstr"}}}}}
     func_decl{
@@ -137,4 +120,71 @@ compound_stmt{
                         call_expr{
               identifier{"strlen"}
               arg_list(
-                identifier{"str"})}}}}}}}
+                identifier{"str"})}}}}}
+    import_decl{
+      identifier{"std::io"}}
+    import_decl{
+      identifier{"std::libc::stdio"}}
+    func_decl{
+      identifier{"print_the_char"}
+      arg_list(
+        var_decl{
+          identifier{"v"}
+          :type_expr{
+            identifier{"char"}}}
+        var_decl{
+          identifier{"d"}
+          :type_expr{
+            identifier{"char"}}})
+compound_stmt{
+        stmt_list{
+          call_expr{
+            identifier{"puts"}
+            arg_list(
+              unary_expr{
+                &
+                identifier{"v"}})}}}}
+    func_decl{
+      identifier{"main"}
+      arg_list()
+      :type_expr{
+        identifier{"int"}}
+compound_stmt{
+        decl_list{
+          var_decl{
+            identifier{"text"}
+            =string_literal{"hello world"}}
+          var_decl{
+            identifier{"newtext"}
+            =call_expr{
+              identifier{"copy"}
+              arg_list(
+                identifier{"text"})}}}
+        stmt_list{
+          binary_expr{
+            unary_expr{
+              *
+              identifier{"newtext"}}
+            =
+            int_literal{42}}
+          binary_expr{
+            index_expr{
+              identifier{"newtext"}
+              int_literal{6}}
+            =
+            int_literal{42}}
+          call_expr{
+            identifier{"println"}
+            arg_list(
+              identifier{"text"})}
+          call_expr{
+            identifier{"println"}
+            arg_list(
+              identifier{"newtext"})}
+          call_expr{
+            identifier{"print_the_char"}
+            arg_list(
+              
+              int_literal{0})}
+          return_stmt{
+                        int_literal{0}}}}}}}

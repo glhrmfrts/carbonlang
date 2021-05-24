@@ -15,6 +15,7 @@ enum class ast_type {
     bool_literal,
     float_literal,
     int_literal,
+    char_literal,
     string_literal,
     identifier,
     unary_expr,
@@ -102,6 +103,7 @@ struct ast_node {
     func_def func;
     local_def local;
     type_def type_def;
+    type_template type_template;
     lvalue lvalue;
     call_info call;
     global_data global_data;
@@ -113,6 +115,8 @@ arena_ptr<ast_node> make_bool_literal_node(memory_arena& arena, const position& 
 arena_ptr<ast_node> make_float_literal_node(memory_arena& arena, const position& pos, float_type value);
 
 arena_ptr<ast_node> make_int_literal_node(memory_arena& arena, const position& pos, int_type value);
+
+arena_ptr<ast_node> make_char_literal_node(memory_arena& arena, const position& pos, int_type value);
 
 arena_ptr<ast_node> make_string_literal_node(memory_arena& arena, const position& pos, std::string&& value);
 

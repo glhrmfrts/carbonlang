@@ -11,7 +11,7 @@ struct lexer_impl;
 struct lexer {
     lexer_impl* _impl;
 
-    explicit lexer(std::string_view);
+    explicit lexer(std::string_view, std::string);
 
     ~lexer();
 

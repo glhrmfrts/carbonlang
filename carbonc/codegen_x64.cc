@@ -155,7 +155,6 @@ struct generator {
         return std::make_pair(local_size, call_arg_size);
     }
 
-
     void provide_operand(const gen_operand& op, finalizer_func&& f) {
         operand_stack.push({ op, std::move(f) });
     }
@@ -234,7 +233,12 @@ struct generator {
         case ast_type::func_decl: {
             auto name = node.type_def.mangled_name.str.c_str();
             if (node.scope.body_node) {
-                em->add_global_func_decl(name);
+                if (node.local.id_node->id_parts.front() == "main") {
+                    em->add_global_func_decl(node.local.id_node->id_parts.front().c_str());
+                }
+                else {
+                    em->add_global_func_decl(name);
+                }
 
                 ts->enter_scope(node);
                 analyse_children(node);
@@ -377,13 +381,19 @@ struct generator {
             break;
         case ast_type::binary_expr:
             generate_binary_expr(node);
-            break;      
+            break;
+        case ast_type::unary_expr:
+            generate_unary_expr(node);
+            break;
         case ast_type::identifier:
             generate_identifier(node);
             break;
         case ast_type::int_literal:
             generate_int_literal(node);
-            break;  
+            break;
+        case ast_type::char_literal:
+            generate_char_literal(node);
+            break;
         case ast_type::string_literal:
             generate_string_literal(node);
             break;
@@ -412,8 +422,8 @@ struct generator {
         auto [local_size,call_arg_size] = get_func_stack_frame_size(node);
         std::int32_t stack_size = local_size + call_arg_size;
 
-        if (node.local.id_node->string_value == "main") {
-            em->begin_func(node.local.id_node->string_value.data());
+        if (node.local.id_node->id_parts.front() == "main") {
+            em->begin_func(node.local.id_node->id_parts.front().c_str());
         }
         else {
             em->begin_func(node.type_def.mangled_name.str.c_str());
@@ -497,19 +507,15 @@ struct generator {
         finalize_expr(rax);
 
         generate_node(*node.children[0]);
-        auto op = operand_stack.top().first;
-        operand_stack.pop();
+        finalize_expr(rcx);
 
         std::size_t elem_size = node.type_id.get().size;
-        if (std::holds_alternative<gen_offset>(op)) {
-            gen_offset& offs = std::get<gen_offset>(op);
-            auto offset_expr = gen_offset{ elem_size, std::vector<gen_offset_expr>{
-                offs.expr[0], '+', rax, '*', std::int32_t(elem_size), offs.expr[1], offs.expr[2]
-            }};
-            provide_operand(offset_expr, [this, offset_expr](auto&& dest, auto&&) {
-                em->mov(dest, offset_expr);
-            });
-        }
+        auto offset_expr = gen_offset{ elem_size, std::vector<gen_offset_expr>{
+            rcx, '+', rax, '*', std::int32_t(elem_size)
+        } };
+        provide_operand(offset_expr, [this, &node, offset_expr](auto&& dest, auto&&) {
+            move(adjust_for_type(dest, node.type_id), offset_expr, node.type_id);
+        });
     }
 
     void generate_call_expr(ast_node& node) {
@@ -526,7 +532,7 @@ struct generator {
         provide_operand(op, [this, &node, op](auto&& dest, auto&&) {
             auto adest = adjust_for_type(dest, node.type_id);
             if (!(toop(adest) == op)) {
-                em->mov(adest, op);
+                move(adest, op, node.type_id);
             }
         });
     }
@@ -563,7 +569,7 @@ struct generator {
             auto dest = operand_stack.top().first;
             operand_stack.pop();
 
-            em->mov(todest(dest), toop(rightdest));
+            move(todest(dest), toop(adjust_for_type(rightdest, node.children[1]->type_id)), node.children[1]->type_id);
         }
         else {
             generate_node(*node.children[0]);
@@ -628,9 +634,41 @@ struct generator {
         provide_operand(op, [this, &node, op](auto&& dest, auto&&) {
             auto adest = adjust_for_type(dest, node.type_id);
             if (!(toop(adest) == op)) {
-                em->mov(adest, op);
+                move(adest, op, node.type_id);
             }
         });
+    }
+
+    void generate_deref_expr(ast_node& node) {
+        generate_node(*node.children[0]);
+        finalize_expr(rax);
+
+        auto op = gen_offset{ node.type_id.get().size, { rax } };
+        provide_operand(op, [this, &node, op](auto&& dest, auto&&) {
+            move(adjust_for_type(dest, node.type_id), op, node.type_id);
+        });
+    }
+
+    void generate_addr_expr(ast_node& node) {
+        generate_node(*node.children[0]);
+        auto op = operand_stack.top().first;
+        operand_stack.pop();
+        em->lea(rax, todest(op));
+
+        provide_operand(rax, [this](auto&& dest, auto&&) {
+            if (!(dest == gen_destination{ rax })) {
+                em->mov(dest, rax);
+            }
+        });
+    }
+
+    void generate_unary_expr(ast_node& node) {
+        if (token_to_char(node.op) == '*') {
+            generate_deref_expr(node);
+        }
+        else if (token_to_char(node.op) == '&') {
+            generate_addr_expr(node);
+        }
     }
 
     void generate_identifier(ast_node& node) {
@@ -638,7 +676,7 @@ struct generator {
             auto local = node.lvalue.symbol.scope->local_defs[node.lvalue.symbol.local_index];
             auto op = toop(adjust_for_type(local_var_destination(*local), node.type_id));
             provide_operand(op, [this, &node, op](auto&& dest, auto&&) {
-                em->mov(adjust_for_type(dest, node.type_id), op);
+                move(adjust_for_type(dest, node.type_id), op, node.type_id);
             });
         }
     }
@@ -650,7 +688,19 @@ struct generator {
                 em->xor(adest, toop(adest));
             }
             else {
-                em->mov(adest, std::int32_t(node.int_value));
+                move(adest, std::int32_t(node.int_value), node.type_id);
+            }
+        });
+    }
+
+    void generate_char_literal(ast_node& node) {
+        provide_operand(gen_operand{ char(node.int_value) }, [this, &node](const gen_destination& dest, auto&&) {
+            auto adest = adjust_for_type(dest, node.type_id);
+            if (node.int_value == 0 && std::holds_alternative<gen_register>(dest)) {
+                em->xor(adest, toop(adest));
+            }
+            else {
+                move(adest, char(node.int_value), node.type_id);
             }
         });
     }
@@ -660,6 +710,15 @@ struct generator {
         provide_operand(op, [this, op, &node](const gen_destination& dest, auto&&) {
             load_address(adjust_for_type(dest, node.type_id), op, node.type_id);
         });
+    }
+
+    void move(const gen_destination& dest, const gen_operand& op, type_id tid) {
+        if (tid.get().is_signed) {
+            em->movsx(dest, op);
+        }
+        else {
+            em->mov(dest, op);
+        }
     }
 
     void load_address(const gen_destination& dest, const gen_destination& op, type_id tid) {

@@ -26,7 +26,7 @@ struct parser_impl {
     int func_body_level = 0;
 
     explicit parser_impl(memory_arena& arena, std::string_view src, const std::string& fn)
-        : ast_arena{ &arena }, lex{ std::make_unique<lexer>(src) }, filename{ fn }, ctx_stack{ {parse_context::root} }, func_body_level{ 0 } {}
+        : ast_arena{ &arena }, lex{ std::make_unique<lexer>(src, fn) }, filename{ fn }, ctx_stack{ {parse_context::root} }, func_body_level{ 0 } {}
 
     arena_ptr<ast_node> parse_code_unit() {
         auto pos = lex->pos();
@@ -55,6 +55,14 @@ struct parser_impl {
             auto to_type = parse_type_expr(false, true); // no wrap
             if (to_type) {
                 result = make_type_qualifier_node(*ast_arena, pos, type_qualifier::reference, std::move(to_type));
+            }
+        }
+        else if (TOK_CHAR == '*') {
+            lex->next();
+
+            auto to_type = parse_type_expr(false, true); // no wrap
+            if (to_type) {
+                result = make_type_qualifier_node(*ast_arena, pos, type_qualifier::pointer, std::move(to_type));
             }
         }
         else if (TOK_CHAR == '?') {
@@ -523,7 +531,7 @@ struct parser_impl {
         
         if (is_unary_op(op)) {
             lex->next();
-            return make_unary_expr_node(*ast_arena, pos, op, parse_expr());
+            return make_unary_expr_node(*ast_arena, pos, op, parse_cast_expr());
         }
         
         return parse_cast_expr();
@@ -611,6 +619,12 @@ struct parser_impl {
         case token_type::int_literal: {
             scope_guard _{[this]() { lex->next(); }};
             return make_int_literal_node(*ast_arena, lex->pos(), lex->int_value());
+        }
+        case token_type::char_literal: {
+            scope_guard _{ [this]() {
+                lex->next();
+            } };
+            return make_char_literal_node(*ast_arena, lex->pos(), lex->int_value());
         }
         case token_type::string_literal: {
             scope_guard _{ [this]() { lex->next(); } };

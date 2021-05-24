@@ -12,6 +12,7 @@ static std::unordered_map<int, token_type> stb_to_token = {
     {CLEX_id, token_type::identifier},
     {CLEX_intlit, token_type::int_literal},
     {CLEX_floatlit, token_type::float_literal},
+    {CLEX_charlit, token_type::char_literal},
     {CLEX_dqstring, token_type::string_literal},
     {CLEX_coloncolon, token_type::coloncolon},
 };
@@ -20,10 +21,11 @@ struct lexer_impl {
     std::array<char, 1024*1024> store;
     std::string_view src;
     std::string long_string;
+    std::string filename;
     stb_lexer l;
     token_type tok;
 
-    explicit lexer_impl(std::string_view _src) : src{_src} {
+    explicit lexer_impl(std::string_view _src, std::string fn) : src{ _src }, filename{ fn } {
         stb_c_lexer_init(&l, src.data(), src.data() + src.size(), store.data(), store.size());
         tok = next();
     }
@@ -187,11 +189,11 @@ struct lexer_impl {
     }
 
     position pos() {
-        return { (std::size_t)(uintptr_t)(l.parse_point - l.input_stream), l.line_number, l.col_offs + 1 };
+        return { filename, (std::size_t)(uintptr_t)(l.parse_point - l.input_stream), l.line_number, l.col_offs + 1 };
     }
 };
 
-lexer::lexer(std::string_view src) : _impl{ new lexer_impl{src} } {
+lexer::lexer(std::string_view src, std::string filename) : _impl{ new lexer_impl{src, filename} } {
 }
 
 lexer::~lexer() { delete _impl; }

@@ -31,6 +31,15 @@ arena_ptr<ast_node> make_int_literal_node(memory_arena& arena, const position& p
     return std::move(ptr);
 }
 
+arena_ptr<ast_node> make_char_literal_node(memory_arena& arena, const position& pos, int_type value) {
+    auto ptr = make_in_arena<ast_node>(arena);
+    ptr->node_id = node_id_gen++;
+    ptr->type = ast_type::char_literal;
+    ptr->pos = pos;
+    ptr->int_value = value;
+    return std::move(ptr);
+}
+
 arena_ptr<ast_node> make_string_literal_node(memory_arena& arena, const position& pos, std::string&& value) {
     auto ptr = make_in_arena<ast_node>(arena);
     ptr->node_id = node_id_gen++;

@@ -8,6 +8,7 @@ enum class token_type : unsigned int {
     bool_literal_true,
     float_literal,
     int_literal,
+    char_literal,
     string_literal,
     identifier,
     not,
@@ -38,6 +39,7 @@ enum class token_type : unsigned int {
 };
 
 struct position {
+    std::string filename;
     std::size_t src_offs;
     int line_number;
     int col_offs;

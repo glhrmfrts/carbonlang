@@ -229,6 +229,48 @@ std::string tostr_sized(const gen_operand& d) {
     }, d);
 }
 
+std::size_t get_size(const gen_destination& v) {
+    return std::visit(overload{
+        [](gen_register r) -> std::size_t {
+            if (r >= al) return 1;
+            if (r >= ax) return 2;
+            if (r >= eax) return 4;
+            if (r >= rax) return 8;
+            return 0;
+        },
+        [](gen_data_offset r) -> std::size_t {
+            return sizeof(void*);
+        },
+        [](gen_offset r) -> std::size_t {
+            return r.op_size;
+        }
+    }, v);
+}
+
+std::size_t get_size(const gen_operand& v) {
+    return std::visit(overload{
+        [](gen_register r) -> std::size_t {
+            if (r >= al) return 1;
+            if (r >= ax) return 2;
+            if (r >= eax) return 4;
+            if (r >= rax) return 8;
+            return 0;
+        },
+        [](gen_data_offset r) -> std::size_t {
+            return sizeof(void*);
+        },
+        [](gen_offset r) -> std::size_t {
+            return r.op_size;
+        },
+        [](std::int32_t v) -> std::size_t {
+            return 4;
+        },
+        [](char v) -> std::size_t {
+            return 1;
+        }
+        }, v);
+}
+
 }
 
 emitter::emitter(std::string_view filename) {
@@ -298,6 +340,22 @@ void emitter::lea(gen_destination reg, gen_destination src) {
 
 void emitter::mov(gen_destination reg, gen_operand src) {
     emitln(" mov %s,%s", tostr_sized(reg).c_str(), tostr_sized(src).c_str());
+}
+
+void emitter::movsx(gen_destination reg, gen_operand src) {
+    std::size_t as = get_size(reg);
+    std::size_t bs = get_size(src);
+
+    // TODO: handle more sizes
+    if ((as == 2 && bs == 1) || (as == 4 && bs == 1) || (as == 4 && bs == 2) || (as == 8 && bs == 1) || (as == 8 && bs == 2)) {
+        emitln(" movsx %s,%s", tostr_sized(reg).c_str(), tostr_sized(src).c_str());
+    }
+    else if (as == 8 && bs == 4) {
+        emitln(" movsxd %s,%s", tostr_sized(reg).c_str(), tostr_sized(src).c_str());
+    }
+    else {
+        mov(reg, src);
+    }
 }
 
 void emitter::add(gen_destination a, gen_operand b) {

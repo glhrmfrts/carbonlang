@@ -4,6 +4,7 @@
 #include <vector>
 #include <string>
 #include <unordered_map>
+#include <variant>
 #include "memory.hh"
 #include "common.hh"
 #include "token.hh"
@@ -25,6 +26,7 @@ enum class func_linkage {
 enum class type_qualifier {
     optional,
     reference,
+    pointer,
 };
 
 enum class type_kind {
@@ -38,14 +40,15 @@ enum class type_kind {
     structure,
     tuple,
     func,
+    type,
 };
 
 struct type_id {
     scope_def* scope = nullptr;
     int type_index = -1;
 
-    bool operator ==(const type_id& other) { return scope == other.scope && type_index == other.type_index; }
-    bool operator !=(const type_id& other) { return !(*this == other); }
+    bool operator ==(const type_id& other) const { return scope == other.scope && type_index == other.type_index; }
+    bool operator !=(const type_id& other) const { return !(*this == other); }
 
     type_def& get();
 
@@ -113,6 +116,7 @@ enum class symbol_kind {
     top_level_func,
     overloaded_func_base,
     type,
+    type_template,
 };
 
 struct symbol_info {
@@ -124,6 +128,9 @@ struct symbol_info {
 
     // if kind == type
     int type_index = -1;
+
+    // if kind == type_template
+    int type_template_index = -1;
     
     // if kind == overloaded_func_base
     std::vector<func_def*> overload_funcs;
@@ -139,6 +146,7 @@ struct call_info {
     ast_node* func_node;
     func_def* funcdef;
     std::vector<ast_node*> args;
+    std::vector<type_id> arg_types;
     string_hash mangled_name;
     type_id func_type_id{};
 };
@@ -156,16 +164,26 @@ enum class scope_kind {
     block,
 };
 
+using type_template_arg = std::variant<type_id, ast_node*>;
+using type_template_func = std::function<arena_ptr<ast_node>(const std::vector<type_template_arg>&)>;
+
+struct type_template {
+    ast_node* self;
+    string_hash name;
+    type_template_func func;
+};
+
 struct scope_def {
     scope_kind kind{};
 
     std::vector<type_def*> type_defs;
+    std::vector<type_template*> type_templates;
     std::vector<local_def*> local_defs;
     std::vector<scope_import> imports;
     string_hash self_module_key;
     std::vector<std::string> self_module_parts;
 
-    std::unordered_map<string_hash, symbol_info> symbols;
+    std::unordered_map<string_hash, std::unique_ptr<symbol_info>> symbols;
     std::unordered_map<string_hash, int> imports_map;
 
     std::vector<scope_def*> children;
@@ -217,10 +235,13 @@ struct type_system {
     std::vector<type_error> errors;
     type_error current_error{};
 
+    type_id type_type{};
     type_id void_type{};
     type_id raw_ptr_type{};
     type_id uintptr_type{};
     type_id ptrdiff_type{};
+
+    type_template* ptr_type_template;
 
     explicit type_system(memory_arena&);
 

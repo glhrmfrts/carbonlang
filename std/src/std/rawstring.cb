@@ -5,8 +5,6 @@ func copy(str: raw_string): raw_string {
     return copy(str, len(str));
 }
 
-func get_val(): int { return 0; }
-
 func copy(str: raw_string, size: usize): raw_string {
     let newstr = cast[raw_string] mem::alloc(size+1);
     copy(newstr, str, size);
@@ -24,4 +22,22 @@ func set(dest: raw_string, value: char, count: usize) {
 
 func len(str: raw_string): usize {
     return strlen(str);
+}
+
+import std::io;
+import std::libc::stdio;
+
+func print_the_char(v: char, d: char) {
+    puts(&v);
+}
+
+func main(): int {
+    let text = "hello world";
+    let newtext = copy(text);
+    *newtext = 42;
+    newtext[6] = 42;
+    println(text);
+    println(newtext);
+    print_the_char('a', 0);
+    return 0;
 }

@@ -47,6 +47,8 @@ struct emitter {
 
     void mov(gen_destination reg, gen_operand src);
 
+    void movsx(gen_destination reg, gen_operand src);
+
     void add(gen_destination a, gen_operand b);
 
     void sub(gen_destination a, gen_operand b);
