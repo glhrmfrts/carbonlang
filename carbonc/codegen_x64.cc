@@ -96,6 +96,14 @@ void find_max_call_arg_size(ast_node& node, std::int32_t& sz) {
     }
 }
 
+template <typename T> bool is_mem(const T& op) {
+    return std::holds_alternative<gen_offset>(op) || std::holds_alternative<gen_data_offset>(op);
+}
+
+template <typename T> bool is_reg(const T& op) {
+    return std::holds_alternative<gen_register>(op);
+}
+
 struct generator {
     using finalizer_func = std::function<void(const gen_destination&, const gen_operand&)>;
 
@@ -790,16 +798,33 @@ struct generator {
         finalize_expr(leftdest);
 
         generate_node(*right);
-        finalize_expr(rax, [this, &node, leftdest](auto&&, auto&& op) {
+        finalize_expr(rax, [this, &node, &ndata, leftdest](auto&&, auto&& op) {
             auto atype = (is_cmp_binary_op(node.op)) ? node.children[0]->type_id : node.type_id;
             auto arax = adjust_for_type(rax, atype);
+            auto atemp = adjust_for_type(leftdest, node.children[0]->type_id);
+            auto aop = op;
+
+            if (node.local.self || ndata.bin_temp_register) {
+                if (!is_reg(op)) {
+                    move(arax, aop, node.children[1]->type_id); // reload temp variable
+                    aop = toop(arax);
+                }
+                emit_binary_op(node, todest(aop), toop(atemp));
+            }
+            else {
+                emit_binary_op(node, arax, aop);
+            }
+
+#if 0
             if (!(op == toop(arax))) {
                 auto actual_op = op;
+                /*
                 if (std::holds_alternative<gen_offset>(op)) {
                     auto arcx = adjust_for_type(rcx, node.children[1]->type_id);
                     move(arcx, actual_op, node.children[1]->type_id); // reload temp variable
                     actual_op = toop(arcx);
                 }
+                */
                 emit_binary_op(node, arax, actual_op);
             }
             else {
@@ -813,6 +838,8 @@ struct generator {
                 */
                 emit_binary_op(node, arax, toop(actual_temp));
             }
+        */
+#endif
         });
 
         auto op = toop(adjust_for_type(rax, node.type_id));

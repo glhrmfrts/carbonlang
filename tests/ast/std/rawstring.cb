@@ -243,7 +243,12 @@ compound_stmt{
               arg_list(
                 identifier{"str"})}}}
         stmt_list{
-          }}}
+          }
+        stmt_list{
+          call_expr{
+            identifier{"mem::dealloc"}
+            arg_list(
+              )}}}}
     func_decl{
       identifier{"test_strcopy"}
       arg_list()
@@ -309,7 +314,12 @@ compound_stmt{
                 identifier{"newstr"}
                 int_literal{4}}}}}
         stmt_list{
-          }}}
+          }
+        stmt_list{
+          call_expr{
+            identifier{"mem::dealloc"}
+            arg_list(
+              )}}}}
     func_decl{
       identifier{"test_short"}
       arg_list()
@@ -381,5 +391,9 @@ compound_stmt{
           call_expr{
             identifier{"test_strcopy"}
             arg_list()}
+          call_expr{
+            identifier{"mem::dealloc"}
+            arg_list(
+              )}
           return_stmt{
                         int_literal{0}}}}}}}
