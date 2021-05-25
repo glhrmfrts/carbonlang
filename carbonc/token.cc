@@ -55,7 +55,7 @@ bool is_logic_binary_op(token_type t) {
     return (t == token_type::andand || t == token_type::oror);
 }
 
-bool is_bool_binary_op(token_type t) {
+bool is_cmp_binary_op(token_type t) {
     switch (token_to_char(t)) {
     case '>':
     case '<':

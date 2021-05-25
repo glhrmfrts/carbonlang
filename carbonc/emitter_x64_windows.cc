@@ -302,7 +302,11 @@ void emitter::begin_data_segment() {
 }
 
 void emitter::add_string_data(std::string_view label, std::string_view data) {
-    emitln("%s: db '%s',0", label.data(), data.data());
+    emit("%s: db ", label.data());
+    for (char c : data) {
+        emit("%d,", (int)c);
+    }
+    emitln("0");
 }
 
 void emitter::begin_code_segment() {

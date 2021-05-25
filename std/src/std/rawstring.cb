@@ -38,17 +38,69 @@ func longfunc(a: int, b: int, c: int, d: int, e: int, f: int, g: int, h: int): i
     return a + b + c + d + e + f + g + h;
 }
 
+func test_longfunc() {
+    let result = longfunc(1, 2, 3, 4, 5, 6, 7, 8);
+    if (result == 36) {
+        println("test_longfunc: OK");
+    }
+    else {
+        println("test_longfunc: NOK");
+    }
+}
+
+func test_strcopy_len() {
+    let str = "hello";
+    let newstr = copy(str);
+    
+    if (len(str) == len(newstr)) {
+        println("test_strcopy_len: OK");
+    }
+    else {
+        println("test_strcopy_len: NOK");
+    }
+}
+
+func test_strcopy() {
+    let str = "hello";
+    let newstr = copy(str);
+
+    let c1 = str[0] == newstr[0];
+    let c2 = str[1] == newstr[1];
+    let c3 = str[2] == newstr[2];
+    let c4 = str[3] == newstr[3];
+    let c5 = str[4] == newstr[4];
+    
+    if (c1) {
+        println("test_strcopy: OK");
+    }
+    else {
+        println("test_strcopy: NOK");
+    }
+}
+
+func test_short(): bool {
+    println("SHOULD NOT PRINT THIS");
+    return true;
+}
+
 func main(): int {
     let text = "hello world";
     let newtext = copy(text);
     *newtext = 'K';
     newtext[6] = 'G';
-    if ((len(newtext) == 11 || 2+7 > 5) && (4*9*9) >= 7) {
+    if ((len(newtext) == 11 || test_short()) && (4*9*9) >= 7) {
         println(text);
         println(newtext);
     }
 
-    let result = longfunc(1, 1, 1, 1, 1, 1, 1, 1);
-    //system("start C:\\code");
-    return result;
+    let ok = len(newtext) > 10 && 3 > 5;
+    if (ok) {
+        println("it's ok\n\n");
+    }
+
+    test_longfunc();
+    test_strcopy_len();
+    test_strcopy();
+
+    return 0;
 }

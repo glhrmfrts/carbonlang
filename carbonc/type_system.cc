@@ -648,7 +648,7 @@ type_id get_value_node_type(type_system& ts, ast_node& node) {
             return invalid_type;
         }
 
-        if (is_bool_binary_op(node.op)) {
+        if (is_cmp_binary_op(node.op)) {
             if (!is_comparable(ts, node.children[0]->type_id, node.children[1]->type_id)) {
                 try_coerce_to(ts, *node.children[1], node.children[0]->type_id);
 
@@ -934,6 +934,107 @@ void register_var_declaration_node(type_system& ts, ast_node& node) {
     declare_local_symbol(ts, id, node);
 }
 
+void resolve_assignment_type(type_system& ts, ast_node& node) {
+    node.type_error = (node.children[0]->type_error || node.children[1]->type_error);
+
+    if ((!node.children[0]->type_id.valid() || node.children[0]->type_error) || (!node.children[1]->type_id.valid() || node.children[1]->type_error)) {
+        complement_error(ts, node.pos, "in assignment of '%s'", node_to_string(*node.children[0]).c_str());
+    }
+    else if (!(node.children[0]->lvalue.self)) {
+        add_type_error(ts, node.pos, "left-side of assignment must be an lvalue (identifier, index expression)");
+    }
+
+    if (node.children[0]->type == ast_type::identifier) {
+        auto local = get_symbol_local(node.children[0]->lvalue.symbol);
+        if (local && local->self->op == token_type::let) {
+            add_type_error(ts, node.children[0]->pos, "cannot re-assign a 'let' value, use 'var' instead");
+            node.type_error = true;
+        }
+    }
+
+    if (!is_convertible_to(ts, node.children[1]->type_id, node.children[0]->type_id)) {
+        try_coerce_to(ts, *node.children[1], node.children[0]->type_id);
+
+        if (!is_convertible_to(ts, node.children[1]->type_id, node.children[0]->type_id)) {
+            add_type_error(ts, node.children[1]->pos, "cannot convert type '%s' to '%s'",
+                type_to_string(node.children[1]->type_id).c_str(),
+                type_to_string(node.children[0]->type_id).c_str());
+
+            auto detail = get_conversion_error_detail(ts, node.children[1]->type_id, node.children[0]->type_id);
+            if (detail) {
+                complement_error(ts, node.pos, detail->c_str());
+            }
+
+            complement_error(ts, node.pos, "in assignment of '%s'", node_to_string(*node.children[0]).c_str());
+            node.type_error = true;
+        }
+        else {
+            node.type_id = node.children[0]->type_id;
+        }
+    }
+    else {
+        node.type_id = node.children[0]->type_id;
+    }
+}
+
+arena_ptr<ast_node> make_neq_false_node(type_system& ts, arena_ptr<ast_node>&& val) {
+    auto node = make_binary_expr_node(
+        *ts.ast_arena,
+        val->pos,
+        token_type::neq,
+        std::move(val),
+        make_bool_literal_node(*ts.ast_arena, val->pos, 0)
+    );
+    resolve_node_type(ts, val.get());
+    return node;
+}
+
+void ensure_bool_op_is_comparison(type_system& ts, ast_node& node) {
+    if (!is_logic_binary_op(*node.children[0]) && !is_cmp_binary_op(*node.children[0])) {
+        node.children[0] = make_neq_false_node(ts, std::move(node.children[0]));
+    }
+    if (!is_logic_binary_op(*node.children[1]) && !is_cmp_binary_op(*node.children[1])) {
+        node.children[1] = make_neq_false_node(ts, std::move(node.children[1]));
+    }
+}
+
+void ensure_bool_op_is_comparison_unary(type_system& ts, ast_node& node) {
+    if (!is_logic_binary_op(*node.children[0]) && !is_cmp_binary_op(*node.children[0])) {
+        node.children[0] = make_neq_false_node(ts, std::move(node.children[0]));
+    }
+}
+
+bool is_root_bool_op(type_system& ts, ast_node& node) {
+    return is_bool_op(node) && !is_bool_op(*node.parent);
+}
+
+bool is_bool_op_inside_if_condition(type_system& ts, ast_node& node) {
+    return node.parent->type == ast_type::if_stmt;
+}
+
+arena_ptr<ast_node> copy_var_ref(type_system& ts, ast_node& node) {
+    return make_identifier_node(*ts.ast_arena, {}, node.id_parts);
+}
+
+arena_ptr<ast_node> transform_bool_op_into_if_statement(type_system& ts, arena_ptr<ast_node>&& bop, ast_node& destvar) {
+    auto true_node = make_bool_literal_node(*ts.ast_arena, {}, true);
+    auto false_node = make_bool_literal_node(*ts.ast_arena, {}, false);
+    auto assign_true = make_binary_expr_node(*ts.ast_arena, {}, token_from_char('='), copy_var_ref(ts, destvar), std::move(true_node));
+    auto assign_false = make_binary_expr_node(*ts.ast_arena, {}, token_from_char('='), copy_var_ref(ts, destvar), std::move(false_node));
+    return make_if_stmt_node(*ts.ast_arena, bop->pos, std::move(bop), std::move(assign_true), std::move(assign_false));
+}
+
+ast_node* find_valid_parent_to_add_pre_children(type_system& ts, ast_node& node) {
+    auto parent = node.parent;
+    while (parent) {
+        if (parent->type != ast_type::arg_list) {
+            return parent;
+        }
+        parent = parent->parent;
+    }
+    return nullptr;
+}
+
 // Section: main visitor
 
 void clear_type_errors(type_system& ts, ast_node& node) {
@@ -948,6 +1049,7 @@ void clear_type_errors(type_system& ts, ast_node& node) {
 void visit_children(type_system& ts, ast_node& node) {
     for (auto& child : node.children) {
         if (child) {
+            child->parent = &node;
             visit_tree(ts, *child);
         }
     }
@@ -1030,17 +1132,8 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
             }
         }
 
-        // TODO: recursively do this
-
-        if (!node.type_error && !is_bool_binary_op(*node.children[0]) && !is_logic_binary_op(*node.children[0])) {
-            node.children[0] = make_binary_expr_node(
-                *ts.ast_arena,
-                node.children[0]->pos,
-                token_type::neq,
-                std::move(node.children[0]),
-                make_bool_literal_node(*ts.ast_arena, node.children[0]->pos, 0)
-            );
-            resolve_node_type(ts, node.children[0].get());
+        if (!node.type_error && !is_cmp_binary_op(*node.children[0]) && !is_logic_binary_op(*node.children[0])) {
+            node.children[0] = make_neq_false_node(ts, std::move(node.children[0]));
         }
         break;
     }
@@ -1281,49 +1374,14 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
     case ast_type::binary_expr: {
         visit_children(ts, node);
 
-        node.type_error = (node.children[0]->type_error || node.children[1]->type_error);
         if (token_to_char(node.op) == '=') {
-            
-            if ((!node.children[0]->type_id.valid() || node.children[0]->type_error) || (!node.children[1]->type_id.valid() || node.children[1]->type_error)) {
-                complement_error(ts, node.pos, "in assignment of '%s'", node_to_string(*node.children[0]).c_str());
-            }
-            else if (!(node.children[0]->lvalue.self)) {
-                add_type_error(ts, node.pos, "left-side of assignment must be an lvalue (identifier, index expression)");
-            }
-
-            if (node.children[0]->type == ast_type::identifier) {
-                auto local = get_symbol_local(node.children[0]->lvalue.symbol);
-                if (local && local->self->op == token_type::let) {
-                    add_type_error(ts, node.children[0]->pos, "cannot re-assign a 'let' value, use 'var' instead");
-                    node.type_error = true;
-                }
-            }
-
-            if (!is_convertible_to(ts, node.children[1]->type_id, node.children[0]->type_id)) {
-                try_coerce_to(ts, *node.children[1], node.children[0]->type_id);
-
-                if (!is_convertible_to(ts, node.children[1]->type_id, node.children[0]->type_id)) {
-                    add_type_error(ts, node.children[1]->pos, "cannot convert type '%s' to '%s'",
-                        type_to_string(node.children[1]->type_id).c_str(),
-                        type_to_string(node.children[0]->type_id).c_str());
-
-                    auto detail = get_conversion_error_detail(ts, node.children[1]->type_id, node.children[0]->type_id);
-                    if (detail) {
-                        complement_error(ts, node.pos, detail->c_str());
-                    }
-
-                    complement_error(ts, node.pos, "in assignment of '%s'", node_to_string(*node.children[0]).c_str());
-                    node.type_error = true;
-                }
-                else {
-                    node.type_id = node.children[0]->type_id;
-                }
-            }
-            else {
-                node.type_id = node.children[0]->type_id;
-            }
+            resolve_assignment_type(ts, node);
         }
         else {
+            if (is_logic_binary_op(node)) {
+                ensure_bool_op_is_comparison(ts, node);
+            }
+
             // TODO: check operators make sense for types
             node.type_error = (node.children[0]->type_error || node.children[1]->type_error);
             node.type_id = get_value_node_type(ts, node);
@@ -1364,6 +1422,9 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
                 node.type_error = false;
             }
         }
+        else if (token_to_char(node.op) == '!') {
+            ensure_bool_op_is_comparison_unary(ts, node);
+        }
         break;
     }
     case ast_type::cast_expr:
@@ -1395,9 +1456,13 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
 // TODO: obviously need better stuff here
 static int temp_count = 0;
 
+std::string generate_temp_name() {
+    return "$cbT" + std::to_string(temp_count++);
+}
+
 std::pair<arena_ptr<ast_node>, arena_ptr<ast_node>> make_temp_variable_for_call(type_system& ts, ast_node& call) {
     // generate the temp ID
-    std::string tempname = "$cbT" + std::to_string(temp_count++);
+    std::string tempname = generate_temp_name();
     auto id_node = make_identifier_node(*ts.ast_arena, {}, { tempname });
 
     auto val_node = make_call_expr_node(*ts.ast_arena, {}, std::move(call.children[ast_node::child_call_expr_callee]), std::move(call.children[ast_node::child_call_expr_arg_list]));
@@ -1417,7 +1482,7 @@ std::pair<arena_ptr<ast_node>, arena_ptr<ast_node>> make_temp_variable_for_call(
 
 std::pair<arena_ptr<ast_node>, arena_ptr<ast_node>> make_temp_variable_for_index_expr(type_system& ts, arena_ptr<ast_node>&& lhs) {
     // generate the temp ID
-    std::string tempname = "$cbT" + std::to_string(temp_count++);
+    std::string tempname = generate_temp_name();
     auto id_node = make_identifier_node(*ts.ast_arena, {}, { tempname });
 
     // Generate and register the declaration of the temp
@@ -1429,6 +1494,80 @@ std::pair<arena_ptr<ast_node>, arena_ptr<ast_node>> make_temp_variable_for_index
     resolve_node_type(ts, ref.get());
 
     return std::make_pair(std::move(decl), std::move(ref));
+}
+
+// generates something like:
+// var temp: bool;
+// if ($expr) temp = true; else temp = false;
+// 
+// returns the if statement and a reference to temp
+std::pair<arena_ptr<ast_node>, arena_ptr<ast_node>> make_temp_variable_for_bool_op(type_system& ts, arena_ptr<ast_node>&& expr) {
+    // generate the temp ID
+    std::string tempname = generate_temp_name();
+    auto id_node = make_identifier_node(*ts.ast_arena, {}, { tempname });
+    auto type_node = make_type_expr_node(*ts.ast_arena, {}, make_identifier_node(*ts.ast_arena, {}, { "bool" }));
+
+    // Generate and register the declaration of the temp
+    auto decl = make_var_decl_node(*ts.ast_arena, {}, token_type::var, std::move(id_node), std::move(type_node), { nullptr, nullptr });
+    register_var_declaration_node(ts, *decl);
+
+    // Make a reference to use as the new argument
+    auto ref = make_identifier_node(*ts.ast_arena, {}, { tempname });
+    resolve_node_type(ts, ref.get());
+
+    // Make the if statement
+    auto ifstmt = transform_bool_op_into_if_statement(ts, std::move(expr), *ref);
+
+    ts.pass = type_system_pass::resolve_all;
+    resolve_node_type(ts, ifstmt.get());
+    ts.pass = type_system_pass::final_analysis;
+
+    ifstmt->temps.push_back(std::move(decl));
+
+    return std::make_pair(std::move(ifstmt), std::move(ref));
+}
+
+void check_assignment_bool_op(type_system& ts, ast_node& node) {
+    if (is_bool_op(*node.children[1])) {
+        auto [temp, ref] = make_temp_variable_for_bool_op(ts, std::move(node.children[1]));
+
+        node.children[1] = std::move(ref);
+        node.pre_children.push_back(std::move(temp));
+    }
+}
+
+void check_call_arg_bool_op(type_system& ts, ast_node& call, int idx) {
+    if (is_bool_op(*call.call.args[idx])) {
+        auto [temp, ref] = make_temp_variable_for_bool_op(ts, std::move(call.children[ast_node::child_call_expr_arg_list]->children[idx]));
+
+        call.call.args[idx] = ref.get();
+        call.children[ast_node::child_call_expr_arg_list]->children[idx] = std::move(ref);
+
+        call.pre_children.push_back(std::move(temp));
+    }
+}
+
+void check_var_decl_bool_op(type_system& ts, ast_node& node) {
+    if (!node.local.value_node) return;
+
+    if (is_bool_op(*node.local.value_node)) {
+        auto [temp, ref] = make_temp_variable_for_bool_op(ts, std::move(node.children[ast_node::child_var_decl_value]));
+
+        node.local.value_node = ref.get();
+        node.children[ast_node::child_var_decl_value] = std::move(ref);
+        node.pre_children.push_back(std::move(temp));
+    }
+}
+
+void check_return_bool_op(type_system& ts, ast_node& node) {
+    if (node.children.empty()) return;
+
+    if (is_bool_op(*node.children[0])) {
+        auto [temp, ref] = make_temp_variable_for_bool_op(ts, std::move(node.children[0]));
+
+        node.children[0] = std::move(ref);
+        node.pre_children.push_back(std::move(temp));
+    }
 }
 
 void final_analysis(type_system& ts, ast_node* nodeptr) {
@@ -1455,13 +1594,34 @@ void final_analysis(type_system& ts, ast_node* nodeptr) {
         break;
     }
     case ast_type::call_expr: {
-        // transform nested call expressions into temporary variables
         visit_children(ts, node);
 
         // update the called function mangled name
         if (node.call.funcdef) {
             node.call.mangled_name = node.call.funcdef->self->type_def.mangled_name;
         }
+
+        for (int i = 0; i < node.call.args.size(); i++) {
+            check_call_arg_bool_op(ts, node, i);
+        }
+        break;
+    }
+    case ast_type::binary_expr: {
+        visit_children(ts, node);
+
+        if (token_to_char(node.op) == '=') {
+            check_assignment_bool_op(ts, node);
+        }
+        break;
+    }
+    case ast_type::var_decl: {
+        visit_children(ts, node);
+        check_var_decl_bool_op(ts, node);
+        break;
+    }
+    case ast_type::return_stmt: {
+        visit_children(ts, node);
+        check_return_bool_op(ts, node);
         break;
     }
     default: {

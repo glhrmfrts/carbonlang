@@ -345,9 +345,19 @@ bool is_logic_binary_op(ast_node& node) {
     return false;
 }
 
-bool is_bool_binary_op(ast_node& node) {
+bool is_cmp_binary_op(ast_node& node) {
     if (node.type == ast_type::binary_expr) {
-        return is_bool_binary_op(node.op);
+        return is_cmp_binary_op(node.op);
+    }
+    return false;
+}
+
+bool is_bool_op(ast_node& node) {
+    if (node.type == ast_type::binary_expr) {
+        return is_logic_binary_op(node.op) || is_cmp_binary_op(node.op);
+    }
+    else if (node.type == ast_type::unary_expr) {
+        return token_to_char(node.op) == '!';
     }
     return false;
 }

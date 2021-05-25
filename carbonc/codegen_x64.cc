@@ -235,6 +235,9 @@ struct generator {
     }
 
     void analyse_children(ast_node& node) {
+        for (auto& child : node.pre_children) {
+            if (child) { analyse_node(*child); }
+        }
         for (auto& child : node.children) {
             if (child) { analyse_node(*child); }
         }
@@ -315,7 +318,7 @@ struct generator {
             auto& right = node.children[1];
             std::optional<gen_register> temp_reg;
 
-            if (!is_primary_expr(*right) && !is_bool_binary_op(*left) && !is_logic_binary_op(*left)) {
+            if (!is_primary_expr(*right) && !is_cmp_binary_op(*left) && !is_logic_binary_op(*left)) {
                 temp_reg = use_temp_register();
                 if (!temp_reg) {
                     ts->create_temp_variable_for_binary_expr(node);
@@ -333,11 +336,7 @@ struct generator {
             break;
         }
         default:
-            {
-                for (auto& child : node.children) {
-                    if (child) { analyse_node(*child); }
-                }
-            }
+            analyse_children(node);
             break;
         }
     }
@@ -396,7 +395,7 @@ struct generator {
                 // invert the labels
                 set_bool_op_targets(*node.children[0], false_label, true_label);
             }
-            else if (is_bool_binary_op(*node.children[0])) {
+            else if (is_cmp_binary_op(*node.children[0])) {
                 // invert the jump
                 set_bool_op_target(node, false, false_label);
             }
@@ -755,7 +754,7 @@ struct generator {
             em->imul(dest, operand);
             break;
         default:
-            if (is_bool_binary_op(node.op)) {
+            if (is_cmp_binary_op(node.op)) {
                 em->cmp(toop(dest), operand);
                 emit_jump_for_bool_op(node.op, ndata.bin_invert_jump, ndata.bin_target_label);
             }
@@ -792,17 +791,15 @@ struct generator {
 
         generate_node(*right);
         finalize_expr(rax, [this, &node, leftdest](auto&&, auto&& op) {
-            auto atype = (is_bool_binary_op(node.op)) ? node.children[0]->type_id : node.type_id;
+            auto atype = (is_cmp_binary_op(node.op)) ? node.children[0]->type_id : node.type_id;
             auto arax = adjust_for_type(rax, atype);
             if (!(op == toop(arax))) {
                 auto actual_op = op;
-                /*
                 if (std::holds_alternative<gen_offset>(op)) {
                     auto arcx = adjust_for_type(rcx, node.children[1]->type_id);
-                    em->mov(arcx, actual_op); // reload temp variable
+                    move(arcx, actual_op, node.children[1]->type_id); // reload temp variable
                     actual_op = toop(arcx);
                 }
-                */
                 emit_binary_op(node, arax, actual_op);
             }
             else {
@@ -810,7 +807,7 @@ struct generator {
                 /*
                 if (std::holds_alternative<gen_offset>(leftdest)) {
                     auto arcx = adjust_for_type(rcx, node.children[0]->type_id);
-                    em->mov(arcx, toop(actual_temp)); // reload temp variable
+                    move(arcx, actual_op, node.children[0]->type_id); // reload temp variable
                     actual_temp = arcx;
                 }
                 */
@@ -904,6 +901,13 @@ struct generator {
     }
 
     void move(const gen_destination& dest, const gen_operand& op, type_id tid) {
+        if (std::holds_alternative<gen_offset>(dest) && std::holds_alternative<gen_offset>(op)) {
+            auto arax = adjust_for_type(rax, tid);
+            move(arax, op, tid);
+            move(dest, toop(arax), tid);
+            return;
+        }
+
         if (tid.get().is_signed) {
             em->movsx(dest, op);
         }

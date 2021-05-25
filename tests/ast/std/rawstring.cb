@@ -209,6 +209,121 @@ compound_stmt{
               +
               identifier{"h"}}}}}}
     func_decl{
+      identifier{"test_longfunc"}
+      arg_list()
+compound_stmt{
+        decl_list{
+          var_decl{
+            identifier{"result"}
+            =call_expr{
+              identifier{"longfunc"}
+              arg_list(
+                int_literal{1}
+                int_literal{2}
+                int_literal{3}
+                int_literal{4}
+                int_literal{5}
+                int_literal{6}
+                int_literal{7}
+                int_literal{8})}}}
+        stmt_list{
+          }}}
+    func_decl{
+      identifier{"test_strcopy_len"}
+      arg_list()
+compound_stmt{
+        decl_list{
+          var_decl{
+            identifier{"str"}
+            =string_literal{"hello"}}
+          var_decl{
+            identifier{"newstr"}
+            =call_expr{
+              identifier{"copy"}
+              arg_list(
+                identifier{"str"})}}}
+        stmt_list{
+          }}}
+    func_decl{
+      identifier{"test_strcopy"}
+      arg_list()
+compound_stmt{
+        decl_list{
+          var_decl{
+            identifier{"str"}
+            =string_literal{"hello"}}
+          var_decl{
+            identifier{"newstr"}
+            =call_expr{
+              identifier{"copy"}
+              arg_list(
+                identifier{"str"})}}
+          var_decl{
+            identifier{"c1"}
+            =binary_expr{
+              index_expr{
+                identifier{"str"}
+                int_literal{0}}
+              
+              index_expr{
+                identifier{"newstr"}
+                int_literal{0}}}}
+          var_decl{
+            identifier{"c2"}
+            =binary_expr{
+              index_expr{
+                identifier{"str"}
+                int_literal{1}}
+              
+              index_expr{
+                identifier{"newstr"}
+                int_literal{1}}}}
+          var_decl{
+            identifier{"c3"}
+            =binary_expr{
+              index_expr{
+                identifier{"str"}
+                int_literal{2}}
+              
+              index_expr{
+                identifier{"newstr"}
+                int_literal{2}}}}
+          var_decl{
+            identifier{"c4"}
+            =binary_expr{
+              index_expr{
+                identifier{"str"}
+                int_literal{3}}
+              
+              index_expr{
+                identifier{"newstr"}
+                int_literal{3}}}}
+          var_decl{
+            identifier{"c5"}
+            =binary_expr{
+              index_expr{
+                identifier{"str"}
+                int_literal{4}}
+              
+              index_expr{
+                identifier{"newstr"}
+                int_literal{4}}}}}
+        stmt_list{
+          }}}
+    func_decl{
+      identifier{"test_short"}
+      arg_list()
+      :type_expr{
+        identifier{"bool"}}
+compound_stmt{
+        stmt_list{
+          call_expr{
+            identifier{"println"}
+            arg_list(
+              string_literal{"SHOULD NOT PRINT THIS"})}
+          return_stmt{
+                        bool_literal{true}}}}}
+    func_decl{
       identifier{"main"}
       arg_list()
       :type_expr{
@@ -240,18 +355,31 @@ compound_stmt{
           }
         decl_list{
           var_decl{
-            identifier{"result"}
-            =call_expr{
-              identifier{"longfunc"}
-              arg_list(
-                int_literal{1}
-                int_literal{1}
-                int_literal{1}
-                int_literal{1}
-                int_literal{1}
-                int_literal{1}
-                int_literal{1}
-                int_literal{1})}}}
+            identifier{"ok"}
+            =binary_expr{
+              binary_expr{
+                call_expr{
+                  identifier{"len"}
+                  arg_list(
+                    identifier{"newtext"})}
+                >
+                int_literal{10}}
+              	
+              binary_expr{
+                int_literal{3}
+                >
+                int_literal{5}}}}}
         stmt_list{
+          }
+        stmt_list{
+          call_expr{
+            identifier{"test_longfunc"}
+            arg_list()}
+          call_expr{
+            identifier{"test_strcopy_len"}
+            arg_list()}
+          call_expr{
+            identifier{"test_strcopy"}
+            arg_list()}
           return_stmt{
-                        identifier{"result"}}}}}}}
+                        int_literal{0}}}}}}}

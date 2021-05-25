@@ -98,6 +98,7 @@ struct ast_node {
     std::vector<arena_ptr<ast_node>> pre_children{};
     std::vector<arena_ptr<ast_node>> children{};
     std::vector<arena_ptr<ast_node>> temps{};
+    ast_node* parent = nullptr;
 
     // data filled by the type system
     scope_def scope;
@@ -177,7 +178,9 @@ bool is_primary_expr(ast_node& node);
 
 bool is_logic_binary_op(ast_node& node);
 
-bool is_bool_binary_op(ast_node& node);
+bool is_cmp_binary_op(ast_node& node);
+
+bool is_bool_op(ast_node& node);
 
 std::string build_identifier_value(const std::vector<std::string>& parts);
 
