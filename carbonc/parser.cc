@@ -171,6 +171,8 @@ struct parser_impl {
         }
 
         switch (TOK) {
+        case token_type::while_:
+            return parse_while_stmt();
         case token_type::if_:
             return parse_if_stmt();
         case token_type::return_:
@@ -250,6 +252,27 @@ struct parser_impl {
         }
 
         return make_stmt_list_node(*ast_arena, pos, std::move(stmts));
+    }
+
+    arena_ptr<ast_node> parse_while_stmt() {
+        auto pos = lex->pos();
+        lex->next(); // eat the 'while'
+
+        if (TOK_CHAR == '(') {
+            lex->next();
+            auto cond = parse_expr();
+            if (TOK_CHAR != ')') {
+                throw parse_error(filename, lex->pos(), "expected closing ')' in while statement condition");
+            }
+            lex->next();
+
+            auto body = parse_stmt();
+
+            return make_while_stmt_node(*ast_arena, pos, std::move(cond), std::move(body));
+        }
+
+        throw parse_error(filename, lex->pos(), "expected opening '(' in while statement condition");
+        return arena_ptr<ast_node>{nullptr, nullptr};
     }
 
     arena_ptr<ast_node> parse_if_stmt() {

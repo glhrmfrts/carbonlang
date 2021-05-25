@@ -24,6 +24,18 @@ func len(str: raw_string): usize {
     return strlen(str);
 }
 
+func equals(a: raw_string, b: raw_string): bool {
+    let l = len(a);
+    var i = 0;
+    while (i < l) {
+        if (!(a[i] == b[i])) {
+            return false;
+        }
+        i = i + 1;
+    }
+    return true;
+}
+
 // test stuff
 
 import std::io;
@@ -92,7 +104,33 @@ func test_strcopy_saving() {
     else {
         println("test_strcopy_saving: NOK");
     }
+    
+    mem::dealloc(cast[raw_ptr] newstr);
+}
 
+func `==`(a: raw_string, b: raw_string): bool {
+
+}
+
+func test_while_statement() {
+    let str = "hello";
+    let newstr = copy(str);
+
+    var i = 0;
+    while (i < 5) {
+        newstr[i] = 'G';
+        i = i + 1;
+    }
+
+    println(newstr);
+
+    if (equals(newstr, "GGGGG") && !equals(newstr, "foobar")) {
+        println("test_while_statement: OK");
+    }
+    else {
+        println("test_while_statement: NOK");
+    }
+    
     mem::dealloc(cast[raw_ptr] newstr);
 }
 
@@ -120,6 +158,7 @@ func main(): int {
     test_strcopy_len();
     test_strcopy();
     test_strcopy_saving();
+    test_while_statement();
 
     mem::dealloc(cast[raw_ptr] newtext);
 

@@ -990,16 +990,16 @@ arena_ptr<ast_node> make_neq_false_node(type_system& ts, arena_ptr<ast_node>&& v
 }
 
 void ensure_bool_op_is_comparison(type_system& ts, ast_node& node) {
-    if (!is_logic_binary_op(*node.children[0]) && !is_cmp_binary_op(*node.children[0])) {
+    if (!is_bool_op(*node.children[0])) {
         node.children[0] = make_neq_false_node(ts, std::move(node.children[0]));
     }
-    if (!is_logic_binary_op(*node.children[1]) && !is_cmp_binary_op(*node.children[1])) {
+    if (!is_bool_op(*node.children[1])) {
         node.children[1] = make_neq_false_node(ts, std::move(node.children[1]));
     }
 }
 
 void ensure_bool_op_is_comparison_unary(type_system& ts, ast_node& node) {
-    if (!is_logic_binary_op(*node.children[0]) && !is_cmp_binary_op(*node.children[0])) {
+    if (!is_bool_op(*node.children[0])) {
         node.children[0] = make_neq_false_node(ts, std::move(node.children[0]));
     }
 }
@@ -1116,23 +1116,25 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
         }
         break;
     }
-    case ast_type::if_stmt: {
+    case ast_type::if_stmt:
+    case ast_type::while_stmt: {
         check_for_unresolved = false;
         visit_children(ts, node);
 
+        const char* stmt = (node.type == ast_type::if_stmt) ? "if" : "while";
         if (!node.children[0]->type_id.valid() || node.children[0]->type_error) {
-            complement_error(ts, node.pos, "in if statement condition");
+            complement_error(ts, node.pos, "in %s statement condition", stmt);
             node.type_error = true;
         }
         else if (!is_convertible_to(ts, node.children[0]->type_id, ts.bool_type)) {
             try_coerce_to(ts, *node.children[0], ts.bool_type);
             if (!is_convertible_to(ts, node.children[0]->type_id, ts.bool_type)) {
-                add_type_error(ts, node.pos, "if statement condition must have bool type or be convertible to bool");
+                add_type_error(ts, node.pos, "%s statement condition must have bool type or be convertible to bool", stmt);
                 node.type_error = true;
             }
         }
 
-        if (!node.type_error && !is_cmp_binary_op(*node.children[0]) && !is_logic_binary_op(*node.children[0])) {
+        if (!node.type_error && !is_bool_op(*node.children[0])) {
             node.children[0] = make_neq_false_node(ts, std::move(node.children[0]));
         }
         break;
@@ -1391,6 +1393,7 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
     case ast_type::unary_expr: {
         visit_children(ts, node);
         node.type_error = node.children[0]->type_error;
+
         if (token_to_char(node.op) == '*') {
             // deref expression
 
@@ -1423,6 +1426,24 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
             }
         }
         else if (token_to_char(node.op) == '!') {
+            if (!node.children[0]->type_id.valid() || node.children[0]->type_error) {
+                node.type_error = true;
+            }
+            else if (!is_convertible_to(ts, node.children[0]->type_id, ts.bool_type)) {
+                try_coerce_to(ts, *node.children[0], ts.bool_type);
+
+                if (!is_convertible_to(ts, node.children[0]->type_id, ts.bool_type)) {
+                    add_type_error(ts, node.pos, "right side of unary '!' (negation) has type '%s', it must be a bool",
+                        type_to_string(node.children[0]->type_id).c_str());
+                    node.type_error = true;
+                }
+
+                node.type_id = ts.bool_type;
+            }
+            else {
+                node.type_id = ts.bool_type;
+            }
+
             ensure_bool_op_is_comparison_unary(ts, node);
         }
         break;

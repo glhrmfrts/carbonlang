@@ -13,7 +13,7 @@ struct token_properties {
 };
 
 static std::unordered_map<token_type, token_properties> token_props = {
-    {token_type::not_, { UNARY_OP, 0 }},
+    {token_from_char('!'), { UNARY_OP, 0 }},
 
     {token_from_char('='), { BINARY_OP, 400 }},
 

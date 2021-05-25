@@ -243,6 +243,16 @@ arena_ptr<ast_node> make_if_stmt_node(memory_arena& arena, const position& pos, 
     return ptr;
 }
 
+arena_ptr<ast_node> make_while_stmt_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& cond, arena_ptr<ast_node>&& body) {
+    auto ptr = make_in_arena<ast_node>(arena);
+    ptr->node_id = node_id_gen++;
+    ptr->type = ast_type::while_stmt;
+    ptr->pos = pos;
+    ptr->children.push_back(std::move(cond));
+    ptr->children.push_back(std::move(body));
+    return ptr;
+}
+
 arena_ptr<ast_node> make_type_expr_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& expr) {
     auto ptr = make_in_arena<ast_node>(arena);
     ptr->node_id = node_id_gen++;
