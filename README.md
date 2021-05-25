@@ -8,29 +8,29 @@ Carbon is a statically-strongly-typed programming language.
 
 ## TODO
 
-[X] function declaration
-[X] function overload
-[X] local variables
-[X] basic math operations
-[X] declaration position independence
-[X] modules
-[X] assignment
-[X] type checking
-[X] pointer deref / indexing
-[X] stack arguments / more than 4 args
-[X] if statements
-[-] for/while statements
-[-] structs / tuples / user types
-[-] blocks as scopes
-[-] defer statements
-[-] owner / reference types (?)
-[-] global vars (?)
-[-] more/better type checking and errors
-[-] floating point types support
-[-] investigate entry points for receiving command-line args
-[-] integrate linking process
-[-] linux x64
-[-] linux ARM64
+- [X] function declaration
+- [X] function overload
+- [X] local variables
+- [X] basic math operations
+- [X] declaration position independence
+- [X] modules
+- [X] assignment
+- [X] type checking
+- [X] pointer deref / indexing
+- [X] stack arguments / more than 4 args
+- [X] if statements
+- [ ] for/while statements
+- [ ] structs / tuples / user types
+- [ ] blocks as scopes
+- [ ] defer statements
+- [ ] owner / reference types (?)
+- [ ] global vars (?)
+- [ ] more/better type checking and errors
+- [ ] floating point types support
+- [ ] investigate entry points for receiving command-line args
+- [ ] integrate linking process
+- [ ] linux x64
+- [ ] linux ARM64
 
 ## Hello world
 
