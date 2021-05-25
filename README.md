@@ -8,17 +8,29 @@ Carbon is a statically-strongly-typed programming language.
 
 ## TODO
 
--X assignment
--X pointer deref / indexing
--X stack arguments / more than 4 args
-- if statements
-- for/while statements
-- structs / tuples / user types
-- global vars (?)
-- more/better type checking and errors
-- floating point types support
-- investigate entry points for receiving command-line args
-- integrate linking process
+[X] function declaration
+[X] function overload
+[X] local variables
+[X] basic math operations
+[X] declaration position independence
+[X] modules
+[X] assignment
+[X] type checking
+[X] pointer deref / indexing
+[X] stack arguments / more than 4 args
+[X] if statements
+[-] for/while statements
+[-] structs / tuples / user types
+[-] blocks as scopes
+[-] defer statements
+[-] owner / reference types (?)
+[-] global vars (?)
+[-] more/better type checking and errors
+[-] floating point types support
+[-] investigate entry points for receiving command-line args
+[-] integrate linking process
+[-] linux x64
+[-] linux ARM64
 
 ## Hello world
 
@@ -90,9 +102,9 @@ func concat_stuff(value: <T>): string {
 - Better than C.
 - Simpler than C++.
 - Inspired by ML languages.
-- Meta-programming ease of use.
+- Meta-programming.
 - Pragmatic.
-- Self-learning most of all.
+- Self-learning.
 
 ## Non-goals.
 
@@ -102,7 +114,7 @@ func concat_stuff(value: <T>): string {
 
 ## Implementation
 
-Currently the compiler is implemented in C++17 outputting MSVC-compatible x64 assembly code (my main development machine is Windows). In the future I want to add a ARMv7 or C backend.
+Currently the compiler is implemented in C++17 outputting MSVC-compatible x64 assembly code (my main development machine is Windows). In the future I want to add a ARM64 or C backend.
 
 Features implemented:
 
