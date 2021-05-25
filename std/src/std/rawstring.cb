@@ -65,18 +65,32 @@ func test_strcopy_len() {
 func test_strcopy() {
     let str = "hello";
     let newstr = copy(str);
+    
+    if (str[0] == newstr[0] && str[1] == newstr[1] && str[2] == newstr[2] && str[3] == newstr[3] && str[4] == newstr[4]) {
+        println("test_strcopy: OK");
+    }
+    else {
+        println("test_strcopy: NOK");
+    }
+
+    mem::dealloc(cast[raw_ptr] newstr);
+}
+
+func test_strcopy_saving() {
+    let str = "hello";
+    let newstr = copy(str);
 
     let c1 = str[0] == newstr[0];
     let c2 = str[1] == newstr[1];
     let c3 = str[2] == newstr[2];
     let c4 = str[3] == newstr[3];
     let c5 = str[4] == newstr[4];
-    
+
     if (c1 && c2 && c3 && c4 && c5) {
-        println("test_strcopy: OK");
+        println("test_strcopy_saving: OK");
     }
     else {
-        println("test_strcopy: NOK");
+        println("test_strcopy_saving: NOK");
     }
 
     mem::dealloc(cast[raw_ptr] newstr);
@@ -105,6 +119,7 @@ func main(): int {
     test_longfunc();
     test_strcopy_len();
     test_strcopy();
+    test_strcopy_saving();
 
     mem::dealloc(cast[raw_ptr] newtext);
 
