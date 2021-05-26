@@ -109,6 +109,7 @@ struct local_def {
     int arg_index = 0; // if is_argument
     ast_node* arg_func_node = nullptr; // if is_argument
     std::int32_t frame_offset = 0;
+    int ir_index = 0;
 };
 
 enum class symbol_kind {

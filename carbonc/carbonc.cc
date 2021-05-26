@@ -9,6 +9,7 @@
 #include "exception.hh"
 #include "type_system.hh"
 #include "codegen.hh"
+#include "ir.hh"
 
 namespace carbon {
 
@@ -116,6 +117,8 @@ int run_project_mode() {
         }
         return 1;
     }
+
+    auto irprog = generate_ir(ts, *target_node);
 
     ensure_directory_exists("../_carbon/build/std.asm");
 

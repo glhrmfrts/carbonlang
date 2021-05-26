@@ -7,6 +7,7 @@
 #include "memory.hh"
 #include "token.hh"
 #include "type_system.hh"
+#include "ir.hh"
 
 namespace carbon {
 
@@ -111,6 +112,8 @@ struct ast_node {
     call_info call;
     global_data global_data;
     bool type_error = false;
+
+    ir_node_data ir;
 };
 
 arena_ptr<ast_node> make_bool_literal_node(memory_arena& arena, const position& pos, bool value);
