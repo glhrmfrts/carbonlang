@@ -72,15 +72,6 @@ gen_destination todest(gen_operand op) {
     }
 }
 
-template <typename T> T align(T number, T alignment) {
-    T offset = number % alignment;
-    if (offset) {
-        number = number - offset + alignment;
-    }
-
-    return number;
-}
-
 void find_max_call_arg_size(ast_node& node, std::int32_t& sz) {
     if (node.type == ast_type::call_expr) {
         std::int32_t args_size = 0;

@@ -68,7 +68,14 @@ struct ir_label {
     std::string name;
 };
 
-using ir_operand = std::variant<std::string, ir_label, ir_local, ir_arg, ir_stack, ir_string, ir_int, ir_float, char>;
+using ir_ref = std::variant<ir_local, ir_arg, ir_stack>;
+
+struct ir_offset {
+    ir_ref ref;
+    std::size_t offset;
+};
+
+using ir_operand = std::variant<std::string, ir_offset, ir_label, ir_local, ir_arg, ir_stack, ir_string, ir_int, ir_float, char>;
 
 struct ir_instr {
     ir_op op;

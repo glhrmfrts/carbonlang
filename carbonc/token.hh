@@ -34,12 +34,14 @@ enum class token_type : unsigned int {
     internal_,
     import_,
     as_,
+    in_,
     cast_,
     if_,
     else_,
     for_,
     while_,
     coloncolon,
+    dotdot,
 };
 
 struct position {

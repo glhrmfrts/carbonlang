@@ -45,6 +45,15 @@ bool replace(std::string& str, const std::string& from, const std::string& to);
 
 std::vector<std::string> split(const std::string& s, char delimiter);
 
+template <typename T> T align(T number, T alignment) {
+    T offset = number % alignment;
+    if (offset) {
+        number = number - offset + alignment;
+    }
+
+    return number;
+}
+
 }
 
 namespace std {

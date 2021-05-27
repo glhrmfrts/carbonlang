@@ -114,6 +114,16 @@ arena_ptr<ast_node> make_index_expr_node(memory_arena& arena, const position& po
     return ptr;
 }
 
+arena_ptr<ast_node> make_field_expr_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& left, arena_ptr<ast_node>&& field) {
+    auto ptr = make_in_arena<ast_node>(arena);
+    ptr->node_id = node_id_gen++;
+    ptr->type = ast_type::field_expr;
+    ptr->pos = pos;
+    ptr->children.push_back(std::move(left));
+    ptr->children.push_back(std::move(field));
+    return ptr;
+}
+
 arena_ptr<ast_node> make_cast_expr_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& type_expr, arena_ptr<ast_node>&& value) {
     auto ptr = make_in_arena<ast_node>(arena);
     ptr->node_id = node_id_gen++;
@@ -253,6 +263,17 @@ arena_ptr<ast_node> make_while_stmt_node(memory_arena& arena, const position& po
     return ptr;
 }
 
+arena_ptr<ast_node> make_for_stmt_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& ids, arena_ptr<ast_node>&& iter, arena_ptr<ast_node>&& body) {
+    auto ptr = make_in_arena<ast_node>(arena);
+    ptr->node_id = node_id_gen++;
+    ptr->type = ast_type::for_stmt;
+    ptr->pos = pos;
+    ptr->children.push_back(std::move(ids));
+    ptr->children.push_back(std::move(iter));
+    ptr->children.push_back(std::move(body));
+    return ptr;
+}
+
 arena_ptr<ast_node> make_type_expr_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& expr) {
     auto ptr = make_in_arena<ast_node>(arena);
     ptr->node_id = node_id_gen++;
@@ -331,6 +352,24 @@ arena_ptr<ast_node> make_code_unit_node(memory_arena& arena, const position& pos
 
     ptr->string_value = std::string_view{ data, filename.size() };
     ptr->children.push_back(std::move(decls));
+    return ptr;
+}
+
+arena_ptr<ast_node> make_type_constructor_instance_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& tpl, arena_ptr<ast_node>&& arg_list) {
+    auto ptr = make_in_arena<ast_node>(arena);
+    ptr->node_id = node_id_gen++;
+    ptr->type = ast_type::type_constructor_instance;
+    ptr->pos = pos;
+    ptr->children.push_back(std::move(tpl));
+    ptr->children.push_back(std::move(arg_list));
+    return ptr;
+}
+
+arena_ptr<ast_node> make_type_resolver_node(memory_arena& arena, type_id tid) {
+    auto ptr = make_in_arena<ast_node>(arena);
+    ptr->node_id = node_id_gen++;
+    ptr->type = ast_type::type_resolver;
+    ptr->type_id = tid;
     return ptr;
 }
 

@@ -25,6 +25,7 @@ enum class ast_type {
     index_expr,
     init_expr,
     cast_expr,
+    field_expr,
 
     type_decl,
     var_decl,
@@ -40,14 +41,17 @@ enum class ast_type {
     asm_stmt,
     if_stmt,
     while_stmt,
+    for_stmt,
 
     type_expr,
     struct_type,
     tuple_type,
     array_type,
+    type_constructor_instance,
     type_qualifier,
     linkage_specifier,
     visibility_specifier,
+    type_resolver,
 
     code_unit,
     target,
@@ -107,10 +111,12 @@ struct ast_node {
     func_def func;
     local_def local;
     type_def type_def;
-    type_template type_template;
     lvalue lvalue;
     call_info call;
     global_data global_data;
+    for_info forinfo;
+    range_info range;
+    field_access field;
     bool type_error = false;
 
     ir_node_data ir;
@@ -138,6 +144,8 @@ arena_ptr<ast_node> make_call_expr_node(memory_arena& arena, const position& pos
 
 arena_ptr<ast_node> make_index_expr_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& left, arena_ptr<ast_node>&& index);
 
+arena_ptr<ast_node> make_field_expr_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& left, arena_ptr<ast_node>&& field);
+
 arena_ptr<ast_node> make_cast_expr_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& type_expr, arena_ptr<ast_node>&& value);
 
 arena_ptr<ast_node> make_import_decl_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& mod, arena_ptr<ast_node>&& alias);
@@ -162,6 +170,8 @@ arena_ptr<ast_node> make_asm_stmt_node(memory_arena& arena, const position& pos,
 
 arena_ptr<ast_node> make_while_stmt_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& cond, arena_ptr<ast_node>&& body);
 
+arena_ptr<ast_node> make_for_stmt_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& ids, arena_ptr<ast_node>&& iter, arena_ptr<ast_node>&& body);
+
 arena_ptr<ast_node> make_if_stmt_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& cond, arena_ptr<ast_node>&& body, arena_ptr<ast_node>&& elsebody);
 
 arena_ptr<ast_node> make_type_expr_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& expr);
@@ -172,6 +182,8 @@ arena_ptr<ast_node> make_tuple_type_node(memory_arena& arena, const position& po
 
 arena_ptr<ast_node> make_array_type_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& size_expr, arena_ptr<ast_node>&& item_type);
 
+arena_ptr<ast_node> make_type_constructor_instance_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& tpl, arena_ptr<ast_node>&& arg_list);
+
 arena_ptr<ast_node> make_type_qualifier_node(memory_arena& arena, const position& pos, type_qualifier q, arena_ptr<ast_node>&& to_type);
 
 arena_ptr<ast_node> make_linkage_specifier_node(memory_arena& arena, const position& pos, func_linkage l, arena_ptr<ast_node>&& content);
@@ -179,6 +191,8 @@ arena_ptr<ast_node> make_linkage_specifier_node(memory_arena& arena, const posit
 arena_ptr<ast_node> make_visibility_specifier_node(memory_arena& arena, const position& pos, token_type spec, arena_ptr<ast_node>&& content);
 
 arena_ptr<ast_node> make_code_unit_node(memory_arena& arena, const position& pos, const std::string& filename, arena_ptr<ast_node>&& decls);
+
+arena_ptr<ast_node> make_type_resolver_node(memory_arena& arena, type_id tid);
 
 bool is_primary_expr(ast_node& node);
 

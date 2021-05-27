@@ -70,6 +70,18 @@ int find_or_add_global_string_data(std::string data) {
     return it->second;
 }
 
+ir_ref toref(const ir_operand& opr) {
+    if (auto arg = std::get_if<ir_arg>(&opr); arg) {
+        return *arg;
+    }
+    if (auto arg = std::get_if<ir_local>(&opr); arg) {
+        return *arg;
+    }
+    if (auto arg = std::get_if<ir_stack>(&opr); arg) {
+        return ir_stack{};
+    }
+}
+
 // Section: analysis
 
 std::string generate_label_for_short_circuit(ast_node& node) {
@@ -353,6 +365,19 @@ void generate_ir_asm_stmt(ast_node& node) {
     emit(ir_asm, std::string{node.string_value});
 }
 
+void generate_ir_field_expr(ast_node& node) {
+    generate_ir_node(*node.children[0]);
+    auto a = pop();
+
+    if (node.field.needs_deref) {
+        emit(ir_deref, a);
+        push(ir_offset{ ir_stack{}, node.field.field_offset });
+    }
+    else {
+        push(ir_offset{ toref(a), node.field.field_offset });
+    }
+}
+
 void generate_ir_index_expr(ast_node& node) {
     generate_ir_node(*node.children[1]);
     generate_ir_node(*node.children[0]);
@@ -538,6 +563,9 @@ void generate_ir_node(ast_node& node) {
     case ast_type::asm_stmt:
         generate_ir_asm_stmt(node);
         break;
+    case ast_type::field_expr:
+        generate_ir_field_expr(node);
+        break;
     case ast_type::index_expr:
         generate_ir_index_expr(node);
         break;
@@ -630,11 +658,11 @@ void print_ir() {
         f << "func " << func.name << " -> " << func.ret_type.get().mangled_name.str << "\n";
         for (std::size_t ai = 0; ai < func.args.size(); ai++) {
             auto& arg = func.args[ai];
-            f << "arg #" << ai << " " << arg.name << ": " << arg.type.get().mangled_name.str << ";\n";
+            f << "    arg #" << ai << " " << arg.name << ": " << arg.type.get().mangled_name.str << ";\n";
         }
         for (std::size_t ai = 0; ai < func.locals.size(); ai++) {
             auto& arg = func.locals[ai];
-            f << "local #" << ai << " " << arg.name << ": " << arg.type.get().mangled_name.str << ";\n";
+            f << "    local #" << ai << " " << arg.name << ": " << arg.type.get().mangled_name.str << ";\n";
         }
         for (std::size_t ai = 0; ai < func.instrs.size(); ai++) {
             auto& instr = func.instrs[ai];

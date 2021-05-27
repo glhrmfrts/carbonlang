@@ -15,6 +15,7 @@ static std::unordered_map<int, token_type> stb_to_token = {
     {CLEX_charlit, token_type::char_literal},
     {CLEX_dqstring, token_type::string_literal},
     {CLEX_coloncolon, token_type::coloncolon},
+    {CLEX_dotdot, token_type::dotdot},
     {CLEX_eq, token_type::eqeq},
     {CLEX_noteq, token_type::neq},
     {CLEX_greatereq, token_type::gteq},
@@ -118,6 +119,9 @@ struct lexer_impl {
             }
             if (!std::strcmp("if", l.string)) {
                 return token_type::if_;
+            }
+            if (!std::strcmp("in", l.string)) {
+                return token_type::in_;
             }
             break;
         case 3:

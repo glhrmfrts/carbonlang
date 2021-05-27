@@ -263,14 +263,25 @@ compound_stmt{
 compound_stmt{
         decl_list{
           var_decl{
+            identifier{"r"}
+            :type_expr{
+              }}}
+        stmt_list{
+          binary_expr{
+            
+            =
+            int_literal{3}}
+          binary_expr{
+            
+            =
+            int_literal{4}}}
+        decl_list{
+          var_decl{
             identifier{"str"}
             =string_literal{"hello"}}
           var_decl{
             identifier{"newstr"}
-            =call_expr{
-              identifier{"copy"}
-              arg_list(
-                identifier{"str"})}}}
+            =}}
         stmt_list{
           }
         stmt_list{
@@ -394,6 +405,8 @@ compound_stmt{
             identifier{"println"}
             arg_list(
               identifier{"newstr"})}
+          }
+        stmt_list{
           }
         stmt_list{
           call_expr{

@@ -62,9 +62,13 @@ func test_longfunc() {
 }
 
 func test_strcopy_len() {
+    var r : range[int];
+    r.start = 3;
+    r.end = 4;
+
     let str = "hello";
-    let newstr = copy(str);
-    
+    let newstr = str.copy;
+
     if (len(str) == len(newstr)) {
         println("test_strcopy_len: OK");
     }
@@ -109,27 +113,6 @@ func test_strcopy_saving() {
     mem::dealloc(cast[raw_ptr] newstr);
 }
 
-/*
-func test_strcopy_saving
-    local str raw_string
-    local newstr raw_string
-    local c1 bool
-    local c2 bool
-    local c3 bool
-    local c4 bool
-    local c5 bool
-
-    index   l0 0
-    index   l1 0
-    cmp_eq  s1 s0
-    load    l2 s0
-
-    index   l0 1
-    index   l1 1
-    cmp_eq  s1 s0
-    load    l3 s0
-*/
-
 func test_while_statement() {
     let str = "hello";
     let newstr = copy(str);
@@ -155,27 +138,6 @@ func test_while_statement() {
     
     mem::dealloc(cast[raw_ptr] newstr);
 }
-
-/*
-func test_strcopy_saving
-    local str raw_string
-    local newstr raw_string
-    local c1 bool
-    local c2 bool
-    local c3 bool
-    local c4 bool
-    local c5 bool
-
-    call l1
-
-    jmp_lt l3 5 $if_else
-    call str23
-
-    call l1 str42
-    jmp_if_false s0 $if_else
-    call l1 str43
-    jmp_if_true s0 $if_else
-*/
 
 func test_short(): bool {
     println("SHOULD NOT PRINT THIS");

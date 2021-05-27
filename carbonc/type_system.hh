@@ -25,14 +25,15 @@ enum class func_linkage {
 
 enum class type_qualifier {
     optional,
-    reference,
     pointer,
+    mutable_pointer,
 };
 
 enum class type_kind {
-    unit,
+    void_,
     pointer,
-    reference,
+    mutable_pointer,
+    optional,
     integral,
     real,
     array,
@@ -41,6 +42,7 @@ enum class type_kind {
     tuple,
     func,
     type,
+    constructor,
 };
 
 struct type_id {
@@ -50,7 +52,7 @@ struct type_id {
     bool operator ==(const type_id& other) const { return scope == other.scope && type_index == other.type_index; }
     bool operator !=(const type_id& other) const { return !(*this == other); }
 
-    type_def& get();
+    type_def& get() const;
 
     bool valid() const;
 };
@@ -60,6 +62,21 @@ struct type_flags {
 
     static constexpr type none = 0;
     static constexpr type is_alias = 1;
+};
+
+struct struct_field {
+    std::string name;
+    type_id type;
+    std::size_t offset;
+};
+
+using type_constructor_arg = std::variant<type_id, ast_node*>;
+using type_constructor_func = std::function<arena_ptr<ast_node>(const std::vector<type_constructor_arg>&)>;
+
+struct type_constructor {
+    ast_node* self;
+    std::vector<ast_node*> args;
+    type_constructor_func func;
 };
 
 struct type_def {
@@ -78,6 +95,10 @@ struct type_def {
         type_id ret_type{};
     };
 
+    struct struct_type {
+        std::vector<struct_field> fields;
+    };
+
     string_hash name;
     string_hash mangled_name;
     //std::vector<type_qualifier> qualifiers;
@@ -91,6 +112,8 @@ struct type_def {
     numeric_type numeric;
     array_type array;
     func_type func;
+    struct_type structure;
+    type_constructor constructor;
 
     type_flags::type flags = 0;
     type_id alias_to{};
@@ -117,7 +140,6 @@ enum class symbol_kind {
     top_level_func,
     overloaded_func_base,
     type,
-    type_template,
 };
 
 struct symbol_info {
@@ -129,9 +151,6 @@ struct symbol_info {
 
     // if kind == type
     int type_index = -1;
-
-    // if kind == type_template
-    int type_template_index = -1;
     
     // if kind == overloaded_func_base
     std::vector<func_def*> overload_funcs;
@@ -152,6 +171,16 @@ struct call_info {
     type_id func_type_id{};
 };
 
+struct for_info {
+    ast_node* self;
+};
+
+struct range_info {
+    ast_node* self;
+    ast_node* start_node;
+    ast_node* end_node;
+};
+
 struct scope_import {
     string_hash qual_name;
     std::optional<string_hash> alias;
@@ -165,20 +194,10 @@ enum class scope_kind {
     block,
 };
 
-using type_template_arg = std::variant<type_id, ast_node*>;
-using type_template_func = std::function<arena_ptr<ast_node>(const std::vector<type_template_arg>&)>;
-
-struct type_template {
-    ast_node* self;
-    string_hash name;
-    type_template_func func;
-};
-
 struct scope_def {
     scope_kind kind{};
 
     std::vector<type_def*> type_defs;
-    std::vector<type_template*> type_templates;
     std::vector<local_def*> local_defs;
     std::vector<scope_import> imports;
     string_hash self_module_key;
@@ -201,6 +220,15 @@ struct func_def {
     func_linkage linkage;
     bool args_unresolved = false;
     string_hash base_symbol;
+};
+
+struct field_access {
+    ast_node* self;
+    ast_node* struct_node;
+    ast_node* field_node;
+    std::size_t field_offset;
+    bool needs_deref;
+    bool is_optional;
 };
 
 enum class type_system_pass {
@@ -243,7 +271,10 @@ struct type_system {
     type_id ptrdiff_type{};
     type_id bool_type{};
 
-    type_template* ptr_type_template;
+    type_constructor* ptr_type_constructor;
+    type_constructor* mutable_ptr_type_constructor;
+    type_constructor* optional_type_constructor;
+    type_constructor* range_type_constructor;
 
     explicit type_system(memory_arena&);
 
