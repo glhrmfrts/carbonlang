@@ -607,12 +607,29 @@ void generate_ir_node(ast_node& node) {
     }
 }
 
+void print_ref(std::ofstream& f, ir_ref& opr) {
+    if (auto arg = std::get_if<ir_arg>(&opr); arg) {
+        f << "A" << arg->index;
+    }
+    if (auto arg = std::get_if<ir_local>(&opr); arg) {
+        f << "L" << arg->index;
+    }
+    if (auto arg = std::get_if<ir_stack>(&opr); arg) {
+        f << "ST";
+    }
+}
+
 void print_opr(std::ofstream& f, ir_operand& opr) {
     if (auto str = std::get_if<std::string>(&opr); str) {
         f << *str;
     }
     if (auto lab = std::get_if<ir_label>(&opr); lab) {
         f << lab->name;
+    }
+    if (auto arg = std::get_if<ir_offset>(&opr); arg) {
+        f << "[";
+        print_ref(f, arg->ref);
+        f << " " << arg->offset << "]";
     }
     if (auto arg = std::get_if<ir_arg>(&opr); arg) {
         f << "A" << arg->index;

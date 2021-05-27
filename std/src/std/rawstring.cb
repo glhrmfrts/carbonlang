@@ -52,6 +52,10 @@ func longfunc(a: int, b: int, c: int, d: int, e: int, f: int, g: int, h: int): i
 }
 
 func test_longfunc() {
+    for (i in 0 .. 10) {
+        println(i);
+    }
+
     let result = longfunc(1, 2, 3, 4, 5, 6, 7, 8);
     if (result == 36) {
         println("test_longfunc: OK");
@@ -62,14 +66,14 @@ func test_longfunc() {
 }
 
 func test_strcopy_len() {
-    var r : range[int];
+    var r : *range[int];
     r.start = 3;
-    r.end = 4;
+    r.end = r.start;
 
     let str = "hello";
     let newstr = str.copy;
 
-    if (len(str) == len(newstr)) {
+    if (str.len == newstr.len) {
         println("test_strcopy_len: OK");
     }
     else {

@@ -265,7 +265,8 @@ compound_stmt{
           var_decl{
             identifier{"r"}
             :type_expr{
-              }}}
+              type_qualifier{pointer,
+                }}}}
         stmt_list{
           binary_expr{
             
@@ -274,7 +275,7 @@ compound_stmt{
           binary_expr{
             
             =
-            int_literal{4}}}
+            }}
         decl_list{
           var_decl{
             identifier{"str"}

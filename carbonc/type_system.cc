@@ -30,6 +30,24 @@ std::string node_to_string(const ast_node& node);
 
 std::string type_to_string(type_id t);
 
+// Section: AST helpers
+
+arena_ptr<ast_node> make_var_decl_with_value(memory_arena& ast_arena, std::string varname, arena_ptr<ast_node>&& value) {
+    return make_var_decl_node(ast_arena, {}, token_type::var, make_identifier_node(ast_arena, {}, { varname }), { nullptr, nullptr }, std::move(value));
+}
+
+arena_ptr<ast_node> make_assignment(memory_arena& ast_arena, arena_ptr<ast_node>&& dest, arena_ptr<ast_node>&& value) {
+    return make_binary_expr_node(ast_arena, {}, token_from_char('='), std::move(dest), std::move(value));
+}
+
+arena_ptr<ast_node> make_struct_field_access(memory_arena& ast_arena, arena_ptr<ast_node>&& st, std::string field) {
+    return make_field_expr_node(ast_arena, {}, std::move(st), make_identifier_node(ast_arena, {}, { field }));
+}
+
+arena_ptr<ast_node> copy_var_ref(type_system& ts, ast_node& node) {
+    return make_identifier_node(*ts.ast_arena, {}, node.id_parts);
+}
+
 // Section: helpers
 
 template <typename... Args> void add_module_error(type_system& ts, const position& pos, const char* fmt, Args&&... args) {
@@ -211,6 +229,7 @@ type_id execute_type_constructor(type_system& ts, scope_def& scope, type_constru
 
     auto tid = find_type_by_value(ts, scope, result->type_def);
     if (!tid.valid()) {
+        result->type_def.constructor_type = tpl.self->type_def.id;
         tid = register_type(ts, scope, *result);
         scope.body_node->temps.push_back(std::move(result));
     }
@@ -1032,6 +1051,11 @@ void register_func_declaration_node(type_system& ts, ast_node& node) {
     resolve_func_type(ts, node);
 }
 
+void resolve_and_declare_local_variable(type_system& ts, const string_hash& id, ast_node& node) {
+    resolve_local_variable_type(ts, node);
+    declare_local_symbol(ts, id, node);
+}
+
 void register_var_declaration_node(type_system& ts, ast_node& node) {
     node.local.self = &node;
     node.local.id_node = node.children[ast_node::child_var_decl_id].get();
@@ -1046,14 +1070,10 @@ void register_var_declaration_node(type_system& ts, ast_node& node) {
         return;
     }
 
-    resolve_local_variable_type(ts, node);
-
-    declare_local_symbol(ts, id, node);
+    resolve_and_declare_local_variable(ts, id, node);
 }
 
 void register_for_declarations(type_system& ts, ast_node& node) {
-    node.forinfo.self = &node;
-
     ast_node* elem_node = nullptr;
     if (node.children[0]->children.size() == 1) {
         elem_node = node.children[0].get();
@@ -1061,18 +1081,41 @@ void register_for_declarations(type_system& ts, ast_node& node) {
 
     // TODO: handle array as well
 
-    if (node.children[1]->range.self) {
-        /*
-        auto type_node = make_type_identifier(*ts.ast_arena, {}, node.children[1]->children[0]->type_id.get().name);
-        elem_node->local.self = elem_node;
-        elem_node->local.id_node = elem_node;
-        elem_node->local.type_node = type_node;
-        elem_node->temps.push_back(std::move(type_node));
-        resolve_local_variable_type(ts, *elem_node);
-        declare_local_symbol(ts, string_hash{ build_identifier_value(elem_node->id_parts) }, *elem_node);
-        node.forinfo.elem_node = elem_node;
-        node.forinfo.range_node = node.children[1].get();
-        */
+    if (!node.forinfo.self && node.children[1]->type_id.valid()) {
+        if (node.children[1]->type_id.get().constructor_type == ts.range_type_constructor->self->type_def.id) {
+            auto iterdecl = make_var_decl_with_value(*ts.ast_arena, "$foriter", std::move(node.children[1]));
+            auto iterref1 = make_identifier_node(*ts.ast_arena, {}, { "$foriter" });
+            auto iterref2 = make_identifier_node(*ts.ast_arena, {}, { "$foriter" });
+
+            auto iterstart = make_struct_field_access(*ts.ast_arena, std::move(iterref1), "start");
+            auto iterend   = make_struct_field_access(*ts.ast_arena, std::move(iterref2), "end");
+            auto elemref   = make_identifier_node(*ts.ast_arena, {}, elem_node->id_parts);
+
+            // declare the for iter
+            resolve_and_declare_local_variable(ts, string_hash{ "$foriter" }, *iterdecl);
+
+            // declare the variable to hold the element of the range
+            elem_node->local.self = elem_node;
+            elem_node->local.id_node = elem_node;
+            elem_node->local.value_node = iterstart.get();
+            resolve_and_declare_local_variable(ts, string_hash{ build_identifier_value(elem_node->id_parts) }, *elem_node);
+
+            node.forinfo.declare_for_iter = std::move(iterdecl);
+            node.forinfo.assign_elem_to_range_start = make_assignment(*ts.ast_arena, copy_var_ref(ts, *elemref), std::move(iterstart));
+            node.forinfo.compare_elem_to_range_end = make_binary_expr_node(*ts.ast_arena, {},
+                token_from_char('<'), copy_var_ref(ts, *elemref), std::move(iterend)
+            );
+
+            auto elem_plus = make_binary_expr_node(*ts.ast_arena, {},
+                token_from_char('+'), copy_var_ref(ts, *elemref), make_int_literal_node(*ts.ast_arena, {}, 1)
+            );
+            node.forinfo.increase_elem = make_assignment(*ts.ast_arena, copy_var_ref(ts, *elemref), std::move(elem_plus));
+
+            resolve_node_type(ts, node.forinfo.assign_elem_to_range_start.get());
+            resolve_node_type(ts, node.forinfo.compare_elem_to_range_end.get());
+            resolve_node_type(ts, node.forinfo.increase_elem.get());
+            node.forinfo.self = &node;
+        }
     }
 }
 
@@ -1152,10 +1195,6 @@ bool is_root_bool_op(type_system& ts, ast_node& node) {
 
 bool is_bool_op_inside_if_condition(type_system& ts, ast_node& node) {
     return node.parent->type == ast_type::if_stmt;
-}
-
-arena_ptr<ast_node> copy_var_ref(type_system& ts, ast_node& node) {
-    return make_identifier_node(*ts.ast_arena, {}, node.id_parts);
 }
 
 arena_ptr<ast_node> transform_bool_op_into_if_statement(type_system& ts, arena_ptr<ast_node>&& bop, ast_node& destvar) {
@@ -1297,11 +1336,12 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
         if (node.children[1]->range.self) {
             if (ts.pass == type_system_pass::resolve_literals_and_register_declarations) {
                 add_block_scope(ts, node, *node.children[2]);
-                register_for_declarations(ts, node);
             }
             else {
                 enter_scope_local(ts, node);
             }
+
+            register_for_declarations(ts, node);
 
             visit_tree(ts, *node.children[2]);
             leave_scope_local(ts);

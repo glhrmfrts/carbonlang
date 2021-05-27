@@ -118,6 +118,7 @@ struct type_def {
     type_flags::type flags = 0;
     type_id alias_to{};
     type_id elem_type{};
+    type_id constructor_type{};
 
     ast_node* self = nullptr;
     type_id id{};
@@ -172,7 +173,11 @@ struct call_info {
 };
 
 struct for_info {
-    ast_node* self;
+    ast_node* self = nullptr;
+    arena_ptr<ast_node> declare_for_iter{nullptr, nullptr};
+    arena_ptr<ast_node> assign_elem_to_range_start{nullptr, nullptr};
+    arena_ptr<ast_node> compare_elem_to_range_end{nullptr, nullptr};
+    arena_ptr<ast_node> increase_elem{nullptr, nullptr};
 };
 
 struct range_info {
