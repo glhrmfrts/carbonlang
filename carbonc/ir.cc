@@ -78,7 +78,7 @@ ir_ref toref(const ir_operand& opr) {
         return *arg;
     }
     if (auto arg = std::get_if<ir_stack>(&opr); arg) {
-        return ir_stack{};
+        return *arg;
     }
 }
 
@@ -313,6 +313,7 @@ void generate_ir_children(ast_node& node) {
 
 void generate_ir_func(ast_node& node) {
     ir_func& func = prog->funcs.emplace_back();
+    func.index = prog->funcs.size() - 1;
     fn = &func;
 
     auto name = node.type_def.mangled_name.str;
@@ -433,10 +434,10 @@ void generate_ir_asm_stmt(ast_node& node) {
 void generate_ir_field_expr(ast_node& node) {
     generate_ir_node(*node.children[0]);
     auto a = pop();
-
+    
     if (node.field.needs_deref) {
         emit(ir_deref, a);
-        push(ir_offset{ ir_stack{}, node.field.field_offset });
+        push(ir_offset{ ir_stack{ node.field.struct_node->type_id.get().elem_type }, node.field.field_offset });
     }
     else {
         push(ir_offset{ toref(a), node.field.field_offset });
@@ -450,7 +451,7 @@ void generate_ir_index_expr(ast_node& node) {
     auto a = pop();
     auto b = pop();
     emit(ir_index, a, b);
-    push(ir_stack{});
+    push(ir_stack{ node.type_id });
 }
 
 void generate_ir_call_expr(ast_node& node) {
@@ -469,19 +470,19 @@ void generate_ir_call_expr(ast_node& node) {
     }
 
     emitops(ir_call, args);
-    push(ir_stack{});
+    push(ir_stack{ node.type_id });
 }
 
 void generate_ir_deref_expr(ast_node& node) {
     generate_ir_node(*node.children[0]);
     emit(ir_deref, pop());
-    push(ir_stack{});
+    push(ir_stack{ node.type_id });
 }
 
 void generate_ir_addr_expr(ast_node& node) {
     generate_ir_node(*node.children[0]);
     emit(ir_load_addr, pop());
-    push(ir_stack{});
+    push(ir_stack{ node.type_id });
 }
 
 void generate_ir_assignment(ast_node& node) {
@@ -519,19 +520,19 @@ void generate_ir_binary_expr(ast_node& node) {
     switch (token_to_char(node.op)) {
     case '+':
         emit(ir_add, a, b);
-        push(ir_stack{});
+        push(ir_stack{ node.type_id });
         break;
     case '-':
         emit(ir_sub, a, b);
-        push(ir_stack{});
+        push(ir_stack{ node.type_id });
         break;
     case '*':
         emit(ir_mul, a, b);
-        push(ir_stack{});
+        push(ir_stack{ node.type_id });
         break;
     case '/':
         emit(ir_div, a, b);
-        push(ir_stack{});
+        push(ir_stack{ node.type_id });
         break;
     case '<':
         emit((node.ir.bin_invert_jump) ? ir_jmp_gte : ir_jmp_lt, a, b, ir_label{node.ir.bin_target_label});

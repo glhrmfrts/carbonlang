@@ -39,7 +39,7 @@ struct ir_arg_data {
 };
 
 struct ir_stack {
-    int dummy;
+    type_id type;
 };
 
 struct ir_local {
@@ -90,6 +90,7 @@ struct ir_func {
     type_id ret_type;
     bool is_extern;
     bool calls_extern_c;
+    int index = 0;
 };
 
 struct ir_node_data {

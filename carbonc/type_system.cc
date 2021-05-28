@@ -54,6 +54,15 @@ arena_ptr<ast_node> copy_var_ref(type_system& ts, ast_node& node) {
     return make_identifier_node(*ts.ast_arena, {}, node.id_parts);
 }
 
+void parent_tree(ast_node& node) {
+    for (auto& child : node.children) {
+        if (child) {
+            child->parent = &node;
+            parent_tree(*child);
+        }
+    }
+}
+
 // Section: helpers
 
 template <typename... Args> void add_module_error(type_system& ts, const position& pos, const char* fmt, Args&&... args) {
@@ -1070,6 +1079,7 @@ void register_func_declaration_node(type_system& ts, ast_node& node) {
     resolve_node_type(ts, node.func.ret_type_node);
 
     if (body) {
+        body->parent = &node;
         add_func_scope(ts, node, *body);
     }
     
@@ -1403,14 +1413,18 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
     }
     case ast_type::compound_stmt: {
         check_for_unresolved = false;
-        if (node.scope.kind == scope_kind::invalid) {
-            add_block_scope(ts, node, node);
-        }
-        else {
-            enter_scope_local(ts, node);
+        if (node.parent->type != ast_type::func_decl) {
+            if (node.scope.kind == scope_kind::invalid) {
+                add_block_scope(ts, node, node);
+            }
+            else {
+                enter_scope_local(ts, node);
+            }
         }
         visit_children(ts, node);
-        leave_scope_local(ts);
+        if (node.parent->type != ast_type::func_decl) {
+            leave_scope_local(ts);
+        }
         break;
     }
     case ast_type::return_stmt: {
@@ -1497,8 +1511,9 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
 
             auto& body = node.children[ast_node::child_func_decl_body];
             if (body) {
+                body->parent = &node;
                 enter_scope_local(ts, node);
-                visit_tree(ts, *body);
+                visit_children(ts, *body);
                 leave_scope_local(ts);
             }
             else if (node.func.linkage == func_linkage::local_carbon) {
@@ -2350,6 +2365,8 @@ type_system::type_system(memory_arena& arena) {
 void type_system::process_code_unit(ast_node& node) {
     this->pass = type_system_pass::resolve_literals_and_register_declarations;
     this->code_units.push_back(&node);
+
+    parent_tree(node);
 
     add_scope(*this, node, scope_kind::code_unit);
     visit_tree(*this, node);

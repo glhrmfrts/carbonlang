@@ -269,6 +269,11 @@ compound_stmt{
             identifier{"r"}
             :type_expr{
               type_qualifier{pointer,
+                }}}
+          var_decl{
+            identifier{"b"}
+            :type_expr{
+              type_qualifier{pointer,
                 }}}}
         stmt_list{
           binary_expr{

@@ -13,22 +13,16 @@
 
 namespace carbon {
 
-struct gen_node_data {
-    std::optional<gen_register> bin_temp_register{};
-    std::string bin_self_label;
-    std::string bin_target_label;
-    bool bin_invert_jump;
+struct var_data {
+    std::int32_t frame_offset;
+};
 
-    std::set<gen_register> func_used_temp_registers{};
-    bool func_calls_extern_c = false;
-    std::int32_t func_call_arg_size;
-    std::string func_end_label;
+struct func_data {
+    std::vector<var_data> arg_data;
+    std::vector<var_data> local_data;
 
-    std::string if_body_label;
-    std::string if_else_label;
-    std::string if_end_label;
-
-    std::string while_cond_label;
+    int call_arg_size = 0;
+    int used_temp_registers = 0;
 };
 
 gen_destination adjust_for_type(gen_destination dest, type_id tid) {
@@ -72,20 +66,17 @@ gen_destination todest(gen_operand op) {
     }
 }
 
-void find_max_call_arg_size(ast_node& node, std::int32_t& sz) {
-    if (node.type == ast_type::call_expr) {
-        std::int32_t args_size = 0;
-        for (auto& arg : node.call.args) {
-            auto tdef = arg->type_id.get();
-            std::int32_t asize = 8;// std::min(8, std::int32_t(tdef.size));
-            args_size += asize;
-            args_size = align(args_size, 8);//align(args_size, std::int32_t(tdef.alignment));
-        }
-        sz = std::max(sz, args_size);
-    }
-    for (auto& child : node.children) {
-        if (child) {
-            find_max_call_arg_size(*child, sz);
+void find_max_call_arg_size(ir_func& func, std::int32_t& sz) {
+    for (const auto& inst : func.instrs) {
+        if (inst.op == ir_call) {
+            std::int32_t args_size = 0;
+            for (auto& arg : inst.operands) {
+                auto& tdef = get_operand_type(arg);
+                std::int32_t asize = 8;// std::min(8, std::int32_t(tdef.size));
+                args_size += asize;
+                args_size = align(args_size, 8);//align(args_size, std::int32_t(tdef.alignment));
+            }
+            sz = std::max(sz, args_size);
         }
     }
 }
@@ -105,9 +96,7 @@ struct generator {
     std::unique_ptr<emitter> em;
     std::vector<gen_register> arg_registers;
     std::vector<gen_register> temp_registers;
-    std::vector<std::pair<std::string_view, std::string>> global_strings;
-    std::stack<std::pair<gen_operand, finalizer_func>> operand_stack;
-    std::unordered_map<std::size_t, gen_node_data> node_data;
+    std::vector<func_data> func_data;
     std::int32_t current_temp_regs_offset = 0;
     type_system* ts;
     int used_temp_registers = 0;
@@ -122,27 +111,11 @@ struct generator {
 
     // Section: helpers
 
-    std::string find_or_add_global_string_data(std::string_view data) {
-        for (const auto& str : global_strings) {
-            if (data == str.first) {
-                return str.second;
-            }
-        }
-
-        auto label = "$cbstr" + std::to_string(global_strings.size());
-        auto new_pair = std::make_pair(data, label);
-        global_strings.push_back(new_pair);
-        em->add_string_data(label, data);
-        return label;
-    }
-
-    std::pair<std::int32_t, std::int32_t> get_func_stack_frame_size(ast_node& node) {
-        assert(node.type == ast_type::func_decl);
-
+    std::pair<std::int32_t, std::int32_t> get_func_stack_frame_size(ir_func& func) {
         std::int32_t call_arg_size = 0;
-        find_max_call_arg_size(*node.scope.body_node, call_arg_size);
+        find_max_call_arg_size(func, call_arg_size);
 
-        if (node_data[node.node_id].func_calls_extern_c) {
+        if (func.calls_extern_c) {
             call_arg_size = std::max(call_arg_size, 32);
         }
 
@@ -150,51 +123,28 @@ struct generator {
 
         std::int32_t own_arg_size = 0;
         std::int32_t local_size = 0;
-        for (auto& local : node.scope.local_defs) {
-            auto& tdef = local->self->type_id.get();
-            if (local->is_argument) {
-                local->frame_offset = own_arg_size + 8; // offset from rbp + space for the return-instruction pointer
-                own_arg_size += 8;// std::int32_t(tdef.size);
-                own_arg_size = align(own_arg_size, 8);// align(own_arg_size, std::int32_t(tdef.alignment));
-            }
-            else {
-                local->frame_offset = -(local_size + 8); // offset from rbp + space for pushed rbp
-                local_size += std::int32_t(tdef.size);
-                local_size = align(local_size, std::int32_t(tdef.alignment));
-            }
+        int ai = 0;
+        for (auto& arg : func.args) {
+            auto& tdef = arg.type.get();
+            
+            func_data[func.index].arg_data[ai].frame_offset = own_arg_size + 8; // offset from rbp + space for the return-instruction pointer
+            own_arg_size += 8;// std::int32_t(tdef.size);
+            own_arg_size = align(own_arg_size, 8);// align(own_arg_size, std::int32_t(tdef.alignment));
+            ai++;
+        }
+
+        int li = 0;
+        for (auto& local : func.locals) {
+            auto& tdef = local.type.get();
+            func_data[func.index].local_data[li].frame_offset = -(local_size + 8); // offset from rbp + space for pushed rbp
+            local_size += std::int32_t(tdef.size);
+            local_size = align(local_size, std::int32_t(tdef.alignment));
+            li++;
         }
 
         local_size = align(local_size, 16);
         call_arg_size = align(call_arg_size, 16);
         return std::make_pair(local_size, call_arg_size);
-    }
-
-    // push an operand to the operand stack
-    void push_operand(const gen_operand& op, finalizer_func&& f) {
-        operand_stack.push({ op, std::move(f) });
-    }
-
-    // pops an operand from the stack and optionally receives it in the finalizer func
-    // if no finalizer func is given then the default operand's finalizer is used
-    void finalize_expr(const gen_destination& dest, finalizer_func&& f = {}) {
-        if (!operand_stack.empty()) {
-            auto op = std::move(operand_stack.top());
-            operand_stack.pop();
-
-            if (f) {
-                f(dest, op.first);
-            }
-            else {
-                // call default finalizer
-                op.second(dest, op.first);
-            }
-        }
-    }
-
-    void discard_expr() {
-        while (!operand_stack.empty()) {
-            operand_stack.pop();
-        }
     }
 
     gen_destination local_var_destination(local_def& local) {
@@ -220,8 +170,8 @@ struct generator {
         used_temp_registers++;
 
         auto func_node = ts->find_nearest_scope(scope_kind::func_body)->self;
-        auto& ndata = node_data[func_node->node_id];
-        ndata.func_used_temp_registers.insert(next_reg);
+        //auto& ndata = node_data[func_node->node_id];
+        //ndata.func_used_temp_registers.insert(next_reg);
         return next_reg;
     }
 
@@ -229,323 +179,51 @@ struct generator {
         used_temp_registers--;
     }
 
+    std::string get_string_label(int idx) {
+        return "$cbstr" + std::to_string(si);
+    }
+
     // Section: pre analysis
 
-    void pre_analysis(ast_node& node) {
-        for (auto& unit : node.children) {
-            ts->enter_scope(*unit);
-            analyse_node(*unit);
-            ts->leave_scope();
-        }
-    }
+    void pre_analysis(ir_program& prog) {
 
-    void analyse_children(ast_node& node) {
-        for (auto& child : node.pre_children) {
-            if (child) { analyse_node(*child); }
-        }
-        for (auto& child : node.children) {
-            if (child) { analyse_node(*child); }
-        }
-    }
-
-    void analyse_node(ast_node& node) {
-        switch (node.type) {
-        case ast_type::func_decl: {
-            auto name = node.type_def.mangled_name.str;
-            auto& ndata = node_data[node.node_id];
-            ndata.func_end_label = name + "$end";
-
-            if (node.func.return_statements.size() > 0) {
-                for (std::size_t i = 0; i < node.func.return_statements.size() - 1; i++) {
-                    auto ret = node.func.return_statements[i];
-                    ret->call.funcdef = &node.func;
-                }
-            }
-
-            if (node.scope.body_node) {
-                if (node.local.id_node->id_parts.front() == "main") {
-                    em->add_global_func_decl(node.local.id_node->id_parts.front().c_str());
-                }
-                else {
-                    em->add_global_func_decl(name.c_str());
-                }
-
-                ts->enter_scope(node);
-                analyse_children(node);
-                ts->leave_scope();
-            }
-            else {
-                em->add_extern_func_decl(name.c_str());
-            }
-            break;
-        }
-        case ast_type::while_stmt: {
-            auto scope = ts->find_nearest_scope(scope_kind::func_body);
-            auto& funcname = scope->self->type_def.mangled_name.str;
-            auto& ndata = node_data[node.node_id];
-            ndata.if_body_label = funcname + "$w" + std::to_string(node.node_id) + "$body";
-            ndata.if_end_label = funcname + "$w" + std::to_string(node.node_id) + "$end";
-            ndata.while_cond_label = funcname + "$w" + std::to_string(node.node_id) + "$cond";
-
-            distribute_bool_op_targets(*node.children[0], ndata.if_body_label, ndata.if_end_label);
-
-            analyse_children(node);
-            break;
-        }
-        case ast_type::if_stmt: {
-            auto scope = ts->find_nearest_scope(scope_kind::func_body);
-            auto& funcname = scope->self->type_def.mangled_name.str;
-            auto& ndata = node_data[node.node_id];
-            ndata.if_body_label = funcname + "$if" + std::to_string(node.node_id) + "$body";
-            ndata.if_else_label = funcname + "$if" + std::to_string(node.node_id) + "$else";
-
-            if (node.children.size() == 3) {
-                ndata.if_end_label = funcname + "$if" + std::to_string(node.node_id) + "$end";
-            }
-
-            distribute_bool_op_targets(*node.children[0], ndata.if_body_label, ndata.if_else_label);
-
-            analyse_children(node);
-            break;
-        }
-        case ast_type::call_expr: {
-            auto func_node = node.call.func_type_id.get().self;
-            if (func_node->func.linkage == func_linkage::external_c) {
-                auto curscope = ts->find_nearest_scope(scope_kind::func_body);
-                node_data[curscope->self->node_id].func_calls_extern_c = true;
-            }
-
-            analyse_children(node);
-
-            // Generate temp variables for nested calls
-            if (node.call.args.size() > 1) {
-                for (std::size_t i = 0; i < node.call.args.size(); i++) {
-                    auto arg = node.call.args[i];
-
-                    // If the call expression is at the end of the parent call,
-                    // there is no problem.
-                    if (arg->type == ast_type::call_expr && i < node.call.args.size() - 1) {
-                        ts->create_temp_variable_for_call_arg(node, *arg, i);
-                    }
-                }
-            }
-            break;
-        }
-        case ast_type::index_expr: {
-            analyse_children(node);
-
-            // Generate temp variables for index expressions
-            if (!is_primary_expr(*node.children[0])) {
-                ts->create_temp_variable_for_index_expr(node);
-            }
-            break;
-        }
-        case ast_type::binary_expr: {
-            // create temporary variables for nested expressions
-            auto& left = node.children[0];
-            auto& right = node.children[1];
-            std::optional<gen_register> temp_reg;
-
-            bool should_use_temp = !is_primary_expr(*right) && !is_cmp_binary_op(*left) && !is_logic_binary_op(*left);
-            if (token_to_char(node.op) == '=') {
-                // on assignments, if the left side is an identifier, there is no need for a temp on the right-side
-                if (left->type == ast_type::identifier) {
-                    should_use_temp = false;
-                }
-            }
-
-            if (should_use_temp) {
-                temp_reg = use_temp_register();
-                if (!temp_reg) {
-                    ts->create_temp_variable_for_binary_expr(node);
-                }
-                else {
-                    node_data[node.node_id].bin_temp_register = temp_reg;
-                }
-            }
-
-            analyse_children(node);
-
-            if (temp_reg) {
-                free_temp_register();
-            }
-            break;
-        }
-        default:
-            analyse_children(node);
-            break;
-        }
-    }
-
-    std::string generate_label_for_short_circuit(ast_node& node) {
-        auto scope = ts->find_nearest_scope(scope_kind::func_body);
-        auto& funcname = scope->self->type_def.mangled_name.str;
-        auto& ndata = node_data[node.node_id];
-        ndata.bin_self_label = funcname + "_short" + std::to_string(node.node_id);
-        return ndata.bin_self_label;
-    }
-
-    void set_bool_op_target(ast_node& node, bool invert_jump, const std::string& label) {
-        auto& ndata = node_data[node.node_id];
-        ndata.bin_invert_jump = invert_jump;
-        ndata.bin_target_label = label;
-    }
-
-    // (a>5) && (b<4)
-    //
-    // (a>5) || (b<4)
-    //
-    // ((a<5 || a>5) && a<10) && (b<4)
-    //
-    // ((a<5 && a>5) && a<10) || (b<4)
-
-    void distribute_bool_op_targets(ast_node& node, const std::string& true_label, const std::string& false_label) {
-        if (node.type == ast_type::binary_expr && node.op == token_type::andand) {
-            set_bool_op_target(*node.children[0], true, false_label);
-            if (is_logic_binary_op(*node.children[0])) {
-                if (node.children[0]->op == token_type::oror) {
-                    auto right_label = generate_label_for_short_circuit(*node.children[1]);
-                    distribute_bool_op_targets(*node.children[0], right_label, false_label);
-                }
-                else {
-                    distribute_bool_op_targets(*node.children[0], true_label, false_label);
-                }
-            }
-            distribute_bool_op_targets(*node.children[1], true_label, false_label);
-        }
-        else if (node.type == ast_type::binary_expr && node.op == token_type::oror) {
-            set_bool_op_target(*node.children[0], false, true_label);
-            if (is_logic_binary_op(*node.children[0])) {
-                if (node.children[0]->op == token_type::andand) {
-                    auto right_label = generate_label_for_short_circuit(*node.children[1]);
-                    distribute_bool_op_targets(*node.children[0], true_label, right_label);
-                }
-                else {
-                    distribute_bool_op_targets(*node.children[0], true_label, false_label);
-                }
-            }
-            distribute_bool_op_targets(*node.children[1], true_label, false_label);
-        }
-        else if (node.type == ast_type::unary_expr && token_to_char(node.op) == '!') {
-            if (is_logic_binary_op(*node.children[0])) {
-                // invert the labels
-                distribute_bool_op_targets(*node.children[0], false_label, true_label);
-            }
-            else if (is_cmp_binary_op(*node.children[0])) {
-                // invert the jump
-                set_bool_op_target(*node.children[0], false, false_label);
-            }
-        }
-        else {
-            set_bool_op_target(node, true, false_label);
-        }
     }
 
     // Section: generators
 
-    void generate_program(ast_node& node) {
-        arg_registers = em->get_argument_registers();
-
+    void generate_program(ir_program& prog) {
+        for (const auto& func : prog.funcs) {
+            if (func.is_extern) {
+                em->add_extern_func_decl(func.name.c_str());
+            }
+            else {
+                em->add_global_func_decl(func.name.c_str());
+            }
+        }
         em->begin_data_segment();
-        generate_node_data(node);
+
+        int si = 0;
+        for (const auto& str : prog.strings) {
+            em->add_string_data(get_string_label(si), str);
+            si++;
+        }
 
         em->begin_code_segment();
-        generate_node(node);
+        
+        for (auto& func : prog.funcs) {
+            generate_func_code(func);
+        }
 
         em->end();
     }
 
-    // Section: data generators
-
-    void generate_node_data(ast_node& node) {
-        switch (node.type) {
-        case ast_type::string_literal:
-            generate_string_literal_data(node);
-            break;
-        default:
-            for (auto& child : node.children) {
-                if (child) {
-                    generate_node_data(*child);
-                }
-            }
-        }
-    }
-
-    void generate_string_literal_data(ast_node& node) {
-        node.global_data.label = find_or_add_global_string_data(node.string_value);
-    }
-
     // Section: code generators
 
-    void generate_node(ast_node& node) {
-        for (auto& child : node.pre_children) {
-            if (child) {
-                generate_node(*child);
-            }
-        }
+    void generate_func_code(ir_func& func) {
+        em->begin_func(func.name.c_str());
+        auto [local_size, call_arg_size] = get_func_stack_frame_size(func);
 
-        switch (node.type) {
-        case ast_type::import_decl:
-        case ast_type::type_expr:
-            break;
-        case ast_type::func_decl:
-            generate_func(node);
-            break;
-        case ast_type::var_decl:
-            generate_var(node);
-            break;
-        case ast_type::while_stmt:
-            generate_while_stmt(node);
-            break;
-        case ast_type::if_stmt:
-            generate_if_stmt(node);
-            break;
-        case ast_type::return_stmt:
-            generate_return_stmt(node);
-            break;
-        case ast_type::asm_stmt:
-            generate_asm_stmt(node);
-            break;
-        case ast_type::index_expr:
-            generate_index_expr(node);
-            break;
-        case ast_type::call_expr:
-            generate_call_expr(node);
-            break;
-        case ast_type::binary_expr:
-            generate_binary_expr(node);
-            break;
-        case ast_type::unary_expr:
-            generate_unary_expr(node);
-            break;
-        case ast_type::identifier:
-            generate_identifier(node);
-            break;
-        case ast_type::int_literal:
-        case ast_type::bool_literal:
-            generate_int_literal(node);
-            break;
-        case ast_type::char_literal:
-            generate_char_literal(node);
-            break;
-        case ast_type::string_literal:
-            generate_string_literal(node);
-            break;
-        case ast_type::stmt_list:
-            for (auto& child : node.children) {
-                if (child) {
-                    generate_node(*child);
-                    discard_expr();
-                }
-            }
-            break;
-        default:
-            for (auto& child : node.children) {
-                if (child) {
-                    generate_node(*child);
-                }
-            }
-        }
+        em->end_func();
     }
 
     void generate_func(ast_node& node) {
@@ -1023,10 +701,9 @@ struct generator {
     }
 };
 
-void codegen(ast_node& node, type_system* ts, std::string_view filename) {
+void codegen(ir_program& prog, type_system* ts, std::string_view filename) {
     generator gen{std::make_unique<emitter>(filename), ts, filename};
-    gen.pre_analysis(node);
-    gen.generate_program(node);
+    gen.generate_program(prog);
 }
 
 }

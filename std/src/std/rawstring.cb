@@ -69,11 +69,13 @@ func test_longfunc() {
 
 func test_strcopy_len() {
     var r : *range[int];
+    var b : *range[int];
+
     r.start = 3;
-    r.end = r.start;
+    b.end = r.start;
 
     let str = "hello";
-    let newstr = str;
+    let newstr = str.copy;
 
     if (str.len == newstr.len) {
         println("test_strcopy_len: OK");
