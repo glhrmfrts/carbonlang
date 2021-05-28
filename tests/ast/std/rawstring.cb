@@ -166,7 +166,8 @@ compound_stmt{
         var_decl{
           identifier{"d"}
           :type_expr{
-            identifier{"char"}}})
+            type_qualifier{pointer,
+              identifier{"char"}}}})
 compound_stmt{
         stmt_list{
           call_expr{
@@ -241,6 +242,8 @@ compound_stmt{
       identifier{"test_longfunc"}
       arg_list()
 compound_stmt{
+        stmt_list{
+          }
         decl_list{
           var_decl{
             identifier{"result"}

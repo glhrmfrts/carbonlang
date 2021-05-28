@@ -955,8 +955,8 @@ struct generator {
     }
 
     void generate_identifier(ast_node& node) {
-        if (node.lvalue.symbol.kind == symbol_kind::local) {
-            auto local = node.lvalue.symbol.scope->local_defs[node.lvalue.symbol.local_index];
+        if (node.lvalue.symbol->kind == symbol_kind::local) {
+            auto local = node.lvalue.symbol->scope->local_defs[node.lvalue.symbol->local_index];
             auto op = toop(adjust_for_type(local_var_destination(*local), node.type_id));
             push_operand(op, [this, &node, op](auto&& dest, auto&&) {
                 move(adjust_for_type(dest, node.type_id), op, node.type_id);

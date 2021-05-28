@@ -159,7 +159,7 @@ struct symbol_info {
 
 struct lvalue {
     ast_node* self = nullptr;
-    symbol_info symbol{};
+    symbol_info* symbol;
 };
 
 struct call_info {
@@ -184,6 +184,11 @@ struct range_info {
     ast_node* self;
     ast_node* start_node;
     ast_node* end_node;
+};
+
+struct init_list {
+    ast_node* receiver;
+    std::vector<arena_ptr<ast_node>> assignments{};
 };
 
 struct scope_import {

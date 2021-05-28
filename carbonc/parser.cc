@@ -188,6 +188,8 @@ struct parser_impl {
         }
 
         switch (TOK) {
+        case token_type::for_:
+            return parse_for_stmt();
         case token_type::while_:
             return parse_while_stmt();
         case token_type::if_:
@@ -297,6 +299,8 @@ struct parser_impl {
 
                 if (TOK == token_type::in_) {
                     lex->next();
+                    ids->children.push_back(std::move(expr));
+
                     iter = parse_expr();
                     if (!iter) {
                         throw parse_error(filename, lex->pos(), "expecting an expression after 'in' in for statement");

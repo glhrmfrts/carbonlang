@@ -138,6 +138,19 @@ void distribute_bool_op_targets(ast_node& node, const std::string& true_label, c
     }
 }
 
+void send_locals_to_func_scope(ast_node& node) {
+    auto fscope = ts->find_nearest_scope(scope_kind::func_body);
+    auto scope = &node.scope;
+    for (auto& sym : scope->symbols) {
+        if (sym.second->kind == symbol_kind::local) {
+            auto local = scope->local_defs[sym.second->local_index];
+            sym.second->scope = fscope;
+            sym.second->local_index = fscope->local_defs.size();
+            fscope->local_defs.push_back(local);
+        }
+    }
+}
+
 void analyse_children(ast_node& node) {
     for (auto& child : node.pre_children) {
         if (child) { analyse_node(*child); }
@@ -161,6 +174,22 @@ void analyse_node(ast_node& node) {
         }
         break;
     }
+    case ast_type::for_stmt: {
+        auto scope = ts->find_nearest_scope(scope_kind::func_body);
+        auto& funcname = scope->self->type_def.mangled_name.str;
+
+        node.ir.if_body_label = funcname + "$f" + std::to_string(node.node_id) + "$body";
+        node.ir.if_end_label = funcname + "$f" + std::to_string(node.node_id) + "$end";
+        node.ir.while_cond_label = funcname + "$f" + std::to_string(node.node_id) + "$cond";
+
+        distribute_bool_op_targets(*node.forinfo.compare_elem_to_range_end, node.ir.if_body_label, node.ir.if_end_label);
+
+        ts->enter_scope(node);
+        send_locals_to_func_scope(node);
+        analyse_node(*node.children[2]);
+        ts->leave_scope();
+        break;
+    }
     case ast_type::while_stmt: {
         auto scope = ts->find_nearest_scope(scope_kind::func_body);
         auto& funcname = scope->self->type_def.mangled_name.str;
@@ -171,7 +200,10 @@ void analyse_node(ast_node& node) {
 
         distribute_bool_op_targets(*node.children[0], node.ir.if_body_label, node.ir.if_end_label);
 
-        analyse_children(node);
+        ts->enter_scope(node);
+        send_locals_to_func_scope(node);
+        analyse_node(*node.children[1]);
+        ts->leave_scope();
         break;
     }
     case ast_type::if_stmt: {
@@ -187,7 +219,17 @@ void analyse_node(ast_node& node) {
 
         distribute_bool_op_targets(*node.children[0], node.ir.if_body_label, node.ir.if_else_label);
 
+        ts->enter_scope(node);
+        send_locals_to_func_scope(node);
         analyse_children(node);
+        ts->leave_scope();
+        break;
+    }
+    case ast_type::compound_stmt: {
+        ts->enter_scope(node);
+        send_locals_to_func_scope(node);
+        analyse_children(node);
+        ts->leave_scope();
         break;
     }
     case ast_type::call_expr: {
@@ -316,6 +358,29 @@ void generate_ir_func(ast_node& node) {
         }
     }
     ts->leave_scope();
+}
+
+void generate_for_stmt(ast_node& node) {
+    // assign elem to starting value
+    generate_ir_node(*node.forinfo.declare_for_iter);
+    generate_ir_node(*node.forinfo.assign_elem_to_range_start);
+
+    // check if the elem is still inside the range
+    emit(ir_make_label, ir_label{ node.ir.while_cond_label });
+    generate_ir_node(*node.forinfo.compare_elem_to_range_end);
+
+    // evaluate the body
+    emit(ir_make_label, ir_label{ node.ir.if_body_label });
+    generate_ir_node(*node.children[2]);
+
+    // increase the elem
+    generate_ir_node(*node.forinfo.increase_elem);
+
+    // jump to elem < range.end
+    emit(ir_jmp, ir_label{ node.ir.while_cond_label });
+
+    // end
+    emit(ir_make_label, ir_label{ node.ir.if_end_label });
 }
 
 void generate_while_stmt(ast_node& node) {
@@ -507,12 +572,23 @@ void generate_ir_unary_expr(ast_node& node) {
 void generate_ir_var(ast_node& node) {
     if (node.local.value_node) {
         generate_ir_node(*node.local.value_node);
-        emit(ir_load, ir_local{ node.local.ir_index }, pop());
+
+        if (node.local.value_node->type_id.get().kind != type_kind::structure &&
+            node.local.value_node->type_id.get().kind != type_kind::tuple) {
+
+            emit(ir_load, ir_local{ node.local.ir_index }, pop());
+        }
+    }
+}
+
+void generate_ir_init_expr(ast_node& node) {
+    for (auto& assign : node.initlist.assignments) {
+        generate_ir_node(*assign);
     }
 }
 
 void generate_ir_identifier(ast_node& node) {
-    auto local = node.lvalue.symbol.scope->local_defs[node.lvalue.symbol.local_index];
+    auto local = node.lvalue.symbol->scope->local_defs[node.lvalue.symbol->local_index];
     if (local->is_argument) {
         push(ir_arg{ local->ir_index });
     }
@@ -551,6 +627,9 @@ void generate_ir_node(ast_node& node) {
     case ast_type::var_decl:
         generate_ir_var(node);
         break;
+    case ast_type::for_stmt:
+        generate_for_stmt(node);
+        break;
     case ast_type::while_stmt:
         generate_while_stmt(node);
         break;
@@ -577,6 +656,9 @@ void generate_ir_node(ast_node& node) {
         break;
     case ast_type::unary_expr:
         generate_ir_unary_expr(node);
+        break;
+    case ast_type::init_expr:
+        generate_ir_init_expr(node);
         break;
     case ast_type::identifier:
         generate_ir_identifier(node);

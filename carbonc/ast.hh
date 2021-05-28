@@ -117,6 +117,7 @@ struct ast_node {
     for_info forinfo;
     range_info range;
     field_access field;
+    init_list initlist;
     bool type_error = false;
 
     ir_node_data ir;
