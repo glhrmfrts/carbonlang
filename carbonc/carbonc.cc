@@ -119,13 +119,14 @@ int run_project_mode() {
     }
 
     auto irprog = generate_ir(ts, *target_node);
+    exit(0);
 
     ensure_directory_exists("../_carbon/build/std.asm");
 
     {
         auto ctimebegin = std::chrono::system_clock::now();
         std::cout << "carbonc - generating: std.asm " << "\n";
-        codegen(*target_node, &ts, "../_carbon/build/std.asm");
+        //codegen(*target_node, &ts, "../_carbon/build/std.asm");
         auto cdur = std::chrono::system_clock::now() - ctimebegin;
         std::cout << "carbonc - code generation time: " << std::chrono::duration_cast<std::chrono::milliseconds>(cdur).count() << "ms\n\n";
     }

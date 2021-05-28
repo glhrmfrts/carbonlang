@@ -676,7 +676,7 @@ struct parser_impl {
             }
             lex->next();
 
-            auto value = parse_call_or_index_or_field_expr();
+            auto value = parse_init_expr();
             if (!value) {
                 throw parse_error(filename, lex->pos(), "invalid cast expression");
             }
@@ -684,12 +684,38 @@ struct parser_impl {
             return make_cast_expr_node(*ast_arena, pos, std::move(type_expr), std::move(value));
         }
 
-        return parse_call_or_index_or_field_expr();
+        return parse_init_expr();
+    }
+
+    arena_ptr<ast_node> parse_init_expr() {
+        auto pos = lex->pos();
+        auto init_type = parse_call_or_index_or_field_expr();
+        if (init_type) {
+            if ((init_type->type == ast_type::identifier)) {
+                if (TOK_CHAR == '{') {
+                    auto the_type = make_type_expr_node(*ast_arena, init_type->pos, std::move(init_type));
+                    return parse_init_list_expr(std::move(the_type));
+                }
+            }
+            else if (init_type->type == ast_type::index_expr) { // separated for debugging
+                if (TOK_CHAR == '{') {
+                    auto the_type = make_type_expr_node(*ast_arena, init_type->pos, std::move(init_type));
+                    return parse_init_list_expr(std::move(the_type));
+                }
+            }
+        }
+        else {
+            auto try_type = parse_type_expr(true);
+            if (try_type && TOK_CHAR == '{') {
+                return parse_init_list_expr(std::move(try_type));
+            }
+        }
+        return init_type;
     }
 
     arena_ptr<ast_node> parse_call_or_index_or_field_expr() {
         auto pos = lex->pos();
-        auto expr = parse_init_expr();
+        auto expr = parse_primary_expr();
         while (TOK_CHAR == '(' || TOK_CHAR == '[' || TOK_CHAR == '.') {
             if (TOK_CHAR == '(') {
                 auto arg_list = parse_arg_list(')', [this]() {
@@ -721,25 +747,12 @@ struct parser_impl {
         return expr;
     }
 
-    arena_ptr<ast_node> parse_init_expr() {
-        auto pos = lex->pos();
-        auto init_type = parse_primary_expr();
-        if (init_type) {
-            if (init_type->type == ast_type::identifier && TOK_CHAR == '{') {
-                return parse_init_list_expr(std::move(init_type));
-            }
-        }
-        else {
-            auto try_type = parse_type_expr(true);
-            if (try_type && TOK_CHAR == '{') {
-                return parse_init_list_expr(std::move(try_type));
-            }
-        }
-        return init_type;
-    }
-
     arena_ptr<ast_node> parse_primary_expr() {
         switch (lex->current()) {
+        case token_type::nil: {
+            scope_guard _{[this]() { lex->next(); }};
+            return make_nil_literal_node(*ast_arena, lex->pos());
+        }
         case token_type::bool_literal_true:
         case token_type::bool_literal_false: {
             scope_guard _{[this]() { lex->next(); }};

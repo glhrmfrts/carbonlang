@@ -1,0 +1,174 @@
+// test stuff
+
+import std::io;
+import std::rawstring;
+import std::memory as mem;
+import std::libc::stdio;
+import std::libc::stdlib;
+
+func print_the_char(v: char, d: *char) {
+    puts(&v);
+}
+
+func longfunc(a: int, b: int, c: int, d: int, e: int, f: int, g: int, h: int): int {
+    return a + b + c + d + e + f + g + h;
+}
+
+func test_longfunc() {
+    let result = longfunc(1, 2, 3, 4, 5, 6, 7, 8);
+    if (result == 36) {
+        println("test_longfunc: OK");
+    }
+    else {
+        println("test_longfunc: NOK");
+    }
+}
+
+func test_strcopy_len() {
+    let str = "hello";
+    let newstr = str.copy;
+
+    if (str.len == newstr.len) {
+        println("test_strcopy_len: OK");
+    }
+    else {
+        println("test_strcopy_len: NOK");
+    }
+
+    mem::dealloc(cast[raw_ptr] newstr);
+}
+
+func test_strcopy() {
+    let str = "hello";
+    let newstr = copy(str);
+    
+    if (str[0] == newstr[0] && str[1] == newstr[1] && str[2] == newstr[2] && str[3] == newstr[3] && str[4] == newstr[4]) {
+        println("test_strcopy: OK");
+    }
+    else {
+        println("test_strcopy: NOK");
+    }
+
+    mem::dealloc(cast[raw_ptr] newstr);
+}
+
+func test_strcopy_saving() {
+    let str = "hello";
+    let newstr = copy(str);
+
+    let c1 = str[0] == newstr[0];
+    let c2 = str[1] == newstr[1];
+    let c3 = str[2] == newstr[2];
+    let c4 = str[3] == newstr[3];
+    let c5 = str[4] == newstr[4];
+
+    if (c1 && c2 && c3 && c4 && c5) {
+        println("test_strcopy_saving: OK");
+    }
+    else {
+        println("test_strcopy_saving: NOK");
+    }
+    
+    mem::dealloc(cast[raw_ptr] newstr);
+}
+
+func test_while_statement() {
+    let str = "hello";
+    let newstr = copy(str);
+
+    var i = 0;
+    while (i < 5) {
+        newstr[i] = 'G';
+        i = i + 1;
+    }
+
+    println(newstr);
+
+    if (i < 5) {
+        println("asdasd");
+    }
+
+    if (equals(newstr, "GGGGG") && !equals(newstr, "foobar")) {
+        println("test_while_statement: OK");
+    }
+    else {
+        println("test_while_statement: NOK");
+    }
+    
+    mem::dealloc(cast[raw_ptr] newstr);
+}
+
+func test_short(): bool {
+    println("SHOULD NOT PRINT THIS");
+    return true;
+}
+
+func test_for_stmt() {
+    let newstr = "helloworld".copy;
+    for (i in 0 .. newstr.len) {
+        let c = '0' + cast[int8] i;
+        newstr[i] = c;
+    }
+    if (equals(newstr, "0123456789")) {
+        println(newstr);
+        println("test_for_stmt: OK");
+    }
+    else {
+        println("test_for_stmt: NOK");
+    }
+    mem::dealloc(cast[raw_ptr] newstr);
+}
+
+func test_struct_zeroinit() {
+    var a: range[int];
+    var b: range[int] = {};
+
+    if ((a.start == 0 && a.end == 0) && (b.start == 0 && b.end == 0)) {
+        println("test_struct_init: OK");
+    }
+    else {
+        println("test_struct_init: NOK");
+    }
+}
+
+func test_struct_init() {
+    let a: range[int] = { 3, 5 };
+    let b: range[int] = { 24*7+2, a.end };
+    let c = range[int]{ b.start*3*9, b.end*2*2 };
+
+    if ((a.start == 3 && a.end == 5) && (b.start == 24*7+2 && b.end == a.end) && (c.start == b.start*3*9 && c.end && b.end*2*2)) {
+        println("test_struct_init: OK");
+    }
+    else {
+        println("test_struct_init: NOK");
+    }
+}
+
+func main(): int {
+    let text = "hello world";
+    let newtext = copy(text);
+    *newtext = 'K';
+    newtext[6] = 'G';
+    if ((len(newtext) == 11 || test_short()) && (4*9*9) >= 7) {
+        println(text);
+        println(newtext);
+    }
+
+    let ok = len(newtext) > 10 && 3 > 5;
+    if (ok) {
+        println("it's ok\n\n");
+    }
+
+    test_longfunc();
+    test_strcopy_len();
+    test_strcopy();
+    test_strcopy_saving();
+    test_while_statement();
+    test_for_stmt();
+    test_struct_zeroinit();
+    test_struct_init();
+
+    mem::dealloc(cast[raw_ptr] newtext);
+
+    return 0;
+}

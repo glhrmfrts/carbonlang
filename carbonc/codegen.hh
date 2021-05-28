@@ -1,9 +1,9 @@
 #pragma once
 
-#include "ast.hh"
+#include "ir.hh"
 
 namespace carbon {
 
-void codegen(ast_node& node, type_system* ts, std::string_view filename);
+void codegen(ir_program& prog, type_system* ts, std::string_view filename);
 
 }

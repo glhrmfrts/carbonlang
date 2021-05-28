@@ -4,6 +4,14 @@ namespace carbon {
 
 static std::size_t node_id_gen = 0;
 
+arena_ptr<ast_node> make_nil_literal_node(memory_arena& arena, const position& pos) {
+    auto ptr = make_in_arena<ast_node>(arena);
+    ptr->node_id = node_id_gen++;
+    ptr->type = ast_type::nil_literal;
+    ptr->pos = pos;
+    return std::move(ptr);
+}
+
 arena_ptr<ast_node> make_bool_literal_node(memory_arena& arena, const position& pos, bool value) {
     auto ptr = make_in_arena<ast_node>(arena);
     ptr->node_id = node_id_gen++;

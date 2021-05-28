@@ -437,10 +437,10 @@ void generate_ir_field_expr(ast_node& node) {
     
     if (node.field.needs_deref) {
         emit(ir_deref, a);
-        push(ir_offset{ ir_stack{ node.field.struct_node->type_id.get().elem_type }, node.field.field_offset });
+        push(ir_field{ ir_stack{ node.field.struct_node->type_id.get().elem_type }, node.field.field_index });
     }
     else {
-        push(ir_offset{ toref(a), node.field.field_offset });
+        push(ir_field{ toref(a), node.field.field_index });
     }
 }
 
@@ -709,10 +709,10 @@ void print_opr(std::ofstream& f, ir_operand& opr) {
     if (auto lab = std::get_if<ir_label>(&opr); lab) {
         f << lab->name;
     }
-    if (auto arg = std::get_if<ir_offset>(&opr); arg) {
+    if (auto arg = std::get_if<ir_field>(&opr); arg) {
         f << "[";
         print_ref(f, arg->ref);
-        f << " " << arg->offset << "]";
+        f << " . " << arg->field_index << "]";
     }
     if (auto arg = std::get_if<ir_arg>(&opr); arg) {
         f << "A" << arg->index;
@@ -793,7 +793,6 @@ ir_program generate_ir(type_system& tsystem, ast_node& program_node) {
     }
 
     print_ir();
-    exit(0);
 
     prog = nullptr;
     ts = nullptr;

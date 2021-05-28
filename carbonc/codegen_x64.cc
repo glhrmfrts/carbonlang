@@ -71,7 +71,7 @@ void find_max_call_arg_size(ir_func& func, std::int32_t& sz) {
         if (inst.op == ir_call) {
             std::int32_t args_size = 0;
             for (auto& arg : inst.operands) {
-                auto& tdef = get_operand_type(arg);
+                //auto& tdef = get_operand_type(arg);
                 std::int32_t asize = 8;// std::min(8, std::int32_t(tdef.size));
                 args_size += asize;
                 args_size = align(args_size, 8);//align(args_size, std::int32_t(tdef.alignment));
@@ -226,6 +226,7 @@ struct generator {
         em->end_func();
     }
 
+#if 0
     void generate_func(ast_node& node) {
         if (!node.scope.body_node) return;
 
@@ -699,6 +700,7 @@ struct generator {
             em->mov(dest, toop(arax));
         }
     }
+#endif
 };
 
 void codegen(ir_program& prog, type_system* ts, std::string_view filename) {

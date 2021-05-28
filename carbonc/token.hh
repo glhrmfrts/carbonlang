@@ -42,6 +42,7 @@ enum class token_type : unsigned int {
     while_,
     coloncolon,
     dotdot,
+    nil,
 };
 
 struct position {

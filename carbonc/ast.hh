@@ -13,6 +13,7 @@ namespace carbon {
 
 enum class ast_type {
     invalid,
+    nil_literal,
     bool_literal,
     float_literal,
     int_literal,
@@ -122,6 +123,8 @@ struct ast_node {
 
     ir_node_data ir;
 };
+
+arena_ptr<ast_node> make_nil_literal_node(memory_arena& arena, const position& pos);
 
 arena_ptr<ast_node> make_bool_literal_node(memory_arena& arena, const position& pos, bool value);
 

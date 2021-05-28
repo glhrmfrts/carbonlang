@@ -236,7 +236,7 @@ struct field_access {
     ast_node* self;
     ast_node* struct_node;
     ast_node* field_node;
-    std::size_t field_offset;
+    int field_index;
     bool needs_deref;
     bool is_optional;
 };
@@ -280,6 +280,7 @@ struct type_system {
     type_id uintptr_type{};
     type_id ptrdiff_type{};
     type_id bool_type{};
+    type_id raw_string_type{};
 
     type_constructor* ptr_type_constructor;
     type_constructor* mutable_ptr_type_constructor;

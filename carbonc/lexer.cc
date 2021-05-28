@@ -137,6 +137,9 @@ struct lexer_impl {
             if (!std::strcmp("for", l.string)) {
                 return token_type::for_;
             }
+            if (!std::strcmp("nil", l.string)) {
+                return token_type::nil;
+            }
             break;
         case 4:
             if (!std::strcmp("func", l.string)) {
