@@ -63,6 +63,7 @@ int find_or_add_global_string_data(std::string data) {
     auto it = string_map.find(data);
     if (it == string_map.end()) {
         int i = prog->strings.size();
+        string_map[data] = i;
         prog->strings.push_back(std::move(data));
         return i;
     }
@@ -486,13 +487,15 @@ void generate_ir_addr_expr(ast_node& node) {
 }
 
 void generate_ir_assignment(ast_node& node) {
-    generate_ir_node(*node.children[0]);
-    auto dest = pop();
+    if (node.children[0] && node.children[1]) {
+        generate_ir_node(*node.children[0]);
+        auto dest = pop();
 
-    generate_ir_node(*node.children[1]);
-    auto src = pop();
+        generate_ir_node(*node.children[1]);
+        auto src = pop();
 
-    emit(ir_load, dest, src);
+        emit(ir_load, dest, src);
+    }
 }
 
 void generate_ir_binary_expr(ast_node& node) {
@@ -573,10 +576,8 @@ void generate_ir_unary_expr(ast_node& node) {
 void generate_ir_var(ast_node& node) {
     if (node.local.value_node) {
         generate_ir_node(*node.local.value_node);
-
-        if (node.local.value_node->type_id.get().kind != type_kind::structure &&
-            node.local.value_node->type_id.get().kind != type_kind::tuple) {
-
+        
+        if (!is_aggregate_type(node.local.value_node->type_id)) {
             emit(ir_load, ir_local{ node.local.ir_index }, pop());
         }
     }
@@ -600,7 +601,8 @@ void generate_ir_identifier(ast_node& node) {
 
 void generate_ir_string_literal(ast_node& node) {
     int index = find_or_add_global_string_data(std::string{node.string_value});
-    push(ir_string{index});
+    emit(ir_load_addr, ir_string{index});
+    push(ir_stack{ ts->raw_string_type });
 }
 
 void generate_ir_int_literal(ast_node& node) {

@@ -31,6 +31,8 @@ struct lexer_impl {
     std::string filename;
     stb_lexer l;
     token_type tok;
+    token_type saved_token;
+    char* saved_parse_point;
 
     explicit lexer_impl(std::string_view _src, std::string fn) : src{ _src }, filename{ fn } {
         stb_c_lexer_init(&l, src.data(), src.data() + src.size(), store.data(), store.size());
@@ -97,6 +99,24 @@ struct lexer_impl {
         if (end != nullptr) {
             long_string.append(begin, end - begin);
         }
+    }
+
+    char* parse_point() const {
+        return l.parse_point;
+    }
+
+    void set_parse_point(char* pp) {
+        l.parse_point = pp;
+    }
+
+    void save() {
+        saved_parse_point = l.parse_point;
+        saved_token = current();
+    }
+
+    void restore() {
+        l.parse_point = saved_parse_point;
+        tok = saved_token;
     }
 
     token_type transform_c_lexer_token(int ct) const {
@@ -193,6 +213,11 @@ struct lexer_impl {
                 return token_type::internal_;
             }
             break;
+        case 10:
+            if (!std::strcmp("nullrawptr", l.string)) {
+                return token_type::nullrawptr;
+            }
+            break;
         }
         return token_type::identifier;
     }
@@ -230,6 +255,14 @@ token_type lexer::next() { return _impl->next(); }
 void lexer::advance_char(std::size_t count) { _impl->advance_char(count); }
 
 void lexer::consume_string_until(const char* chars) { _impl->consume_string_until(chars); }
+
+char* lexer::parse_point() const { return _impl->parse_point(); }
+
+void lexer::set_parse_point(char* pp) { _impl->set_parse_point(pp); }
+
+void lexer::save() { _impl->save(); }
+
+void lexer::restore() { _impl->restore(); }
 
 std::string lexer::string_value() { return _impl->string_value(); }
 

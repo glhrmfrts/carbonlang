@@ -25,12 +25,12 @@ Carbon is a statically-strongly-typed programming language.
 - [X] if statements
 - [X] while statements
 - [X] for statement (range-based)
-- [ ] blocks as scopes
+- [X] blocks as scopes
 - [ ] structs / tuples
 - [ ] arrays
-- [ ] for statement (array-based)
 - [ ] user types
 - [ ] defer statements
+- [ ] for statement (array-based)
 - [ ] owner / reference types (?)
 - [ ] global vars (?)
 - [ ] more/better type checking and errors
@@ -39,6 +39,7 @@ Carbon is a statically-strongly-typed programming language.
 - [ ] integrate linking process
 - [ ] codegen: linux x64
 - [ ] codegen: linux ARM64
+- [ ] user type constructors
 - [ ] std library design
 - [ ] rewrite compiler / self-hosting
 

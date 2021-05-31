@@ -24,6 +24,7 @@ enum class func_linkage {
 };
 
 enum class type_qualifier {
+    new_,
     optional,
     pointer,
     mutable_pointer,
@@ -31,6 +32,7 @@ enum class type_qualifier {
 
 enum class type_kind {
     void_,
+    new_,
     pointer,
     mutable_pointer,
     optional,
@@ -65,9 +67,11 @@ struct type_flags {
 };
 
 struct struct_field {
-    std::string name;
+    std::vector<std::string> names;
     type_id type;
     std::size_t offset;
+
+    bool operator ==(const struct_field& other) const { return names == other.names && type == other.type && offset == other.offset; }
 };
 
 using type_constructor_arg = std::variant<type_id, ast_node*>;
@@ -285,7 +289,9 @@ struct type_system {
     type_constructor* ptr_type_constructor;
     type_constructor* mutable_ptr_type_constructor;
     type_constructor* optional_type_constructor;
+    type_constructor* new_type_constructor;
     type_constructor* range_type_constructor;
+    type_constructor* tuple_type_constructor;
 
     explicit type_system(memory_arena&);
 
@@ -305,5 +311,7 @@ struct type_system {
 
     void create_temp_variable_for_call_arg(ast_node& node, ast_node& arg, int idx);
 };
+
+bool is_aggregate_type(type_id tid);
 
 }

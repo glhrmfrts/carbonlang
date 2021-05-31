@@ -74,14 +74,12 @@ struct parser_impl {
             }
         }
         else if (TOK_CHAR == '@') {
-            /*
             lex->next();
 
             auto to_type = parse_type_expr(false, true); // no wrap
             if (to_type) {
-                result = make_type_qualifier_node(*ast_arena, pos, type_qualifier::owner, std::move(to_type));
+                result = make_type_qualifier_node(*ast_arena, pos, type_qualifier::new_, std::move(to_type));
             }
-            */
         }
         else if (TOK == token_type::identifier) {
             result = make_identifier_node(*ast_arena, lex->pos(), { lex->string_value() });
@@ -123,19 +121,38 @@ struct parser_impl {
             scope_guard _{ [this]() { ctx_stack.pop();  } };
 
             field_list = parse_arg_list('}', [this, &mode]() {
-                if (TOK_CHAR == ':' && mode != STRUCT) {
-                    mode = TUPLE;
-                    lex->next();
-                    return parse_type_expr();
-                }
-                else if (mode != TUPLE && TOK == token_type::identifier) {
-                    mode = STRUCT;
-                    return parse_var_decl(token_type::let);
+                if (TOK_CHAR == '}') {
+                    // we might get here if we have a trailing comma
+                    return arena_ptr<ast_node>{nullptr, nullptr};
                 }
 
-                // we might get here if we have a trailing comma
-                if (TOK_CHAR != '}') {
-                    throw parse_error(filename, lex->pos(), "unexpected struct or tuple field");
+                if (mode == UNDEFINED) {
+                    if (TOK != token_type::identifier) {
+                        auto type_expr = parse_type_expr();
+                        mode = TUPLE;
+                        return type_expr;
+                    }
+                    else {
+                        // lookahead 1 token
+                        lex->save();
+                        lex->next();
+                        if (TOK_CHAR == ':') {   
+                            lex->restore();
+                            mode = STRUCT;
+                            return parse_var_decl(token_type::let);
+                        }
+                        else {
+                            lex->restore();
+                            mode = TUPLE;
+                            return parse_type_expr();
+                        }
+                    }
+                }
+                else if (mode == TUPLE) {
+                    return parse_type_expr();
+                }
+                else if (mode == STRUCT) {
+                    return parse_var_decl(token_type::let);
                 }
             });
         }
@@ -611,7 +628,7 @@ struct parser_impl {
             lex->next();
             value = parse_expr();
         } else if (kind != token_type::var && (ctx() == parse_context::root)) {
-            throw parse_error(filename, lex->pos(), "expected initial value in let declaration");
+            //throw parse_error(filename, lex->pos(), "expected initial value in let declaration");
         }
 
         return make_var_decl_node(*ast_arena, pos, kind, std::move(id), std::move(var_type), std::move(value));
@@ -689,28 +706,14 @@ struct parser_impl {
 
     arena_ptr<ast_node> parse_init_expr() {
         auto pos = lex->pos();
-        auto init_type = parse_call_or_index_or_field_expr();
-        if (init_type) {
-            if ((init_type->type == ast_type::identifier)) {
-                if (TOK_CHAR == '{') {
-                    auto the_type = make_type_expr_node(*ast_arena, init_type->pos, std::move(init_type));
-                    return parse_init_list_expr(std::move(the_type));
-                }
+        if (TOK_CHAR == '@') {
+            auto init_type = parse_type_expr();
+            if (!init_type) {
+                throw parse_error(filename, lex->pos(), "expecting type expression in initializer");
             }
-            else if (init_type->type == ast_type::index_expr) { // separated for debugging
-                if (TOK_CHAR == '{') {
-                    auto the_type = make_type_expr_node(*ast_arena, init_type->pos, std::move(init_type));
-                    return parse_init_list_expr(std::move(the_type));
-                }
-            }
+            return parse_init_list_expr(std::move(init_type));
         }
-        else {
-            auto try_type = parse_type_expr(true);
-            if (try_type && TOK_CHAR == '{') {
-                return parse_init_list_expr(std::move(try_type));
-            }
-        }
-        return init_type;
+        return parse_call_or_index_or_field_expr();
     }
 
     arena_ptr<ast_node> parse_call_or_index_or_field_expr() {

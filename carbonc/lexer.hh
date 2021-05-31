@@ -23,6 +23,14 @@ struct lexer {
 
     void consume_string_until(const char* chars);
 
+    char* parse_point() const;
+
+    void set_parse_point(char* pp);
+
+    void save();
+
+    void restore();
+
     std::string string_value();
 
     std::string long_string_value();

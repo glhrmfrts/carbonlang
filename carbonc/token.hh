@@ -43,6 +43,7 @@ enum class token_type : unsigned int {
     coloncolon,
     dotdot,
     nil,
+    nullrawptr,
 };
 
 struct position {

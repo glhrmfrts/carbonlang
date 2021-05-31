@@ -41,7 +41,7 @@ func test_strcopy_len() {
 func test_strcopy() {
     let str = "hello";
     let newstr = copy(str);
-    
+
     if (str[0] == newstr[0] && str[1] == newstr[1] && str[2] == newstr[2] && str[3] == newstr[3] && str[4] == newstr[4]) {
         println("test_strcopy: OK");
     }
@@ -134,13 +134,37 @@ func test_struct_zeroinit() {
 func test_struct_init() {
     let a: range[int] = { 3, 5 };
     let b: range[int] = { 24*7+2, a.end };
-    let c = range[int]{ b.start*3*9, b.end*2*2 };
+    let c = range[int] { b.start*3*9, b.end*2*2 };
 
     if ((a.start == 3 && a.end == 5) && (b.start == 24*7+2 && b.end == a.end) && (c.start == b.start*3*9 && c.end && b.end*2*2)) {
         println("test_struct_init: OK");
     }
     else {
         println("test_struct_init: NOK");
+    }
+}
+
+func test_tuple_zeroinit() {
+    var a: {int, int};
+    var b: {raw_string, bool};
+
+    if ((a[0] == 0 && a.second == 0) && (b[0] == "" && b[1] == false)) {
+        println("test_tuple_zeroinit: OK");
+    }
+    else {
+        println("test_tuple_zeroinit: NOK");
+    }
+}
+
+func test_tuple_init() {
+    let a = {3, 4, 5};
+    let b = {"nice", "second", false, a};
+
+    if ((a[0] == 0 && a.second == 0) && (b[0] == "" && b[1] == false)) {
+        println("test_tuple_zeroinit: OK");
+    }
+    else {
+        println("test_tuple_zeroinit: NOK");
     }
 }
 
@@ -167,6 +191,7 @@ func main(): int {
     test_for_stmt();
     test_struct_zeroinit();
     test_struct_init();
+    test_tuple_zeroinit();
 
     mem::dealloc(cast[raw_ptr] newtext);
 
