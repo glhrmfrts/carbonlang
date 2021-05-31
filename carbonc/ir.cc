@@ -488,13 +488,18 @@ void generate_ir_addr_expr(ast_node& node) {
 
 void generate_ir_assignment(ast_node& node) {
     if (node.children[0] && node.children[1]) {
-        generate_ir_node(*node.children[0]);
-        auto dest = pop();
+        if (is_aggregate_type(node.type_id) && node.children[1]->type == ast_type::init_expr) {
+            generate_ir_node(*node.children[1]);
+        }
+        else {
+            generate_ir_node(*node.children[0]);
+            auto dest = pop();
 
-        generate_ir_node(*node.children[1]);
-        auto src = pop();
+            generate_ir_node(*node.children[1]);
+            auto src = pop();
 
-        emit(ir_load, dest, src);
+            emit(ir_load, dest, src);
+        }
     }
 }
 
@@ -577,7 +582,7 @@ void generate_ir_var(ast_node& node) {
     if (node.local.value_node) {
         generate_ir_node(*node.local.value_node);
         
-        if (!is_aggregate_type(node.local.value_node->type_id)) {
+        if (!(is_aggregate_type(node.local.value_node->type_id) && node.local.value_node->type == ast_type::init_expr)) {
             emit(ir_load, ir_local{ node.local.ir_index }, pop());
         }
     }

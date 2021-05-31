@@ -134,6 +134,7 @@ struct local_def {
     ast_node* type_node = nullptr;
     ast_node* value_node = nullptr;
     bool is_argument = false;
+    bool is_temp = false;
     int arg_index = 0; // if is_argument
     ast_node* arg_func_node = nullptr; // if is_argument
     std::int32_t frame_offset = 0;

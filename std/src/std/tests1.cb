@@ -145,6 +145,23 @@ func test_struct_init() {
     }
 }
 
+func test_struct_assignment_lvalue() {
+    let a: range[int] = { 3, 5 };
+    let b: range[int] = a;
+    var c: range[int];
+    
+    let ok = a.start == b.start && a.end == b.end;
+
+    c = b;
+
+    if (ok && c.start == b.start && c.end == b.end) {
+        println("test_struct_assignment_lvalue: OK");
+    }
+    else {
+        println("test_struct_assignment_lvalue: NOK");
+    }
+}
+
 func test_tuple_zeroinit() {
     var a: {int, int};
     var b: {raw_string, bool};
@@ -192,6 +209,7 @@ func main(): int {
     test_for_stmt();
     test_struct_zeroinit();
     test_struct_init();
+    test_struct_assignment_lvalue();
     test_tuple_zeroinit();
     test_tuple_init();
 

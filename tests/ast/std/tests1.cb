@@ -359,6 +359,46 @@ compound_stmt{
         stmt_list{
           }}}
     func_decl{
+      identifier{"test_struct_assignment_lvalue"}
+      arg_list()
+compound_stmt{
+        decl_list{
+          var_decl{
+            identifier{"a"}
+            :type_expr{
+              }
+            =init_expr{
+              arg_list(
+                int_literal{3}
+                int_literal{5})}}
+          var_decl{
+            identifier{"b"}
+            :type_expr{
+              }
+            =identifier{"a"}}
+          var_decl{
+            identifier{"c"}
+            :type_expr{
+              }}
+          var_decl{
+            identifier{"ok"}
+            =binary_expr{
+              binary_expr{
+                
+                
+                }
+              	
+              binary_expr{
+                
+                
+                }}}}
+        stmt_list{
+          binary_expr{
+            identifier{"c"}
+            =
+            identifier{"b"}}
+          }}}
+    func_decl{
       identifier{"test_tuple_zeroinit"}
       arg_list()
 compound_stmt{
@@ -401,8 +441,7 @@ compound_stmt{
               arg_list(
                 string_literal{"nice"}
                 string_literal{"second"}
-                bool_literal{false}
-                identifier{"a"})}}}
+                bool_literal{false})}}}
         stmt_list{
           }}}
     func_decl{
@@ -479,7 +518,13 @@ compound_stmt{
             identifier{"test_struct_init"}
             arg_list()}
           call_expr{
+            identifier{"test_struct_assignment_lvalue"}
+            arg_list()}
+          call_expr{
             identifier{"test_tuple_zeroinit"}
+            arg_list()}
+          call_expr{
+            identifier{"test_tuple_init"}
             arg_list()}
           call_expr{
             identifier{"mem::dealloc"}

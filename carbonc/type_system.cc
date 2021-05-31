@@ -505,7 +505,7 @@ bool check_var_type_allows_no_init(type_system& ts, ast_node& decl, type_id id) 
     return result;
 }
 
-// Section: structs
+// Section: structs / aggregates
 
 void compute_struct_size_alignment_offsets(type_def& td) {
     std::size_t max_align = 1;
@@ -535,6 +535,52 @@ int aggregate_find_field(type_id tid, const std::string& name) {
         }
     }
     return -1;
+}
+
+bool check_aggregate_types_match(type_system& ts, const position& pos, type_id src_type, type_id receiver_type) {
+    auto& a = src_type;
+    auto& b = receiver_type;
+    if (a.get().kind != b.get().kind) {
+        add_type_error(ts, pos, "types '%s' and '%s' do not match", type_to_string(a).c_str(), type_to_string(b).c_str());
+        return false;
+    }
+
+    auto& ffa = a.get().structure.fields;
+    auto& ffb = b.get().structure.fields;
+    if (ffa.size() != ffb.size()) {
+        add_type_error(ts, pos, "types '%s' and '%s' do not match", type_to_string(a).c_str(), type_to_string(b).c_str());
+        return false;
+    }
+
+    bool msg_already = false;
+    for (std::size_t i = 0; i < ffa.size(); i++) {
+        auto& fa = ffa[i];
+        auto& fb = ffb[i];
+        if (fa.type != fb.type) {
+            if (!is_convertible_to(ts, fa.type, fb.type)) {
+                if (!msg_already) {
+                    add_type_error(ts, pos, "types '%s' and '%s' do not match", type_to_string(a).c_str(), type_to_string(b).c_str());
+                    msg_already = true;
+                }
+
+                if (is_type_kind(a, type_kind::structure)) {
+                    complement_error(ts, pos, "struct member '%s: %s' is not convertible to the type of receiver struct member '%s: %s'",
+                        fa.names[0].c_str(),
+                        type_to_string(fa.type).c_str(),
+                        fb.names[0].c_str(),
+                        type_to_string(fb.type).c_str());
+                }
+                else {
+                    complement_error(ts, pos, "tuple member #%d of type '%s' is not convertible to the type of receiver tuple member of type '%s'",
+                        i + 1,
+                        type_to_string(fa.type).c_str(),
+                        type_to_string(fb.type).c_str());
+                }
+            }
+        }
+    }
+
+    return !msg_already;
 }
 
 void generate_assignments_for_init_list(type_system& ts, ast_node& node, ast_node& receiver) {
@@ -850,7 +896,7 @@ local_def* get_symbol_local(const symbol_info& sym) {
     return nullptr;
 }
 
-// Section: type errors
+// Section: string converters
 
 std::string node_to_string(const ast_node& node) {
     switch (node.type) {
@@ -1443,29 +1489,52 @@ void register_for_declarations(type_system& ts, ast_node& node) {
 void resolve_assignment_type(type_system& ts, ast_node& node) {
     node.type_error = (node.children[0]->type_error || node.children[1]->type_error);
 
+    // Check the left type is resolved
     if ((!node.children[0]->type_id.valid() || node.children[0]->type_error)) {
         complement_error(ts, node.pos, "in assignment of '%s'", node_to_string(*node.children[0]).c_str());
+        return;
     }
     else if (!(node.children[0]->lvalue.self)) {
         add_type_error(ts, node.pos, "left-side of assignment must be an lvalue (identifier, index expression, struct or tuple field)");
+        return;
     }
-
-    deduce_init_list_type(ts, *node.children[1], node.children[0]->type_id);
-
-    if (!node.children[1]->type_id.valid() || node.children[1]->type_error) {
-        complement_error(ts, node.pos, "in assignment of '%s'", node_to_string(*node.children[0]).c_str());
-    }
-
+    
+    // Check if we can re-assign the variable
     if (node.children[0]->type == ast_type::identifier) {
         auto local = get_symbol_local(*node.children[0]->lvalue.symbol);
-        if (local && local->self->op == token_type::let) {
+        if (local && local->self->op == token_type::let && !local->is_temp) {
             add_type_error(ts, node.children[0]->pos, "cannot re-assign a 'let' value, use 'var' instead");
             node.type_error = true;
+            return;
         }
     }
 
+    //deduce_init_list_type(ts, *node.children[1], node.children[0]->type_id);
+
     if (node.children[1]->type == ast_type::init_expr) {
-        node.children[1] = check_empty_init_list(ts, std::move(node.children[1]), node.children[0]->type_id);
+        if (!node.children[1]->type_id.valid()) {
+            if (node.children[1]->children[1]->children.empty()) {
+                // empty init list: {}
+                node.children[1]->type_id = node.children[0]->type_id;
+            }
+            else {
+                node.children[1]->initlist.deduce_to_tuple = true;
+                return;
+            }
+        }
+
+        if (!node.children[1]->initlist.receiver) {
+            node.children[1] = check_empty_init_list(ts, std::move(node.children[1]), node.children[0]->type_id);
+            if (check_aggregate_types_match(ts, node.pos, node.children[1]->type_id, node.children[0]->type_id)) {
+                check_init_list_assignment(ts, *node.children[1], *node.children[0]);
+            }
+        }
+    }
+    else {
+        if (!node.children[1]->type_id.valid() || node.children[1]->type_error) {
+            complement_error(ts, node.pos, "in assignment of '%s'", node_to_string(*node.children[0]).c_str());
+            return;
+        }
     }
 
     if (!is_convertible_to(ts, node.children[1]->type_id, node.children[0]->type_id)) {
@@ -1483,14 +1552,12 @@ void resolve_assignment_type(type_system& ts, ast_node& node) {
 
             complement_error(ts, node.pos, "in assignment of '%s'", node_to_string(*node.children[0]).c_str());
             node.type_error = true;
-        }
-        else {
-            node.type_id = node.children[0]->type_id;
+            return;
         }
     }
-    else {
-        node.type_id = node.children[0]->type_id;
-    }
+
+    node.type_error = false;
+    node.type_id = node.children[0]->type_id;
 }
 
 arena_ptr<ast_node> make_neq_false_node(type_system& ts, arena_ptr<ast_node>&& val) {
@@ -2004,6 +2071,8 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
                         type_to_string(node.children[0]->type_id).c_str(), (int)fields.size());
                 }
                 else {
+                    node.lvalue.self = &node;
+
                     const auto& field = fields[node.children[1]->int_value];
                     node.field.self = &node;
                     node.field.needs_deref = false;
@@ -2293,6 +2362,7 @@ void check_var_decl_bool_op(type_system& ts, ast_node& node) {
     if (!node.local.value_node) return;
 
     if (is_bool_op(*node.local.value_node)) {
+        node.local.is_temp = true;
         auto idref = make_identifier_node(*ts.ast_arena, {}, node.local.id_node->id_parts);
         auto temp = make_temp_variable_for_bool_op(ts, std::move(node.children[ast_node::child_var_decl_value]), std::move(idref));
 

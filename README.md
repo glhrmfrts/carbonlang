@@ -6,6 +6,10 @@ Carbon is a statically-strongly-typed programming language.
 <img src="https://github.com/glhrmfrts/carbon/blob/main/carbon.png">
 </p>
 
+## Design
+
+Source code -> Tokens (Lexer) -> Untyped AST (Parser) -> Typed AST (Type System) -> Typed IR -> Codegen
+
 ## TODO
 
 - [X] parser
@@ -26,21 +30,29 @@ Carbon is a statically-strongly-typed programming language.
 - [X] while statements
 - [X] for statement (range-based)
 - [X] blocks as scopes
-- [ ] structs / tuples
+- [X] aggregate type assignment/declaration from init lists
+- [ ] aggregate type assignment/declaration from lvalues
+- [ ] catch up on the codegen
+- [ ] aggregate type function arguments
+- [ ] aggregate type return value
+- [ ] struct / tuples
 - [ ] arrays
+- [ ] catch up on the codegen
 - [ ] user types
 - [ ] defer statements
 - [ ] for statement (array-based)
-- [ ] owner / reference types (?)
+- [ ] catch up on the codegen
 - [ ] global vars (?)
 - [ ] more/better type checking and errors
 - [ ] floating point types support
 - [ ] investigate entry points for receiving command-line args
+- [ ] catch up on the codegen
 - [ ] integrate linking process
 - [ ] codegen: linux x64
 - [ ] codegen: linux ARM64
 - [ ] user type constructors
 - [ ] std library design
+- [ ] raii stuff (?)
 - [ ] rewrite compiler / self-hosting
 
 ## Hello world
