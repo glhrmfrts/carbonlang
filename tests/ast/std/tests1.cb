@@ -334,8 +334,7 @@ compound_stmt{
             identifier{"c"}
             =init_expr{
               type=type_expr{
-                type_qualifier{
-                  }}
+                }
               arg_list(
                 binary_expr{
                   binary_expr{
@@ -350,7 +349,13 @@ compound_stmt{
                     *
                     int_literal{2}}
                   *
-                  int_literal{2}})}}}
+                  int_literal{2}})}}
+          var_decl{
+            identifier{"d"}
+            =init_expr{
+              type=type_expr{
+                }
+              arg_list()}}}
         stmt_list{
           }}}
     func_decl{
@@ -376,6 +381,28 @@ compound_stmt{
                     identifier{"raw_string"}}
                   type_expr{
                     identifier{"bool"}})}}}}
+        stmt_list{
+          }}}
+    func_decl{
+      identifier{"test_tuple_init"}
+      arg_list()
+compound_stmt{
+        decl_list{
+          var_decl{
+            identifier{"a"}
+            =init_expr{
+              arg_list(
+                int_literal{3}
+                int_literal{4}
+                int_literal{5})}}
+          var_decl{
+            identifier{"b"}
+            =init_expr{
+              arg_list(
+                string_literal{"nice"}
+                string_literal{"second"}
+                bool_literal{false}
+                identifier{"a"})}}}
         stmt_list{
           }}}
     func_decl{

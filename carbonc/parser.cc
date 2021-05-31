@@ -89,7 +89,9 @@ struct parser_impl {
                 auto arg_list = parse_arg_list(']', [this]() {
                     return parse_type_expr();
                 });
-                result = make_type_constructor_instance_node(*ast_arena, result->pos, std::move(result), std::move(arg_list));
+
+                auto rpos = result->pos;
+                result = make_type_constructor_instance_node(*ast_arena, rpos, make_type_expr_node(*ast_arena, rpos, std::move(result)), std::move(arg_list));
             }
         }
 
@@ -706,14 +708,20 @@ struct parser_impl {
 
     arena_ptr<ast_node> parse_init_expr() {
         auto pos = lex->pos();
-        if (TOK_CHAR == '@') {
-            auto init_type = parse_type_expr();
-            if (!init_type) {
-                throw parse_error(filename, lex->pos(), "expecting type expression in initializer");
+        auto expr = parse_call_or_index_or_field_expr();
+        if (expr) {
+            if (TOK_CHAR == '{') {
+                auto to_type_expr = transform_to_type_expr(std::move(expr));
+                return parse_init_list_expr(std::move(to_type_expr));
             }
-            return parse_init_list_expr(std::move(init_type));
         }
-        return parse_call_or_index_or_field_expr();
+        else {
+            auto try_type = parse_type_expr(true);
+            if (try_type) {
+                return parse_init_list_expr(std::move(try_type));
+            }
+        }
+        return expr;
     }
 
     arena_ptr<ast_node> parse_call_or_index_or_field_expr() {
@@ -902,6 +910,25 @@ struct parser_impl {
         lex->next();
 
         return make_arg_list_node(*ast_arena, pos, std::move(args));
+    }
+
+    arena_ptr<ast_node> transform_to_type_expr(arena_ptr<ast_node>&& expr) {
+        if (expr->type == ast_type::index_expr) {
+            std::vector<arena_ptr<ast_node>> args;
+            args.push_back(transform_to_type_expr(std::move(expr->children[1])));
+
+            auto ctor = make_type_constructor_instance_node(*ast_arena, expr->pos,
+                transform_to_type_expr(std::move(expr->children[0])),
+                make_arg_list_node(*ast_arena, {}, std::move(args)));
+
+            return make_type_expr_node(*ast_arena, expr->pos, std::move(ctor));
+        }
+        else if (expr->type == ast_type::identifier) {
+            return make_type_expr_node(*ast_arena, expr->pos, std::move(expr));
+        }
+        else {
+            return std::move(expr);
+        }
     }
 
     parse_context ctx() const { return ctx_stack.top(); }

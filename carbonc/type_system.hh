@@ -193,6 +193,7 @@ struct range_info {
 struct init_list {
     ast_node* receiver;
     std::vector<arena_ptr<ast_node>> assignments{};
+    bool deduce_to_tuple = false;
 };
 
 struct scope_import {

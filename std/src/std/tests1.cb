@@ -134,7 +134,8 @@ func test_struct_zeroinit() {
 func test_struct_init() {
     let a: range[int] = { 3, 5 };
     let b: range[int] = { 24*7+2, a.end };
-    let c = range[int] { b.start*3*9, b.end*2*2 };
+    let c = range[int]{ b.start*3*9, b.end*2*2 };
+    let d = range[int]{};
 
     if ((a.start == 3 && a.end == 5) && (b.start == 24*7+2 && b.end == a.end) && (c.start == b.start*3*9 && c.end && b.end*2*2)) {
         println("test_struct_init: OK");
@@ -158,13 +159,13 @@ func test_tuple_zeroinit() {
 
 func test_tuple_init() {
     let a = {3, 4, 5};
-    let b = {"nice", "second", false, a};
+    let b = {"nice", "second", false};
 
-    if ((a[0] == 0 && a.second == 0) && (b[0] == "" && b[1] == false)) {
-        println("test_tuple_zeroinit: OK");
+    if ((a[0] == 0 && a.second == 0) && (b[0] == "nice" && b[1] == "second" && !b[2])) {
+        println("test_tuple_init: OK");
     }
     else {
-        println("test_tuple_zeroinit: NOK");
+        println("test_tuple_init: NOK");
     }
 }
 
@@ -192,6 +193,7 @@ func main(): int {
     test_struct_zeroinit();
     test_struct_init();
     test_tuple_zeroinit();
+    test_tuple_init();
 
     mem::dealloc(cast[raw_ptr] newtext);
 
