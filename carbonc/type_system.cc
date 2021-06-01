@@ -1107,12 +1107,17 @@ type_id get_type_expr_node_type(type_system& ts, ast_node& node) {
     case ast_type::tuple_type: {
         visit_children(ts, node);
 
-        auto [args, all_resolved] = nodes_to_type_constructor_args(ts, node.children[0]->children);
-        if (all_resolved) {
-            node.type_id = execute_type_constructor(ts, ts.builtin_scope->scope, *ts.tuple_type_constructor, args);
+        if (node.children[0]) {
+            auto [args, all_resolved] = nodes_to_type_constructor_args(ts, node.children[0]->children);
+            if (all_resolved) {
+                node.type_id = execute_type_constructor(ts, ts.builtin_scope->scope, *ts.tuple_type_constructor, args);
+            }
+            else {
+                node.type_error = true;
+            }
         }
         else {
-            node.type_error = true;
+            node.type_id = ts.void_type;
         }
         break;
     }
@@ -1309,7 +1314,7 @@ void register_func_declaration_node(type_system& ts, ast_node& node) {
     node.func.ret_type_node = node.children[ast_node::child_func_decl_ret_type].get();
 
     if (!node.func.ret_type_node) {
-        auto id_void = make_identifier_node(*ts.ast_arena, {}, { "void" });
+        auto id_void = make_tuple_type_node(*ts.ast_arena, {}, {nullptr, nullptr});
         auto ret_type = make_type_expr_node(*ts.ast_arena, {}, std::move(id_void));
         node.func.ret_type_node = ret_type.get();
         node.temps.push_back(std::move(ret_type));
@@ -1373,7 +1378,21 @@ void resolve_and_declare_local_variable(type_system& ts, const string_hash& id, 
 
     if (node.local.value_node) {
         if (node.local.value_node->type == ast_type::init_expr) {
-            if (node.type_id.valid() && was_unresolved) {
+            if (!node.local.value_node->type_id.valid()) {
+                if (node.local.value_node->children[1]->children.empty()) {
+                    // empty init list: {}
+                    if (!node.type_id.valid()) {
+                        add_type_error(ts, node.pos, "TODO empty tuple");
+                        return;
+                    }
+                }
+                else {
+                    node.local.value_node->initlist.deduce_to_tuple = true;
+                    return;
+                }
+            }
+
+            if (node.type_id.valid() && !node.local.value_node->initlist.receiver) {
                 // Create the ref for the assignments
                 auto idref = make_identifier_node(*ts.ast_arena, {}, { id.str });
                 resolve_identifier(ts, *idref.get());
@@ -1385,8 +1404,10 @@ void resolve_and_declare_local_variable(type_system& ts, const string_hash& id, 
                 node.local.value_node = node.children[ast_node::child_var_decl_value].get();
 
                 // Generate the assignments of the initializer list values
-                check_init_list_assignment(ts, *node.local.value_node, *idref);
-                node.temps.push_back(std::move(idref));
+                if (check_aggregate_types_match(ts, node.pos, node.local.value_node->type_id, node.type_id)) {
+                    check_init_list_assignment(ts, *node.local.value_node, *idref);
+                    node.temps.push_back(std::move(idref));
+                }
             }
             else if (!node.type_id.valid() && !node.local.type_node) {
                 node.local.value_node->initlist.deduce_to_tuple = true;
@@ -2565,30 +2586,6 @@ type_system::type_system(memory_arena& arena) {
         type_type = register_builtin_type(*this, std::move(node));
     }
 
-    // void and void*
-    {
-        auto node = make_in_arena<ast_node>(*ast_arena);
-
-        type_def& tf = node->type_def;
-        tf.kind = type_kind::void_;
-        tf.name = string_hash{ "void" };
-        tf.mangled_name = string_hash{ "void" };
-        void_type = register_builtin_type(*this, std::move(node));
-    }
-
-    {
-        auto node = make_in_arena<ast_node>(*ast_arena);
-
-        type_def& tf = node->type_def;
-        tf.kind = type_kind::pointer;
-        tf.name = string_hash{ "raw_ptr" };
-        tf.mangled_name = string_hash{ "raw_ptr" };
-        tf.size = sizeof(void*);
-        tf.alignment = alignof(void*);
-        tf.elem_type = { builtin_scope->scope.symbols[string_hash{"void"}]->scope, 0 };
-        raw_ptr_type = register_builtin_type(*this, std::move(node));
-    }
-
     {
         auto node = make_in_arena<ast_node>(*ast_arena);
 
@@ -2814,6 +2811,10 @@ type_system::type_system(memory_arena& arena) {
                 tf.structure.fields[i - 1].names.push_back("last");
                 compute_struct_size_alignment_offsets(tf);
             }
+            else {
+                tf.kind = type_kind::void_;
+                tf.mangled_name = string_hash{ "void" };
+            }
             
             return node;
         };
@@ -2822,6 +2823,24 @@ type_system::type_system(memory_arena& arena) {
         //declare_type_symbol(*this, builtin_scope->scope, node->type_def.name, *node);
         register_type(*this, builtin_scope->scope, *node);
         builtin_type_nodes.push_back(std::move(node));
+    }
+
+    // void and void*
+    {
+        void_type = execute_builtin_type_constructor(*this, *tuple_type_constructor, {});
+    }
+
+    {
+        auto node = make_in_arena<ast_node>(*ast_arena);
+
+        type_def& tf = node->type_def;
+        tf.kind = type_kind::pointer;
+        tf.name = string_hash{ "raw_ptr" };
+        tf.mangled_name = string_hash{ "raw_ptr" };
+        tf.size = sizeof(void*);
+        tf.alignment = alignof(void*);
+        tf.elem_type = void_type;
+        raw_ptr_type = register_builtin_type(*this, std::move(node));
     }
 
     raw_string_type = register_pointer_type(*this, "raw_string", "char");

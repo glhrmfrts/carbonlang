@@ -52,11 +52,11 @@ ir_operand pop() {
 }
 
 template <typename... Args> void emit(ir_op op, Args&&... args) {
-    fn->instrs.push_back({ op, std::vector<ir_operand>{ std::forward<Args>(args)... }});
+    fn->instrs.push_back({ op, std::vector<ir_operand>{ std::forward<Args>(args)... }, fn->instrs.size() });
 }
 
 void emitops(ir_op op, const std::vector<ir_operand>& args) {
-    fn->instrs.push_back({ op, args });
+    fn->instrs.push_back({ op, args, fn->instrs.size() });
 }
 
 int find_or_add_global_string_data(std::string data) {

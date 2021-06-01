@@ -175,7 +175,7 @@ void prettyprint(const ast_node& node, std::ostream& stream, int indent, bool do
         break;
     case ast_type::tuple_type:
         stream << "tuple_type{\n";
-        prettyprint(*node.children.front().get(), stream, indent + 1);
+        if (node.children.front()) { prettyprint(*node.children.front().get(), stream, indent + 1); }
         stream << "}";
         break;
     case ast_type::array_type: {

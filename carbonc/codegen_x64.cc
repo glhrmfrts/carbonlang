@@ -13,16 +13,26 @@
 
 namespace carbon {
 
+using local_index = int;
+
+using instr_dest = std::variant<gen_register, local_index>;
+
+struct instr_data {
+    instr_dest dest;
+};
+
 struct var_data {
+    std::optional<gen_register> reg;
     std::int32_t frame_offset;
 };
 
 struct func_data {
+    std::string end_label;
     std::vector<var_data> arg_data;
     std::vector<var_data> local_data;
-
+    std::vector<instr_data> instr_data;
+    std::set<gen_register> used_temp_registers;
     int call_arg_size = 0;
-    int used_temp_registers = 0;
 };
 
 gen_destination adjust_for_type(gen_destination dest, type_id tid) {
@@ -66,21 +76,6 @@ gen_destination todest(gen_operand op) {
     }
 }
 
-void find_max_call_arg_size(ir_func& func, std::int32_t& sz) {
-    for (const auto& inst : func.instrs) {
-        if (inst.op == ir_call) {
-            std::int32_t args_size = 0;
-            for (auto& arg : inst.operands) {
-                //auto& tdef = get_operand_type(arg);
-                std::int32_t asize = 8;// std::min(8, std::int32_t(tdef.size));
-                args_size += asize;
-                args_size = align(args_size, 8);//align(args_size, std::int32_t(tdef.alignment));
-            }
-            sz = std::max(sz, args_size);
-        }
-    }
-}
-
 template <typename T> bool is_mem(const T& op) {
     return std::holds_alternative<gen_offset>(op) || std::holds_alternative<gen_data_offset>(op);
 }
@@ -96,10 +91,16 @@ struct generator {
     std::unique_ptr<emitter> em;
     std::vector<gen_register> arg_registers;
     std::vector<gen_register> temp_registers;
-    std::vector<func_data> func_data;
+    std::vector<func_data> funcdata;
     std::int32_t current_temp_regs_offset = 0;
     type_system* ts;
     int used_temp_registers = 0;
+    int used_temp_locals = 0;
+    int temp_locals_base = 0;
+
+    // points to the current function being generated
+    ir_func* fn;
+    func_data* fndata;
 
     explicit generator(std::unique_ptr<emitter>&& em, type_system* ts, std::string_view fn) {
         this->em = std::move(em);
@@ -111,9 +112,29 @@ struct generator {
 
     // Section: helpers
 
-    std::pair<std::int32_t, std::int32_t> get_func_stack_frame_size(ir_func& func) {
-        std::int32_t call_arg_size = 0;
-        find_max_call_arg_size(func, call_arg_size);
+    std::pair<std::int32_t, bool> find_max_call_arg_size(const ir_func& func) {
+        std::int32_t sz = 0;
+        bool calls_ever_made = false;
+        for (const auto& inst : func.instrs) {
+            if (inst.op == ir_call) {
+                std::int32_t args_size = 0;
+                for (auto& arg : inst.operands) {
+                    auto [op, optype] = transform_ir_operand(arg);
+                    auto& tdef = optype.get();
+                    std::int32_t asize = 8;// std::min(8, std::int32_t(tdef.size));
+                    args_size += asize;
+                    args_size = align(args_size, 8);//align(args_size, std::int32_t(tdef.alignment));
+                }
+
+                sz = std::max(sz, args_size);
+                calls_ever_made = true;
+            }
+        }
+        return std::make_pair(sz, calls_ever_made);
+    }
+
+    std::tuple<std::int32_t, std::int32_t, bool> get_func_stack_frame_size(ir_func& func) {
+        auto [call_arg_size, calls_ever_made] = find_max_call_arg_size(func);
 
         if (func.calls_extern_c) {
             call_arg_size = std::max(call_arg_size, 32);
@@ -127,7 +148,7 @@ struct generator {
         for (auto& arg : func.args) {
             auto& tdef = arg.type.get();
             
-            func_data[func.index].arg_data[ai].frame_offset = own_arg_size + 8; // offset from rbp + space for the return-instruction pointer
+            funcdata[func.index].arg_data[ai].frame_offset = own_arg_size + 8; // offset from rbp + space for the return-instruction pointer
             own_arg_size += 8;// std::int32_t(tdef.size);
             own_arg_size = align(own_arg_size, 8);// align(own_arg_size, std::int32_t(tdef.alignment));
             ai++;
@@ -136,7 +157,7 @@ struct generator {
         int li = 0;
         for (auto& local : func.locals) {
             auto& tdef = local.type.get();
-            func_data[func.index].local_data[li].frame_offset = -(local_size + 8); // offset from rbp + space for pushed rbp
+            funcdata[func.index].local_data[li].frame_offset = -(local_size + 8); // offset from rbp + space for pushed rbp
             local_size += std::int32_t(tdef.size);
             local_size = align(local_size, std::int32_t(tdef.alignment));
             li++;
@@ -144,19 +165,19 @@ struct generator {
 
         local_size = align(local_size, 16);
         call_arg_size = align(call_arg_size, 16);
-        return std::make_pair(local_size, call_arg_size);
+        return std::make_tuple(local_size, call_arg_size, calls_ever_made);
     }
 
-    gen_destination local_var_destination(local_def& local) {
-        bool is_negative = (local.frame_offset < 0);
+    gen_destination local_var_destination(std::int32_t frame_offset) {
+        bool is_negative = (frame_offset < 0);
         std::vector<gen_offset_expr> expr{ rbp };
         if (is_negative) {
             expr.push_back('-');
-            expr.push_back(-local.frame_offset);
+            expr.push_back(-frame_offset);
         }
         else {
             expr.push_back('+');
-            expr.push_back(local.frame_offset);
+            expr.push_back(frame_offset);
         }
         return gen_offset{ 0, expr };
     }
@@ -168,25 +189,88 @@ struct generator {
         
         auto next_reg = temp_registers[used_temp_registers];
         used_temp_registers++;
-
-        auto func_node = ts->find_nearest_scope(scope_kind::func_body)->self;
-        //auto& ndata = node_data[func_node->node_id];
-        //ndata.func_used_temp_registers.insert(next_reg);
+        fndata->used_temp_registers.insert(next_reg);
         return next_reg;
     }
 
-    void free_temp_register() {
-        used_temp_registers--;
+    int use_temp_local(type_id tid) {
+        int available = (fn->locals.size() - temp_locals_base) + used_temp_locals;
+        if (available == 0) {
+            used_temp_locals++;
+            fn->locals.push_back(ir_local_data{ "codegentemp", tid });
+            return fn->locals.size() - 1;
+        }
+        else {
+            int idx = temp_locals_base + used_temp_locals;
+            used_temp_locals++;
+            return idx;
+        }
+    }
+
+    instr_dest use_temp_destination(type_id tid) {
+        auto reg = use_temp_register();
+        if (reg) {
+            return *reg;
+        }
+        return use_temp_local(tid);
+    }
+
+    void free_temp_destination() {
+        if (used_temp_locals) {
+            used_temp_locals--;
+        }
+        else {
+            used_temp_registers--;
+        }
     }
 
     std::string get_string_label(int idx) {
         return "$cbstr" + std::to_string(si);
     }
 
+    int instr_stack_consumption(const ir_instr& instr) {
+        int i = 0;
+        for (const auto& opr : instr.operands) {
+            if (std::holds_alternative<ir_stack>(opr)) {
+                i++;
+            }
+        }
+        return i;
+    }
+
+    void determine_instrs_destination() {
+        temp_locals_base = fn->locals.size();
+
+        for (std::size_t i = 0; i < fn->instrs.size(); i++) {
+            auto& instr = fn->instrs[i];
+
+            ir_instr* next_instr = nullptr;
+            if (i < fn->instrs.size() - 1) {
+                next_instr = &fn->instrs[i + 1];
+            }
+
+            int mysc = instr_stack_consumption(instr);
+            for (int sc = 1; sc < mysc; sc++) { // begins at one to skip rax
+                free_temp_destination();
+            }
+
+            if (next_instr) {
+                if (instr_stack_consumption(*next_instr) > 0) {
+                    fndata->instr_data[instr.index].dest = rax;
+                }
+                else {
+                    fndata->instr_data[instr.index].dest = use_temp_destination(instr.result_type);
+                }
+            }
+            else {
+                fndata->instr_data[instr.index].dest = rax;
+            }
+        }
+    }
+
     // Section: pre analysis
 
     void pre_analysis(ir_program& prog) {
-
     }
 
     // Section: generators
@@ -220,86 +304,202 @@ struct generator {
     // Section: code generators
 
     void generate_func_code(ir_func& func) {
+        auto& fdata = funcdata[func.index];
+        fdata.end_label = func.name + "$end";
+
+        this->fn = &func;
+        this->fndata = &fdata;
+
+        determine_instrs_destination();
+
         em->begin_func(func.name.c_str());
-        auto [local_size, call_arg_size] = get_func_stack_frame_size(func);
 
-        em->end_func();
-    }
-
-#if 0
-    void generate_func(ast_node& node) {
-        if (!node.scope.body_node) return;
-
-        auto& ndata = node_data[node.node_id];
-
-        auto [local_size,call_arg_size] = get_func_stack_frame_size(node);
+        auto [local_size, call_arg_size, calls_ever_made] = get_func_stack_frame_size(func);
         std::int32_t stack_size = local_size + call_arg_size;
-        ndata.func_call_arg_size = call_arg_size;
 
-        if (node.local.id_node->id_parts.front() == "main") {
-            em->begin_func(node.local.id_node->id_parts.front().c_str());
-        }
-        else {
-            em->begin_func(node.type_def.mangled_name.str.c_str());
-        }
-
-        std::int32_t temp_regs_offset = node_data[node.node_id].func_used_temp_registers.size() * 8;
+        std::int32_t temp_regs_offset = fdata.used_temp_registers.size() * 8;
         current_temp_regs_offset = temp_regs_offset;
 
-        if (!node.func.arguments.empty()) {
-            // move arguments from registers to stack
-            std::size_t max_reg_args = std::min(arg_registers.size(), node.func.arguments.size());
-            for (std::size_t i = max_reg_args; i > 0; i--) {
-                auto arg = node.func.arguments[i - 1];
-                auto src = adjust_for_type(gen_register{ arg_registers[i - 1] }, arg->type_id);
-                auto dest = adjust_for_type(gen_offset{ 0, {rsp, '+', arg->local.frame_offset} }, arg->type_id);
-                em->mov(dest, toop(src));
+        if (!func.args.empty()) {
+            if (calls_ever_made) {
+                std::size_t max_reg_args = std::min(arg_registers.size(), func.args.size());
+                for (std::size_t i = max_reg_args; i > 0; i--) {
+                    auto& arg = func.args[i - 1];
+                    auto frame_offset = fdata.arg_data[i - 1].frame_offset;
+
+                    auto src = adjust_for_type(gen_register{ arg_registers[i - 1] }, arg.type);
+                    auto dest = adjust_for_type(gen_offset{ 0, {rsp, '+', frame_offset} }, arg.type);
+                    em->mov(dest, toop(src));
+                }
+            }
+            else {
+                std::size_t max_reg_args = std::min(arg_registers.size(), func.args.size());
+                for (std::size_t i = 0; i < max_reg_args; i++) {
+                    fndata->arg_data[i].reg = arg_registers[i];
+                }
             }
 
-            for (auto arg : node.func.arguments) {
-                arg->local.frame_offset += 8 + temp_regs_offset; // space for the rbp about to be pushed + temp registers
+            for (auto& arg : fndata->arg_data) {
+                arg.frame_offset += 8 + temp_regs_offset; // space for the rbp about to be pushed + temp registers
             }
         }
 
-        bool needs_rbp = (!(stack_size == 0 && node.func.arguments.empty()));
-
-        if (needs_rbp) em->push(rbp);
+        bool needs_rbp = (!(stack_size == 0 && func.args.empty()));
+        if (needs_rbp) { em->push(rbp); }
 
         std::vector<gen_register> temp_regs;
-        for (const auto& reg : ndata.func_used_temp_registers) {
+        for (const auto& reg : fdata.used_temp_registers) {
             em->push(reg);
             temp_regs.push_back(reg);
         }
 
-        if (needs_rbp) em->mov(rbp, rsp);
+        if (needs_rbp) { em->mov(rbp, rsp); }
+        if (stack_size > 0) { em->sub(rsp, stack_size); }
 
-        if (stack_size > 0) {
-            // resize buffer
-            em->sub(rsp, stack_size);
+        for (auto& instr : func.instrs) {
+            generate_ir_instr(instr);
         }
 
-        for (auto& child : node.scope.body_node->children) {
-            if (child) {
-                generate_node(*child);
-            }
-        }
+        em->label(fdata.end_label.c_str());
 
-        em->label(ndata.func_end_label.c_str());
-
-        if (stack_size > 0) {
-            em->add(rsp, stack_size);
-        }
-
+        if (stack_size > 0) { em->add(rsp, stack_size); }
         for (std::size_t i = temp_regs.size(); i > 0; i--) {
             em->pop(temp_regs[i - 1]);
         }
-
-        if (needs_rbp) em->pop(rbp);
+        if (needs_rbp) { em->pop(rbp); }
 
         em->ret();
         em->end_func();
+
+        this->fn = nullptr;
+        this->fndata = nullptr;
     }
 
+    void generate_ir_instr(ir_instr& instr) {
+        auto& idata = fndata->instr_data[instr.index];
+
+        switch (instr.op) {
+        case ir_add:
+        case ir_sub:
+        case ir_mul: {
+            auto [b, btype] = transform_ir_operand(instr.operands.back());
+            auto [a, atype] = transform_ir_operand(instr.operands.front());
+            if (!is_reg(a)) {
+                move(adjust_for_type(rax, atype), atype, a, atype);
+                a = toop(adjust_for_type(rax, atype));
+            }
+            emit_binary_math_op(instr.op, todest(a), b);
+
+            auto dest = instr_dest_to_gen_dest(idata.dest);
+            if (!(dest == todest(a))) {
+                move(adjust_for_type(dest, atype), atype, a, atype);
+            }
+
+            push_operand(dest);
+            break;
+        }
+        }
+    }
+
+    void emit_binary_math_op(ir_op op, gen_destination a, gen_operand b) {
+        switch (op) {
+        case ir_add:
+            em->add(a, b);
+            break;
+        case ir_sub:
+            em->sub(a, b);
+            break;
+        case ir_mul:
+            em->imul(a, b);
+            break;
+        }
+    }
+
+    std::pair<gen_operand, type_id> transform_ir_operand(const ir_operand& opr) {
+        if (auto str = std::get_if<std::string>(&opr); str) {
+            
+        }
+        if (auto lab = std::get_if<ir_label>(&opr); lab) {
+            
+        }
+        if (auto arg = std::get_if<ir_field>(&opr); arg) {
+
+        }
+        if (auto arg = std::get_if<ir_arg>(&opr); arg) {
+            return std::make_pair(
+                toop(get_arg_destination(arg->index)),
+                fn->args[arg->index].type
+            );
+        }
+        if (auto arg = std::get_if<ir_local>(&opr); arg) {
+            return std::make_pair(
+                toop(get_local_destination(arg->index)),
+                fn->args[arg->index].type
+            );
+        }
+        if (auto arg = std::get_if<ir_stack>(&opr); arg) {
+
+        }
+        if (auto arg = std::get_if<ir_string>(&opr); arg) {
+
+        }
+        if (auto arg = std::get_if<ir_int>(&opr); arg) {
+
+        }
+        if (auto arg = std::get_if<ir_float>(&opr); arg) {
+
+        }
+        if (auto arg = std::get_if<char>(&opr); arg) {
+
+        }
+    }
+
+    gen_destination get_arg_destination(int index) {
+        auto& arg = fn->args[index];
+        if (fndata->arg_data[index].reg) {
+            return adjust_for_type(*fndata->arg_data[index].reg, arg.type);
+        }
+        return adjust_for_type(local_var_destination(fndata->arg_data[index].frame_offset), arg.type);
+    }
+
+    gen_destination get_local_destination(int index) {
+        auto& l = fn->locals[index];
+        return adjust_for_type(local_var_destination(fndata->local_data[index].frame_offset), l.type);
+    }
+
+    void move(const gen_destination& dest, type_id dest_tid, const gen_operand& op, type_id tid) {
+        if (std::holds_alternative<gen_offset>(dest) && std::holds_alternative<gen_offset>(op)) {
+            auto arax = adjust_for_type(rax, tid);
+            move(arax, tid, op, tid);
+            move(dest, dest_tid, toop(arax), tid);
+            return;
+        }
+
+        if (dest_tid.get().size > tid.get().size) {
+            if (tid.get().is_signed) {
+                em->movsx(dest, op);
+            }
+            else {
+                em->movzx(dest, op);
+            }
+        }
+        else {
+            em->mov(dest, op);
+        }
+    }
+
+    void load_address(const gen_destination& dest, const gen_destination& op, type_id tid) {
+        if (std::holds_alternative<gen_register>(dest)) {
+            em->lea(dest, op);
+        }
+        else {
+            auto arax = adjust_for_type(rax, tid);
+            em->lea(arax, op);
+            em->mov(dest, toop(arax));
+        }
+    }
+
+#if 0
     void generate_var(ast_node& node) {
         if (node.local.value_node) {
             generate_node(*node.local.value_node);
@@ -673,38 +873,12 @@ struct generator {
             load_address(adjust_for_type(dest, node.type_id), op, node.type_id);
         });
     }
-
-    void move(const gen_destination& dest, const gen_operand& op, type_id tid) {
-        if (std::holds_alternative<gen_offset>(dest) && std::holds_alternative<gen_offset>(op)) {
-            auto arax = adjust_for_type(rax, tid);
-            move(arax, op, tid);
-            move(dest, toop(arax), tid);
-            return;
-        }
-
-        if (tid.get().is_signed) {
-            em->movsx(dest, op);
-        }
-        else {
-            em->mov(dest, op);
-        }
-    }
-
-    void load_address(const gen_destination& dest, const gen_destination& op, type_id tid) {
-        if (std::holds_alternative<gen_register>(dest)) {
-            em->lea(dest, op);
-        }
-        else {
-            auto arax = adjust_for_type(rax, tid);
-            em->lea(arax, op);
-            em->mov(dest, toop(arax));
-        }
-    }
 #endif
 };
 
 void codegen(ir_program& prog, type_system* ts, std::string_view filename) {
     generator gen{std::make_unique<emitter>(filename), ts, filename};
+    gen.pre_analysis(prog);
     gen.generate_program(prog);
 }
 

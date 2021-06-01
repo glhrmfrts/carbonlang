@@ -80,6 +80,7 @@ using ir_operand = std::variant<std::string, ir_field, ir_label, ir_local, ir_ar
 struct ir_instr {
     ir_op op;
     std::vector<ir_operand> operands;
+    int index;
 };
 
 struct ir_func {

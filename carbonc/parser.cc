@@ -166,7 +166,7 @@ struct parser_impl {
             return make_struct_type_node(*ast_arena, pos, std::move(field_list));
         }
         else if (field_list->children.empty()) {
-            return make_identifier_node(*ast_arena, lex->pos(), { "void" });
+            return make_tuple_type_node(*ast_arena, pos, {nullptr, nullptr});
         }
     }
 

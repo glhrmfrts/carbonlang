@@ -31,7 +31,7 @@ Source code -> Tokens (Lexer) -> Untyped AST (Parser) -> Typed AST (Type System)
 - [X] for statement (range-based)
 - [X] blocks as scopes
 - [X] aggregate type assignment/declaration from init lists
-- [ ] aggregate type assignment/declaration from lvalues
+- [X] aggregate type assignment/declaration from lvalues
 - [ ] catch up on the codegen
 - [ ] aggregate type function arguments
 - [ ] aggregate type return value
@@ -42,6 +42,7 @@ Source code -> Tokens (Lexer) -> Untyped AST (Parser) -> Typed AST (Type System)
 - [ ] defer statements
 - [ ] for statement (array-based)
 - [ ] catch up on the codegen
+- [ ] function pointers
 - [ ] global vars (?)
 - [ ] more/better type checking and errors
 - [ ] floating point types support
@@ -53,6 +54,7 @@ Source code -> Tokens (Lexer) -> Untyped AST (Parser) -> Typed AST (Type System)
 - [ ] user type constructors
 - [ ] std library design
 - [ ] raii stuff (?)
+- [ ] closures
 - [ ] rewrite compiler / self-hosting
 
 ## Hello world

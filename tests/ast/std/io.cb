@@ -11,7 +11,8 @@ code_unit{
           :type_expr{
             identifier{"raw_string"}}})
       :type_expr{
-        identifier{"void"}}
+        tuple_type{
+}}
 compound_stmt{
         stmt_list{
           call_expr{
