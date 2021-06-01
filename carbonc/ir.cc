@@ -52,11 +52,15 @@ ir_operand pop() {
 }
 
 template <typename... Args> void emit(ir_op op, Args&&... args) {
-    fn->instrs.push_back({ op, std::vector<ir_operand>{ std::forward<Args>(args)... }, fn->instrs.size() });
+    fn->instrs.push_back({ op, {}, std::vector<ir_operand>{ std::forward<Args>(args)... }, (int)fn->instrs.size() });
 }
 
-void emitops(ir_op op, const std::vector<ir_operand>& args) {
-    fn->instrs.push_back({ op, args, fn->instrs.size() });
+template <typename... Args> void temit(ir_op op, type_id t, Args&&... args) {
+    fn->instrs.push_back({ op, t, std::vector<ir_operand>{ std::forward<Args>(args)... }, (int)fn->instrs.size() });
+}
+
+void emitops(ir_op op, type_id t, const std::vector<ir_operand>& args) {
+    fn->instrs.push_back({ op, t, args, (int)fn->instrs.size() });
 }
 
 int find_or_add_global_string_data(std::string data) {
@@ -437,8 +441,9 @@ void generate_ir_field_expr(ast_node& node) {
     auto a = pop();
     
     if (node.field.needs_deref) {
-        emit(ir_deref, a);
-        push(ir_field{ ir_stack{ node.field.struct_node->type_id.get().elem_type }, node.field.field_index });
+        auto stype = node.field.struct_node->type_id.get().elem_type;
+        temit(ir_deref, stype, a);
+        push(ir_field{ ir_stack{ stype }, node.field.field_index });
     }
     else {
         push(ir_field{ toref(a), node.field.field_index });
@@ -451,7 +456,7 @@ void generate_ir_index_expr(ast_node& node) {
 
     auto a = pop();
     auto b = pop();
-    emit(ir_index, a, b);
+    temit(ir_index, node.type_id, a, b);
     push(ir_stack{ node.type_id });
 }
 
@@ -462,7 +467,7 @@ void generate_ir_call_expr(ast_node& node) {
     }
 
     std::vector<ir_operand> args;
-    args.push_back(node.call.mangled_name.str);
+    args.push_back(ir_label{ node.call.mangled_name.str });
 
     for (std::size_t i = 0; i < node.call.args.size(); i++) {
         auto arg = node.call.args[i];
@@ -470,19 +475,19 @@ void generate_ir_call_expr(ast_node& node) {
         args.push_back(pop());
     }
 
-    emitops(ir_call, args);
+    emitops(ir_call, node.type_id, args);
     push(ir_stack{ node.type_id });
 }
 
 void generate_ir_deref_expr(ast_node& node) {
     generate_ir_node(*node.children[0]);
-    emit(ir_deref, pop());
+    temit(ir_deref, node.type_id, pop());
     push(ir_stack{ node.type_id });
 }
 
 void generate_ir_addr_expr(ast_node& node) {
     generate_ir_node(*node.children[0]);
-    emit(ir_load_addr, pop());
+    temit(ir_load_addr, node.type_id, pop());
     push(ir_stack{ node.type_id });
 }
 
@@ -527,19 +532,19 @@ void generate_ir_binary_expr(ast_node& node) {
     
     switch (token_to_char(node.op)) {
     case '+':
-        emit(ir_add, a, b);
+        temit(ir_add, node.type_id, a, b);
         push(ir_stack{ node.type_id });
         break;
     case '-':
-        emit(ir_sub, a, b);
+        temit(ir_sub, node.type_id, a, b);
         push(ir_stack{ node.type_id });
         break;
     case '*':
-        emit(ir_mul, a, b);
+        temit(ir_mul, node.type_id, a, b);
         push(ir_stack{ node.type_id });
         break;
     case '/':
-        emit(ir_div, a, b);
+        temit(ir_div, node.type_id, a, b);
         push(ir_stack{ node.type_id });
         break;
     case '<':
@@ -606,7 +611,7 @@ void generate_ir_identifier(ast_node& node) {
 
 void generate_ir_string_literal(ast_node& node) {
     int index = find_or_add_global_string_data(std::string{node.string_value});
-    emit(ir_load_addr, ir_string{index});
+    temit(ir_load_addr, ts->raw_string_type, ir_string{index});
     push(ir_stack{ ts->raw_string_type });
 }
 

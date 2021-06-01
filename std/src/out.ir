@@ -32,7 +32,7 @@ string #30: "hello world";
 string #31: "it's ok
 
 ";
-func cb$Nstd$Nio$Nprintln$AB$Araw_string -> tuple$$$
+func cb$Nstd$Nio$Nprintln$AB$Araw_string -> void
     arg #0 c: raw_string;
     ir_call puts A0;
 endf
@@ -43,7 +43,7 @@ endf
 func putc -> int
 endf
 
-func exit -> tuple$$$
+func exit -> void
 endf
 
 func free -> int
@@ -67,12 +67,12 @@ func cb$Nstd$Nmemory$Nalloc$AB$Ausize -> raw_ptr
     ir_return ST;
 endf
 
-func cb$Nstd$Nmemory$Ndealloc$AB$Araw_ptr -> tuple$$$
+func cb$Nstd$Nmemory$Ndealloc$AB$Araw_ptr -> void
     arg #0 ptr: raw_ptr;
     ir_call free A0;
 endf
 
-func cb$Nstd$Nmemory$Ncopy$AB$Araw_ptr$Araw_ptr$Ausize -> tuple$$$
+func cb$Nstd$Nmemory$Ncopy$AB$Araw_ptr$Araw_ptr$Ausize -> void
     arg #0 dest: raw_ptr;
     arg #1 src: raw_ptr;
     arg #2 size: usize;
@@ -89,7 +89,7 @@ pop rdi
     ;
 endf
 
-func cb$Nstd$Nmemory$Nset$AB$Araw_ptr$Achar$Ausize -> tuple$$$
+func cb$Nstd$Nmemory$Nset$AB$Araw_ptr$Achar$Ausize -> void
     arg #0 dest: raw_ptr;
     arg #1 value: char;
     arg #2 count: usize;
@@ -124,14 +124,14 @@ func cb$Nstd$Nrawstring$Ncopy$AB$Araw_string$Ausize -> raw_string
     ir_return L0;
 endf
 
-func cb$Nstd$Nrawstring$Ncopy$AB$Araw_string$Araw_string$Ausize -> tuple$$$
+func cb$Nstd$Nrawstring$Ncopy$AB$Araw_string$Araw_string$Ausize -> void
     arg #0 dest: raw_string;
     arg #1 src: raw_string;
     arg #2 size: usize;
     ir_call cb$Nstd$Nmemory$Ncopy$AB$Araw_ptr$Araw_ptr$Ausize A0 A1 A2;
 endf
 
-func cb$Nstd$Nrawstring$Nset$AB$Araw_string$Achar$Ausize -> tuple$$$
+func cb$Nstd$Nrawstring$Nset$AB$Araw_string$Achar$Ausize -> void
     arg #0 dest: raw_string;
     arg #1 value: char;
     arg #2 count: usize;
@@ -169,7 +169,7 @@ func cb$Nstd$Nrawstring$Nequals$AB$Araw_string$Araw_string -> bool
     ir_return 1;
 endf
 
-func cb$Nstd$Ntests1$Nprint_the_char$AB$Achar$Aconst_ptr$$char$$ -> tuple$$$
+func cb$Nstd$Ntests1$Nprint_the_char$AB$Achar$Aconst_ptr$$char$$ -> void
     arg #0 v: char;
     arg #1 d: const_ptr$$char$$;
     ir_load_addr A0;
@@ -195,7 +195,7 @@ func cb$Nstd$Ntests1$Nlongfunc$AB$Aint$Aint$Aint$Aint$Aint$Aint$Aint$Aint -> int
     ir_return ST;
 endf
 
-func cb$Nstd$Ntests1$Ntest_longfunc$AB -> tuple$$$
+func cb$Nstd$Ntests1$Ntest_longfunc$AB -> void
     local #0 result: int;
     ir_call cb$Nstd$Ntests1$Nlongfunc$AB$Aint$Aint$Aint$Aint$Aint$Aint$Aint$Aint 1 2 3 4 5 6 7 8;
     ir_load L0 ST;
@@ -210,7 +210,7 @@ func cb$Nstd$Ntests1$Ntest_longfunc$AB -> tuple$$$
     ir_make_label cb$Nstd$Ntests1$Ntest_longfunc$AB$if481$end;
 endf
 
-func cb$Nstd$Ntests1$Ntest_strcopy_len$AB -> tuple$$$
+func cb$Nstd$Ntests1$Ntest_strcopy_len$AB -> void
     local #0 str: raw_string;
     local #1 newstr: raw_string;
     ir_load_addr STR2;
@@ -231,7 +231,7 @@ func cb$Nstd$Ntests1$Ntest_strcopy_len$AB -> tuple$$$
     ir_call cb$Nstd$Nmemory$Ndealloc$AB$Araw_ptr L1;
 endf
 
-func cb$Nstd$Ntests1$Ntest_strcopy$AB -> tuple$$$
+func cb$Nstd$Ntests1$Ntest_strcopy$AB -> void
     local #0 str: raw_string;
     local #1 newstr: raw_string;
     ir_load_addr STR2;
@@ -264,7 +264,7 @@ func cb$Nstd$Ntests1$Ntest_strcopy$AB -> tuple$$$
     ir_call cb$Nstd$Nmemory$Ndealloc$AB$Araw_ptr L1;
 endf
 
-func cb$Nstd$Ntests1$Ntest_strcopy_saving$AB -> tuple$$$
+func cb$Nstd$Ntests1$Ntest_strcopy_saving$AB -> void
     local #0 str: raw_string;
     local #1 newstr: raw_string;
     local #2 c1: bool;
@@ -337,7 +337,7 @@ func cb$Nstd$Ntests1$Ntest_strcopy_saving$AB -> tuple$$$
     ir_call cb$Nstd$Nmemory$Ndealloc$AB$Araw_ptr L1;
 endf
 
-func cb$Nstd$Ntests1$Ntest_while_statement$AB -> tuple$$$
+func cb$Nstd$Ntests1$Ntest_while_statement$AB -> void
     local #0 str: raw_string;
     local #1 newstr: raw_string;
     local #2 i: int;
@@ -384,7 +384,7 @@ func cb$Nstd$Ntests1$Ntest_short$AB -> bool
     ir_return 1;
 endf
 
-func cb$Nstd$Ntests1$Ntest_for_stmt$AB -> tuple$$$
+func cb$Nstd$Ntests1$Ntest_for_stmt$AB -> void
     local #0 newstr: raw_string;
     local #1 $foriter: range$$usize$$;
     local #2 i: usize;
@@ -422,7 +422,7 @@ func cb$Nstd$Ntests1$Ntest_for_stmt$AB -> tuple$$$
     ir_call cb$Nstd$Nmemory$Ndealloc$AB$Araw_ptr L0;
 endf
 
-func cb$Nstd$Ntests1$Ntest_struct_zeroinit$AB -> tuple$$$
+func cb$Nstd$Ntests1$Ntest_struct_zeroinit$AB -> void
     local #0 a: range$$int$$;
     local #1 b: range$$int$$;
     ir_load [L0 . 0] 0;
@@ -443,7 +443,7 @@ func cb$Nstd$Ntests1$Ntest_struct_zeroinit$AB -> tuple$$$
     ir_make_label cb$Nstd$Ntests1$Ntest_struct_zeroinit$AB$if912$end;
 endf
 
-func cb$Nstd$Ntests1$Ntest_struct_init$AB -> tuple$$$
+func cb$Nstd$Ntests1$Ntest_struct_init$AB -> void
     local #0 a: range$$int$$;
     local #1 b: range$$int$$;
     local #2 c: range$$int$$;
@@ -485,7 +485,7 @@ func cb$Nstd$Ntests1$Ntest_struct_init$AB -> tuple$$$
     ir_make_label cb$Nstd$Ntests1$Ntest_struct_init$AB$if1054$end;
 endf
 
-func cb$Nstd$Ntests1$Ntest_struct_assignment_lvalue$AB -> tuple$$$
+func cb$Nstd$Ntests1$Ntest_struct_assignment_lvalue$AB -> void
     local #0 a: range$$int$$;
     local #1 b: range$$int$$;
     local #2 c: range$$int$$;
@@ -517,7 +517,7 @@ func cb$Nstd$Ntests1$Ntest_struct_assignment_lvalue$AB -> tuple$$$
     ir_make_label cb$Nstd$Ntests1$Ntest_struct_assignment_lvalue$AB$if1142$end;
 endf
 
-func cb$Nstd$Ntests1$Ntest_tuple_zeroinit$AB -> tuple$$$
+func cb$Nstd$Ntests1$Ntest_tuple_zeroinit$AB -> void
     local #0 a: tuple$$int$int$$;
     local #1 b: tuple$$raw_string$bool$$;
     ir_load [L0 . 0] 0;
@@ -540,7 +540,7 @@ func cb$Nstd$Ntests1$Ntest_tuple_zeroinit$AB -> tuple$$$
     ir_make_label cb$Nstd$Ntests1$Ntest_tuple_zeroinit$AB$if1202$end;
 endf
 
-func cb$Nstd$Ntests1$Ntest_tuple_init$AB -> tuple$$$
+func cb$Nstd$Ntests1$Ntest_tuple_init$AB -> void
     local #0 a: tuple$$int$int$int$$;
     local #1 b: tuple$$raw_string$raw_string$bool$$;
     ir_load [L0 . 0] 3;

@@ -2,6 +2,7 @@
 #include <string>
 #include "emitter_x64_windows.hh"
 #include "common.hh"
+#include "carbonc.hh"
 
 namespace carbon {
 
@@ -112,7 +113,7 @@ std::string tostr(const gen_destination& d) {
                 if (auto ch = std::get_if<char>(&it); ch) {
                     result.append(ch, 1);
                 }
-                if (auto off = std::get_if<std::int32_t>(&it); off) {
+                if (auto off = std::get_if<int_type>(&it); off) {
                     result.append(std::to_string(*off));
                 }
                 if (auto d = std::get_if<gen_data_offset>(&it); d) {
@@ -144,7 +145,7 @@ std::string tostr(const gen_operand& d) {
                 if (auto ch = std::get_if<char>(&it); ch) {
                     result.append(ch, 1);
                 }
-                if (auto off = std::get_if<std::int32_t>(&it); off) {
+                if (auto off = std::get_if<int_type>(&it); off) {
                     result.append(std::to_string(*off));
                 }
                 if (auto d = std::get_if<gen_data_offset>(&it); d) {
@@ -154,8 +155,11 @@ std::string tostr(const gen_operand& d) {
             }
             return result + "]";
         },
-        [](std::int32_t v) -> std::string {
+        [](int_type v) -> std::string {
             return std::to_string(v);
+        },
+        [](char c) -> std::string {
+            return std::to_string(c);
         }
     }, d);
 }
@@ -180,7 +184,7 @@ std::string tostr_sized(const gen_destination& d) {
                 if (auto ch = std::get_if<char>(&it); ch) {
                     result.append(ch, 1);
                 }
-                if (auto off = std::get_if<std::int32_t>(&it); off) {
+                if (auto off = std::get_if<int_type>(&it); off) {
                     result.append(std::to_string(*off));
                 }
                 if (auto d = std::get_if<gen_data_offset>(&it); d) {
@@ -213,7 +217,7 @@ std::string tostr_sized(const gen_operand& d) {
                 if (auto ch = std::get_if<char>(&it); ch) {
                     result.append(ch, 1);
                 }
-                if (auto off = std::get_if<std::int32_t>(&it); off) {
+                if (auto off = std::get_if<int_type>(&it); off) {
                     result.append(std::to_string(*off));
                 }
                 if (auto d = std::get_if<gen_data_offset>(&it); d) {
@@ -223,8 +227,11 @@ std::string tostr_sized(const gen_operand& d) {
             }
             return result + "]";
         },
-        [](std::int32_t v) -> std::string {
+        [](int_type  v) -> std::string {
             return std::to_string(v);
+        },
+        [](char c) -> std::string {
+            return std::to_string(c);
         }
     }, d);
 }
@@ -262,7 +269,7 @@ std::size_t get_size(const gen_operand& v) {
         [](gen_offset r) -> std::size_t {
             return r.op_size;
         },
-        [](std::int32_t v) -> std::size_t {
+        [](int_type v) -> std::size_t {
             return 4;
         },
         [](char v) -> std::size_t {
@@ -360,6 +367,10 @@ void emitter::movsx(gen_destination reg, gen_operand src) {
     else {
         mov(reg, src);
     }
+}
+
+void emitter::movzx(gen_destination reg, gen_operand src) {
+    emitln(" movzx %s,%s", tostr_sized(reg).c_str(), tostr_sized(src).c_str());
 }
 
 void emitter::add(gen_destination a, gen_operand b) {

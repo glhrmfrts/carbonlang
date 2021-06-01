@@ -92,6 +92,7 @@ struct generator {
     std::vector<gen_register> arg_registers;
     std::vector<gen_register> temp_registers;
     std::vector<func_data> funcdata;
+    std::stack<gen_operand> opstack;
     std::int32_t current_temp_regs_offset = 0;
     type_system* ts;
     int used_temp_registers = 0;
@@ -111,6 +112,16 @@ struct generator {
     }
 
     // Section: helpers
+
+    void push(const gen_operand& op) {
+        opstack.push(op);
+    }
+
+    gen_operand pop() {
+        auto res = opstack.top();
+        opstack.pop();
+        return res;
+    }
 
     std::pair<std::int32_t, bool> find_max_call_arg_size(const ir_func& func) {
         std::int32_t sz = 0;
@@ -173,11 +184,11 @@ struct generator {
         std::vector<gen_offset_expr> expr{ rbp };
         if (is_negative) {
             expr.push_back('-');
-            expr.push_back(-frame_offset);
+            expr.push_back(-int_type(frame_offset));
         }
         else {
             expr.push_back('+');
-            expr.push_back(frame_offset);
+            expr.push_back(int_type(frame_offset));
         }
         return gen_offset{ 0, expr };
     }
@@ -228,7 +239,7 @@ struct generator {
         return "$cbstr" + std::to_string(si);
     }
 
-    int instr_stack_consumption(const ir_instr& instr) {
+    int instr_opstack_consumption(const ir_instr& instr) {
         int i = 0;
         for (const auto& opr : instr.operands) {
             if (std::holds_alternative<ir_stack>(opr)) {
@@ -249,13 +260,13 @@ struct generator {
                 next_instr = &fn->instrs[i + 1];
             }
 
-            int mysc = instr_stack_consumption(instr);
+            int mysc = instr_opstack_consumption(instr);
             for (int sc = 1; sc < mysc; sc++) { // begins at one to skip rax
                 free_temp_destination();
             }
 
             if (next_instr) {
-                if (instr_stack_consumption(*next_instr) > 0) {
+                if (instr_opstack_consumption(*next_instr) > 0) {
                     fndata->instr_data[instr.index].dest = rax;
                 }
                 else {
@@ -276,6 +287,8 @@ struct generator {
     // Section: generators
 
     void generate_program(ir_program& prog) {
+        funcdata.resize(prog.funcs.size());
+
         for (const auto& func : prog.funcs) {
             if (func.is_extern) {
                 em->add_extern_func_decl(func.name.c_str());
@@ -306,11 +319,15 @@ struct generator {
     void generate_func_code(ir_func& func) {
         auto& fdata = funcdata[func.index];
         fdata.end_label = func.name + "$end";
+        fdata.instr_data.resize(func.instrs.size());
+        fdata.arg_data.resize(func.args.size());
+        fdata.local_data.resize(func.locals.size());
 
         this->fn = &func;
         this->fndata = &fdata;
 
         determine_instrs_destination();
+        fdata.local_data.resize(func.locals.size()); // resize for any created temps
 
         em->begin_func(func.name.c_str());
 
@@ -328,7 +345,7 @@ struct generator {
                     auto frame_offset = fdata.arg_data[i - 1].frame_offset;
 
                     auto src = adjust_for_type(gen_register{ arg_registers[i - 1] }, arg.type);
-                    auto dest = adjust_for_type(gen_offset{ 0, {rsp, '+', frame_offset} }, arg.type);
+                    auto dest = adjust_for_type(gen_offset{ 0, {rsp, '+', int_type(frame_offset)} }, arg.type);
                     em->mov(dest, toop(src));
                 }
             }
@@ -354,7 +371,7 @@ struct generator {
         }
 
         if (needs_rbp) { em->mov(rbp, rsp); }
-        if (stack_size > 0) { em->sub(rsp, stack_size); }
+        if (stack_size > 0) { em->sub(rsp, (int_type)stack_size); }
 
         for (auto& instr : func.instrs) {
             generate_ir_instr(instr);
@@ -362,7 +379,7 @@ struct generator {
 
         em->label(fdata.end_label.c_str());
 
-        if (stack_size > 0) { em->add(rsp, stack_size); }
+        if (stack_size > 0) { em->add(rsp, (int_type)stack_size); }
         for (std::size_t i = temp_regs.size(); i > 0; i--) {
             em->pop(temp_regs[i - 1]);
         }
@@ -379,11 +396,37 @@ struct generator {
         auto& idata = fndata->instr_data[instr.index];
 
         switch (instr.op) {
+        case ir_make_label: {
+            auto label = std::get<ir_label>(instr.operands.front());
+            em->label(label.name.c_str());
+            break;
+        }
+        case ir_jmp: {
+            auto label = std::get<ir_label>(instr.operands.front());
+            em->jmp(label.name.c_str());
+            break;
+        }
+        case ir_load: {
+            auto [b, btype] = transform_ir_operand(instr.operands[1]);
+            auto [a, atype] = transform_ir_operand(instr.operands[0]);
+
+            if (is_aggregate_type(atype)) {
+                // TODO: structs
+            }
+            else {
+                if (!is_reg(b)) {
+                    move(adjust_for_type(rax, btype), btype, b, btype);
+                    b = toop(adjust_for_type(rax, btype));
+                }
+                move(todest(a), atype, b, btype);
+            }
+            break;
+        }
         case ir_add:
         case ir_sub:
         case ir_mul: {
-            auto [b, btype] = transform_ir_operand(instr.operands.back());
-            auto [a, atype] = transform_ir_operand(instr.operands.front());
+            auto [b, btype] = transform_ir_operand(instr.operands[1]);
+            auto [a, atype] = transform_ir_operand(instr.operands[0]);
             if (!is_reg(a)) {
                 move(adjust_for_type(rax, atype), atype, a, atype);
                 a = toop(adjust_for_type(rax, atype));
@@ -392,10 +435,10 @@ struct generator {
 
             auto dest = instr_dest_to_gen_dest(idata.dest);
             if (!(dest == todest(a))) {
-                move(adjust_for_type(dest, atype), atype, a, atype);
+                move(adjust_for_type(dest, instr.result_type), atype, a, atype);
             }
 
-            push_operand(dest);
+            push(toop(dest));
             break;
         }
         }
@@ -438,19 +481,20 @@ struct generator {
             );
         }
         if (auto arg = std::get_if<ir_stack>(&opr); arg) {
-
+            auto cgop = pop();
+            return std::make_pair(cgop, arg->type);
         }
         if (auto arg = std::get_if<ir_string>(&opr); arg) {
-
+            return std::make_pair(gen_data_offset{ get_string_label(arg->index) }, ts->raw_string_type);
         }
         if (auto arg = std::get_if<ir_int>(&opr); arg) {
-
+            return std::make_pair(arg->val, arg->type);
         }
         if (auto arg = std::get_if<ir_float>(&opr); arg) {
 
         }
         if (auto arg = std::get_if<char>(&opr); arg) {
-
+            return std::make_pair(*arg, ts->raw_string_type.get().elem_type);
         }
     }
 
@@ -465,6 +509,13 @@ struct generator {
     gen_destination get_local_destination(int index) {
         auto& l = fn->locals[index];
         return adjust_for_type(local_var_destination(fndata->local_data[index].frame_offset), l.type);
+    }
+
+    gen_destination instr_dest_to_gen_dest(const instr_dest& id) {
+        if (std::holds_alternative<gen_register>(id)) {
+            return std::get<gen_register>(id);
+        }
+        return get_local_destination(std::get<local_index>(id));
     }
 
     void move(const gen_destination& dest, type_id dest_tid, const gen_operand& op, type_id tid) {

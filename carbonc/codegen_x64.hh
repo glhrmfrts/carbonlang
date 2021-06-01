@@ -1,6 +1,7 @@
 #pragma once
 
 #include <variant>
+#include "carbonc.hh"
 
 namespace carbon {
 
@@ -73,14 +74,14 @@ enum gen_register {
 };
 
 struct gen_data_offset {
-    std::string_view label;
+    std::string label;
 
     bool operator ==(const gen_data_offset& other) const {
         return label == other.label;
     }
 };
 
-using gen_offset_expr = std::variant<gen_register, gen_data_offset, std::int32_t, char>;
+using gen_offset_expr = std::variant<gen_register, gen_data_offset, int_type, char>;
 
 struct gen_offset {
     std::size_t op_size;
@@ -93,7 +94,7 @@ struct gen_offset {
 
 using gen_destination = std::variant<gen_register, gen_data_offset, gen_offset>;
 
-using gen_operand = std::variant<gen_register, gen_offset, gen_data_offset, std::int32_t, char>;
+using gen_operand = std::variant<gen_register, gen_offset, gen_data_offset, int_type, char>;
 
 struct gen_register_sizes {
     gen_register r64;
