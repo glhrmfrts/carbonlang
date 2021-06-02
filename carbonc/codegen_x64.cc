@@ -39,7 +39,8 @@ gen_destination adjust_for_type(gen_destination dest, type_id tid) {
     auto tdef = tid.scope->type_defs[tid.type_index];
     if (std::holds_alternative<gen_register>(dest)) {
         auto reg = std::get<gen_register>(dest);
-        switch (tdef->size) {
+        std::size_t sz = std::min(tdef->size, std::size_t{ 8 });
+        switch (sz) {
         case 1:
             return gen_register(reg + 16*3);
         case 2:
@@ -65,6 +66,10 @@ gen_operand toop(gen_destination dest) {
     if (std::holds_alternative<gen_offset>(dest)) {
         return std::get<gen_offset>(dest);
     }
+    if (std::holds_alternative<gen_data_offset>(dest)) {
+        return std::get<gen_data_offset>(dest);
+    }
+    assert(!"toop not handled!");
 }
 
 gen_destination todest(gen_operand op) {
@@ -74,6 +79,10 @@ gen_destination todest(gen_operand op) {
     if (std::holds_alternative<gen_offset>(op)) {
         return std::get<gen_offset>(op);
     }
+    if (std::holds_alternative<gen_data_offset>(op)) {
+        return std::get<gen_data_offset>(op);
+    }
+    assert(!"todest not handled!");
 }
 
 template <typename T> bool is_mem(const T& op) {
@@ -82,6 +91,10 @@ template <typename T> bool is_mem(const T& op) {
 
 template <typename T> bool is_reg(const T& op) {
     return std::holds_alternative<gen_register>(op);
+}
+
+template <typename T> bool is_lit(const T& op) {
+    return std::holds_alternative<int_type>(op) || std::holds_alternative<char>(op);
 }
 
 struct generator {
@@ -134,7 +147,7 @@ struct generator {
                 for (auto& arg : inst.operands) {
                     if (i++ == 0) continue;
 
-                    auto [op, optype] = transform_ir_operand(arg);
+                    auto optype = get_ir_operand_type(arg);
                     auto& tdef = optype.get();
                     std::int32_t asize = 8;// std::min(8, std::int32_t(tdef.size));
                     args_size += asize;
@@ -240,7 +253,7 @@ struct generator {
     }
 
     std::string get_string_label(int idx) {
-        return "$cbstr" + std::to_string(si);
+        return "$cbstr" + std::to_string(idx);
     }
 
     int instr_opstack_consumption(const ir_instr& instr) {
@@ -251,6 +264,23 @@ struct generator {
             }
         }
         return i;
+    }
+
+    bool instr_pushes_to_stack(const ir_instr& instr) {
+        switch (instr.op) {
+        case ir_add:
+        case ir_sub:
+        case ir_mul:
+        case ir_div:
+        case ir_deref:
+        case ir_index:
+        case ir_load_addr:
+            return true;
+        case ir_call:
+            return instr.result_type != ts->void_type;
+        default:
+            return false;
+        }
     }
 
     void determine_instrs_destination() {
@@ -269,16 +299,11 @@ struct generator {
                 free_temp_destination();
             }
 
+            fndata->instr_data[instr.index].dest = rax;
             if (next_instr) {
-                if (instr_opstack_consumption(*next_instr) > 0) {
-                    fndata->instr_data[instr.index].dest = rax;
-                }
-                else {
+                if (instr_pushes_to_stack(instr) && instr_opstack_consumption(*next_instr) == 0) {
                     fndata->instr_data[instr.index].dest = use_temp_destination(instr.result_type);
                 }
-            }
-            else {
-                fndata->instr_data[instr.index].dest = rax;
             }
         }
     }
@@ -444,16 +469,16 @@ struct generator {
             if (num_args > arg_registers.size()) {
                 for (std::size_t i = num_args; i > arg_registers.size(); i--) {
                     int_type offs = (i - 1) * 8;
-                    auto dest = gen_offset{ 0, { rsp, '+', offs } };
                     auto [op, optype] = transform_ir_operand(instr.operands[i]);
+                    auto dest = gen_offset{ optype.get().size, { rsp, '+', offs } };
                     move(dest, optype, op, optype);
                 }
             }
 
             std::size_t max_reg_args = std::min(arg_registers.size(), num_args);
             for (std::size_t i = max_reg_args; i > 0; i--) {
-                auto dest = gen_register{ arg_registers[i - 1] };
                 auto [op, optype] = transform_ir_operand(instr.operands[i]);
+                auto dest = adjust_for_type(arg_registers[i - 1], optype);
                 move(dest, optype, op, optype);
             }
 
@@ -545,7 +570,7 @@ struct generator {
         }
         case ir_load_addr: {
             auto [a, atype] = transform_ir_operand(instr.operands[0]);
-            auto dest = adjust_for_type(instr_dest_to_gen_dest(idata.dest), atype);
+            auto dest = instr_dest_to_gen_dest(idata.dest);
             load_address(dest, todest(a), atype);
             push(toop(dest));
             break;
@@ -558,9 +583,13 @@ struct generator {
                 // TODO: structs
             }
             else {
-                if (!is_reg(b)) {
+                if (is_mem(b)) {
+                    move(adjust_for_type(rax, atype), atype, b, btype);
+                    b = toop(adjust_for_type(rax, atype));
+                }
+                else if (!is_reg(b)) {
                     move(adjust_for_type(rax, btype), btype, b, btype);
-                    b = toop(adjust_for_type(rax, btype));
+                    b = toop(adjust_for_type(rax, atype));
                 }
                 move(todest(a), atype, b, btype);
             }
@@ -577,9 +606,9 @@ struct generator {
             }
             emit_binary_math_op(instr.op, todest(a), b);
 
-            auto dest = instr_dest_to_gen_dest(idata.dest);
+            auto dest = adjust_for_type(instr_dest_to_gen_dest(idata.dest), instr.result_type);
             if (!(dest == todest(a))) {
-                move(adjust_for_type(dest, instr.result_type), atype, a, atype);
+                move(dest, instr.result_type, a, atype);
             }
 
             push(toop(dest));
@@ -592,6 +621,10 @@ struct generator {
         auto label = std::get<ir_label>(instr.operands.back());
         auto [b, btype] = transform_ir_operand(instr.operands[1]);
         auto [a, atype] = transform_ir_operand(instr.operands[0]);
+        if (!is_reg(a)) {
+            move(adjust_for_type(rax, atype), atype, a, atype);
+            a = toop(adjust_for_type(rax, atype));
+        }
         em->cmp(a, b);
         em->emitln(" %s %s", j, label.name.c_str());
     }
@@ -669,7 +702,7 @@ struct generator {
         else if (auto arg = std::get_if<ir_local>(&opr); arg) {
             return std::make_pair(
                 toop(get_local_destination(arg->index)),
-                fn->args[arg->index].type
+                fn->locals[arg->index].type
             );
         }
         else if (auto arg = std::get_if<ir_stack>(&opr); arg) {
@@ -687,6 +720,61 @@ struct generator {
         }
         else if (auto arg = std::get_if<char>(&opr); arg) {
             return std::make_pair(*arg, ts->raw_string_type.get().elem_type);
+        }
+        else {
+            assert(!"transform_ir_operand unhandled");
+        }
+    }
+
+    type_id get_ir_field_type(const ir_field* arg) {
+        if (std::holds_alternative<ir_local>(arg->ref)) {
+            int li = std::get<ir_local>(arg->ref).index;
+            auto type = fn->locals[li].type;
+            auto& field = type.get().structure.fields[arg->field_index];
+            return field.type;
+        }
+        else if (std::holds_alternative<ir_arg>(arg->ref)) {
+            int ai = std::get<ir_arg>(arg->ref).index;
+            auto type = fn->args[ai].type;
+            auto& field = type.get().structure.fields[arg->field_index];
+            return field.type;
+        }
+        else if (std::holds_alternative<ir_stack>(arg->ref)) {
+            auto type = std::get<ir_stack>(arg->ref).type;
+            auto& field = type.get().structure.fields[arg->field_index];
+            return field.type;
+        }
+        else if (std::holds_alternative<std::shared_ptr<ir_field>>(arg->ref)) {
+            auto type = get_ir_field_type(std::get<std::shared_ptr<ir_field>>(arg->ref).get());
+            auto& field = type.get().structure.fields[arg->field_index];
+            return field.type;
+        }
+    }
+
+    type_id get_ir_operand_type(const ir_operand& opr) {
+        if (auto arg = std::get_if<ir_field>(&opr); arg) {
+            return get_ir_field_type(arg);
+        }
+        else if (auto arg = std::get_if<ir_arg>(&opr); arg) {
+            return fn->args[arg->index].type;
+        }
+        else if (auto arg = std::get_if<ir_local>(&opr); arg) {
+            return fn->locals[arg->index].type;
+        }
+        else if (auto arg = std::get_if<ir_stack>(&opr); arg) {            
+            return arg->type;
+        }
+        else if (auto arg = std::get_if<ir_string>(&opr); arg) {
+            return ts->raw_string_type;
+        }
+        else if (auto arg = std::get_if<ir_int>(&opr); arg) {
+            return arg->type;
+        }
+        else if (auto arg = std::get_if<ir_float>(&opr); arg) {
+            // TODO:
+        }
+        else if (auto arg = std::get_if<char>(&opr); arg) {
+            return ts->raw_string_type.get().elem_type;
         }
         else {
             assert(!"transform_ir_operand unhandled");

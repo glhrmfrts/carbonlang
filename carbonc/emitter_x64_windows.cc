@@ -176,7 +176,9 @@ std::string tostr_sized(const gen_destination& d) {
             return result;
         },
         [](gen_offset r) -> std::string {
-            std::string result = std::string{ptrsizes[r.op_size]} + " [";
+            // guard for struct types
+            std::size_t sz = std::min(r.op_size, std::size_t{8});
+            std::string result = std::string{ptrsizes[sz]} + " [";
             for (const auto& it : r.expr) {
                 if (auto reg = std::get_if<gen_register>(&it); reg) {
                     result.append(std::string{ register_names[*reg] });
@@ -209,7 +211,8 @@ std::string tostr_sized(const gen_operand& d) {
             return result;
         },
         [](gen_offset r) -> std::string {
-            std::string result = std::string{ptrsizes[r.op_size]} + " [";
+            std::size_t sz = std::min(r.op_size, std::size_t{8});
+            std::string result = std::string{ptrsizes[sz]} + " [";
             for (const auto& it : r.expr) {
                 if (auto reg = std::get_if<gen_register>(&it); reg) {
                     result.append(std::string{ register_names[*reg] });

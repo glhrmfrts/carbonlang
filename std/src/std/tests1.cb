@@ -103,6 +103,7 @@ func test_short(): bool {
     return true;
 }
 
+/*
 func test_for_stmt() {
     let newstr = "helloworld".copy;
     for (i in 0 .. newstr.len) {
@@ -185,6 +186,7 @@ func test_tuple_init() {
         println("test_tuple_init: NOK");
     }
 }
+*/
 
 func main(): int {
     let text = "hello world";
@@ -202,16 +204,16 @@ func main(): int {
     }
 
     test_longfunc();
-    test_strcopy_len();
-    test_strcopy();
-    test_strcopy_saving();
-    test_while_statement();
-    test_for_stmt();
-    test_struct_zeroinit();
-    test_struct_init();
-    test_struct_assignment_lvalue();
-    test_tuple_zeroinit();
-    test_tuple_init();
+    //test_strcopy_len();
+    //test_strcopy();
+    //test_strcopy_saving();
+    //test_while_statement();
+    //test_for_stmt();
+    //test_struct_zeroinit();
+    //test_struct_init();
+    //test_struct_assignment_lvalue();
+    //test_tuple_zeroinit();
+    //test_tuple_init();
 
     mem::dealloc(cast[raw_ptr] newtext);
 
