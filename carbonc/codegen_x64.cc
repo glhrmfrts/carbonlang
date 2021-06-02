@@ -129,7 +129,11 @@ struct generator {
         for (const auto& inst : func.instrs) {
             if (inst.op == ir_call) {
                 std::int32_t args_size = 0;
+
+                std::size_t i = 0;
                 for (auto& arg : inst.operands) {
+                    if (i++ == 0) continue;
+
                     auto [op, optype] = transform_ir_operand(arg);
                     auto& tdef = optype.get();
                     std::int32_t asize = 8;// std::min(8, std::int32_t(tdef.size));
@@ -459,42 +463,77 @@ struct generator {
     }
 
     std::pair<gen_operand, type_id> transform_ir_operand(const ir_operand& opr) {
-        if (auto str = std::get_if<std::string>(&opr); str) {
-            
-        }
-        if (auto lab = std::get_if<ir_label>(&opr); lab) {
-            
-        }
         if (auto arg = std::get_if<ir_field>(&opr); arg) {
+            if (std::holds_alternative<ir_local>(arg->ref)) {
+                int li = std::get<ir_local>(arg->ref).index;
+                auto type = fn->locals[li].type;
+                auto& field = type.get().structure.fields[arg->field_index];
 
+                auto dest = get_local_destination(li);
+                auto& offs = std::get<gen_offset>(dest);
+                offs.expr[2] = std::get<int_type>(offs.expr[2]) + int_type(field.offset);
+                return std::make_pair(toop(dest), field.type);
+            }
+            else if (std::holds_alternative<ir_arg>(arg->ref)) {
+                int ai = std::get<ir_arg>(arg->ref).index;
+                auto type = fn->args[ai].type;
+                auto& field = type.get().structure.fields[arg->field_index];
+
+                auto dest = get_arg_destination(ai);
+                auto& offs = std::get<gen_offset>(dest);
+                offs.expr[2] = std::get<int_type>(offs.expr[2]) - int_type(field.offset);
+                return std::make_pair(toop(dest), field.type);
+            }
+            else if (std::holds_alternative<ir_stack>(arg->ref)) {
+                auto op = pop();
+                auto type = std::get<ir_stack>(arg->ref).type;
+                auto& field = type.get().structure.fields[arg->field_index];
+
+                if (is_reg(op)) {
+                    std::vector<gen_offset_expr> expr{ std::get<gen_register>(op), '+', int_type(field.offset) };
+                    auto dest = gen_offset{ field.type.get().size, expr };
+                    return std::make_pair(toop(dest), field.type);
+                }
+                else if (std::holds_alternative<gen_offset>(op)) {
+                    auto& offs = std::get<gen_offset>(op);
+                    offs.expr[2] = std::get<int_type>(offs.expr[2]) - int_type(field.offset);
+                    return std::make_pair(op, field.type);
+                }
+            }
+            else if (std::holds_alternative<std::shared_ptr<ir_field>>(arg->ref)) {
+                // TODO
+            }
         }
-        if (auto arg = std::get_if<ir_arg>(&opr); arg) {
+        else if (auto arg = std::get_if<ir_arg>(&opr); arg) {
             return std::make_pair(
                 toop(get_arg_destination(arg->index)),
                 fn->args[arg->index].type
             );
         }
-        if (auto arg = std::get_if<ir_local>(&opr); arg) {
+        else if (auto arg = std::get_if<ir_local>(&opr); arg) {
             return std::make_pair(
                 toop(get_local_destination(arg->index)),
                 fn->args[arg->index].type
             );
         }
-        if (auto arg = std::get_if<ir_stack>(&opr); arg) {
+        else if (auto arg = std::get_if<ir_stack>(&opr); arg) {
             auto cgop = pop();
             return std::make_pair(cgop, arg->type);
         }
-        if (auto arg = std::get_if<ir_string>(&opr); arg) {
+        else if (auto arg = std::get_if<ir_string>(&opr); arg) {
             return std::make_pair(gen_data_offset{ get_string_label(arg->index) }, ts->raw_string_type);
         }
-        if (auto arg = std::get_if<ir_int>(&opr); arg) {
+        else if (auto arg = std::get_if<ir_int>(&opr); arg) {
             return std::make_pair(arg->val, arg->type);
         }
-        if (auto arg = std::get_if<ir_float>(&opr); arg) {
-
+        else if (auto arg = std::get_if<ir_float>(&opr); arg) {
+            // TODO:
         }
-        if (auto arg = std::get_if<char>(&opr); arg) {
+        else if (auto arg = std::get_if<char>(&opr); arg) {
             return std::make_pair(*arg, ts->raw_string_type.get().elem_type);
+        }
+        else {
+            assert(!"transform_ir_operand unhandled");
         }
     }
 

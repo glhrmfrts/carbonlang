@@ -85,6 +85,9 @@ ir_ref toref(const ir_operand& opr) {
     if (auto arg = std::get_if<ir_stack>(&opr); arg) {
         return *arg;
     }
+    if (auto arg = std::get_if<ir_field>(&opr); arg) {
+        return std::make_shared<ir_field>(*arg);
+    }
 }
 
 // Section: analysis

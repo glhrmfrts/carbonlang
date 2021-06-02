@@ -1,6 +1,7 @@
 #pragma once
 
 #include <variant>
+#include <memory>
 #include "carbonc.hh"
 #include "type_system.hh"
 
@@ -68,7 +69,9 @@ struct ir_label {
     std::string name;
 };
 
-using ir_ref = std::variant<ir_local, ir_arg, ir_stack>;
+struct ir_field;
+
+using ir_ref = std::variant<ir_local, ir_arg, ir_stack, std::shared_ptr<ir_field>>;
 
 struct ir_field {
     ir_ref ref;
