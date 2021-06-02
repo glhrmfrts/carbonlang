@@ -51,6 +51,12 @@ ir_operand pop() {
     return res;
 }
 
+void discard_stack() {
+    while (!operand_stack.empty()) {
+        operand_stack.pop();
+    }
+}
+
 template <typename... Args> void emit(ir_op op, Args&&... args) {
     fn->instrs.push_back({ op, {}, std::vector<ir_operand>{ std::forward<Args>(args)... }, (int)fn->instrs.size() });
 }
@@ -479,7 +485,9 @@ void generate_ir_call_expr(ast_node& node) {
     }
 
     emitops(ir_call, node.type_id, args);
-    push(ir_stack{ node.type_id });
+    if (node.type_id != ts->void_type) {
+        push(ir_stack{ node.type_id });
+    }
 }
 
 void generate_ir_deref_expr(ast_node& node) {
@@ -693,6 +701,7 @@ void generate_ir_node(ast_node& node) {
         for (auto& child : node.children) {
             if (child) {
                 generate_ir_node(*child);
+                discard_stack();
             }
         }
         break;
