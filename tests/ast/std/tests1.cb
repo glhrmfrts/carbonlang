@@ -257,73 +257,35 @@ compound_stmt{
             arg_list(
               )}}}}
     func_decl{
-      identifier{"test_short"}
+      identifier{"get_result"}
       arg_list()
       :type_expr{
-        identifier{"bool"}}
+        identifier{"int"}}
 compound_stmt{
         stmt_list{
-          call_expr{
-            identifier{"println"}
-            arg_list(
-              string_literal{"SHOULD NOT PRINT THIS"})}
           return_stmt{
-                        bool_literal{true}}}}}
+                        int_literal{2}}}}}
     func_decl{
       identifier{"main"}
       arg_list()
       :type_expr{
         identifier{"int"}}
 compound_stmt{
-        decl_list{
-          var_decl{
-            identifier{"text"}
-            =string_literal{"hello world"}}
-          var_decl{
-            identifier{"newtext"}
-            =call_expr{
-              identifier{"copy"}
-              arg_list(
-                identifier{"text"})}}}
-        stmt_list{
-          binary_expr{
-            unary_expr{
-              *
-              identifier{"newtext"}}
-            =
-            }
-          binary_expr{
-            index_expr{
-              identifier{"newtext"}
-              int_literal{6}}
-            =
-            }
-          }
-        decl_list{
-          var_decl{
-            identifier{"ok"}
-            =binary_expr{
-              binary_expr{
-                call_expr{
-                  identifier{"len"}
-                  arg_list(
-                    identifier{"newtext"})}
-                >
-                int_literal{10}}
-              	
-              binary_expr{
-                int_literal{3}
-                >
-                int_literal{5}}}}}
-        stmt_list{
-          }
         stmt_list{
           call_expr{
             identifier{"test_longfunc"}
             arg_list()}
           call_expr{
-            identifier{"mem::dealloc"}
-            arg_list(
-              )}
+            identifier{"test_strcopy_len"}
+            arg_list()}
+          call_expr{
+            identifier{"test_strcopy"}
+            arg_list()}
+          call_expr{
+            identifier{"test_strcopy_saving"}
+            arg_list()}
+          call_expr{
+            identifier{"test_while_statement"}
+            arg_list()}
           return_stmt{
                         int_literal{0}}}}}}}

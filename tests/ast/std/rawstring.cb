@@ -22,10 +22,7 @@ compound_stmt{
               identifier{"copy"}
               arg_list(
                 identifier{"str"}
-                call_expr{
-                  identifier{"len"}
-                  arg_list(
-                    identifier{"str"})})}}}}}
+                )}}}}}
     func_decl{
       identifier{"copy"}
       arg_list(

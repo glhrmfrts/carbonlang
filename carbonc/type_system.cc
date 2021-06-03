@@ -1694,6 +1694,15 @@ void clear_type_errors(type_system& ts, ast_node& node) {
     }
 }
 
+void visit_pre_children(type_system& ts, ast_node& node) {
+    for (auto& child : node.pre_children) {
+        if (child) {
+            child->parent = &node;
+            visit_tree(ts, *child);
+        }
+    }
+}
+
 void visit_children(type_system& ts, ast_node& node) {
     for (auto& child : node.children) {
         if (child) {
@@ -2408,6 +2417,13 @@ void final_analysis(type_system& ts, ast_node* nodeptr) {
 
     auto& node = *nodeptr;
     switch (node.type) {
+    case ast_type::for_stmt: {
+        visit_tree(ts, *node.forinfo.declare_for_iter);
+        visit_tree(ts, *node.forinfo.assign_elem_to_range_start);
+        visit_tree(ts, *node.forinfo.compare_elem_to_range_end);
+        visit_tree(ts, *node.forinfo.increase_elem);
+        break;
+    }
     case ast_type::func_decl: {
         // remangle the function name with the fully qualified module name
         if ((node.func.linkage == func_linkage::external_carbon || node.func.linkage == func_linkage::local_carbon)
@@ -2427,11 +2443,15 @@ void final_analysis(type_system& ts, ast_node* nodeptr) {
         break;
     }
     case ast_type::call_expr: {
+        visit_pre_children(ts, node);
         visit_children(ts, node);
 
         // update the called function mangled name
         if (node.call.funcdef) {
             node.call.mangled_name = node.call.funcdef->self->type_def.mangled_name;
+        }
+        else {
+            assert(!"no funcdef!");
         }
 
         for (int i = 0; i < node.call.args.size(); i++) {
@@ -2439,7 +2459,14 @@ void final_analysis(type_system& ts, ast_node* nodeptr) {
         }
         break;
     }
+    case ast_type::init_expr: {
+        for (auto& as : node.initlist.assignments) {
+            visit_tree(ts, *as);
+        }
+        break;
+    }
     case ast_type::binary_expr: {
+        visit_pre_children(ts, node);
         visit_children(ts, node);
 
         if (token_to_char(node.op) == '=') {
@@ -2448,16 +2475,19 @@ void final_analysis(type_system& ts, ast_node* nodeptr) {
         break;
     }
     case ast_type::var_decl: {
+        visit_pre_children(ts, node);
         visit_children(ts, node);
         check_var_decl_bool_op(ts, node);
         break;
     }
     case ast_type::return_stmt: {
+        visit_pre_children(ts, node);
         visit_children(ts, node);
         check_return_bool_op(ts, node);
         break;
     }
     default: {
+        visit_pre_children(ts, node);
         visit_children(ts, node);
         break;
     }

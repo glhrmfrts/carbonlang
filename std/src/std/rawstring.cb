@@ -2,7 +2,7 @@ import std::libc::string;
 import std::memory as mem;
 
 func copy(str: raw_string): raw_string {
-    return copy(str, len(str));
+    return copy(str, str.len);
 }
 
 func copy(str: raw_string, size: usize): raw_string {

@@ -88,7 +88,7 @@ func test_while_statement() {
         println("asdasd");
     }
 
-    if (equals(newstr, "GGGGG") && !equals(newstr, "foobar")) {
+    if (equals(newstr, "GGGGG") && equals(newstr, "foobar")) {
         println("test_while_statement: OK");
     }
     else {
@@ -98,12 +98,12 @@ func test_while_statement() {
     mem::dealloc(cast[raw_ptr] newstr);
 }
 
+/*
 func test_short(): bool {
     println("SHOULD NOT PRINT THIS");
     return true;
 }
 
-/*
 func test_for_stmt() {
     let newstr = "helloworld".copy;
     for (i in 0 .. newstr.len) {
@@ -188,26 +188,16 @@ func test_tuple_init() {
 }
 */
 
-func main(): int {
-    let text = "hello world";
-    let newtext = copy(text);
-    *newtext = 'K';
-    newtext[6] = 'G';
-    if ((len(newtext) == 11 || test_short()) && (4*9*9) >= 7) {
-        println(text);
-        println(newtext);
-    }
+func get_result(): int { return 2; }
 
-    let ok = len(newtext) > 10 && 3 > 5;
-    if (ok) {
-        println("it's ok\n\n");
-    }
+func main(): int {  
+    //let result = get_result();
 
     test_longfunc();
-    //test_strcopy_len();
-    //test_strcopy();
-    //test_strcopy_saving();
-    //test_while_statement();
+    test_strcopy_len();
+    test_strcopy();
+    test_strcopy_saving();
+    test_while_statement();
     //test_for_stmt();
     //test_struct_zeroinit();
     //test_struct_init();
@@ -215,7 +205,7 @@ func main(): int {
     //test_tuple_zeroinit();
     //test_tuple_init();
 
-    mem::dealloc(cast[raw_ptr] newtext);
+    //mem::dealloc(cast[raw_ptr] newtext);
 
-    return 0;
+    return 0;//result*2;
 }

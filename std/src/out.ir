@@ -12,11 +12,6 @@ string #10: "GGGGG";
 string #11: "foobar";
 string #12: "test_while_statement: OK";
 string #13: "test_while_statement: NOK";
-string #14: "SHOULD NOT PRINT THIS";
-string #15: "hello world";
-string #16: "it's ok
-
-";
 func cb$Nstd$Nio$Nprintln$AB$Araw_string -> void
     arg #0 c: raw_string;
     ir_call puts A0;
@@ -135,22 +130,22 @@ func cb$Nstd$Nrawstring$Nequals$AB$Araw_string$Araw_string -> bool
     local #0 $foriter: range$$usize$$;
     local #1 i: usize;
     ir_load [L0 . 0] 0;
-    ir_call cb$Nlen$AB$Araw_string A0;
+    ir_call cb$Nstd$Nrawstring$Nlen$AB$Araw_string A0;
     ir_load [L0 . 1] ST;
     ir_load L1 [L0 . 0];
-    ir_make_label cb$Nstd$Nrawstring$Nequals$AB$Araw_string$Araw_string$f351$cond;
-    ir_jmp_gte L1 [L0 . 1] cb$Nstd$Nrawstring$Nequals$AB$Araw_string$Araw_string$f351$end;
-    ir_make_label cb$Nstd$Nrawstring$Nequals$AB$Araw_string$Araw_string$f351$body;
+    ir_make_label cb$Nstd$Nrawstring$Nequals$AB$Araw_string$Araw_string$f350$cond;
+    ir_jmp_gte L1 [L0 . 1] cb$Nstd$Nrawstring$Nequals$AB$Araw_string$Araw_string$f350$end;
+    ir_make_label cb$Nstd$Nrawstring$Nequals$AB$Araw_string$Araw_string$f350$body;
     ir_index A0 L1;
     ir_index A1 L1;
-    ir_jmp_eq ST ST cb$Nstd$Nrawstring$Nequals$AB$Araw_string$Araw_string$if348$else;
-    ir_make_label cb$Nstd$Nrawstring$Nequals$AB$Araw_string$Araw_string$if348$body;
+    ir_jmp_eq ST ST cb$Nstd$Nrawstring$Nequals$AB$Araw_string$Araw_string$if347$else;
+    ir_make_label cb$Nstd$Nrawstring$Nequals$AB$Araw_string$Araw_string$if347$body;
     ir_return 0;
-    ir_make_label cb$Nstd$Nrawstring$Nequals$AB$Araw_string$Araw_string$if348$else;
+    ir_make_label cb$Nstd$Nrawstring$Nequals$AB$Araw_string$Araw_string$if347$else;
     ir_add L1 1;
     ir_load L1 ST;
-    ir_jmp cb$Nstd$Nrawstring$Nequals$AB$Araw_string$Araw_string$f351$cond;
-    ir_make_label cb$Nstd$Nrawstring$Nequals$AB$Araw_string$Araw_string$f351$end;
+    ir_jmp cb$Nstd$Nrawstring$Nequals$AB$Araw_string$Araw_string$f350$cond;
+    ir_make_label cb$Nstd$Nrawstring$Nequals$AB$Araw_string$Araw_string$f350$end;
     ir_return 1;
 endf
 
@@ -263,49 +258,49 @@ func cb$Nstd$Ntests1$Ntest_strcopy_saving$AB -> void
     ir_load L1 ST;
     ir_index L0 0;
     ir_index L1 0;
-    ir_jmp_neq ST ST cb$Nstd$Ntests1$Ntest_strcopy_saving$AB$if948$else;
-    ir_make_label cb$Nstd$Ntests1$Ntest_strcopy_saving$AB$if948$body;
+    ir_jmp_neq ST ST cb$Nstd$Ntests1$Ntest_strcopy_saving$AB$if874$else;
+    ir_make_label cb$Nstd$Ntests1$Ntest_strcopy_saving$AB$if874$body;
     ir_load L2 1;
-    ir_jmp cb$Nstd$Ntests1$Ntest_strcopy_saving$AB$if948$end;
-    ir_make_label cb$Nstd$Ntests1$Ntest_strcopy_saving$AB$if948$else;
+    ir_jmp cb$Nstd$Ntests1$Ntest_strcopy_saving$AB$if874$end;
+    ir_make_label cb$Nstd$Ntests1$Ntest_strcopy_saving$AB$if874$else;
     ir_load L2 0;
-    ir_make_label cb$Nstd$Ntests1$Ntest_strcopy_saving$AB$if948$end;
+    ir_make_label cb$Nstd$Ntests1$Ntest_strcopy_saving$AB$if874$end;
     ir_index L0 1;
     ir_index L1 1;
-    ir_jmp_neq ST ST cb$Nstd$Ntests1$Ntest_strcopy_saving$AB$if956$else;
-    ir_make_label cb$Nstd$Ntests1$Ntest_strcopy_saving$AB$if956$body;
+    ir_jmp_neq ST ST cb$Nstd$Ntests1$Ntest_strcopy_saving$AB$if882$else;
+    ir_make_label cb$Nstd$Ntests1$Ntest_strcopy_saving$AB$if882$body;
     ir_load L3 1;
-    ir_jmp cb$Nstd$Ntests1$Ntest_strcopy_saving$AB$if956$end;
-    ir_make_label cb$Nstd$Ntests1$Ntest_strcopy_saving$AB$if956$else;
+    ir_jmp cb$Nstd$Ntests1$Ntest_strcopy_saving$AB$if882$end;
+    ir_make_label cb$Nstd$Ntests1$Ntest_strcopy_saving$AB$if882$else;
     ir_load L3 0;
-    ir_make_label cb$Nstd$Ntests1$Ntest_strcopy_saving$AB$if956$end;
+    ir_make_label cb$Nstd$Ntests1$Ntest_strcopy_saving$AB$if882$end;
     ir_index L0 2;
     ir_index L1 2;
-    ir_jmp_neq ST ST cb$Nstd$Ntests1$Ntest_strcopy_saving$AB$if964$else;
-    ir_make_label cb$Nstd$Ntests1$Ntest_strcopy_saving$AB$if964$body;
+    ir_jmp_neq ST ST cb$Nstd$Ntests1$Ntest_strcopy_saving$AB$if890$else;
+    ir_make_label cb$Nstd$Ntests1$Ntest_strcopy_saving$AB$if890$body;
     ir_load L4 1;
-    ir_jmp cb$Nstd$Ntests1$Ntest_strcopy_saving$AB$if964$end;
-    ir_make_label cb$Nstd$Ntests1$Ntest_strcopy_saving$AB$if964$else;
+    ir_jmp cb$Nstd$Ntests1$Ntest_strcopy_saving$AB$if890$end;
+    ir_make_label cb$Nstd$Ntests1$Ntest_strcopy_saving$AB$if890$else;
     ir_load L4 0;
-    ir_make_label cb$Nstd$Ntests1$Ntest_strcopy_saving$AB$if964$end;
+    ir_make_label cb$Nstd$Ntests1$Ntest_strcopy_saving$AB$if890$end;
     ir_index L0 3;
     ir_index L1 3;
-    ir_jmp_neq ST ST cb$Nstd$Ntests1$Ntest_strcopy_saving$AB$if972$else;
-    ir_make_label cb$Nstd$Ntests1$Ntest_strcopy_saving$AB$if972$body;
+    ir_jmp_neq ST ST cb$Nstd$Ntests1$Ntest_strcopy_saving$AB$if898$else;
+    ir_make_label cb$Nstd$Ntests1$Ntest_strcopy_saving$AB$if898$body;
     ir_load L5 1;
-    ir_jmp cb$Nstd$Ntests1$Ntest_strcopy_saving$AB$if972$end;
-    ir_make_label cb$Nstd$Ntests1$Ntest_strcopy_saving$AB$if972$else;
+    ir_jmp cb$Nstd$Ntests1$Ntest_strcopy_saving$AB$if898$end;
+    ir_make_label cb$Nstd$Ntests1$Ntest_strcopy_saving$AB$if898$else;
     ir_load L5 0;
-    ir_make_label cb$Nstd$Ntests1$Ntest_strcopy_saving$AB$if972$end;
+    ir_make_label cb$Nstd$Ntests1$Ntest_strcopy_saving$AB$if898$end;
     ir_index L0 4;
     ir_index L1 4;
-    ir_jmp_neq ST ST cb$Nstd$Ntests1$Ntest_strcopy_saving$AB$if980$else;
-    ir_make_label cb$Nstd$Ntests1$Ntest_strcopy_saving$AB$if980$body;
+    ir_jmp_neq ST ST cb$Nstd$Ntests1$Ntest_strcopy_saving$AB$if906$else;
+    ir_make_label cb$Nstd$Ntests1$Ntest_strcopy_saving$AB$if906$body;
     ir_load L6 1;
-    ir_jmp cb$Nstd$Ntests1$Ntest_strcopy_saving$AB$if980$end;
-    ir_make_label cb$Nstd$Ntests1$Ntest_strcopy_saving$AB$if980$else;
+    ir_jmp cb$Nstd$Ntests1$Ntest_strcopy_saving$AB$if906$end;
+    ir_make_label cb$Nstd$Ntests1$Ntest_strcopy_saving$AB$if906$else;
     ir_load L6 0;
-    ir_make_label cb$Nstd$Ntests1$Ntest_strcopy_saving$AB$if980$end;
+    ir_make_label cb$Nstd$Ntests1$Ntest_strcopy_saving$AB$if906$end;
     ir_jmp_eq L2 0 cb$Nstd$Ntests1$Ntest_strcopy_saving$AB$if680$else;
     ir_jmp_eq L3 0 cb$Nstd$Ntests1$Ntest_strcopy_saving$AB$if680$else;
     ir_jmp_eq L4 0 cb$Nstd$Ntests1$Ntest_strcopy_saving$AB$if680$else;
@@ -363,52 +358,16 @@ func cb$Nstd$Ntests1$Ntest_while_statement$AB -> void
     ir_call cb$Nstd$Nmemory$Ndealloc$AB$Araw_ptr L1;
 endf
 
-func cb$Nstd$Ntests1$Ntest_short$AB -> bool
-    ir_load_addr STR14;
-    ir_call cb$Nstd$Nio$Nprintln$AB$Araw_string ST;
-    ir_return 1;
+func cb$Nstd$Ntests1$Nget_result$AB -> int
+    ir_return 2;
 endf
 
 func main -> int
-    local #0 text: raw_string;
-    local #1 newtext: raw_string;
-    local #2 ok: bool;
-    ir_load_addr STR15;
-    ir_load L0 ST;
-    ir_call cb$Nstd$Nrawstring$Ncopy$AB$Araw_string L0;
-    ir_load L1 ST;
-    ir_deref L1;
-    ir_load ST 'K';
-    ir_index L1 6;
-    ir_load ST 'G';
-    ir_call cb$Nstd$Nrawstring$Nlen$AB$Araw_string L1;
-    ir_jmp_eq ST 11 cb$Nstd$Ntests1$Nmain$AB_short827;
-    ir_call cb$Nstd$Ntests1$Ntest_short$AB;
-    ir_jmp_eq ST 0 cb$Nstd$Ntests1$Nmain$AB$if839$else;
-    ir_make_label cb$Nstd$Ntests1$Nmain$AB_short827;
-    ir_mul 4 9;
-    ir_mul ST 9;
-    ir_jmp_lt ST 7 cb$Nstd$Ntests1$Nmain$AB$if839$else;
-    ir_make_label cb$Nstd$Ntests1$Nmain$AB$if839$body;
-    ir_call cb$Nstd$Nio$Nprintln$AB$Araw_string L0;
-    ir_call cb$Nstd$Nio$Nprintln$AB$Araw_string L1;
-    ir_make_label cb$Nstd$Ntests1$Nmain$AB$if839$else;
-    ir_call cb$Nstd$Nrawstring$Nlen$AB$Araw_string L1;
-    ir_jmp_lte ST 10 cb$Nstd$Ntests1$Nmain$AB$if988$else;
-    ir_jmp_lte 3 5 cb$Nstd$Ntests1$Nmain$AB$if988$else;
-    ir_make_label cb$Nstd$Ntests1$Nmain$AB$if988$body;
-    ir_load L2 1;
-    ir_jmp cb$Nstd$Ntests1$Nmain$AB$if988$end;
-    ir_make_label cb$Nstd$Ntests1$Nmain$AB$if988$else;
-    ir_load L2 0;
-    ir_make_label cb$Nstd$Ntests1$Nmain$AB$if988$end;
-    ir_jmp_eq L2 0 cb$Nstd$Ntests1$Nmain$AB$if861$else;
-    ir_make_label cb$Nstd$Ntests1$Nmain$AB$if861$body;
-    ir_load_addr STR16;
-    ir_call cb$Nstd$Nio$Nprintln$AB$Araw_string ST;
-    ir_make_label cb$Nstd$Ntests1$Nmain$AB$if861$else;
     ir_call cb$Nstd$Ntests1$Ntest_longfunc$AB;
-    ir_call cb$Nstd$Nmemory$Ndealloc$AB$Araw_ptr L1;
+    ir_call cb$Nstd$Ntests1$Ntest_strcopy_len$AB;
+    ir_call cb$Nstd$Ntests1$Ntest_strcopy$AB;
+    ir_call cb$Nstd$Ntests1$Ntest_strcopy_saving$AB;
+    ir_call cb$Nstd$Ntests1$Ntest_while_statement$AB;
     ir_return 0;
 endf
 

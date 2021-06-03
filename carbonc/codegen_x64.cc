@@ -337,6 +337,8 @@ struct generator {
         em->begin_code_segment();
         
         for (auto& func : prog.funcs) {
+            if (func.is_extern) continue;
+
             generate_func_code(func);
         }
 
@@ -366,6 +368,16 @@ struct generator {
         std::int32_t temp_regs_offset = fdata.used_temp_registers.size() * 8;
         current_temp_regs_offset = temp_regs_offset;
 
+        bool needs_rbp = (!(stack_size == 0 && func.args.empty()));
+
+        std::size_t num_pushes = fdata.used_temp_registers.size();
+        if (needs_rbp) {
+            num_pushes += 1;
+        }
+
+        // +8 to re-align the stack because of the CALL made to us
+        stack_size += (num_pushes % 2 == 0) ? 8 : 0;
+
         if (!func.args.empty()) {
             if (calls_ever_made) {
                 std::size_t max_reg_args = std::min(arg_registers.size(), func.args.size());
@@ -386,11 +398,13 @@ struct generator {
             }
 
             for (auto& arg : fndata->arg_data) {
-                arg.frame_offset += 8 + temp_regs_offset; // space for the rbp about to be pushed + temp registers
+                arg.frame_offset += temp_regs_offset; // space for the rbp about to be pushed + temp registers
+                if (needs_rbp) {
+                    arg.frame_offset += 8;
+                }
             }
         }
 
-        bool needs_rbp = (!(stack_size == 0 && func.args.empty()));
         if (needs_rbp) { em->push(rbp); }
 
         std::vector<gen_register> temp_regs;
@@ -400,7 +414,7 @@ struct generator {
         }
 
         if (needs_rbp) { em->mov(rbp, rsp); }
-        if (stack_size > 0) { em->sub(rsp, (int_type)stack_size); }
+        if (stack_size > 0) { em->sub(rsp, (int_type)(stack_size)); } 
 
         for (auto& instr : func.instrs) {
             generate_ir_instr(instr);
@@ -408,7 +422,7 @@ struct generator {
 
         em->label(fdata.end_label.c_str());
 
-        if (stack_size > 0) { em->add(rsp, (int_type)stack_size); }
+        if (stack_size > 0) { em->add(rsp, (int_type)(stack_size)); }
         for (std::size_t i = temp_regs.size(); i > 0; i--) {
             em->pop(temp_regs[i - 1]);
         }
