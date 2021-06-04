@@ -88,7 +88,7 @@ static const std::vector<gen_register> register_args = {
 };
 
 static const std::vector<gen_register> register_temp = {
-    r10, r11, r12, r13, r14, r15,
+    rbx, rdi, rsi, r12, r13, r14, r15,
 };
 
 template <class... Ts> struct overload : Ts... { using Ts::operator()...; };

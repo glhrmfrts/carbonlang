@@ -17,10 +17,10 @@ func longfunc(a: int, b: int, c: int, d: int, e: int, f: int, g: int, h: int): i
 func test_longfunc() {
     let result = longfunc(1, 2, 3, 4, 5, 6, 7, 8);
     if (result == 36) {
-        println("test_longfunc: OK");
+        println("[OK] test_longfunc");
     }
     else {
-        println("test_longfunc: NOK");
+        println("[NOK] test_longfunc");
     }
 }
 
@@ -29,10 +29,10 @@ func test_strcopy_len() {
     let newstr = str.copy;
 
     if (str.len == newstr.len) {
-        println("test_strcopy_len: OK");
+        println("[OK] test_strcopy_len");
     }
     else {
-        println("test_strcopy_len: NOK");
+        println("[NOK] test_strcopy_len");
     }
 
     mem::dealloc(cast[raw_ptr] newstr);
@@ -43,10 +43,10 @@ func test_strcopy() {
     let newstr = copy(str);
 
     if (str[0] == newstr[0] && str[1] == newstr[1] && str[2] == newstr[2] && str[3] == newstr[3] && str[4] == newstr[4]) {
-        println("test_strcopy: OK");
+        println("[OK] test_strcopy");
     }
     else {
-        println("test_strcopy: NOK");
+        println("[NOK] test_strcopy");
     }
 
     mem::dealloc(cast[raw_ptr] newstr);
@@ -63,10 +63,10 @@ func test_strcopy_saving() {
     let c5 = str[4] == newstr[4];
 
     if (c1 && c2 && c3 && c4 && c5) {
-        println("test_strcopy_saving: OK");
+        println("[OK] test_strcopy_saving");
     }
     else {
-        println("test_strcopy_saving: NOK");
+        println("[NOK] test_strcopy_saving");
     }
     
     mem::dealloc(cast[raw_ptr] newstr);
@@ -89,10 +89,10 @@ func test_while_statement() {
     }
 
     if (equals(newstr, "GGGGG") && !equals(newstr, "foobar")) {
-        println("test_while_statement: OK");
+        println("[OK] test_while_statement");
     }
     else {
-        println("test_while_statement: NOK");
+        println("[NOK] test_while_statement");
     }
     
     mem::dealloc(cast[raw_ptr] newstr);
@@ -111,10 +111,10 @@ func test_for_stmt() {
     }
     if (equals(newstr, "0123456789")) {
         //println(newstr);
-        println("test_for_stmt: OK");
+        println("[OK] test_for_stmt");
     }
     else {
-        println("test_for_stmt: NOK");
+        println("[NOK] test_for_stmt");
     }
     mem::dealloc(cast[raw_ptr] newstr);
 }
@@ -124,10 +124,10 @@ func test_struct_zeroinit() {
     var b: range[int] = {};
 
     if ((a.start == 0 && a.end == 0) && (b.start == 0 && b.end == 0)) {
-        println("test_struct_zeroinit: OK");
+        println("[OK] test_struct_zeroinit");
     }
     else {
-        println("test_struct_zeroinit: NOK");
+        println("[NOK] test_struct_zeroinit");
     }
 }
 
@@ -138,10 +138,10 @@ func test_struct_init() {
     let d = range[int]{};
 
     if ((a.start == 3 && a.end == 5) && (b.start == 24*7+2 && b.end == a.end) && (c.start == b.start*3*9 && c.end && b.end*2*2)) {
-        println("test_struct_init: OK");
+        println("[OK] test_struct_init");
     }
     else {
-        println("test_struct_init: NOK");
+        println("[NOK] test_struct_init");
     }
 }
 
@@ -150,10 +150,10 @@ func test_tuple_zeroinit() {
     var b: {raw_string, bool};
 
     if ((a[0] == 0 && a.second == 0) && (equals(b[0], "") && b[1] == false)) {
-        println("test_tuple_zeroinit: OK");
+        println("[OK] test_tuple_zeroinit");
     }
     else {
-        println("test_tuple_zeroinit: NOK");
+        println("[NOK] test_tuple_zeroinit");
     }
 }
 
@@ -162,27 +162,47 @@ func test_tuple_init() {
     let b = {"nice", "second", false};
 
     if ((a.first == 3 && a.second == 4 && a.third == 5) && (equals(b[0], "nice") && equals(b[1], "second") && !b[2])) {
-        println("test_tuple_init: OK");
+        println("[OK] test_tuple_init");
     }
     else {
-        println("test_tuple_init: NOK");
+        println("[NOK] test_tuple_init");
     }
 }
 
 func test_struct_assignment_lvalue() {
-    let a: range[int] = { 3, 5 };
-    let b: range[int] = a;
-    var c: range[int];
-    
-    let ok = a.start == b.start && a.end == b.end;
+    let a: range[usize] = { 3, 5 };
+    let b = a;
 
-    c = b;
-
-    if (ok && c.start == b.start && c.end == b.end) {
-        println("test_struct_assignment_lvalue: OK");
+    if (a.start == b.start && a.end == b.end) {
+        println("[OK] test_struct_assignment_lvalue");
     }
     else {
-        println("test_struct_assignment_lvalue: NOK");
+        println("[NOK] test_struct_assignment_lvalue");
+    }
+}
+
+
+func sum_range_ptr(r: *range[usize]): usize {
+    return r.start + r.end;
+}
+
+/*
+func sum_range_val(r: range[usize]): usize {
+    return r.start + r.end;
+}
+*/
+
+func test_struct_argument(): {} {
+    let a: range[usize] = { 10, 20 };
+
+    let result = sum_range_ptr(&a);
+    //let valres = sum_range_val(a);
+
+    if (result == 30) {
+        println("[OK] test_struct_argument");
+    }
+    else {
+        println("[NOK] test_struct_argument");
     }
 }
 
@@ -201,11 +221,18 @@ func main(): int {
     test_struct_init();
     test_tuple_zeroinit();
     test_tuple_init();
-    //test_struct_assignment_lvalue();
+    test_struct_assignment_lvalue();
+    test_struct_argument();
 
     //mem::dealloc(cast[raw_ptr] newtext);
     //return a[0];//result*2;
 
-    let a = "asdasd";
-    return a[0];
+    //let s = "adqwe";
+    //var a: *raw_string = &s;
+    //return a[0][0];
+
+    let a = "asdasd000000000";
+    let b = "\0\0\n";
+
+    return a[b[get_result()]];
 }

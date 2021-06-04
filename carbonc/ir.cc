@@ -10,6 +10,7 @@ namespace {
 
 static const std::string opnames[] = {
     "ir_load",
+    "ir_copy",
     "ir_add",
     "ir_sub",
     "ir_mul",
@@ -464,18 +465,16 @@ void generate_ir_index_expr(ast_node& node) {
     generate_ir_node(*node.children[0]);
     auto a = pop();
 
-    generate_ir_node(*node.children[1]);
-    auto b = pop();
-
     if (node.children[0]->type_id.get().kind == type_kind::pointer || node.children[0]->type_id.get().kind == type_kind::mutable_pointer) {
         auto ptype = node.children[0]->type_id.get().elem_type;
         temit(ir_deref, ptype, a);
-        temit(ir_index, node.type_id, ir_stack{ ptype }, b);
-    }
-    else {
-        temit(ir_index, node.type_id, a, b);
+        a = ir_stack{ ptype };
     }
 
+    generate_ir_node(*node.children[1]);
+    auto b = pop();
+
+    temit(ir_index, node.type_id, a, b);
     push(ir_stack{ node.type_id });
 }
 
@@ -516,6 +515,15 @@ void generate_ir_assignment(ast_node& node) {
     if (node.children[0] && node.children[1]) {
         if (is_aggregate_type(node.type_id) && node.children[1]->type == ast_type::init_expr) {
             generate_ir_node(*node.children[1]);
+        }
+        else if (is_aggregate_type(node.type_id) && node.type_id.get().size > 8) {
+            generate_ir_node(*node.children[0]);
+            auto dest = pop();
+
+            generate_ir_node(*node.children[1]);
+            auto src = pop();
+
+            emit(ir_copy, dest, src, ir_int{ int_type(node.type_id.get().size), ts->uintptr_type });
         }
         else {
             generate_ir_node(*node.children[0]);
@@ -607,8 +615,15 @@ void generate_ir_unary_expr(ast_node& node) {
 void generate_ir_var(ast_node& node) {
     if (node.local.value_node) {
         generate_ir_node(*node.local.value_node);
-        
-        if (!(is_aggregate_type(node.local.value_node->type_id) && node.local.value_node->type == ast_type::init_expr)) {
+
+        if (node.local.value_node->type == ast_type::init_expr) {
+            return;
+        }
+
+        if (is_aggregate_type(node.type_id) && node.type_id.get().size > 8) {
+            emit(ir_copy, ir_local{ node.local.ir_index, node.type_id }, pop(), ir_int{ int_type(node.type_id.get().size), ts->uintptr_type });
+        }
+        else {
             emit(ir_load, ir_local{ node.local.ir_index, node.type_id }, pop());
         }
     }

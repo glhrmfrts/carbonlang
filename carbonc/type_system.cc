@@ -1379,13 +1379,18 @@ void resolve_and_declare_local_variable(type_system& ts, const string_hash& id, 
 
     declare_local_symbol(ts, id, node);
 
+    if (node.type_id.valid() && node.type_id.get().size == 0) {
+        add_type_error(ts, node.pos, "cannot create value of an anonymous empty type");
+        return;
+    }
+
     if (node.local.value_node) {
         if (node.local.value_node->type == ast_type::init_expr) {
             if (!node.local.value_node->type_id.valid()) {
                 if (node.local.value_node->children[1]->children.empty()) {
                     // empty init list: {}
                     if (!node.type_id.valid()) {
-                        add_type_error(ts, node.pos, "TODO empty tuple");
+                        add_type_error(ts, node.pos, "cannot deduce type of empty tuple without type annotation");
                         return;
                     }
                 }

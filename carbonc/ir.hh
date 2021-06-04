@@ -9,6 +9,7 @@ namespace carbon {
 
 enum ir_op {
     ir_load,
+    ir_copy,
     ir_add,
     ir_sub,
     ir_mul,
