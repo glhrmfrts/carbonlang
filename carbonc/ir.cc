@@ -2,6 +2,7 @@
 #include "ast.hh"
 #include <stack>
 #include <fstream>
+#include <sstream>
 
 namespace carbon {
 
@@ -434,10 +435,10 @@ void generate_ir_return_stmt(ast_node& node) {
     auto& expr = node.children[0];
     if (expr) {
         generate_ir_node(*expr);
-        emit(ir_return, pop());
+        temit(ir_return, node.type_id, pop());
     }
     else {
-        emit(ir_return, 0);
+        temit(ir_return, node.type_id, 0);
     }
 }
 
@@ -460,12 +461,21 @@ void generate_ir_field_expr(ast_node& node) {
 }
 
 void generate_ir_index_expr(ast_node& node) {
-    generate_ir_node(*node.children[1]);
     generate_ir_node(*node.children[0]);
-
     auto a = pop();
+
+    generate_ir_node(*node.children[1]);
     auto b = pop();
-    temit(ir_index, node.type_id, a, b);
+
+    if (node.children[0]->type_id.get().kind == type_kind::pointer || node.children[0]->type_id.get().kind == type_kind::mutable_pointer) {
+        auto ptype = node.children[0]->type_id.get().elem_type;
+        temit(ir_deref, ptype, a);
+        temit(ir_index, node.type_id, ir_stack{ ptype }, b);
+    }
+    else {
+        temit(ir_index, node.type_id, a, b);
+    }
+
     push(ir_stack{ node.type_id });
 }
 
@@ -599,7 +609,7 @@ void generate_ir_var(ast_node& node) {
         generate_ir_node(*node.local.value_node);
         
         if (!(is_aggregate_type(node.local.value_node->type_id) && node.local.value_node->type == ast_type::init_expr)) {
-            emit(ir_load, ir_local{ node.local.ir_index }, pop());
+            emit(ir_load, ir_local{ node.local.ir_index, node.type_id }, pop());
         }
     }
 }
@@ -613,10 +623,10 @@ void generate_ir_init_expr(ast_node& node) {
 void generate_ir_identifier(ast_node& node) {
     auto local = node.lvalue.symbol->scope->local_defs[node.lvalue.symbol->local_index];
     if (local->is_argument) {
-        push(ir_arg{ local->ir_index });
+        push(ir_arg{ local->ir_index, node.type_id });
     }
     else {
-        push(ir_local{ local->ir_index });
+        push(ir_local{ local->ir_index, node.type_id });
     }
 }
 
@@ -714,7 +724,7 @@ void generate_ir_node(ast_node& node) {
     }
 }
 
-void print_ref(std::ofstream& f, ir_ref& opr) {
+void print_ref(std::ostream& f, const ir_ref& opr) {
     if (auto arg = std::get_if<ir_arg>(&opr); arg) {
         f << "A" << arg->index;
     }
@@ -726,7 +736,7 @@ void print_ref(std::ofstream& f, ir_ref& opr) {
     }
 }
 
-void print_opr(std::ofstream& f, ir_operand& opr) {
+void print_opr(std::ostream& f, const ir_operand& opr) {
     if (auto str = std::get_if<std::string>(&opr); str) {
         f << *str;
     }
@@ -761,7 +771,7 @@ void print_opr(std::ofstream& f, ir_operand& opr) {
     }
 }
 
-void print_instr(std::ofstream& f, ir_instr& instr) {
+void print_instr(std::ostream& f, const ir_instr& instr) {
     f << opnames[instr.op];
     for (auto& opr : instr.operands) {
         f << " ";
@@ -797,6 +807,12 @@ void print_ir() {
     }
 }
 
+}
+
+std::string sprint_ir_instr(const ir_instr& instr) {
+    std::ostringstream s;
+    print_instr(s, instr);
+    return s.str();
 }
 
 ir_program generate_ir(type_system& tsystem, ast_node& program_node) {

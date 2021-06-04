@@ -45,10 +45,12 @@ struct ir_stack {
 
 struct ir_local {
     int index;
+    type_id type;
 };
 
 struct ir_arg {
     int index;
+    type_id type;
 };
 
 struct ir_string {
@@ -114,6 +116,8 @@ struct ir_program {
     std::vector<std::string> strings;
     std::vector<ir_func> funcs;
 };
+
+std::string sprint_ir_instr(const ir_instr& instr);
 
 ir_program generate_ir(type_system& ts, ast_node& program_node);
 

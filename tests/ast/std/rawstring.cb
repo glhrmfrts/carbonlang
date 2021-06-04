@@ -135,5 +135,7 @@ compound_stmt{
         stmt_list{
           }
         stmt_list{
+          }
+        stmt_list{
           return_stmt{
                         bool_literal{true}}}}}}}

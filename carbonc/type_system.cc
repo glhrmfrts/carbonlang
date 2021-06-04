@@ -1288,6 +1288,9 @@ type_id resolve_func_type(type_system& ts, ast_node& f) {
                     type_to_string(ret_type).c_str());
                 break;
             }
+            
+            // TODO: better coercion
+            retst->type_id = ret_type;
         }
     }
     
@@ -2251,6 +2254,9 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
     case ast_type::cast_expr:
         visit_children(ts, node);
         node.type_id = get_value_node_type(ts, node);
+        if (node.type_id.valid()) {
+            node.children[1]->type_id = node.type_id;
+        }
         break;
     case ast_type::bool_literal:
     case ast_type::int_literal:
@@ -2923,18 +2929,20 @@ void type_system::resolve_and_check() {
         leave_scope();
     }
 
-    for (int i = 0; i < 2; i++) {
-        this->pass = type_system_pass::final_analysis;
-        this->subpass = i;
-        for (auto unit : this->code_units) {
-            enter_scope(*unit);
-            visit_tree(*this, *unit);
-            leave_scope();
-        }
-    }
-
     if (!current_error.msg.empty()) {
         errors.push_back(current_error);
+    }
+
+    if (errors.empty()) {
+        for (int i = 0; i < 2; i++) {
+            this->pass = type_system_pass::final_analysis;
+            this->subpass = i;
+            for (auto unit : this->code_units) {
+                enter_scope(*unit);
+                visit_tree(*this, *unit);
+                leave_scope();
+            }
+        }
     }
 }
 

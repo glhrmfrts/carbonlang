@@ -35,6 +35,9 @@ struct func_data {
     int call_arg_size = 0;
 };
 
+constexpr gen_register reg_result = rax;
+constexpr gen_register reg_intermediate = rcx;
+
 gen_destination adjust_for_type(gen_destination dest, type_id tid) {
     auto tdef = tid.scope->type_defs[tid.type_index];
     if (std::holds_alternative<gen_register>(dest)) {
@@ -185,7 +188,7 @@ struct generator {
         int li = 0;
         for (auto& local : func.locals) {
             auto& tdef = local.type.get();
-            funcdata[func.index].local_data[li].frame_offset = -(local_size + 8); // offset from rbp + space for pushed rbp
+            funcdata[func.index].local_data[li].frame_offset = -align(local_size + 8, std::int32_t(tdef.alignment)); // offset from rbp + space for pushed rbp
             local_size += std::int32_t(tdef.size);
             local_size = align(local_size, std::int32_t(tdef.alignment));
             li++;
@@ -256,12 +259,34 @@ struct generator {
         return "$cbstr" + std::to_string(idx);
     }
 
+    int ref_opstack_consumption(const ir_ref& ref) {
+        int i = 0;
+        if (std::holds_alternative<ir_stack>(ref)) {
+            i++;
+        }
+        else if (std::holds_alternative<std::shared_ptr<ir_field>>(ref)) {
+            auto& ptr = std::get<std::shared_ptr<ir_field>>(ref);
+            i += ref_opstack_consumption(ptr->ref);
+        }
+        return i;
+    }
+
+    int operand_opstack_consumption(const ir_operand& opr) {
+        int i = 0;
+        if (std::holds_alternative<ir_stack>(opr)) {
+            i++;
+        }
+        else if (std::holds_alternative<ir_field>(opr)) {
+            auto& ptr = std::get<ir_field>(opr);
+            i += ref_opstack_consumption(ptr.ref);
+        }
+        return i;
+    }
+
     int instr_opstack_consumption(const ir_instr& instr) {
         int i = 0;
         for (const auto& opr : instr.operands) {
-            if (std::holds_alternative<ir_stack>(opr)) {
-                i++;
-            }
+            i += operand_opstack_consumption(opr);
         }
         return i;
     }
@@ -299,7 +324,7 @@ struct generator {
                 free_temp_destination();
             }
 
-            fndata->instr_data[instr.index].dest = rax;
+            fndata->instr_data[instr.index].dest = reg_result;
             if (next_instr) {
                 if (instr_pushes_to_stack(instr) && instr_opstack_consumption(*next_instr) == 0) {
                     fndata->instr_data[instr.index].dest = use_temp_destination(instr.result_type);
@@ -500,7 +525,7 @@ struct generator {
 
             if (instr.result_type != ts->void_type) {
                 auto dest = adjust_for_type(instr_dest_to_gen_dest(idata.dest), instr.result_type);
-                auto arax = adjust_for_type(rax, instr.result_type);
+                auto arax = adjust_for_type(reg_result, instr.result_type);
                 if (!(dest == arax)) {
                     move(dest, instr.result_type, toop(arax), instr.result_type);
                 }
@@ -510,15 +535,15 @@ struct generator {
         }
         case ir_return: {
             auto [a, atype] = transform_ir_operand(instr.operands[0]);
-            auto arax = adjust_for_type(rax, atype);
+            auto arax = adjust_for_type(reg_result, instr.result_type);
 
             if (std::holds_alternative<gen_register>(a)) {
                 if (!(todest(a) == arax)) {
-                    move(arax, atype, a, atype);
+                    move(arax, instr.result_type, a, atype);
                 }
             }
             else {
-                move(arax, atype, a, atype);
+                move(arax, instr.result_type, a, atype);
             }
 
             if (instr.index < fn->instrs.size() - 1) {
@@ -529,26 +554,42 @@ struct generator {
         case ir_index: {
             auto [b, btype] = transform_ir_operand(instr.operands[1]);
             auto [a, atype] = transform_ir_operand(instr.operands[0]);
-            auto dest = adjust_for_type(instr_dest_to_gen_dest(idata.dest), instr.result_type);
+            auto dest = instr_dest_to_gen_dest(idata.dest);
 
-            auto arcx = adjust_for_type(rcx, atype);
-            move(arcx, atype, a, atype);
-
-            auto arax = adjust_for_type(rax, btype);
-            move(arax, btype, b, btype);
+            move(reg_intermediate, ts->raw_ptr_type, b, btype);
 
             std::size_t elem_size = instr.result_type.get().size;
-            auto offset_expr = gen_offset{ elem_size, std::vector<gen_offset_expr>{
-                rcx, '+', rax, '*', int_type(elem_size)
-            } };
+            if (is_reg(a)) {
+                auto offset_expr = gen_offset{ elem_size, std::vector<gen_offset_expr>{
+                    std::get<gen_register>(a), '+', reg_intermediate, '*', int_type(elem_size)
+                } };
+                load_address(dest, offset_expr, ts->raw_ptr_type);
+            }
+            else if (is_mem(a)) {
+                auto& offs = std::get<gen_offset>(a);
+                offs.expr.push_back('+');
+                offs.expr.push_back(reg_intermediate);
+                offs.expr.push_back('*');
+                offs.expr.push_back(int_type(elem_size));
+                load_address(dest, todest(a), ts->raw_ptr_type);
+            }
 
-            move(dest, instr.result_type, offset_expr, instr.result_type);
-            push(toop(dest));
+            gen_operand result;
+            if (is_reg(dest)) {
+                result = gen_offset{ elem_size, std::vector<gen_offset_expr>{
+                    std::get<gen_register>(dest), '+', int_type(0)
+                } };
+            }
+            else {
+                assert(!"ir_index: dest as memory not handled");
+            }
+
+            push(result);
             break;
         }
         case ir_deref: {
             auto [a, atype] = transform_ir_operand(instr.operands[0]);
-            auto arax = adjust_for_type(rax, atype);
+            auto arax = adjust_for_type(reg_result, atype);
             auto dest = adjust_for_type(instr_dest_to_gen_dest(idata.dest), atype);
 
             gen_destination op;
@@ -598,12 +639,12 @@ struct generator {
             }
             else {
                 if (is_mem(b)) {
-                    move(adjust_for_type(rax, atype), atype, b, btype);
-                    b = toop(adjust_for_type(rax, atype));
+                    move(adjust_for_type(reg_intermediate, atype), atype, b, btype);
+                    b = toop(adjust_for_type(reg_intermediate, atype));
                 }
                 else if (!is_reg(b)) {
-                    move(adjust_for_type(rax, btype), btype, b, btype);
-                    b = toop(adjust_for_type(rax, atype));
+                    move(adjust_for_type(reg_intermediate, btype), btype, b, btype);
+                    b = toop(adjust_for_type(reg_intermediate, atype));
                 }
                 move(todest(a), atype, b, btype);
             }
@@ -614,13 +655,15 @@ struct generator {
         case ir_mul: {
             auto [b, btype] = transform_ir_operand(instr.operands[1]);
             auto [a, atype] = transform_ir_operand(instr.operands[0]);
+            auto dest = adjust_for_type(instr_dest_to_gen_dest(idata.dest), instr.result_type);
+
             if (!is_reg(a)) {
-                move(adjust_for_type(rax, atype), atype, a, atype);
-                a = toop(adjust_for_type(rax, atype));
+                move(adjust_for_type(reg_intermediate, instr.result_type), instr.result_type, a, atype);
+                a = toop(adjust_for_type(reg_intermediate, instr.result_type));
             }
+
             emit_binary_math_op(instr.op, todest(a), b);
 
-            auto dest = adjust_for_type(instr_dest_to_gen_dest(idata.dest), instr.result_type);
             if (!(dest == todest(a))) {
                 move(dest, instr.result_type, a, atype);
             }
@@ -629,6 +672,10 @@ struct generator {
             break;
         }
         }
+
+        if (instr.op != ir_asm) {
+            em->emitln(" ;%s", sprint_ir_instr(instr).c_str());
+        }
     }
 
     void emit_cmp_jmp(const ir_instr& instr, const char* j) {
@@ -636,8 +683,8 @@ struct generator {
         auto [b, btype] = transform_ir_operand(instr.operands[1]);
         auto [a, atype] = transform_ir_operand(instr.operands[0]);
         if (!is_reg(a)) {
-            move(adjust_for_type(rax, atype), atype, a, atype);
-            a = toop(adjust_for_type(rax, atype));
+            move(adjust_for_type(reg_intermediate, atype), atype, a, atype);
+            a = toop(adjust_for_type(reg_intermediate, atype));
         }
         em->cmp(a, b);
         em->emitln(" %s %s", j, label.name.c_str());
@@ -660,20 +707,20 @@ struct generator {
     std::pair<gen_operand, type_id> transform_ir_field_ref(const ir_field* arg) {
         if (std::holds_alternative<ir_local>(arg->ref)) {
             int li = std::get<ir_local>(arg->ref).index;
-            auto type = fn->locals[li].type;
+            auto type = std::get<ir_local>(arg->ref).type;
             auto& field = type.get().structure.fields[arg->field_index];
 
-            auto dest = get_local_destination(li);
+            auto dest = get_local_destination(li, field.type);
             auto& offs = std::get<gen_offset>(dest);
             offs.expr[2] = std::get<int_type>(offs.expr[2]) + int_type(field.offset);
             return std::make_pair(toop(dest), field.type);
         }
         else if (std::holds_alternative<ir_arg>(arg->ref)) {
             int ai = std::get<ir_arg>(arg->ref).index;
-            auto type = fn->args[ai].type;
+            auto type = std::get<ir_arg>(arg->ref).type;
             auto& field = type.get().structure.fields[arg->field_index];
 
-            auto dest = get_arg_destination(ai);
+            auto dest = get_arg_destination(ai, field.type);
             auto& offs = std::get<gen_offset>(dest);
             offs.expr[2] = std::get<int_type>(offs.expr[2]) - int_type(field.offset);
             return std::make_pair(toop(dest), field.type);
@@ -709,14 +756,14 @@ struct generator {
         }
         else if (auto arg = std::get_if<ir_arg>(&opr); arg) {
             return std::make_pair(
-                toop(get_arg_destination(arg->index)),
-                fn->args[arg->index].type
+                toop(get_arg_destination(arg->index, arg->type)),
+                arg->type
             );
         }
         else if (auto arg = std::get_if<ir_local>(&opr); arg) {
             return std::make_pair(
-                toop(get_local_destination(arg->index)),
-                fn->locals[arg->index].type
+                toop(get_local_destination(arg->index, arg->type)),
+                arg->type
             );
         }
         else if (auto arg = std::get_if<ir_stack>(&opr); arg) {
@@ -743,13 +790,13 @@ struct generator {
     type_id get_ir_field_type(const ir_field* arg) {
         if (std::holds_alternative<ir_local>(arg->ref)) {
             int li = std::get<ir_local>(arg->ref).index;
-            auto type = fn->locals[li].type;
+            auto type = std::get<ir_local>(arg->ref).type;
             auto& field = type.get().structure.fields[arg->field_index];
             return field.type;
         }
         else if (std::holds_alternative<ir_arg>(arg->ref)) {
             int ai = std::get<ir_arg>(arg->ref).index;
-            auto type = fn->args[ai].type;
+            auto type = std::get<ir_arg>(arg->ref).type;
             auto& field = type.get().structure.fields[arg->field_index];
             return field.type;
         }
@@ -770,10 +817,10 @@ struct generator {
             return get_ir_field_type(arg);
         }
         else if (auto arg = std::get_if<ir_arg>(&opr); arg) {
-            return fn->args[arg->index].type;
+            return arg->type;
         }
         else if (auto arg = std::get_if<ir_local>(&opr); arg) {
-            return fn->locals[arg->index].type;
+            return arg->type;
         }
         else if (auto arg = std::get_if<ir_stack>(&opr); arg) {            
             return arg->type;
@@ -795,35 +842,37 @@ struct generator {
         }
     }
 
-    gen_destination get_arg_destination(int index) {
+    gen_destination get_arg_destination(int index, type_id ttid) {
         auto& arg = fn->args[index];
+        type_id tid = ttid.valid() ? ttid : arg.type;
         if (fndata->arg_data[index].reg) {
-            return adjust_for_type(*fndata->arg_data[index].reg, arg.type);
+            return adjust_for_type(*fndata->arg_data[index].reg, tid);
         }
-        return adjust_for_type(local_var_destination(fndata->arg_data[index].frame_offset), arg.type);
+        return adjust_for_type(local_var_destination(fndata->arg_data[index].frame_offset), tid);
     }
 
-    gen_destination get_local_destination(int index) {
+    gen_destination get_local_destination(int index, type_id ttid) {
         auto& l = fn->locals[index];
-        return adjust_for_type(local_var_destination(fndata->local_data[index].frame_offset), l.type);
+        type_id tid = ttid.valid() ? ttid : l.type;
+        return adjust_for_type(local_var_destination(fndata->local_data[index].frame_offset), tid);
     }
 
     gen_destination instr_dest_to_gen_dest(const instr_dest& id) {
         if (std::holds_alternative<gen_register>(id)) {
             return std::get<gen_register>(id);
         }
-        return get_local_destination(std::get<local_index>(id));
+        return get_local_destination(std::get<local_index>(id), {});
     }
 
     void move(const gen_destination& dest, type_id dest_tid, const gen_operand& op, type_id tid) {
         if (std::holds_alternative<gen_offset>(dest) && std::holds_alternative<gen_offset>(op)) {
-            auto arax = adjust_for_type(rax, tid);
-            move(arax, tid, op, tid);
-            move(dest, dest_tid, toop(arax), tid);
+            auto areg = adjust_for_type(reg_intermediate, tid);
+            move(areg, tid, op, tid);
+            move(dest, dest_tid, toop(areg), tid);
             return;
         }
 
-        if (dest_tid.get().size > tid.get().size) {
+        if (dest_tid.get().size > tid.get().size && !is_lit(op)) {
             if (tid.get().is_signed) {
                 em->movsx(dest, op);
             }
@@ -841,7 +890,7 @@ struct generator {
             em->lea(dest, op);
         }
         else {
-            auto arax = adjust_for_type(rax, tid);
+            auto arax = adjust_for_type(reg_result, tid);
             em->lea(arax, op);
             em->mov(dest, toop(arax));
         }

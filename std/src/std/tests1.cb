@@ -82,13 +82,13 @@ func test_while_statement() {
         i = i + 1;
     }
 
-    println(newstr);
+    //println(newstr);
 
     if (i < 5) {
         println("asdasd");
     }
 
-    if (equals(newstr, "GGGGG") && equals(newstr, "foobar")) {
+    if (equals(newstr, "GGGGG") && !equals(newstr, "foobar")) {
         println("test_while_statement: OK");
     }
     else {
@@ -98,7 +98,6 @@ func test_while_statement() {
     mem::dealloc(cast[raw_ptr] newstr);
 }
 
-/*
 func test_short(): bool {
     println("SHOULD NOT PRINT THIS");
     return true;
@@ -111,7 +110,7 @@ func test_for_stmt() {
         newstr[i] = c;
     }
     if (equals(newstr, "0123456789")) {
-        println(newstr);
+        //println(newstr);
         println("test_for_stmt: OK");
     }
     else {
@@ -125,10 +124,10 @@ func test_struct_zeroinit() {
     var b: range[int] = {};
 
     if ((a.start == 0 && a.end == 0) && (b.start == 0 && b.end == 0)) {
-        println("test_struct_init: OK");
+        println("test_struct_zeroinit: OK");
     }
     else {
-        println("test_struct_init: NOK");
+        println("test_struct_zeroinit: NOK");
     }
 }
 
@@ -143,6 +142,30 @@ func test_struct_init() {
     }
     else {
         println("test_struct_init: NOK");
+    }
+}
+
+func test_tuple_zeroinit() {
+    var a: {int, int};
+    var b: {raw_string, bool};
+
+    if ((a[0] == 0 && a.second == 0) && (equals(b[0], "") && b[1] == false)) {
+        println("test_tuple_zeroinit: OK");
+    }
+    else {
+        println("test_tuple_zeroinit: NOK");
+    }
+}
+
+func test_tuple_init() {
+    let a = {3, 4, 5};
+    let b = {"nice", "second", false};
+
+    if ((a.first == 3 && a.second == 4 && a.third == 5) && (equals(b[0], "nice") && equals(b[1], "second") && !b[2])) {
+        println("test_tuple_init: OK");
+    }
+    else {
+        println("test_tuple_init: NOK");
     }
 }
 
@@ -163,31 +186,6 @@ func test_struct_assignment_lvalue() {
     }
 }
 
-func test_tuple_zeroinit() {
-    var a: {int, int};
-    var b: {raw_string, bool};
-
-    if ((a[0] == 0 && a.second == 0) && (b[0] == "" && b[1] == false)) {
-        println("test_tuple_zeroinit: OK");
-    }
-    else {
-        println("test_tuple_zeroinit: NOK");
-    }
-}
-
-func test_tuple_init() {
-    let a = {3, 4, 5};
-    let b = {"nice", "second", false};
-
-    if ((a[0] == 0 && a.second == 0) && (b[0] == "nice" && b[1] == "second" && !b[2])) {
-        println("test_tuple_init: OK");
-    }
-    else {
-        println("test_tuple_init: NOK");
-    }
-}
-*/
-
 func get_result(): int { return 2; }
 
 func main(): int {  
@@ -198,14 +196,16 @@ func main(): int {
     test_strcopy();
     test_strcopy_saving();
     test_while_statement();
-    //test_for_stmt();
-    //test_struct_zeroinit();
-    //test_struct_init();
+    test_for_stmt();
+    test_struct_zeroinit();
+    test_struct_init();
+    test_tuple_zeroinit();
+    test_tuple_init();
     //test_struct_assignment_lvalue();
-    //test_tuple_zeroinit();
-    //test_tuple_init();
 
     //mem::dealloc(cast[raw_ptr] newtext);
+    //return a[0];//result*2;
 
-    return 0;//result*2;
+    let a = "asdasd";
+    return a[0];
 }
