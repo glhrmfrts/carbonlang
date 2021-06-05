@@ -81,6 +81,8 @@ struct ast_node {
     static constexpr std::size_t child_func_decl_ret_type = 2;
     static constexpr std::size_t child_func_decl_body = 3;
 
+    static constexpr std::size_t child_for_stmt_body = 2;
+
     static constexpr std::size_t child_struct_type_field_list = 0;
     static constexpr std::size_t child_tuple_type_field_list = 0;
 

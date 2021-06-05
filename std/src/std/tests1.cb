@@ -186,19 +186,17 @@ func sum_range_ptr(r: *range[usize]): usize {
     return r.start + r.end;
 }
 
-/*
 func sum_range_val(r: range[usize]): usize {
     return r.start + r.end;
 }
-*/
 
 func test_struct_argument(): {} {
     let a: range[usize] = { 10, 20 };
 
     let result = sum_range_ptr(&a);
-    //let valres = sum_range_val(a);
+    let valres = sum_range_val(a);
 
-    if (result == 30) {
+    if (result == 30 && valres == 30) {
         println("[OK] test_struct_argument");
     }
     else {

@@ -35,6 +35,7 @@ Source code -> Tokens (Lexer) -> Untyped AST (Parser) -> Typed AST (Type System)
 - [X] catch up on the codegen
 - [ ] aggregate type function arguments
 - [ ] aggregate type return value
+- [ ] cleanup pointers in node struct, transform to methods
 - [ ] struct / tuples
 - [ ] arrays
 - [ ] catch up on the codegen

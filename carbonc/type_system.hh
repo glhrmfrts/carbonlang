@@ -128,13 +128,22 @@ struct type_def {
     type_id id{};
 };
 
+struct local_flag {
+    using type = unsigned int;
+
+    static constexpr type none = 0;
+    static constexpr type is_argument = 1;
+    static constexpr type is_temp = 2;
+    static constexpr type is_aggregate_argument = 4;
+};
+
 struct local_def {
+    std::vector<ast_node*> refs;
     ast_node* self = nullptr;
     ast_node* id_node = nullptr;
     ast_node* type_node = nullptr;
     ast_node* value_node = nullptr;
-    bool is_argument = false;
-    bool is_temp = false;
+    local_flag::type flags = local_flag::none;
     int arg_index = 0; // if is_argument
     ast_node* arg_func_node = nullptr; // if is_argument
     std::int32_t frame_offset = 0;
@@ -243,16 +252,29 @@ struct field_access {
     ast_node* struct_node;
     ast_node* field_node;
     int field_index;
-    bool needs_deref;
     bool is_optional;
 };
 
 enum class type_system_pass {
+    // literally what it says
     resolve_literals_and_register_declarations,
+
+    // literally what it says
     resolve_imports,
+
+    // does a lot of sub-passes until it resolves every possible type
     resolve_all,
+
+    // repeat the last pass but emit errors if it fails
     perform_checks,
-    final_analysis,
+
+    // if no errors found, adjust func arguments for aggregate types, create temp variables for bool ops...
+    post_analysis,
+
+    // if no errors found, provide fully-qualified mangled names
+    final_analysis, 
+
+    // if no errors found, generate interface files
     create_interface_files,
 };
 
@@ -313,6 +335,8 @@ struct type_system {
 
     void create_temp_variable_for_call_arg(ast_node& node, ast_node& arg, int idx);
 };
+
+bool is_pointer_type(type_id tid);
 
 bool is_aggregate_type(type_id tid);
 

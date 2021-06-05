@@ -436,6 +436,22 @@ compound_stmt{
               +
               }}}}}
     func_decl{
+      identifier{"sum_range_val"}
+      arg_list(
+        var_decl{
+          identifier{"r"}
+          :type_expr{
+            }})
+      :type_expr{
+        identifier{"usize"}}
+compound_stmt{
+        stmt_list{
+          return_stmt{
+                        binary_expr{
+              
+              +
+              }}}}}
+    func_decl{
       identifier{"test_struct_argument"}
       arg_list()
       :type_expr{
@@ -458,7 +474,13 @@ compound_stmt{
               arg_list(
                 unary_expr{
                   &
-                  identifier{"a"}})}}}
+                  identifier{"a"}})}}
+          var_decl{
+            identifier{"valres"}
+            =call_expr{
+              identifier{"sum_range_val"}
+              arg_list(
+                identifier{"a"})}}}
         stmt_list{
           }}}
     func_decl{

@@ -358,7 +358,7 @@ void generate_ir_func(ast_node& node) {
         func.args.push_back(iarg);
     }
     for (auto& local : node.scope.local_defs) {
-        if (local->is_argument) continue;
+        if (local->flags & local_flag::is_argument) continue;
 
         ir_local_data ilocal;
         ilocal.type = local->self->type_id;
@@ -451,7 +451,7 @@ void generate_ir_field_expr(ast_node& node) {
     generate_ir_node(*node.children[0]);
     auto a = pop();
     
-    if (node.field.needs_deref) {
+    if (is_pointer_type(node.field.struct_node->type_id)) {
         auto stype = node.field.struct_node->type_id.get().elem_type;
         temit(ir_deref, stype, a);
         push(ir_field{ ir_stack{ stype }, node.field.field_index });
@@ -465,7 +465,7 @@ void generate_ir_index_expr(ast_node& node) {
     generate_ir_node(*node.children[0]);
     auto a = pop();
 
-    if (node.children[0]->type_id.get().kind == type_kind::pointer || node.children[0]->type_id.get().kind == type_kind::mutable_pointer) {
+    if (is_pointer_type(node.children[0]->type_id)) {
         auto ptype = node.children[0]->type_id.get().elem_type;
         temit(ir_deref, ptype, a);
         a = ir_stack{ ptype };
@@ -497,18 +497,6 @@ void generate_ir_call_expr(ast_node& node) {
     if (node.type_id != ts->void_type) {
         push(ir_stack{ node.type_id });
     }
-}
-
-void generate_ir_deref_expr(ast_node& node) {
-    generate_ir_node(*node.children[0]);
-    temit(ir_deref, node.type_id, pop());
-    push(ir_stack{ node.type_id });
-}
-
-void generate_ir_addr_expr(ast_node& node) {
-    generate_ir_node(*node.children[0]);
-    temit(ir_load_addr, node.type_id, pop());
-    push(ir_stack{ node.type_id });
 }
 
 void generate_ir_assignment(ast_node& node) {
@@ -600,6 +588,25 @@ void generate_ir_binary_expr(ast_node& node) {
     }
 }
 
+void generate_ir_deref_expr(ast_node& node) {
+    generate_ir_node(*node.children[0]);
+    temit(ir_deref, node.type_id, pop());
+    push(ir_stack{ node.type_id });
+}
+
+void generate_ir_addr_expr(ast_node& node) {
+    generate_ir_node(*node.children[0]);
+
+    // check if it's a transformed aggregate argument pointer
+    if (node.children[0]->lvalue.self && node.children[0]->lvalue.symbol) {
+        auto local = node.children[0]->lvalue.symbol->scope->local_defs[node.children[0]->lvalue.symbol->local_index];
+        if (local->flags & local_flag::is_aggregate_argument) { return; }
+    }
+
+    temit(ir_load_addr, node.type_id, pop());
+    push(ir_stack{ node.type_id });
+}
+
 void generate_ir_unary_expr(ast_node& node) {
     if (token_to_char(node.op) == '*') {
         generate_ir_deref_expr(node);
@@ -637,7 +644,7 @@ void generate_ir_init_expr(ast_node& node) {
 
 void generate_ir_identifier(ast_node& node) {
     auto local = node.lvalue.symbol->scope->local_defs[node.lvalue.symbol->local_index];
-    if (local->is_argument) {
+    if (local->flags & local_flag::is_argument) {
         push(ir_arg{ local->ir_index, node.type_id });
     }
     else {
