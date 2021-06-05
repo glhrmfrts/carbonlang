@@ -124,6 +124,40 @@ struct ast_node {
     bool type_error = false;
 
     ir_node_data ir;
+
+    ast_node* bin_left()  const { return children[0].get(); }
+    ast_node* bin_right() const  { return children[1].get(); }
+
+    ast_node* unary_right()  const { return children[0].get(); }
+
+    ast_node*                         func_id() const  { return children[0].get(); }
+    std::vector<arena_ptr<ast_node>>& func_args() const  { return children[1]->children; }
+    ast_node*                         func_body() const  { return children[3].get(); }
+    ast_node*                         func_ret_type() const  { return children[2].get(); }
+
+    ast_node* var_id() const { return children[0].get(); }
+    ast_node* var_type() const { return children[1].get(); }
+    ast_node* var_value() const { return children[2].get(); }
+
+    ast_node*                         call_func() const  { return children[0].get(); }
+    std::vector<arena_ptr<ast_node>>& call_args() const  { return children[1]->children; }
+
+    ast_node* range_start() const  { return children[0].get(); }
+    ast_node* range_end() const  { return children[1].get(); }
+
+    ast_node* field_struct() const  { return children[0].get(); }
+    ast_node* field_field() const  { return children[1].get(); }
+
+    ast_node* if_cond() const  { return children[0].get(); }
+    ast_node* if_body() const  { return children[1].get(); }
+    ast_node* if_else() const  { return children[2].get(); }
+
+    ast_node* while_cond() const  { return children[0].get(); }
+    ast_node* while_body() const  { return children[1].get(); }
+
+    ast_node* for_elems() const  { return children[0].get(); }
+    ast_node* for_iter()  const  { return children[1].get(); }
+    ast_node* for_body()  const  { return children[2].get(); }
 };
 
 arena_ptr<ast_node> make_nil_literal_node(memory_arena& arena, const position& pos);

@@ -436,6 +436,23 @@ compound_stmt{
               +
               }}}}}
     func_decl{
+      identifier{"sum_range_ptr"}
+      arg_list(
+        var_decl{
+          identifier{"r"}
+          :type_expr{
+            type_qualifier{mutable_pointer,
+              }}})
+      :type_expr{
+        identifier{"usize"}}
+compound_stmt{
+        stmt_list{
+          return_stmt{
+                        binary_expr{
+              
+              +
+              }}}}}
+    func_decl{
       identifier{"sum_range_val"}
       arg_list(
         var_decl{
@@ -445,6 +462,26 @@ compound_stmt{
       :type_expr{
         identifier{"usize"}}
 compound_stmt{
+        stmt_list{
+          return_stmt{
+                        binary_expr{
+              
+              +
+              }}}}}
+    func_decl{
+      identifier{"sum_range_copy"}
+      arg_list(
+        var_decl{
+          identifier{"r"}
+          :type_expr{
+            }})
+      :type_expr{
+        identifier{"usize"}}
+compound_stmt{
+        decl_list{
+          var_decl{
+            identifier{"r2"}
+            =identifier{"r"}}}
         stmt_list{
           return_stmt{
                         binary_expr{
@@ -479,6 +516,12 @@ compound_stmt{
             identifier{"valres"}
             =call_expr{
               identifier{"sum_range_val"}
+              arg_list(
+                identifier{"a"})}}
+          var_decl{
+            identifier{"cpres"}
+            =call_expr{
+              identifier{"sum_range_copy"}
               arg_list(
                 identifier{"a"})}}}
         stmt_list{

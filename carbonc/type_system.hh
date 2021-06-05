@@ -140,9 +140,10 @@ struct local_flag {
 struct local_def {
     std::vector<ast_node*> refs;
     ast_node* self = nullptr;
-    ast_node* id_node = nullptr;
-    ast_node* type_node = nullptr;
-    ast_node* value_node = nullptr;
+    //ast_node* id_node = nullptr;
+    //ast_node* type_node = nullptr;
+    //ast_node* value_node = nullptr;
+
     local_flag::type flags = local_flag::none;
     int arg_index = 0; // if is_argument
     ast_node* arg_func_node = nullptr; // if is_argument
@@ -178,9 +179,9 @@ struct lvalue {
 
 struct call_info {
     ast_node* self;
-    ast_node* func_node;
+    //ast_node* func_node;
     func_def* funcdef;
-    std::vector<ast_node*> args;
+    //std::vector<ast_node*> args;
     std::vector<type_id> arg_types;
     string_hash mangled_name;
     type_id func_type_id{};
@@ -189,15 +190,15 @@ struct call_info {
 struct for_info {
     ast_node* self = nullptr;
     arena_ptr<ast_node> declare_for_iter{nullptr, nullptr};
-    arena_ptr<ast_node> assign_elem_to_range_start{nullptr, nullptr};
+    arena_ptr<ast_node> declare_elem_to_range_start{nullptr, nullptr};
     arena_ptr<ast_node> compare_elem_to_range_end{nullptr, nullptr};
     arena_ptr<ast_node> increase_elem{nullptr, nullptr};
 };
 
 struct range_info {
     ast_node* self;
-    ast_node* start_node;
-    ast_node* end_node;
+    //ast_node* start_node;
+    //ast_node* end_node;
 };
 
 struct init_list {
@@ -239,8 +240,8 @@ struct scope_def {
 
 struct func_def {
     ast_node* self;
-    ast_node* ret_type_node;
-    std::vector<ast_node*> arguments;
+    //ast_node* ret_type_node;
+    //std::vector<ast_node*> arguments;
     std::vector<ast_node*> return_statements;
     func_linkage linkage;
     bool args_unresolved = false;
@@ -249,8 +250,8 @@ struct func_def {
 
 struct field_access {
     ast_node* self;
-    ast_node* struct_node;
-    ast_node* field_node;
+    //ast_node* struct_node;
+    //ast_node* field_node;
     int field_index;
     bool is_optional;
 };

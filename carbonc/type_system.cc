@@ -44,8 +44,6 @@ void resolve_node_type_post(type_system& ts, ast_node* nodeptr) {
 arena_ptr<ast_node> make_var_decl_with_value(memory_arena& ast_arena, std::string varname, arena_ptr<ast_node>&& value) {
     auto res = make_var_decl_node(ast_arena, {}, token_type::var, make_identifier_node(ast_arena, {}, { varname }), { nullptr, nullptr }, std::move(value));
     res->local.self = res.get();
-    res->local.id_node = res->children[0].get();
-    res->local.value_node = res->children[2].get();
     return res;
 }
 
@@ -73,6 +71,10 @@ arena_ptr<ast_node> copy_var_ref(type_system& ts, ast_node& node) {
 
 arena_ptr<ast_node> make_address_of_expr(type_system& ts, arena_ptr<ast_node>&& expr) {
     return make_unary_expr_node(*ts.ast_arena, expr->pos, token_from_char('&'), std::move(expr));
+}
+
+arena_ptr<ast_node> make_deref_expr(type_system& ts, arena_ptr<ast_node>&& expr) {
+    return make_unary_expr_node(*ts.ast_arena, expr->pos, token_from_char('*'), std::move(expr));
 }
 
 // TODO: obviously need better stuff here
@@ -172,8 +174,6 @@ arena_ptr<ast_node> make_var_decl_of_type(type_system& ts, token_type kind, cons
 
     auto res = make_var_decl_node(*ts.ast_arena, {}, kind, std::move(id_node), std::move(type_node), { nullptr, nullptr });
     res->local.self = res.get();
-    res->local.id_node = res->children[0].get();
-    res->local.type_node = res->children[1].get();
     return res;
 }
 
@@ -187,6 +187,17 @@ std::pair<arena_ptr<ast_node>, arena_ptr<ast_node>> make_temp_variable_for_aggre
     resolve_node_type_post(ts, ref.get());
 
     return std::make_pair(std::move(decl), std::move(ref));
+}
+
+std::optional<std::size_t> find_child_index(ast_node* parent, ast_node* child) {
+    std::size_t i = 0;
+    for (auto& ch : parent->children) {
+        if (ch.get() == child) {
+            return i;
+        }
+        i++;
+    }
+    return {};
 }
 
 void parent_tree(ast_node& node) {
@@ -1053,12 +1064,12 @@ std::string node_to_string(const ast_node& node) {
         return leftstr + "[" + rightstr + "]";
     }
     case ast_type::var_decl: {
-        std::string result = node_to_string(*node.local.id_node);
-        if (node.local.type_node) {
-            result += ": " + node_to_string(*node.local.type_node);
+        std::string result = node_to_string(*node.var_id());
+        if (node.var_type()) {
+            result += ": " + node_to_string(*node.var_type());
         }
-        if (node.local.value_node) {
-            result += "= " + node_to_string(*node.local.value_node);
+        if (node.var_value()) {
+            result += "= " + node_to_string(*node.var_value());
         }
         return result;
     }
@@ -1099,9 +1110,9 @@ std::string type_list_to_string(const std::vector<type_id>& args) {
 
 std::string func_declaration_to_string(func_def* func) {
     std::string result = "func ";
-    result += func->self->local.id_node->id_parts.front() + "(";
+    result += func->self->var_id()->id_parts.front() + "(";
     result += type_list_to_string(func->self->type_def.func.arg_types);
-    result += "): " + node_to_string(*func->ret_type_node);
+    result += "): " + node_to_string(*func->self->func_ret_type());
     return result;
 }
 
@@ -1285,11 +1296,13 @@ type_id resolve_identifier(type_system& ts, ast_node& node) {
     auto sym = find_symbol(ts, separate_module_identifier(node.id_parts));
     if (sym && sym->kind == symbol_kind::local) {
         auto local = get_symbol_local(*sym);
+        bool was_unresolved = !node.type_id.valid();
 
         node.lvalue.self = &node;
         node.lvalue.symbol = sym;
         node.type_id = local->self->type_id;
-        local->refs.push_back(&node);
+
+        if (was_unresolved) { local->refs.push_back(&node); }
 
         if (!node.type_id.valid()) {
             unk_type_error(ts, node.type_id, node.pos, "cannot determine type of symbol '%s'", node_to_string(node).c_str());
@@ -1309,20 +1322,20 @@ void propagate_return_type(type_system& ts, const type_id& id) {
 }
 
 type_id resolve_local_variable_type(type_system& ts, ast_node& l) {
-    auto decl_type = l.local.type_node ? resolve_node_type(ts, l.local.type_node) : type_id{};
-    auto val_type = l.local.value_node ? resolve_node_type(ts, l.local.value_node) : type_id{};
+    auto decl_type = l.var_type() ? resolve_node_type(ts, l.var_type()) : type_id{};
+    auto val_type = l.var_value() ? resolve_node_type(ts, l.var_value()) : type_id{};
 
-    if (l.local.type_node && decl_type.valid()) {
+    if (l.var_type() && decl_type.valid()) {
         l.type_id = decl_type;
-        l.type_error = l.local.type_node->type_error;
+        l.type_error = l.var_type()->type_error;
 
-        if (l.local.value_node && !(l.local.value_node->type_id.valid()) && l.local.value_node->type == ast_type::init_expr) {
-            deduce_init_list_type(ts, *l.local.value_node, decl_type);
+        if (l.var_value() && !(l.var_value()->type_id.valid()) && l.var_value()->type == ast_type::init_expr) {
+            deduce_init_list_type(ts, *l.var_value(), decl_type);
         }
     }
-    else if (!l.local.type_node) {
+    else if (!l.var_type()) {
         l.type_id = val_type;
-        l.type_error = l.local.value_node->type_error;
+        l.type_error = l.var_value()->type_error;
     }
 
     return l.type_id;
@@ -1335,12 +1348,25 @@ void update_local_variable_type(type_system& ts, ast_node& l, type_id tid) {
     }
 }
 
-bool match_arg_list(type_system& ts, const std::vector<ast_node*>& func_args, const std::vector<ast_node*>& call_args) {
+void update_local_aggregate_argument(type_system& ts, ast_node& l) {
+    update_local_variable_type(ts, l, get_mutable_pointer_type_to(ts, l.type_id));
+    for (auto ref : l.local.refs) {
+        auto parent = ref->parent;
+        auto idx = find_child_index(parent, ref);
+        if (idx) {
+            auto newchild = make_deref_expr(ts, std::move(parent->children[*idx]));
+            resolve_node_type_post(ts, newchild.get());
+            parent->children[*idx] = std::move(newchild);
+        }
+    }
+}
+
+bool match_arg_list(type_system& ts, std::vector<arena_ptr<ast_node>>& func_args, std::vector<arena_ptr<ast_node>>& call_args) {
     if (func_args.size() != call_args.size()) return false;
 
     for (std::size_t i = 0; i < func_args.size(); i++) {
-        auto farg = func_args[i];
-        auto carg = call_args[i];
+        auto& farg = func_args[i];
+        auto& carg = call_args[i];
         if (!is_convertible_to(ts, carg->type_id, farg->type_id)) {
             try_coerce_to(ts, *carg, farg->type_id);
             if (!is_convertible_to(ts, carg->type_id, farg->type_id)) {
@@ -1351,7 +1377,7 @@ bool match_arg_list(type_system& ts, const std::vector<ast_node*>& func_args, co
     return true;
 }
 
-string_hash mangle_func_name(type_system& ts, const std::vector<std::string>& id_parts, const std::vector<ast_node*>& args, func_linkage linkage) {
+string_hash mangle_func_name(type_system& ts, const std::vector<std::string>& id_parts, const std::vector<arena_ptr<ast_node>>& args, func_linkage linkage) {
     //assert(f.type_id != invalid_type);
 
     if (linkage == func_linkage::local_carbon || linkage == func_linkage::external_carbon) {
@@ -1375,16 +1401,16 @@ string_hash mangle_func_name(type_system& ts, const std::vector<std::string>& id
 }
 
 void resolve_func_args_type(type_system& ts, ast_node& node) {
-    auto funcname = node_to_string(*node.local.id_node);
+    auto funcname = node_to_string(*node.var_id());
 
     node.func.args_unresolved = false;
     node.type_def.func.arg_types.clear();
-    for (auto& arg : node.func.arguments) {
+    for (auto& arg : node.func_args()) {
         resolve_local_variable_type(ts, *arg);
         if (arg->type_id == invalid_type || arg->type_error) {
             node.func.args_unresolved = true;
 
-            auto name = node_to_string(*arg->local.id_node);
+            auto name = node_to_string(*arg->var_id());
             complement_error(ts, arg->pos, "in declaration of #%d argument '%s' of function '%s'", arg->local.arg_index + 1, name.c_str(), funcname.c_str());
         }
         node.type_def.func.arg_types.push_back(arg->type_id);
@@ -1394,16 +1420,16 @@ void resolve_func_args_type(type_system& ts, ast_node& node) {
 // TODO: deduce type from return statements
 
 type_id resolve_func_type(type_system& ts, ast_node& f) {
-    assert(f.func.ret_type_node || !"func not declared yet");
+    assert(f.func_ret_type() || !"func not declared yet");
 
-    auto funcname = node_to_string(*f.local.id_node);
+    auto funcname = node_to_string(*f.var_id());
 
     f.type_def.kind = type_kind::func;
     f.type_def.size = sizeof(void*);
     f.type_def.alignment = sizeof(void*);
     f.type_def.is_signed = false;
 
-    auto ret_type = resolve_node_type(ts, f.func.ret_type_node);
+    auto ret_type = resolve_node_type(ts, f.func_ret_type());
     if (!ret_type.valid()) {
         f.type_error = true;
         complement_error(ts, f.pos, "in return type of function '%s'", funcname.c_str());
@@ -1411,7 +1437,7 @@ type_id resolve_func_type(type_system& ts, ast_node& f) {
 
     if (ret_type.valid()) {
         if (f.func.return_statements.empty() && ret_type != ts.void_type && f.func.linkage == func_linkage::local_carbon) {
-            add_type_error(ts, f.func.ret_type_node->pos,
+            add_type_error(ts, f.func_ret_type()->pos,
                 "function '%s' has return type '%s' but no return statements",
                 funcname.c_str(),
                 type_to_string(ret_type).c_str());
@@ -1433,7 +1459,7 @@ type_id resolve_func_type(type_system& ts, ast_node& f) {
     
     if (!f.type_id.valid() && !f.func.args_unresolved && ret_type.valid()) {
         f.type_def.func.ret_type = ret_type;
-        f.type_def.name = "func_" + build_identifier_value(f.local.id_node->id_parts);
+        f.type_def.name = "func_" + build_identifier_value(f.var_id()->id_parts);
         f.type_id = register_user_type(ts, f);
     }
     return f.type_id;
@@ -1450,24 +1476,20 @@ void register_func_declaration_node(type_system& ts, ast_node& node) {
     auto& arg_list = node.children[ast_node::child_func_decl_arg_list]->children;
     auto& body = node.children[ast_node::child_func_decl_body];
 
-    node.local.id_node = id.get();
-    node.func.ret_type_node = node.children[ast_node::child_func_decl_ret_type].get();
-
-    if (!node.func.ret_type_node) {
+    if (!node.func_ret_type()) {
         auto id_void = make_tuple_type_node(*ts.ast_arena, node.pos, {nullptr, nullptr});
         auto ret_type = make_type_expr_node(*ts.ast_arena, node.pos, std::move(id_void));
-        node.func.ret_type_node = ret_type.get();
-        node.temps.push_back(std::move(ret_type));
+        node.children[ast_node::child_func_decl_ret_type] = std::move(ret_type);
     }
 
-    node.func.base_symbol = build_identifier_value(node.local.id_node->id_parts);
+    node.func.base_symbol = build_identifier_value(node.var_id()->id_parts);
     auto ovbase = find_symbol_in_current_scope(ts, node.func.base_symbol);
     if (!ovbase) {
         declare_overloaded_func_base_symbol(ts, node.func.base_symbol);
     }
 
     // try to resolve the return type already
-    resolve_node_type(ts, node.func.ret_type_node);
+    resolve_node_type(ts, node.func_ret_type());
 
     if (body) {
         body->parent = &node;
@@ -1478,24 +1500,15 @@ void register_func_declaration_node(type_system& ts, ast_node& node) {
     for (auto& arg : arg_list) {
         assert(arg->type == ast_type::var_decl);
 
-        auto& argid = arg->children[ast_node::child_var_decl_id];
-        auto& argtype = arg->children[ast_node::child_var_decl_type];
-        auto& argvalue = arg->children[ast_node::child_var_decl_value];
-
         arg->local.self = arg.get();
-        arg->local.id_node = argid.get();
-        arg->local.type_node = argtype.get();
-        arg->local.value_node = argvalue.get();
         arg->local.flags |= local_flag::is_argument;
         arg->local.arg_index = idx;
         arg->local.arg_func_node = &node;
 
         resolve_local_variable_type(ts, *arg);
         if (body) {
-            declare_local_symbol(ts, { arg->local.id_node->id_parts.front() }, *arg);
+            declare_local_symbol(ts, { arg->var_id()->id_parts.front() }, *arg);
         }
-
-        node.func.arguments.push_back(arg.get());
         idx++;
     }
 
@@ -1521,10 +1534,10 @@ void resolve_and_declare_local_variable(type_system& ts, const string_hash& id, 
         return;
     }
 
-    if (node.local.value_node) {
-        if (node.local.value_node->type == ast_type::init_expr) {
-            if (!node.local.value_node->type_id.valid()) {
-                if (node.local.value_node->children[1]->children.empty()) {
+    if (node.var_value()) {
+        if (node.var_value()->type == ast_type::init_expr) {
+            if (!node.var_value()->type_id.valid()) {
+                if (node.var_value()->children[1]->children.empty()) {
                     // empty init list: {}
                     if (!node.type_id.valid()) {
                         add_type_error(ts, node.pos, "cannot deduce type of empty tuple without type annotation");
@@ -1532,30 +1545,29 @@ void resolve_and_declare_local_variable(type_system& ts, const string_hash& id, 
                     }
                 }
                 else {
-                    node.local.value_node->initlist.deduce_to_tuple = true;
+                    node.var_value()->initlist.deduce_to_tuple = true;
                     return;
                 }
             }
 
-            if (node.type_id.valid() && !node.local.value_node->initlist.receiver) {
+            if (node.type_id.valid() && !node.var_value()->initlist.receiver) {
                 // Create the ref for the assignments
                 auto idref = make_identifier_node(*ts.ast_arena, {}, { id.str });
                 resolve_identifier(ts, *idref.get());
 
                 // Generate zero-values if necessary
                 node.children[ast_node::child_var_decl_value] = check_empty_init_list(
-                    ts, std::move(node.children[ast_node::child_var_decl_value]), node.local.value_node->type_id
+                    ts, std::move(node.children[ast_node::child_var_decl_value]), node.var_value()->type_id
                 );
-                node.local.value_node = node.children[ast_node::child_var_decl_value].get();
 
                 // Generate the assignments of the initializer list values
-                if (check_aggregate_types_match(ts, node.pos, node.local.value_node->type_id, node.type_id)) {
-                    check_init_list_assignment(ts, *node.local.value_node, *idref);
+                if (check_aggregate_types_match(ts, node.pos, node.var_value()->type_id, node.type_id)) {
+                    check_init_list_assignment(ts, *node.var_value(), *idref);
                     node.temps.push_back(std::move(idref));
                 }
             }
-            else if (!node.type_id.valid() && !node.local.type_node) {
-                node.local.value_node->initlist.deduce_to_tuple = true;
+            else if (!node.type_id.valid() && !node.var_type()) {
+                node.var_value()->initlist.deduce_to_tuple = true;
             }
         }
     }
@@ -1566,14 +1578,12 @@ void resolve_and_declare_local_variable(type_system& ts, const string_hash& id, 
             auto initlist = generate_init_list_zero_values(ts, node.type_id);
             check_init_list_assignment(ts, *initlist, *idref);
 
-            node.local.value_node = initlist.get();
             node.children[ast_node::child_var_decl_value] = std::move(initlist);
             node.temps.push_back(std::move(idref));
         }
         else {
             auto value = get_zero_value_node_for_type(ts, node.type_id);
             value->type_id = node.type_id;
-            node.local.value_node = value.get();
             node.children[ast_node::child_var_decl_value] = std::move(value);
         }
     }
@@ -1584,14 +1594,11 @@ void resolve_and_declare_local_variable(type_system& ts, const string_hash& id, 
 
 void register_var_declaration_node(type_system& ts, ast_node& node) {
     node.local.self = &node;
-    node.local.id_node = node.children[ast_node::child_var_decl_id].get();
-    node.local.type_node = node.children[ast_node::child_var_decl_type].get();
-    node.local.value_node = node.children[ast_node::child_var_decl_value].get();
 
-    auto id = string_hash{ build_identifier_value(node.local.id_node->id_parts) };
+    auto id = string_hash{ build_identifier_value(node.var_id()->id_parts) };
     auto prev = find_symbol_in_current_scope(ts, id);
     if (prev) {
-        add_type_error(ts, node.pos, "cannot redeclare name '%s'", build_identifier_value(node.local.id_node->id_parts).c_str());
+        add_type_error(ts, node.pos, "cannot redeclare name '%s'", build_identifier_value(node.var_id()->id_parts).c_str());
         return;
     }
 
@@ -1624,17 +1631,14 @@ void register_for_declarations(type_system& ts, ast_node& node) {
             resolve_node_type(ts, iterend.get());
 
             // declare the variable to hold the element of the range
-            elem_node->type = ast_type::var_decl;
-            elem_node->local.self = elem_node;
-            elem_node->local.id_node = elem_node;
-            elem_node->local.value_node = iterstart.get();
-            resolve_and_declare_local_variable(ts, string_hash{ build_identifier_value(elem_node->id_parts) }, *elem_node);
+            auto elem_decl_node = make_var_decl_with_value(*ts.ast_arena, elem_node->id_parts.front(), std::move(iterstart));
+            resolve_and_declare_local_variable(ts, string_hash{ build_identifier_value(elem_decl_node->id_parts) }, *elem_decl_node);
 
             auto elemref = make_identifier_node(*ts.ast_arena, {}, elem_node->id_parts);
             resolve_node_type(ts, elemref.get());
 
             node.forinfo.declare_for_iter = std::move(iterdecl);
-            node.forinfo.assign_elem_to_range_start = make_assignment(*ts.ast_arena, copy_var_ref(ts, *elemref), std::move(iterstart));
+            node.forinfo.declare_elem_to_range_start = std::move(elem_decl_node);
             node.forinfo.compare_elem_to_range_end = make_binary_expr_node(*ts.ast_arena, {},
                 token_from_char('<'), copy_var_ref(ts, *elemref), std::move(iterend)
             );
@@ -1644,7 +1648,7 @@ void register_for_declarations(type_system& ts, ast_node& node) {
             );
             node.forinfo.increase_elem = make_assignment(*ts.ast_arena, copy_var_ref(ts, *elemref), std::move(elem_plus));
 
-            resolve_node_type(ts, node.forinfo.assign_elem_to_range_start.get());
+            resolve_node_type(ts, node.forinfo.declare_elem_to_range_start.get());
             resolve_node_type(ts, node.forinfo.compare_elem_to_range_end.get());
             resolve_node_type(ts, node.forinfo.increase_elem.get());
             node.forinfo.self = &node;
@@ -1773,18 +1777,15 @@ ast_node* find_valid_parent_to_add_pre_children(type_system& ts, ast_node& node)
 }
 
 void resolve_range_expr(type_system& ts, ast_node& node) {
-    node.range.start_node = node.children[0].get();
-    node.range.end_node = node.children[1].get();
-
-    if (!node.range.start_node->type_id.valid() || node.range.start_node->type_id.get().kind != type_kind::integral) {
+    if (!node.range_start()->type_id.valid() || node.range_start()->type_id.get().kind != type_kind::integral) {
         node.type_error = true;
         add_type_error(ts, node.pos, "range expression start value has type '%s', it must be an integral number",
-            type_to_string(node.range.start_node->type_id).c_str());
+            type_to_string(node.range_start()->type_id).c_str());
     }
-    if (!node.range.end_node->type_id.valid() || node.range.end_node->type_id.get().kind != type_kind::integral) {
+    if (!node.range_end()->type_id.valid() || node.range_end()->type_id.get().kind != type_kind::integral) {
         node.type_error = true;
         add_type_error(ts, node.pos, "range expression end value has type '%s', it must be an integral number",
-            type_to_string(node.range.end_node->type_id).c_str());
+            type_to_string(node.range_end()->type_id).c_str());
     }
 
     if (!is_convertible_to(ts, node.children[1]->type_id, node.children[0]->type_id)) {
@@ -1914,7 +1915,7 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
         node.type_id = resolve_node_type(ts, node.children.front().get());
         if (!node.type_id.valid() || node.type_error) {
             auto funcname = node_to_string(
-                *(find_nearest_scope_local(ts, scope_kind::func_body)->self->local.id_node)
+                *(find_nearest_scope_local(ts, scope_kind::func_body)->self->var_id())
             );
             complement_error(ts, node.pos, "in return statement of function '%s'", funcname.c_str());
         }
@@ -1987,7 +1988,7 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
             register_func_declaration_node(ts, node);
         }
         else {
-            auto funcname = node_to_string(*node.local.id_node);
+            auto funcname = node_to_string(*node.var_id());
             resolve_func_args_type(ts, node);
 
             auto& body = node.children[ast_node::child_func_decl_body];
@@ -2004,14 +2005,14 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
 
             resolve_func_type(ts, node);
             if (!node.type_id.valid()) {
-                //auto funcname = node_to_string(*node.local.id_node);
+                //auto funcname = node_to_string(*node.var_id());
                 //complement_error(ts, node.pos, "in declaration of function '%s'", funcname.c_str());
             }
 
             if (node.type_id != invalid_type && ts.current_scope->kind == scope_kind::code_unit && node.type_def.mangled_name.str.empty()) {
                 // this means the function type was resolved, so mangle the name and declare it
 
-                node.type_def.mangled_name = mangle_func_name(ts, node.local.id_node->id_parts, node.func.arguments, node.func.linkage);
+                node.type_def.mangled_name = mangle_func_name(ts, node.var_id()->id_parts, node.func_args(), node.func.linkage);
 
                 auto bsym = find_symbol_in_current_scope(ts, node.func.base_symbol);
                 for (auto& f : bsym->overload_funcs) {
@@ -2033,18 +2034,14 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
 
         if (!node.call.self) {
             node.call.self = &node;
-            node.call.func_node = node.children[ast_node::child_call_expr_callee].get();
-            for (auto& arg : node.children[ast_node::child_call_expr_arg_list]->children) {
-                node.call.args.push_back(arg.get());
-            }
         }
-        auto funcname = node_to_string(*node.call.func_node);
+        auto funcname = node_to_string(*node.call_func());
 
         bool args_resolved = true;
         int argindex = 0;
         node.call.arg_types.clear();
-        for (auto& arg : node.call.args) {
-            resolve_node_type(ts, arg);
+        for (auto& arg : node.call_args()) {
+            resolve_node_type(ts, arg.get());
             //complement_error(arg->type_id, arg->pos, "in the #%d argument for function %s", node_to_string(node));
             if (arg->type_id == invalid_type || arg->type_error) {
                 node.type_error = true;
@@ -2061,17 +2058,17 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
         }
 
         if (!args_resolved) {
-            //auto funcname = node_to_string(*node.call.func_node);
+            //auto funcname = node_to_string(*node.call_func());
             //complement_error(ts, node.pos, "because of that, function call to '%s' has type 'unknown'", funcname.c_str());
         }
 
-        if (node.call.func_node->type == ast_type::identifier) {
+        if (node.call_func()->type == ast_type::identifier) {
             if (args_resolved) {
                 // both args and func resolved
-                auto pair = separate_module_identifier(node.call.func_node->id_parts);
+                auto pair = separate_module_identifier(node.call_func()->id_parts);
 
                 for (const auto& linkage : { func_linkage::local_carbon, func_linkage::external_c }) {    
-                    node.call.mangled_name = mangle_func_name(ts, { pair.second.str }, node.call.args, linkage);
+                    node.call.mangled_name = mangle_func_name(ts, { pair.second.str }, node.call_args(), linkage);
 
                     auto sym = find_symbol(ts, { pair.first, node.call.mangled_name });
                     if (sym && sym->kind == symbol_kind::top_level_func) {
@@ -2086,7 +2083,7 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
                 if (!node.type_id.valid()) {
                     node.type_error = true;
 
-                    auto funcname = node_to_string(*node.call.func_node);
+                    auto funcname = node_to_string(*node.call_func());
                     unk_type_error(ts, node.type_id, node.pos, "cannot determine type of function call to '%s'", funcname.c_str());
 
                     auto bsym = find_symbol(ts, pair);
@@ -2095,7 +2092,7 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
                         bool resolved = false;
                         for (std::size_t i = 0; i < bsym->overload_funcs.size(); i++) {
                             auto func = bsym->overload_funcs[i];
-                            if (match_arg_list(ts, func->arguments, node.call.args)) {
+                            if (match_arg_list(ts, func->self->func_args(), node.call_args())) {
                                 resolved = true;
                                 node.type_id = func->self->type_def.func.ret_type;
                                 node.call.func_type_id = func->self->type_id;
@@ -2160,8 +2157,6 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
                 node.field.self = &node;
                 node.field.is_optional = is_optional;
                 node.field.field_index = field_index;
-                node.field.struct_node = node.children[0].get();
-                node.field.field_node = node.children[1].get();
                 node.type_id = stype.get().structure.fields[field_index].type;
             }
             else {
@@ -2242,8 +2237,6 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
                     const auto& field = fields[node.children[1]->int_value];
                     node.field.self = &node;
                     node.field.field_index = node.children[1]->int_value;
-                    node.field.struct_node = node.children[0].get();
-                    node.field.field_node = node.children[1].get();
                     node.type = ast_type::field_expr;
                     node.type_id = field.type;
                 }
@@ -2260,10 +2253,10 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
             register_var_declaration_node(ts, node);
         }
         else {
-            auto id = string_hash{ build_identifier_value(node.local.id_node->id_parts) };
+            auto id = string_hash{ build_identifier_value(node.var_id()->id_parts) };
             resolve_and_declare_local_variable(ts, id, node);
             if (!node.type_id.valid() || node.type_error) {
-                auto name = node_to_string(*node.local.id_node);
+                auto name = node_to_string(*node.var_id());
                 complement_error(ts, node.pos, "in declaration of variable '%s'", name.c_str());
             }
         }
@@ -2302,7 +2295,7 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
         if (token_to_char(node.op) == '*') {
             // deref expression
 
-            if (!(node.children[0]->type_id.valid() && node.children[0]->type_id.get().kind == type_kind::pointer)) {
+            if (!(node.children[0]->type_id.valid() && is_pointer(node.children[0]->type_id))) {
                 add_type_error(ts, node.children[0]->pos,
                     "right-side of unary '*' (deref operation) has type '%s', it must be a pointer",
                     type_to_string(node.children[0]->type_id).c_str());
@@ -2422,24 +2415,22 @@ void check_assignment_bool_op(type_system& ts, ast_node& node) {
 }
 
 void check_call_arg_bool_op(type_system& ts, ast_node& call, int idx) {
-    if (is_bool_op(*call.call.args[idx])) {
+    if (is_bool_op(*call.call_args()[idx])) {
         auto [temp, ref] = make_temp_variable_for_bool_op_resolved(ts, std::move(call.children[ast_node::child_call_expr_arg_list]->children[idx]));
 
-        call.call.args[idx] = ref.get();
         call.children[ast_node::child_call_expr_arg_list]->children[idx] = std::move(ref);
         call.pre_children.push_back(std::move(temp));
     }
 }
 
 void check_var_decl_bool_op(type_system& ts, ast_node& node) {
-    if (!node.local.value_node) return;
+    if (!node.var_value()) return;
 
-    if (is_bool_op(*node.local.value_node)) {
+    if (is_bool_op(*node.var_value())) {
         node.local.flags |= local_flag::is_temp;
-        auto idref = make_identifier_node(*ts.ast_arena, {}, node.local.id_node->id_parts);
+        auto idref = make_identifier_node(*ts.ast_arena, {}, node.var_id()->id_parts);
         auto temp = make_temp_variable_for_bool_op_resolved(ts, std::move(node.children[ast_node::child_var_decl_value]), std::move(idref));
 
-        node.local.value_node = nullptr;
         node.pre_children.push_back(std::move(temp));
     }
 }
@@ -2458,16 +2449,15 @@ void check_return_bool_op(type_system& ts, ast_node& node) {
 // Section: aggregate arguments/return value
 
 void check_func_arg_aggregate_type(type_system& ts, ast_node& func, int idx) {
-    if (is_aggregate(func.func.arguments[idx]->type_id)) {
-        func.func.arguments[idx]->local.flags |= local_flag::is_aggregate_argument;
-        update_local_variable_type(ts, *func.func.arguments[idx], get_mutable_pointer_type_to(ts, func.func.arguments[idx]->type_id));
+    if (is_aggregate(func.func_args()[idx]->type_id)) {
+        func.func_args()[idx]->local.flags |= local_flag::is_aggregate_argument;
+        update_local_aggregate_argument(ts, *func.func_args()[idx]);
     }
 }
 
 void check_call_arg_aggregate_type(type_system &ts, ast_node& call, int idx) {
-    if (is_aggregate(call.call.args[idx]->type_id)) {
+    if (is_aggregate(call.call_args()[idx]->type_id)) {
         auto [temp, ref] = make_temp_variable_for_aggregate_type_resolved(ts, std::move(call.children[ast_node::child_call_expr_arg_list]->children[idx]));
-        call.call.args[idx] = ref.get();
         call.children[ast_node::child_call_expr_arg_list]->children[idx] = std::move(ref);
         call.pre_children.push_back(std::move(temp));
     }
@@ -2483,7 +2473,7 @@ void post_analysis(type_system& ts, ast_node* nodeptr) {
     case ast_type::for_stmt: {
         enter_scope_local(ts, node);
         visit_tree(ts, *node.forinfo.declare_for_iter);
-        visit_tree(ts, *node.forinfo.assign_elem_to_range_start);
+        visit_tree(ts, *node.forinfo.declare_elem_to_range_start);
         visit_tree(ts, *node.forinfo.compare_elem_to_range_end);
         visit_tree(ts, *node.forinfo.increase_elem);
         visit_tree(ts, *node.children[ast_node::child_for_stmt_body]);
@@ -2506,7 +2496,7 @@ void post_analysis(type_system& ts, ast_node* nodeptr) {
         break;
     }
     case ast_type::func_decl: {
-        for (int i = 0; i < node.func.arguments.size(); i++) {
+        for (int i = 0; i < node.func_args().size(); i++) {
             check_func_arg_aggregate_type(ts, node, i);
         }
 
@@ -2519,7 +2509,7 @@ void post_analysis(type_system& ts, ast_node* nodeptr) {
         visit_pre_children(ts, node);
         visit_children(ts, node);
 
-        for (int i = 0; i < node.call.args.size(); i++) {
+        for (int i = 0; i < node.call_args().size(); i++) {
             check_call_arg_bool_op(ts, node, i);
             check_call_arg_aggregate_type(ts, node, i);
         }
@@ -2569,7 +2559,7 @@ void final_analysis(type_system& ts, ast_node* nodeptr) {
     switch (node.type) {
     case ast_type::for_stmt: {
         visit_tree(ts, *node.forinfo.declare_for_iter);
-        visit_tree(ts, *node.forinfo.assign_elem_to_range_start);
+        visit_tree(ts, *node.forinfo.declare_elem_to_range_start);
         visit_tree(ts, *node.forinfo.compare_elem_to_range_end);
         visit_tree(ts, *node.forinfo.increase_elem);
         break;
@@ -2580,11 +2570,11 @@ void final_analysis(type_system& ts, ast_node* nodeptr) {
             && !node.func.args_unresolved) {
 
             auto parts = ts.current_scope->self_module_parts;
-            for (const auto& part : node.local.id_node->id_parts) {
+            for (const auto& part : node.var_id()->id_parts) {
                 parts.push_back(part);
             }
             
-            node.type_def.mangled_name = mangle_func_name(ts, parts, node.func.arguments, node.func.linkage);
+            node.type_def.mangled_name = mangle_func_name(ts, parts, node.func_args(), node.func.linkage);
         }
 
         if (node.scope.body_node) { enter_scope_local(ts, node); }
@@ -3056,7 +3046,7 @@ void type_system::resolve_and_check() {
     }
 
     if (errors.empty()) {
-        for (int i = 0; i < 2; i++) {
+        for (int i = 0; i < 1; i++) {
             this->pass = type_system_pass::post_analysis;
             this->subpass = i;
             for (auto unit : this->code_units) {
@@ -3091,11 +3081,8 @@ void type_system::create_temp_variable_for_binary_expr(ast_node& node) {
     auto id_node = make_identifier_node(*ast_arena, {}, { tempname });
 
     node.local.self = &node;
-    node.local.id_node = id_node.get();
-    node.local.value_node = node.children[0].get();
-    node.local.type_node = nullptr;
 
-    resolve_and_declare_local_variable(*this, { node.local.id_node->id_parts.front() }, node);
+    resolve_and_declare_local_variable(*this, { node.var_id()->id_parts.front() }, node);
     node.temps.push_back(std::move(id_node));
 }
 
@@ -3107,10 +3094,7 @@ void type_system::create_temp_variable_for_index_expr(ast_node& node) {
 
 void type_system::create_temp_variable_for_call_arg(ast_node& call, ast_node& arg, int idx) {
     auto [temp, ref] = make_temp_variable_for_call_resolved(*this, arg);
-
-    call.call.args[idx] = ref.get();
     call.children[ast_node::child_call_expr_arg_list]->children[idx] = std::move(ref);
-
     call.pre_children.push_back(std::move(temp));
 }
 

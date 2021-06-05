@@ -334,7 +334,7 @@ void generate_ir_func(ast_node& node) {
 
     auto name = node.type_def.mangled_name.str;
 
-    func.ret_type = node.func.ret_type_node->type_id;
+    func.ret_type = node.func_ret_type()->type_id;
 
     if (!node.scope.body_node) {
         func.name = name;
@@ -342,17 +342,17 @@ void generate_ir_func(ast_node& node) {
         return;
     }
 
-    if (node.local.id_node->id_parts.front() == "main") {
-        func.name = node.local.id_node->id_parts.front();
+    if (node.var_id()->id_parts.front() == "main") {
+        func.name = node.var_id()->id_parts.front();
     }
     else {
         func.name = name;
     }
 
-    for (auto arg : node.func.arguments) {
+    for (auto& arg : node.func_args()) {
         ir_arg_data iarg;
         iarg.type = arg->type_id;
-        iarg.name = build_identifier_value(arg->local.id_node->id_parts);
+        iarg.name = build_identifier_value(arg->var_id()->id_parts);
 
         arg->local.ir_index = func.args.size();
         func.args.push_back(iarg);
@@ -362,7 +362,7 @@ void generate_ir_func(ast_node& node) {
 
         ir_local_data ilocal;
         ilocal.type = local->self->type_id;
-        ilocal.name = build_identifier_value(local->id_node->id_parts);
+        ilocal.name = build_identifier_value(local->self->var_id()->id_parts);
 
         local->ir_index = func.locals.size();
         func.locals.push_back(ilocal);
@@ -380,7 +380,7 @@ void generate_ir_func(ast_node& node) {
 void generate_for_stmt(ast_node& node) {
     // assign elem to starting value
     generate_ir_node(*node.forinfo.declare_for_iter);
-    generate_ir_node(*node.forinfo.assign_elem_to_range_start);
+    generate_ir_node(*node.forinfo.declare_elem_to_range_start);
 
     // check if the elem is still inside the range
     emit(ir_make_label, ir_label{ node.ir.while_cond_label });
@@ -451,8 +451,8 @@ void generate_ir_field_expr(ast_node& node) {
     generate_ir_node(*node.children[0]);
     auto a = pop();
     
-    if (is_pointer_type(node.field.struct_node->type_id)) {
-        auto stype = node.field.struct_node->type_id.get().elem_type;
+    if (is_pointer_type(node.field_struct()->type_id)) {
+        auto stype = node.field_struct()->type_id.get().elem_type;
         temit(ir_deref, stype, a);
         push(ir_field{ ir_stack{ stype }, node.field.field_index });
     }
@@ -487,8 +487,8 @@ void generate_ir_call_expr(ast_node& node) {
     std::vector<ir_operand> args;
     args.push_back(ir_label{ node.call.mangled_name.str });
 
-    for (std::size_t i = 0; i < node.call.args.size(); i++) {
-        auto arg = node.call.args[i];
+    for (std::size_t i = 0; i < node.call_args().size(); i++) {
+        auto& arg = node.call_args()[i];
         generate_ir_node(*arg);
         args.push_back(pop());
     }
@@ -598,9 +598,8 @@ void generate_ir_addr_expr(ast_node& node) {
     generate_ir_node(*node.children[0]);
 
     // check if it's a transformed aggregate argument pointer
-    if (node.children[0]->lvalue.self && node.children[0]->lvalue.symbol) {
-        auto local = node.children[0]->lvalue.symbol->scope->local_defs[node.children[0]->lvalue.symbol->local_index];
-        if (local->flags & local_flag::is_aggregate_argument) { return; }
+    if (node.children[0]->type == ast_type::unary_expr && node.op == token_from_char('*')) {
+        return;
     }
 
     temit(ir_load_addr, node.type_id, pop());
@@ -620,10 +619,10 @@ void generate_ir_unary_expr(ast_node& node) {
 }
 
 void generate_ir_var(ast_node& node) {
-    if (node.local.value_node) {
-        generate_ir_node(*node.local.value_node);
+    if (node.var_value()) {
+        generate_ir_node(*node.var_value());
 
-        if (node.local.value_node->type == ast_type::init_expr) {
+        if (node.var_value()->type == ast_type::init_expr) {
             return;
         }
 
