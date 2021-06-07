@@ -606,6 +606,45 @@ compound_stmt{
         stmt_list{
           }}}
     func_decl{
+      identifier{"do_stuff"}
+      arg_list()
+      :type_expr{
+        tuple_type{
+          arg_list(
+            type_expr{
+              identifier{"raw_string"}}
+            type_expr{
+              identifier{"bool"}})}}
+compound_stmt{
+        stmt_list{
+          return_stmt{
+                        init_expr{
+              arg_list(
+                string_literal{"some_status"}
+                bool_literal{true})}}}}}
+    func_decl{
+      identifier{"test_tuple_return_value"}
+      arg_list()
+      :type_expr{
+        tuple_type{
+}}
+compound_stmt{
+        decl_list{
+          var_decl{
+            identifier{"result"}
+            =call_expr{
+              identifier{"do_stuff"}
+              arg_list()}}}
+        stmt_list{
+          call_expr{
+            identifier{"println"}
+            arg_list(
+              )}
+          call_expr{
+            identifier{"println"}
+            arg_list(
+              string_literal{"[NOK] test_tuple_return_value"})}}}}
+    func_decl{
       identifier{"get_result"}
       arg_list()
       :type_expr{
@@ -659,6 +698,9 @@ compound_stmt{
             arg_list()}
           call_expr{
             identifier{"test_struct_return_value"}
+            arg_list()}
+          call_expr{
+            identifier{"test_tuple_return_value"}
             arg_list()}}
         decl_list{
           var_decl{

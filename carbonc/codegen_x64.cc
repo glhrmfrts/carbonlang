@@ -682,6 +682,7 @@ struct generator {
 
             auto dest = get_local_destination(li, field.type);
             auto& offs = std::get<gen_offset>(dest);
+            offs.op_size = field.type.get().size;
             offs.expr[2] = std::get<int_type>(offs.expr[2]) - int_type(field.offset);
             return std::make_pair(toop(dest), field.type);
         }
@@ -694,6 +695,7 @@ struct generator {
 
             auto dest = get_arg_destination(ai, field.type);
             auto& offs = std::get<gen_offset>(dest);
+            offs.op_size = field.type.get().size;
             offs.expr[2] = std::get<int_type>(offs.expr[2]) - int_type(field.offset);
             return std::make_pair(toop(dest), field.type);
         }
@@ -709,6 +711,7 @@ struct generator {
             }
             else if (std::holds_alternative<gen_offset>(op)) {
                 auto& offs = std::get<gen_offset>(op);
+                offs.op_size = field.type.get().size;
                 offs.expr.push_back('+'); offs.expr.push_back(int_type(field.offset));
                 return std::make_pair(op, field.type);
             }
@@ -717,6 +720,7 @@ struct generator {
             auto [op, type] = transform_ir_field_ref(std::get<std::shared_ptr<ir_field>>(arg->ref).get());
             auto& field = type.get().structure.fields[arg->field_index];
             auto& offs = std::get<gen_offset>(op);
+            offs.op_size = field.type.get().size;
             offs.expr[2] = std::get<int_type>(offs.expr[2]) - int_type(field.offset);
             return std::make_pair(op, field.type);
         }

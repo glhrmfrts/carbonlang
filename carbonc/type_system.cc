@@ -1584,18 +1584,10 @@ void resolve_and_declare_local_variable(type_system& ts, const string_hash& id, 
 
     if (node.var_value()) {
         if (node.var_value()->type == ast_type::init_expr) {
-            if (!node.var_value()->type_id.valid()) {
-                if (node.var_value()->children[1]->children.empty()) {
-                    // empty init list: {}
-                    if (!node.type_id.valid()) {
-                        add_type_error(ts, node.pos, "cannot deduce type of empty tuple without type annotation");
-                        return;
-                    }
-                }
-                else {
-                    node.var_value()->initlist.deduce_to_tuple = true;
-                    return;
-                }
+            if (!node.var_type() && node.var_value()->children[1]->children.empty()) {
+                // empty init list: {}
+                add_type_error(ts, node.pos, "cannot deduce type of empty tuple without type annotation");
+                return;
             }
 
             if (node.type_id.valid() && !node.var_value()->initlist.receiver) {
@@ -1605,17 +1597,15 @@ void resolve_and_declare_local_variable(type_system& ts, const string_hash& id, 
 
                 // Generate zero-values if necessary
                 node.children[ast_node::child_var_decl_value] = check_empty_init_list(
-                    ts, std::move(node.children[ast_node::child_var_decl_value]), node.var_value()->type_id
+                    ts, std::move(node.children[ast_node::child_var_decl_value]), node.type_id
                 );
 
                 // Generate the assignments of the initializer list values
                 if (check_aggregate_types_match(ts, node.pos, node.var_value()->type_id, node.type_id)) {
+                    node.var_value()->type_id = node.type_id;
                     check_init_list_assignment(ts, *node.var_value(), *idref);
                     node.temps.push_back(std::move(idref));
                 }
-            }
-            else if (!node.type_id.valid() && !node.var_type()) {
-                node.var_value()->initlist.deduce_to_tuple = true;
             }
         }
     }
@@ -1651,6 +1641,75 @@ void register_var_declaration_node(type_system& ts, ast_node& node) {
     }
 
     resolve_and_declare_local_variable(ts, id, node);
+}
+
+void resolve_assignment_type(type_system& ts, ast_node& node) {
+    node.type_error = (node.children[0]->type_error || node.children[1]->type_error);
+
+    // Check the left type is resolved
+    if ((!node.children[0]->type_id.valid() || node.children[0]->type_error)) {
+        complement_error(ts, node.pos, "in assignment of '%s'", node_to_string(*node.children[0]).c_str());
+        return;
+    }
+    else if (!(node.children[0]->lvalue.self)) {
+        add_type_error(ts, node.pos, "left-side of assignment must be an lvalue (identifier, index expression, struct or tuple field)");
+        return;
+    }
+
+    // Check if we can re-assign the variable
+    if (node.children[0]->type == ast_type::identifier) {
+        auto local = get_symbol_local(*node.children[0]->lvalue.symbol);
+        if (local && local->self->op == token_type::let && !(local->flags & local_flag::is_temp)) {
+            add_type_error(ts, node.children[0]->pos, "cannot re-assign a 'let' value, use 'var' instead");
+            node.type_error = true;
+            return;
+        }
+    }
+
+    //deduce_init_list_type(ts, *node.children[1], node.children[0]->type_id);
+
+    if (node.children[1]->type == ast_type::init_expr) {
+        if (node.children[1]->children[1]->children.empty()) {
+            // empty init list: {}
+            node.children[1]->type_id = node.children[0]->type_id;
+        }
+
+        if (!node.children[1]->initlist.receiver) {
+            node.children[1] = check_empty_init_list(ts, std::move(node.children[1]), node.children[0]->type_id);
+            if (check_aggregate_types_match(ts, node.pos, node.children[1]->type_id, node.children[0]->type_id)) {
+                node.children[1]->type_id = node.children[0]->type_id;
+                check_init_list_assignment(ts, *node.children[1], *node.children[0]);
+            }
+        }
+    }
+    else {
+        if (!node.children[1]->type_id.valid() || node.children[1]->type_error) {
+            complement_error(ts, node.pos, "in assignment of '%s'", node_to_string(*node.children[0]).c_str());
+            return;
+        }
+    }
+
+    if (!is_convertible_to(ts, node.children[1]->type_id, node.children[0]->type_id)) {
+        try_coerce_to(ts, *node.children[1], node.children[0]->type_id);
+
+        if (!is_convertible_to(ts, node.children[1]->type_id, node.children[0]->type_id)) {
+            add_type_error(ts, node.children[1]->pos, "cannot convert type '%s' to '%s'",
+                type_to_string(node.children[1]->type_id).c_str(),
+                type_to_string(node.children[0]->type_id).c_str());
+
+            auto detail = get_conversion_error_detail(ts, node.children[1]->type_id, node.children[0]->type_id);
+            if (detail) {
+                complement_error(ts, node.pos, detail->c_str());
+            }
+
+            complement_error(ts, node.pos, "in assignment of '%s'", node_to_string(*node.children[0]).c_str());
+            node.type_error = true;
+            return;
+        }
+    }
+
+    node.type_error = false;
+    node.type_id = node.children[0]->type_id;
 }
 
 void register_for_declarations(type_system& ts, ast_node& node) {
@@ -1702,80 +1761,6 @@ void register_for_declarations(type_system& ts, ast_node& node) {
             node.forinfo.self = &node;
         }
     }
-}
-
-void resolve_assignment_type(type_system& ts, ast_node& node) {
-    node.type_error = (node.children[0]->type_error || node.children[1]->type_error);
-
-    // Check the left type is resolved
-    if ((!node.children[0]->type_id.valid() || node.children[0]->type_error)) {
-        complement_error(ts, node.pos, "in assignment of '%s'", node_to_string(*node.children[0]).c_str());
-        return;
-    }
-    else if (!(node.children[0]->lvalue.self)) {
-        add_type_error(ts, node.pos, "left-side of assignment must be an lvalue (identifier, index expression, struct or tuple field)");
-        return;
-    }
-    
-    // Check if we can re-assign the variable
-    if (node.children[0]->type == ast_type::identifier) {
-        auto local = get_symbol_local(*node.children[0]->lvalue.symbol);
-        if (local && local->self->op == token_type::let && !(local->flags & local_flag::is_temp)) {
-            add_type_error(ts, node.children[0]->pos, "cannot re-assign a 'let' value, use 'var' instead");
-            node.type_error = true;
-            return;
-        }
-    }
-
-    //deduce_init_list_type(ts, *node.children[1], node.children[0]->type_id);
-
-    if (node.children[1]->type == ast_type::init_expr) {
-        if (!node.children[1]->type_id.valid()) {
-            if (node.children[1]->children[1]->children.empty()) {
-                // empty init list: {}
-                node.children[1]->type_id = node.children[0]->type_id;
-            }
-            else {
-                node.children[1]->initlist.deduce_to_tuple = true;
-                return;
-            }
-        }
-
-        if (!node.children[1]->initlist.receiver) {
-            node.children[1] = check_empty_init_list(ts, std::move(node.children[1]), node.children[0]->type_id);
-            if (check_aggregate_types_match(ts, node.pos, node.children[1]->type_id, node.children[0]->type_id)) {
-                check_init_list_assignment(ts, *node.children[1], *node.children[0]);
-            }
-        }
-    }
-    else {
-        if (!node.children[1]->type_id.valid() || node.children[1]->type_error) {
-            complement_error(ts, node.pos, "in assignment of '%s'", node_to_string(*node.children[0]).c_str());
-            return;
-        }
-    }
-
-    if (!is_convertible_to(ts, node.children[1]->type_id, node.children[0]->type_id)) {
-        try_coerce_to(ts, *node.children[1], node.children[0]->type_id);
-
-        if (!is_convertible_to(ts, node.children[1]->type_id, node.children[0]->type_id)) {
-            add_type_error(ts, node.children[1]->pos, "cannot convert type '%s' to '%s'",
-                type_to_string(node.children[1]->type_id).c_str(),
-                type_to_string(node.children[0]->type_id).c_str());
-
-            auto detail = get_conversion_error_detail(ts, node.children[1]->type_id, node.children[0]->type_id);
-            if (detail) {
-                complement_error(ts, node.pos, detail->c_str());
-            }
-
-            complement_error(ts, node.pos, "in assignment of '%s'", node_to_string(*node.children[0]).c_str());
-            node.type_error = true;
-            return;
-        }
-    }
-
-    node.type_error = false;
-    node.type_id = node.children[0]->type_id;
 }
 
 arena_ptr<ast_node> make_neq_false_node(type_system& ts, arena_ptr<ast_node>&& val) {
@@ -2376,7 +2361,7 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
         }
         else if (!node.children[0]) {
             // ok, but needs to deduce from receiver type
-            //node.initlist.deduce_to_tuple = true;
+            node.initlist.deduce_to_tuple = true;
             if (node.initlist.deduce_to_tuple && !node.type_id.valid()) {
                 std::vector<type_constructor_arg> elem_types;
                 bool all_resolved = true;
