@@ -105,6 +105,7 @@ func test_short(): bool {
 
 func test_for_stmt() {
     let newstr = "helloworld".copy;
+
     for (i in 0 .. newstr.len) {
         let c = '0' + cast[int8] i;
         newstr[i] = c;
@@ -183,7 +184,7 @@ func test_struct_assignment_lvalue() {
 
 
 func sum_range_ptr(r: *range[usize]): usize {
-    return r.start + r.end;
+    return r.start + r.end - 1;
 }
 
 func sum_range_ptr(r: !range[usize]): usize {
@@ -214,6 +215,44 @@ func test_struct_argument(): {} {
     }
 }
 
+
+func make_range(): range[usize] {
+    return range[usize]{ 30, 40 };
+}
+
+func make_range_with(a: usize, b: usize): range[usize] {
+    return range[usize]{ a, b };
+}
+
+func make_range_zero_one(): range[usize] {
+    return make_range_with(0, 1);
+}
+
+func test_struct_return_value(): {} {
+    let r = make_range();
+    let r2 = make_range_with(570, 600);
+    let r3 = make_range_zero_one();
+
+    if (r.start == 30 && r.end == 40 && r2.start == 570 && r2.end == 600 && r3.start == 0 && r3.end == 1) {
+        println("[OK] test_struct_return_value");
+    }
+    else {
+        println("[NOK] test_struct_return_value");
+    }
+}
+
+/*
+func do_stuff(): {raw_string, bool} {
+    return {"status", true};
+}
+
+func test_tuple_return_value(): {} {
+    let result = do_stuff();
+
+    println(result.first);
+    println("[NOK] test_tuple_return_value");
+}*/
+
 func get_result(): int { return 2; }
 
 func main(): int {  
@@ -231,6 +270,8 @@ func main(): int {
     test_tuple_init();
     test_struct_assignment_lvalue();
     test_struct_argument();
+    test_struct_return_value();
+    //test_tuple_return_value();
 
     //mem::dealloc(cast[raw_ptr] newtext);
     //return a[0];//result*2;

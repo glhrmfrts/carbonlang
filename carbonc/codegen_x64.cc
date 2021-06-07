@@ -36,7 +36,7 @@ struct func_data {
 };
 
 constexpr gen_register reg_result = rax;
-constexpr gen_register reg_intermediate = rcx;
+constexpr gen_register reg_intermediate = r10;
 
 gen_destination adjust_for_type(gen_destination dest, type_id tid) {
     auto tdef = tid.scope->type_defs[tid.type_index];
@@ -160,6 +160,10 @@ struct generator {
                 sz = std::max(sz, args_size);
                 calls_ever_made = true;
             }
+            else if (inst.op == ir_copy) {
+                // ir_copy uses rcx as well
+                calls_ever_made = true;
+            }
         }
         return std::make_pair(sz, calls_ever_made);
     }
@@ -260,55 +264,6 @@ struct generator {
         return "$cbstr" + std::to_string(idx);
     }
 
-    int ref_opstack_consumption(const ir_ref& ref) {
-        int i = 0;
-        if (std::holds_alternative<ir_stack>(ref)) {
-            i++;
-        }
-        else if (std::holds_alternative<std::shared_ptr<ir_field>>(ref)) {
-            auto& ptr = std::get<std::shared_ptr<ir_field>>(ref);
-            i += ref_opstack_consumption(ptr->ref);
-        }
-        return i;
-    }
-
-    int operand_opstack_consumption(const ir_operand& opr) {
-        int i = 0;
-        if (std::holds_alternative<ir_stack>(opr)) {
-            i++;
-        }
-        else if (std::holds_alternative<ir_field>(opr)) {
-            auto& ptr = std::get<ir_field>(opr);
-            i += ref_opstack_consumption(ptr.ref);
-        }
-        return i;
-    }
-
-    int instr_opstack_consumption(const ir_instr& instr) {
-        int i = 0;
-        for (const auto& opr : instr.operands) {
-            i += operand_opstack_consumption(opr);
-        }
-        return i;
-    }
-
-    bool instr_pushes_to_stack(const ir_instr& instr) {
-        switch (instr.op) {
-        case ir_add:
-        case ir_sub:
-        case ir_mul:
-        case ir_div:
-        case ir_deref:
-        case ir_index:
-        case ir_load_addr:
-            return true;
-        case ir_call:
-            return instr.result_type != ts->void_type;
-        default:
-            return false;
-        }
-    }
-
     void determine_instrs_destination() {
         temp_locals_base = fn->locals.size();
 
@@ -387,6 +342,7 @@ struct generator {
         fdata.local_data.resize(func.locals.size()); // resize for any created temps
 
         em->begin_func(func.name.c_str());
+        em->emitln(" ;%s", func.demangled_name.c_str());
 
         auto [local_size, call_arg_size, calls_ever_made] = get_func_stack_frame_size(func);
         std::int32_t stack_size = local_size + call_arg_size;
@@ -440,7 +396,9 @@ struct generator {
         }
 
         if (needs_rbp) { em->mov(rbp, rsp); }
-        if (stack_size > 0) { em->sub(rsp, (int_type)(stack_size)); } 
+        if (stack_size > 0) { em->sub(rsp, (int_type)(stack_size)); }
+
+        em->emitln(" ;prolog end\n");
 
         for (auto& instr : func.instrs) {
             generate_ir_instr(instr);
@@ -456,6 +414,7 @@ struct generator {
 
         em->ret();
         em->end_func();
+        em->emitln("\n");
 
         this->fn = nullptr;
         this->fndata = nullptr;

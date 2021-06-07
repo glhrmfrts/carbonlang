@@ -177,11 +177,17 @@ struct lvalue {
     symbol_info* symbol;
 };
 
+struct call_flag {
+    using type = unsigned int;
+
+    static constexpr type none = 0;
+    static constexpr type is_aggregate_return = 4;
+};
+
 struct call_info {
     ast_node* self;
-    //ast_node* func_node;
+    call_flag::type flags;
     func_def* funcdef;
-    //std::vector<ast_node*> args;
     std::vector<type_id> arg_types;
     string_hash mangled_name;
     type_id func_type_id{};

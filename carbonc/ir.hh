@@ -92,6 +92,7 @@ struct ir_instr {
 
 struct ir_func {
     std::string name;
+    std::string demangled_name;
     std::vector<ir_arg_data> args;
     std::vector<ir_local_data> locals;
     std::vector<ir_instr> instrs;
@@ -117,6 +118,14 @@ struct ir_program {
     std::vector<std::string> strings;
     std::vector<ir_func> funcs;
 };
+
+int ref_opstack_consumption(const ir_ref& ref);
+
+int operand_opstack_consumption(const ir_operand& opr);
+
+int instr_opstack_consumption(const ir_instr& instr);
+
+bool instr_pushes_to_stack(const ir_instr& instr);
 
 std::string sprint_ir_instr(const ir_instr& instr);
 

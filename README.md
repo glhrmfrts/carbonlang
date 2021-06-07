@@ -38,6 +38,7 @@ Source code -> Tokens (Lexer) -> Untyped AST (Parser) -> Typed AST (Type System)
 - [ ] aggregate type return value
 - [ ] struct / tuples
 - [ ] arrays
+- [ ] array views
 - [ ] catch up on the codegen
 - [ ] user types
 - [ ] defer statements

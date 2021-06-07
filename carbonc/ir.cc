@@ -332,12 +332,14 @@ void generate_ir_func(ast_node& node) {
     func.index = prog->funcs.size() - 1;
     fn = &func;
 
-    auto name = node.type_def.mangled_name.str;
+    auto mangled_name = node.type_def.mangled_name.str;
+    auto orig_name = node.type_def.name.str;
 
+    func.demangled_name = orig_name;
     func.ret_type = node.func_ret_type()->type_id;
 
     if (!node.scope.body_node) {
-        func.name = name;
+        func.name = mangled_name;
         func.is_extern = true;
         return;
     }
@@ -346,7 +348,7 @@ void generate_ir_func(ast_node& node) {
         func.name = node.var_id()->id_parts.front();
     }
     else {
-        func.name = name;
+        func.name = mangled_name;
     }
 
     for (auto& arg : node.func_args()) {
@@ -493,9 +495,17 @@ void generate_ir_call_expr(ast_node& node) {
         args.push_back(pop());
     }
 
-    emitops(ir_call, node.type_id, args);
-    if (node.type_id != ts->void_type) {
+    bool pushes = node.type_id != ts->void_type;
+    if (node.call.flags & call_flag::is_aggregate_return) {
+        pushes = false;
+    }
+
+    if (pushes) {
+        emitops(ir_call, node.type_id, args);
         push(ir_stack{ node.type_id });
+    }
+    else {
+        emitops(ir_call, ts->void_type, args);
     }
 }
 
@@ -589,19 +599,25 @@ void generate_ir_binary_expr(ast_node& node) {
 }
 
 void generate_ir_deref_expr(ast_node& node) {
+    // check if it's a transformed aggregate argument pointer
+    if (node.children[0]->type == ast_type::unary_expr && node.children[0]->op == token_from_char('&')) {
+        generate_ir_node(*node.children[0]->children[0]);
+        return;
+    }
+
     generate_ir_node(*node.children[0]);
     temit(ir_deref, node.type_id, pop());
     push(ir_stack{ node.type_id });
 }
 
 void generate_ir_addr_expr(ast_node& node) {
-    generate_ir_node(*node.children[0]);
-
     // check if it's a transformed aggregate argument pointer
-    if (node.children[0]->type == ast_type::unary_expr && node.op == token_from_char('*')) {
+    if (node.children[0]->type == ast_type::unary_expr && node.children[0]->op == token_from_char('*')) {
+        generate_ir_node(*node.children[0]->children[0]);
         return;
     }
 
+    generate_ir_node(*node.children[0]);
     temit(ir_load_addr, node.type_id, pop());
     push(ir_stack{ node.type_id });
 }
@@ -830,6 +846,55 @@ void print_ir() {
 
 }
 
+int ref_opstack_consumption(const ir_ref& ref) {
+    int i = 0;
+    if (std::holds_alternative<ir_stack>(ref)) {
+        i++;
+    }
+    else if (std::holds_alternative<std::shared_ptr<ir_field>>(ref)) {
+        auto& ptr = std::get<std::shared_ptr<ir_field>>(ref);
+        i += ref_opstack_consumption(ptr->ref);
+    }
+    return i;
+}
+
+int operand_opstack_consumption(const ir_operand& opr) {
+    int i = 0;
+    if (std::holds_alternative<ir_stack>(opr)) {
+        i++;
+    }
+    else if (std::holds_alternative<ir_field>(opr)) {
+        auto& ptr = std::get<ir_field>(opr);
+        i += ref_opstack_consumption(ptr.ref);
+    }
+    return i;
+}
+
+int instr_opstack_consumption(const ir_instr& instr) {
+    int i = 0;
+    for (const auto& opr : instr.operands) {
+        i += operand_opstack_consumption(opr);
+    }
+    return i;
+}
+
+bool instr_pushes_to_stack(const ir_instr& instr) {
+    switch (instr.op) {
+    case ir_add:
+    case ir_sub:
+    case ir_mul:
+    case ir_div:
+    case ir_deref:
+    case ir_index:
+    case ir_load_addr:
+        return true;
+    case ir_call:
+        return instr.result_type != ts->void_type;
+    default:
+        return false;
+    }
+}
+
 std::string sprint_ir_instr(const ir_instr& instr) {
     std::ostringstream s;
     print_instr(s, instr);
@@ -856,7 +921,7 @@ ir_program generate_ir(type_system& tsystem, ast_node& program_node) {
     print_ir();
 
     prog = nullptr;
-    ts = nullptr;
+    //ts = nullptr;
     return p;
 }
 
