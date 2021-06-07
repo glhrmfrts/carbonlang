@@ -122,7 +122,7 @@ func test_for_stmt() {
 
 func test_struct_zeroinit() {
     var a: range[int];
-    var b: range[int] = {};
+    var b: range[int] = { };
 
     if ((a.start == 0 && a.end == 0) && (b.start == 0 && b.end == 0)) {
         println("[OK] test_struct_zeroinit");
@@ -272,7 +272,7 @@ func main(): int {
     test_struct_assignment_lvalue();
     test_struct_argument();
     test_struct_return_value();
-    //test_tuple_assignment_lvalue();
+    test_tuple_assignment_lvalue();
     test_tuple_return_value();
 
     //mem::dealloc(cast[raw_ptr] newtext);

@@ -1584,21 +1584,21 @@ void resolve_and_declare_local_variable(type_system& ts, const string_hash& id, 
 
     if (node.var_value()) {
         if (node.var_value()->type == ast_type::init_expr) {
-            if (!node.var_type() && node.var_value()->children[1]->children.empty()) {
-                // empty init list: {}
-                add_type_error(ts, node.pos, "cannot deduce type of empty tuple without type annotation");
-                return;
-            }
-
             if (node.type_id.valid() && !node.var_value()->initlist.receiver) {
+                if (node.var_type() && node.var_value()->type_id.get().size == 0) {
+                    node.var_value()->type_id = node.type_id;
+                }
+
                 // Create the ref for the assignments
                 auto idref = make_identifier_node(*ts.ast_arena, {}, { id.str });
                 resolve_identifier(ts, *idref.get());
 
                 // Generate zero-values if necessary
-                node.children[ast_node::child_var_decl_value] = check_empty_init_list(
-                    ts, std::move(node.children[ast_node::child_var_decl_value]), node.type_id
-                );
+                if (node.var_value()->type_id == node.type_id) {
+                    node.children[ast_node::child_var_decl_value] = check_empty_init_list(
+                        ts, std::move(node.children[ast_node::child_var_decl_value]), node.type_id
+                    );
+                }
 
                 // Generate the assignments of the initializer list values
                 if (check_aggregate_types_match(ts, node.pos, node.var_value()->type_id, node.type_id)) {
@@ -1666,16 +1666,14 @@ void resolve_assignment_type(type_system& ts, ast_node& node) {
         }
     }
 
-    //deduce_init_list_type(ts, *node.children[1], node.children[0]->type_id);
-
     if (node.children[1]->type == ast_type::init_expr) {
-        if (node.children[1]->children[1]->children.empty()) {
-            // empty init list: {}
-            node.children[1]->type_id = node.children[0]->type_id;
-        }
-
         if (!node.children[1]->initlist.receiver) {
-            node.children[1] = check_empty_init_list(ts, std::move(node.children[1]), node.children[0]->type_id);
+            if (node.children[1]->type_id.get().size == 0) {
+                node.children[1]->type_id = node.children[0]->type_id;
+            }
+            if (node.children[1]->type_id == node.children[0]->type_id) {
+                node.children[1] = check_empty_init_list(ts, std::move(node.children[1]), node.children[1]->type_id);
+            }
             if (check_aggregate_types_match(ts, node.pos, node.children[1]->type_id, node.children[0]->type_id)) {
                 node.children[1]->type_id = node.children[0]->type_id;
                 check_init_list_assignment(ts, *node.children[1], *node.children[0]);
