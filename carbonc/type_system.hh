@@ -276,10 +276,10 @@ enum class type_system_pass {
     perform_checks,
 
     // if no errors found, adjust func arguments for aggregate types, create temp variables for bool ops...
-    post_analysis,
+    desugar,
 
     // if no errors found, provide fully-qualified mangled names
-    final_analysis, 
+    remangle_names,
 
     // if no errors found, generate interface files
     create_interface_files,
@@ -346,5 +346,54 @@ struct type_system {
 bool is_pointer_type(type_id tid);
 
 bool is_aggregate_type(type_id tid);
+
+bool compare_types_exact(const type_def& a, const type_def& b);
+
+type_id find_type_by_value(type_system& ts, scope_def& scope, const type_def& tdef);
+
+type_id execute_type_constructor(type_system& ts, scope_def& scope, type_constructor& tpl, const std::vector<type_constructor_arg>& args);
+
+type_id execute_builtin_type_constructor(type_system& ts, type_constructor& tpl, const std::vector<type_constructor_arg>& args);
+
+string_hash build_tuple_name(const std::vector<type_constructor_arg>& args);
+
+string_hash build_type_constructor_name(const std::string& name, const std::vector<type_constructor_arg>& args);
+
+string_hash build_type_constructor_mangled_name(const std::string& mangled_name, const std::vector<type_constructor_arg>& args);
+
+type_id get_pointer_type_to(type_system& ts, type_id elem_type);
+
+type_id get_mutable_pointer_type_to(type_system& ts, type_id elem_type);
+
+type_id get_optional_type_to(type_system& ts, type_id elem_type);
+
+type_id get_new_type_to(type_system& ts, type_id elem_type);
+
+type_id get_range_type(type_system& ts, type_id elem_type);
+
+
+void resolve_func_args_type(type_system& ts, ast_node& node);
+
+type_id resolve_func_type(type_system& ts, ast_node& f);
+
+void clear_func_resolved_state(ast_node& func);
+
+void fill_local_argument_info(ast_node& func, ast_node& arg, int idx);
+
+void declare_func_arguments(type_system& ts, ast_node& func);
+
+
+void update_local_variable_type(type_system& ts, ast_node& l, type_id tid);
+
+void update_local_aggregate_argument(type_system& ts, ast_node& l);
+
+
+void visit_tree(type_system& ts, ast_node& node);
+
+void visit_pre_children(type_system& ts, ast_node& node);
+
+void visit_children(type_system& ts, ast_node& node);
+
+type_id resolve_node_type(type_system& ts, ast_node* nodeptr);
 
 }

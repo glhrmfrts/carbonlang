@@ -242,6 +242,38 @@ func test_struct_return_value(): {} {
 }
 
 
+func test_tuple_assignment_lvalue() {
+    let a = {3,4,5};
+    let b = a;
+    var c = {0,1,2};
+    
+    c = b;
+
+    if (a[0] == b[0] && a[1] == b[1] && a[2] == b[2]) {
+        println("[OK] test_tuple_assignment_lvalue");
+    }
+    else {
+        println("[NOK] test_tuple_assignment_lvalue");
+    }
+}
+
+
+func sum_tuple(t: {int, int, int}): int {
+    return t[0] + t[1] + t[2];
+}
+
+func test_tuple_argument() {
+    let a = {3,4,5};
+    let ares = sum_tuple(a);
+    if (ares == 3+4+5) {
+        println("[OK] test_tuple_argument");
+    }
+    else {
+        println("[NOK] test_tuple_argument");
+    }
+}
+
+
 func do_stuff(): {raw_string, bool} {
     return {"some_status", true};
 }
@@ -249,8 +281,12 @@ func do_stuff(): {raw_string, bool} {
 func test_tuple_return_value(): {} {
     let result = do_stuff();
 
-    println(result.first);
-    println("[NOK] test_tuple_return_value");
+    if (equals(result.first, "some_status") && result.second == true) {
+        println("[OK] test_tuple_return_value");
+    }
+    else {
+        println("[NOK] test_tuple_return_value");
+    }
 }
 
 
@@ -273,6 +309,7 @@ func main(): int {
     test_struct_argument();
     test_struct_return_value();
     test_tuple_assignment_lvalue();
+    test_tuple_argument();
     test_tuple_return_value();
 
     //mem::dealloc(cast[raw_ptr] newtext);

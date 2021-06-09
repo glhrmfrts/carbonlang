@@ -35,26 +35,26 @@ Source code -> Tokens (Lexer) -> Untyped AST (Parser) -> Typed AST (Type System)
 - [X] catch up on the codegen
 - [X] cleanup pointers in node struct, transform to methods
 - [X] aggregate type function arguments
-- [ ] aggregate type return value
-- [ ] struct / tuples
+- [X] aggregate type return value
+- [X] struct / tuples
 - [ ] arrays
-- [ ] array views
-- [ ] catch up on the codegen
+- [ ] slices
+- [ ] defer statements and expression
 - [ ] user types
-- [ ] defer statements
 - [ ] for statement (array-based)
-- [ ] catch up on the codegen
 - [ ] function pointers
 - [ ] global vars (?)
+- [ ] catch up on the codegen
 - [ ] more/better type checking and errors
 - [ ] floating point types support
 - [ ] investigate entry points for receiving command-line args
 - [ ] catch up on the codegen
 - [ ] integrate linking process
-- [ ] codegen: linux x64
-- [ ] codegen: linux ARM64
 - [ ] user type constructors
 - [ ] std library design
+- [ ] codegen: linux x64
+- [ ] codegen: linux ARM64
+- [ ] vectorization/SIMD support
 - [ ] raii stuff (?)
 - [ ] closures
 - [ ] rewrite compiler / self-hosting

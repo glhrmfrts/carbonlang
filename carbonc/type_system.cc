@@ -2,21 +2,16 @@
 #include <optional>
 #include "type_system.hh"
 #include "ast.hh"
+#include "ast_manip.hh"
 #include "fs.hh"
+#include "desugar.hh"
+#include "scope.hh"
 #include <fstream>
 #include <numeric>
 
 namespace carbon {
 
-namespace {
-
 static const type_id invalid_type{};
-
-void visit_tree(type_system& ts, ast_node& node);
-
-void visit_children(type_system& ts, ast_node& node);
-
-type_id resolve_node_type(type_system& ts, ast_node* nodeptr);
 
 bool declare_type_symbol(type_system& ts, const string_hash& hash, ast_node&);
 
@@ -29,189 +24,6 @@ bool is_castable_to(type_system& ts, type_id a, type_id b);
 std::string node_to_string(const ast_node& node);
 
 std::string type_to_string(type_id t);
-
-type_id get_pointer_type_to(type_system& ts, type_id elem_type);
-
-// Section: AST helpers
-
-void resolve_node_type_post(type_system& ts, ast_node* nodeptr) {
-    auto prevpass = ts.pass;
-    ts.pass = type_system_pass::perform_checks;
-    resolve_node_type(ts, nodeptr);
-    ts.pass = prevpass;
-}
-
-arena_ptr<ast_node> make_var_decl_with_value(memory_arena& ast_arena, std::string varname, arena_ptr<ast_node>&& value) {
-    auto res = make_var_decl_node(ast_arena, {}, token_type::var, make_identifier_node(ast_arena, {}, { varname }), { nullptr, nullptr }, std::move(value));
-    res->local.self = res.get();
-    return res;
-}
-
-arena_ptr<ast_node> make_assignment(memory_arena& ast_arena, arena_ptr<ast_node>&& dest, arena_ptr<ast_node>&& value) {
-    return make_binary_expr_node(ast_arena, {}, token_from_char('='), std::move(dest), std::move(value));
-}
-
-arena_ptr<ast_node> make_struct_field_access(memory_arena& ast_arena, arena_ptr<ast_node>&& st, std::string field) {
-    return make_field_expr_node(ast_arena, {}, std::move(st), make_identifier_node(ast_arena, {}, { field }));
-}
-
-arena_ptr<ast_node> make_index_access(memory_arena& ast_arena, arena_ptr<ast_node>&& st, int idx) {
-    return make_index_expr_node(ast_arena, {}, std::move(st), make_int_literal_node(ast_arena, {}, idx));
-}
-
-arena_ptr<ast_node> make_address_of_expr(type_system& ts, arena_ptr<ast_node>&& expr) {
-    return make_unary_expr_node(*ts.ast_arena, expr->pos, token_from_char('&'), std::move(expr));
-}
-
-arena_ptr<ast_node> make_deref_expr(type_system& ts, arena_ptr<ast_node>&& expr) {
-    return make_unary_expr_node(*ts.ast_arena, expr->pos, token_from_char('*'), std::move(expr));
-}
-
-arena_ptr<ast_node> copy_var_ref(type_system& ts, ast_node& node) {
-    if (node.type == ast_type::identifier) {
-        return make_identifier_node(*ts.ast_arena, node.pos, node.id_parts);
-    }
-    else if (node.type == ast_type::field_expr) {
-        return make_field_expr_node(*ts.ast_arena, node.pos, copy_var_ref(ts, *node.children[0]), copy_var_ref(ts, *node.children[1]));
-    }
-    else if (node.type == ast_type::unary_expr && token_to_char(node.op) == '*') {
-        return make_deref_expr(ts, copy_var_ref(ts, *node.children[0]));
-    }
-    assert(!"copy_var_ref: node type not handled!");
-    return { nullptr, nullptr };
-}
-
-// TODO: obviously need better stuff here
-static int temp_count = 0;
-
-std::string generate_temp_name() {
-    return "$cbT" + std::to_string(temp_count++);
-}
-
-arena_ptr<ast_node> transform_bool_op_into_if_statement(type_system& ts, arena_ptr<ast_node>&& bop, ast_node& destvar) {
-    auto true_node = make_bool_literal_node(*ts.ast_arena, {}, true);
-    auto false_node = make_bool_literal_node(*ts.ast_arena, {}, false);
-    auto assign_true = make_binary_expr_node(*ts.ast_arena, {}, token_from_char('='), copy_var_ref(ts, destvar), std::move(true_node));
-    auto assign_false = make_binary_expr_node(*ts.ast_arena, {}, token_from_char('='), copy_var_ref(ts, destvar), std::move(false_node));
-    return make_if_stmt_node(*ts.ast_arena, bop->pos, std::move(bop), std::move(assign_true), std::move(assign_false));
-}
-
-std::pair<arena_ptr<ast_node>, arena_ptr<ast_node>> make_temp_variable_for_call_resolved(type_system& ts, ast_node& call) {
-    // generate the temp ID
-    std::string tempname = generate_temp_name();
-    auto id_node = make_identifier_node(*ts.ast_arena, {}, { tempname });
-
-    auto val_node = make_call_expr_node(*ts.ast_arena, {}, std::move(call.children[ast_node::child_call_expr_callee]), std::move(call.children[ast_node::child_call_expr_arg_list]));
-    // The call might have a pre-children of itself
-    val_node->pre_children = std::move(call.pre_children);
-
-    // Generate and register the declaration of the temp
-    auto decl = make_var_decl_node(*ts.ast_arena, {}, token_type::let, std::move(id_node), { nullptr, nullptr }, std::move(val_node));
-    resolve_node_type_post(ts, decl.get());
-
-    // Make a reference to use as the new argument
-    auto ref = make_identifier_node(*ts.ast_arena, {}, { tempname });
-    resolve_node_type_post(ts, ref.get());
-
-    return std::make_pair(std::move(decl), std::move(ref));
-}
-
-std::pair<arena_ptr<ast_node>, arena_ptr<ast_node>> make_temp_variable_for_index_expr_resolved(type_system& ts, arena_ptr<ast_node>&& lhs) {
-    // generate the temp ID
-    std::string tempname = generate_temp_name();
-    auto id_node = make_identifier_node(*ts.ast_arena, {}, { tempname });
-
-    // Generate and register the declaration of the temp
-    auto decl = make_var_decl_node(*ts.ast_arena, {}, token_type::let, std::move(id_node), { nullptr, nullptr }, std::move(lhs));
-    resolve_node_type_post(ts, decl.get());
-
-    // Make a reference to use as the new argument
-    auto ref = make_identifier_node(*ts.ast_arena, {}, { tempname });
-    resolve_node_type_post(ts, ref.get());
-
-    return std::make_pair(std::move(decl), std::move(ref));
-}
-
-// generates something like:
-// var temp: bool;
-// if ($expr) temp = true; else temp = false;
-// 
-// returns the if statement and a reference to temp
-std::pair<arena_ptr<ast_node>, arena_ptr<ast_node>> make_temp_variable_for_bool_op_resolved(type_system& ts, arena_ptr<ast_node>&& expr) {
-    // generate the temp ID
-    std::string tempname = generate_temp_name();
-    auto id_node = make_identifier_node(*ts.ast_arena, {}, { tempname });
-    auto type_node = make_type_expr_node(*ts.ast_arena, {}, make_identifier_node(*ts.ast_arena, {}, { "bool" }));
-
-    // Generate and register the declaration of the temp
-    auto decl = make_var_decl_node(*ts.ast_arena, {}, token_type::var, std::move(id_node), std::move(type_node), { nullptr, nullptr });
-    resolve_node_type_post(ts, decl.get());
-
-    // Make a reference to use as the new argument
-    auto ref = make_identifier_node(*ts.ast_arena, {}, { tempname });
-    resolve_node_type_post(ts, ref.get());
-
-    // Make the if statement
-    auto ifstmt = transform_bool_op_into_if_statement(ts, std::move(expr), *ref);
-    resolve_node_type_post(ts, ifstmt.get());
-
-    ifstmt->temps.push_back(std::move(decl));
-
-    return std::make_pair(std::move(ifstmt), std::move(ref));
-}
-
-// generates something like:
-// if ($expr) $receiver = true; else $receiver = false;
-// 
-// returns the if statement
-arena_ptr<ast_node> make_temp_variable_for_bool_op_resolved(type_system& ts, arena_ptr<ast_node>&& expr, arena_ptr<ast_node>&& receiver) {
-    // Make the if statement
-    auto ifstmt = transform_bool_op_into_if_statement(ts, std::move(expr), *receiver);
-    resolve_node_type_post(ts, ifstmt.get());
-
-    return std::move(ifstmt);
-}
-
-arena_ptr<ast_node> make_var_decl_of_type(type_system& ts, token_type kind, const std::string& name, type_id tid) {
-    auto id_node = make_identifier_node(*ts.ast_arena, {}, { name });
-    auto type_node = make_type_resolver_node(*ts.ast_arena, tid);
-
-    auto res = make_var_decl_node(*ts.ast_arena, {}, kind, std::move(id_node), std::move(type_node), { nullptr, nullptr });
-    res->local.self = res.get();
-    return res;
-}
-
-std::pair<arena_ptr<ast_node>, arena_ptr<ast_node>> make_temp_variable_for_aggregate_type_resolved(type_system& ts, arena_ptr<ast_node>&& expr) {
-    auto pos = expr->pos;
-    auto tempname = generate_temp_name();
-    auto decl = make_var_decl_with_value(*ts.ast_arena, tempname, std::move(expr));
-    resolve_node_type_post(ts, decl.get());
-
-    auto ref = make_address_of_expr(ts, make_identifier_node(*ts.ast_arena, pos, { tempname }));
-    resolve_node_type_post(ts, ref.get());
-
-    return std::make_pair(std::move(decl), std::move(ref));
-}
-
-std::optional<std::size_t> find_child_index(ast_node* parent, ast_node* child) {
-    std::size_t i = 0;
-    for (auto& ch : parent->children) {
-        if (ch.get() == child) {
-            return i;
-        }
-        i++;
-    }
-    return {};
-}
-
-void parent_tree(ast_node& node) {
-    for (auto& child : node.children) {
-        if (child) {
-            child->parent = &node;
-            parent_tree(*child);
-        }
-    }
-}
 
 // Section: errors
 
@@ -855,199 +667,6 @@ bool is_castable_to(type_system& ts, type_id a, type_id b) {
         return it->second(ts, tb, ta);
     }
     return false;
-}
-
-// Section: scopes
-
-void add_scope(type_system& ts, ast_node& node, scope_kind k) {
-    node.scope.self = &node;
-    node.scope.kind = k;
-    node.scope.parent = ts.current_scope;
-    
-    // add to parent's children
-    if (ts.current_scope) {
-        ts.current_scope->children.push_back(&node.scope);
-    }
-
-    ts.current_scope = &node.scope;
-
-    if (k == scope_kind::code_unit) {
-        auto fn = std::string{ node.string_value };
-
-        std::string obase, ext;
-        split_extension(fn, obase, ext);
-
-        auto base = obase;
-        while (replace(base, "/", "::"));
-        while (replace(base, "\\", "::"));
-
-        ts.modules[base] = ts.current_scope;
-
-        auto partstr = obase;
-        while (replace(partstr, "\\", "/"));
-        auto parts = split(partstr, '/');
-
-        ts.current_scope->self_module_key = base;
-        ts.current_scope->self_module_parts = parts;
-    }
-}
-
-void add_func_scope(type_system& ts, ast_node& node, ast_node& body_node) {
-    add_scope(ts, node, scope_kind::func_body);
-    node.scope.body_node = &body_node;
-}
-
-void add_block_scope(type_system& ts, ast_node& node, ast_node& body_node) {
-    add_scope(ts, node, scope_kind::block);
-    node.scope.body_node = &body_node;
-}
-
-// enter existing scope
-void enter_scope_local(type_system& ts, ast_node& node) {
-    assert(node.scope.kind != scope_kind::invalid);
-    node.scope.parent = ts.current_scope;
-    ts.current_scope = &node.scope;
-}
-
-void leave_scope_local(type_system& ts) {
-    ts.current_scope = curscope(ts).parent;
-}
-
-scope_def* find_nearest_scope_local(type_system& ts, scope_kind kind) {
-    auto scope = ts.current_scope;
-    while (scope != nullptr) {
-        if (scope->kind == kind) {
-            return scope;
-        }
-
-        scope = scope->parent;
-    }
-    return nullptr;
-}
-
-bool declare_local_symbol(type_system& ts, const string_hash& hash, ast_node& ld) {
-    auto it = curscope(ts).symbols.find(hash);
-    if (it != curscope(ts).symbols.end()) {
-        return false;
-    }
-
-    symbol_info info;
-    info.kind = symbol_kind::local;
-    info.scope = ts.current_scope;
-    info.local_index = curscope(ts).local_defs.size();
-    curscope(ts).local_defs.push_back(&ld.local);
-    curscope(ts).symbols[hash] = std::make_unique<symbol_info>(info);
-    return true;
-}
-
-bool declare_top_level_func_symbol(type_system& ts, const string_hash& hash, ast_node& ld) {
-    auto it = curscope(ts).symbols.find(hash);
-    if (it != curscope(ts).symbols.end()) {
-        return false;
-    }
-
-    symbol_info info;
-    info.kind = symbol_kind::top_level_func;
-    info.scope = ts.current_scope;
-    info.local_index = curscope(ts).local_defs.size();
-    curscope(ts).local_defs.push_back(&ld.local);
-    curscope(ts).symbols[hash] = std::make_unique<symbol_info>(info);
-    return true;
-}
-
-bool declare_type_symbol(type_system& ts, const string_hash& hash, ast_node& node) {
-    return declare_type_symbol(ts, *ts.current_scope, hash, node);
-}
-
-bool declare_type_symbol(type_system& ts, scope_def& scope, const string_hash& hash, ast_node& node) {
-    auto it = curscope(ts).symbols.find(hash);
-    if (it != curscope(ts).symbols.end()) {
-        return false;
-    }
-
-    symbol_info info;
-    info.kind = symbol_kind::type;
-    info.scope = &scope;
-    info.type_index = scope.type_defs.size();
-    scope.symbols[hash] = std::make_unique<symbol_info>(info);
-    scope.type_defs.push_back(&node.type_def);
-    return true;
-}
-
-bool declare_overloaded_func_base_symbol(type_system& ts, const string_hash& hash) {
-    auto it = curscope(ts).symbols.find(hash);
-    if (it != curscope(ts).symbols.end()) {
-        return false;
-    }
-
-    symbol_info info;
-    info.kind = symbol_kind::overloaded_func_base;
-    info.scope = ts.current_scope;
-    curscope(ts).symbols[hash] = std::make_unique<symbol_info>(info);
-    return true;
-}
-
-symbol_info* find_symbol_in_current_scope(type_system& ts, const string_hash& hash) {
-    auto it = curscope(ts).symbols.find(hash);
-    if (it == curscope(ts).symbols.end()) {
-        return nullptr;
-    }
-    return it->second.get();
-}
-
-symbol_info* find_symbol(type_system& ts, const std::pair<string_hash, string_hash>& pair) {
-    auto scope = ts.current_scope;
-    while (scope != nullptr) {
-
-        auto it = scope->symbols.find(pair.second);
-        if (it != scope->symbols.end()) {
-            return it->second.get();
-        }
-
-        if (pair.first.str.empty()) {
-            for (const auto& imp : scope->imports) {
-                if (!imp.alias) {
-                    auto impscope = ts.modules[imp.qual_name];
-                    if (!impscope) break;
-
-                    auto it = impscope->symbols.find(pair.second);
-                    if (it != impscope->symbols.end()) {
-                        return it->second.get();
-                    }
-                }
-            }
-        }
-        else {
-            auto mod = scope->imports_map.find(pair.first);
-            if (mod != scope->imports_map.end()) {
-                auto impscope = ts.modules[scope->imports[mod->second].qual_name];
-
-                auto it = impscope->symbols.find(pair.second);
-                if (it != impscope->symbols.end()) {
-                    return it->second.get();
-                }
-            }
-        }
-
-        scope = scope->parent;
-    }
-    return {};
-}
-
-// Finds the type in scope or parents
-type_id find_type_by_id_hash(type_system& ts, const std::pair<string_hash, string_hash>& pair) {
-    auto sym = find_symbol(ts, pair);
-    if (sym && sym->kind == symbol_kind::type) {
-        return type_id{ sym->scope, sym->type_index };
-    }
-    return invalid_type;
-}
-
-local_def* get_symbol_local(const symbol_info& sym) {
-    if (sym.scope && sym.local_index > -1) {
-        return sym.scope->local_defs[sym.local_index];
-    }
-    return nullptr;
 }
 
 // Section: string converters
@@ -2411,241 +2030,9 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
     return node.type_id;
 }
 
-// Section: temp for bool ops
-
-void check_assignment_bool_op(type_system& ts, ast_node& node) {
-    if (node.children[1] && is_bool_op(*node.children[1])) {
-        auto temp = make_temp_variable_for_bool_op_resolved(ts, std::move(node.children[1]), std::move(node.children[0]));
-        node.pre_children.push_back(std::move(temp));
-    }
-}
-
-void check_call_arg_bool_op(type_system& ts, ast_node& call, int idx) {
-    if (is_bool_op(*call.call_args()[idx])) {
-        auto [temp, ref] = make_temp_variable_for_bool_op_resolved(ts, std::move(call.children[ast_node::child_call_expr_arg_list]->children[idx]));
-
-        call.children[ast_node::child_call_expr_arg_list]->children[idx] = std::move(ref);
-        call.pre_children.push_back(std::move(temp));
-    }
-}
-
-void check_var_decl_bool_op(type_system& ts, ast_node& node) {
-    if (node.var_value() && is_bool_op(*node.var_value())) {
-        node.local.flags |= local_flag::is_temp;
-        auto idref = make_identifier_node(*ts.ast_arena, {}, node.var_id()->id_parts);
-        auto temp = make_temp_variable_for_bool_op_resolved(ts, std::move(node.children[ast_node::child_var_decl_value]), std::move(idref));
-
-        node.pre_children.push_back(std::move(temp));
-    }
-}
-
-void check_return_bool_op(type_system& ts, ast_node& node) {
-    if (node.children.empty()) return;
-
-    if (is_bool_op(*node.children[0])) {
-        auto [temp, ref] = make_temp_variable_for_bool_op_resolved(ts, std::move(node.children[0]));
-
-        node.children[0] = std::move(ref);
-        node.pre_children.push_back(std::move(temp));
-    }
-}
-
-// Section: aggregate arguments/return value
-
-void check_func_arg_aggregate_type(type_system& ts, ast_node& func, int idx) {
-    if (is_aggregate(func.func_args()[idx]->type_id)) {
-        func.func_args()[idx]->local.flags |= local_flag::is_aggregate_argument;
-        update_local_aggregate_argument(ts, *func.func_args()[idx]);
-    }
-}
-
-void check_call_arg_aggregate_type(type_system &ts, ast_node& call, int idx) {
-    if (is_aggregate(call.call_args()[idx]->type_id)) {
-        auto [temp, ref] = make_temp_variable_for_aggregate_type_resolved(ts, std::move(call.children[ast_node::child_call_expr_arg_list]->children[idx]));
-        call.children[ast_node::child_call_expr_arg_list]->children[idx] = std::move(ref);
-        call.pre_children.push_back(std::move(temp));
-    }
-}
-
-void check_func_return_aggregate_type(type_system& ts, ast_node& func) {
-    if (is_aggregate(func.type_def.func.ret_type)) {
-        auto& args = func.func_args();
-
-        auto new_ret_type = get_mutable_pointer_type_to(ts, func.type_def.func.ret_type);
-        func.children[ast_node::child_func_decl_ret_type] = make_type_resolver_node(*ts.ast_arena, new_ret_type);
-
-        auto arg_decl = make_var_decl_of_type(ts, token_type::var, "$cb_agg_ret", new_ret_type);
-
-        args.insert(args.begin(), std::move(arg_decl));
-        declare_func_arguments(ts, func);
-        resolve_func_args_type(ts, func);
-
-        for (auto ret : func.func.return_statements) {
-            auto agg_ret_id = make_identifier_node(*ts.ast_arena, ret->pos, { "$cb_agg_ret" });
-            auto agg_ret_deref = make_deref_expr(ts, std::move(agg_ret_id));
-            auto agg_assign = make_assignment(*ts.ast_arena, std::move(agg_ret_deref), std::move(ret->children[0]));
-            resolve_node_type_post(ts, agg_assign.get());
-
-            ret->children[0] = make_identifier_node(*ts.ast_arena, ret->pos, { "$cb_agg_ret" });
-            resolve_node_type_post(ts, ret);
-
-            ret->pre_children.push_back(std::move(agg_assign));
-        }
-
-        clear_func_resolved_state(func);
-    }
-}
-
-void transform_aggregate_call_into_pointer_argument_helper(type_system& ts, ast_node& receiver, ast_node* call) {
-    auto ref = copy_var_ref(ts, receiver);
-    ref->type_id = call->type_id;
-
-    auto addr = make_address_of_expr(ts, std::move(ref));
-    addr->type_id = get_mutable_pointer_type_to(ts, call->type_id);
-
-    call->call_args().insert(call->call_args().begin(), std::move(addr));
-
-    call->type_id = invalid_type;
-    resolve_node_type_post(ts, call);
-
-    call->call.flags |= call_flag::is_aggregate_return;
-}
-
-arena_ptr<ast_node> transform_aggregate_call_into_pointer_argument(type_system& ts, ast_node& receiver, arena_ptr<ast_node>&& call) {
-    transform_aggregate_call_into_pointer_argument_helper(ts, receiver, call.get());
-    return std::move(call);
-}
-
-void check_assignment_aggregate_call(type_system& ts, ast_node& node) {
-    if (is_aggregate(node.type_id) && node.bin_right() && node.bin_right()->type == ast_type::call_expr) {
-        auto call = transform_aggregate_call_into_pointer_argument(ts, *node.bin_left(), std::move(node.children[1]));
-        node.pre_children.push_back(std::move(call));
-    }
-}
-
-void check_var_decl_aggregate_call(type_system& ts, ast_node& node) {
-    if (is_aggregate(node.type_id) && node.var_value() && node.var_value()->type == ast_type::call_expr) {
-        auto call = transform_aggregate_call_into_pointer_argument(ts, *node.var_id(), std::move(node.children[ast_node::child_var_decl_value]));
-        node.pre_children.push_back(std::move(call));
-    }
-}
-
-void check_temp_aggregate_call(type_system& ts, ast_node& node) {
-    if (is_aggregate(node.type_id) && !(node.call.flags & call_flag::is_aggregate_return)) {
-        auto tempname = generate_temp_name();
-        auto temp = make_var_decl_of_type(ts, token_type::var, tempname, node.type_id);
-        resolve_node_type_post(ts, temp.get());
-
-        auto ref = make_identifier_node(*ts.ast_arena, node.pos, { tempname });
-        ref->type_id = node.type_id;
-
-        transform_aggregate_call_into_pointer_argument_helper(ts, *ref, &node);
-
-        node.temps.push_back(std::move(temp));
-    }
-}
-
-// Section: post analysis
-
-void post_analysis(type_system& ts, ast_node* nodeptr) {
-    if (!nodeptr) return;
-
-    auto& node = *nodeptr;
-    switch (node.type) {
-    case ast_type::for_stmt: {
-        enter_scope_local(ts, node);
-        visit_tree(ts, *node.forinfo.declare_for_iter);
-        visit_tree(ts, *node.forinfo.declare_elem_to_range_start);
-        visit_tree(ts, *node.forinfo.compare_elem_to_range_end);
-        visit_tree(ts, *node.forinfo.increase_elem);
-        visit_tree(ts, *node.children[ast_node::child_for_stmt_body]);
-        leave_scope_local(ts);
-        break;
-    }
-    case ast_type::if_stmt:
-    case ast_type::while_stmt:
-    case ast_type::compound_stmt: {
-        if (node.scope.self) {
-            enter_scope_local(ts, node);
-            visit_pre_children(ts, node);
-            visit_children(ts, node);
-            leave_scope_local(ts);
-        }
-        else {
-            visit_pre_children(ts, node);
-            visit_children(ts, node);
-        }
-        break;
-    }
-    case ast_type::func_decl: {
-        if (node.scope.body_node) { enter_scope_local(ts, node); }
-
-        for (int i = 0; i < node.func_args().size(); i++) {
-            check_func_arg_aggregate_type(ts, node, i);
-        }
-        check_func_return_aggregate_type(ts, node);
-
-        visit_children(ts, node);
-        if (node.scope.body_node) { leave_scope_local(ts); }
-
-        resolve_func_type(ts, node);
-        break;
-    }
-    case ast_type::call_expr: {
-        visit_pre_children(ts, node);
-        visit_children(ts, node);
-
-        for (int i = 0; i < node.call_args().size(); i++) {
-            check_call_arg_bool_op(ts, node, i);
-            check_call_arg_aggregate_type(ts, node, i);
-        }
-
-        check_temp_aggregate_call(ts, node);
-        break;
-    }
-    case ast_type::init_expr: {
-        for (auto& as : node.initlist.assignments) {
-            visit_tree(ts, *as);
-        }
-        break;
-    }
-    case ast_type::binary_expr: {
-        if (token_to_char(node.op) == '=') {
-            check_assignment_aggregate_call(ts, node);
-        }
-
-        visit_pre_children(ts, node);
-        visit_children(ts, node);
-
-        if (token_to_char(node.op) == '=') {
-            check_assignment_bool_op(ts, node);
-        }
-        break;
-    }
-    case ast_type::var_decl: {
-        check_var_decl_aggregate_call(ts, node);
-        visit_pre_children(ts, node);
-        visit_children(ts, node);
-        check_var_decl_bool_op(ts, node);
-        break;
-    }
-    case ast_type::return_stmt: {
-        visit_pre_children(ts, node);
-        visit_children(ts, node);
-        check_return_bool_op(ts, node);
-        break;
-    }
-    default: {
-        visit_pre_children(ts, node);
-        visit_children(ts, node);
-        break;
-    }
-    }
-}
-
 // Section: final analysis
 
-void final_analysis(type_system& ts, ast_node* nodeptr) {
+void remangle_names(type_system& ts, ast_node* nodeptr) {
     if (!nodeptr) return;
 
     auto& node = *nodeptr;
@@ -2799,15 +2186,13 @@ void visit_tree(type_system& ts, ast_node& node) {
     case type_system_pass::resolve_imports:
         resolve_imports(ts, node);
         break;
-    case type_system_pass::post_analysis:
-        post_analysis(ts, &node);
+    case type_system_pass::desugar:
+        desugar(ts, &node);
         break;
-    case type_system_pass::final_analysis:
-        final_analysis(ts, &node);
+    case type_system_pass::remangle_names:
+        remangle_names(ts, &node);
         break;
     }
-}
-
 }
 
 type_system::type_system(memory_arena& arena) {
@@ -3140,7 +2525,7 @@ void type_system::resolve_and_check() {
 
     if (errors.empty()) {
         for (int i = 0; i < 1; i++) {
-            this->pass = type_system_pass::post_analysis;
+            this->pass = type_system_pass::desugar;
             this->subpass = i;
             for (auto unit : this->code_units) {
                 enter_scope(*unit);
@@ -3150,7 +2535,7 @@ void type_system::resolve_and_check() {
         }
 
         for (int i = 0; i < 2; i++) {
-            this->pass = type_system_pass::final_analysis;
+            this->pass = type_system_pass::remangle_names;
             this->subpass = i;
             for (auto unit : this->code_units) {
                 enter_scope(*unit);
@@ -3174,6 +2559,7 @@ void type_system::leave_scope() {
 }
 
 void type_system::create_temp_variable_for_binary_expr(ast_node& node) {
+    /*
     std::string tempname = "$cbT" + std::to_string(temp_count++);
     auto id_node = make_identifier_node(*ast_arena, {}, { tempname });
 
@@ -3181,6 +2567,7 @@ void type_system::create_temp_variable_for_binary_expr(ast_node& node) {
 
     resolve_and_declare_local_variable(*this, { node.var_id()->id_parts.front() }, node);
     node.temps.push_back(std::move(id_node));
+    */
 }
 
 void type_system::create_temp_variable_for_index_expr(ast_node& node) {
