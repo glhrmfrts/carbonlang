@@ -6,7 +6,6 @@ import std::memory as mem;
 import std::libc::stdio;
 import std::libc::stdlib;
 
-/*
 func print_the_char(v: char, d: *char) {
     puts(&v);
 }
@@ -327,7 +326,7 @@ func test_array_assignment_lvalue() {
     }
 }
 
-*/
+
 func sum_array(t: [6]int): int {
     var res = 0;
     for (i in 0, 6) {
@@ -335,7 +334,7 @@ func sum_array(t: [6]int): int {
     }
     return res;
 }
-/*
+
 func test_array_argument() {
     let ares = sum_array([6]int{ 1, 2, 3 });
     if (ares == 1+2+3) {
@@ -345,7 +344,7 @@ func test_array_argument() {
         println("[NOK] test_array_argument");
     }
 }
-*/
+
 
 func get_array_data(): [6]int {
     return [6]int{ 5, 6, 7 };
@@ -366,7 +365,6 @@ func get_result(): int { return 2; }
 func main(): int {
     //let result = get_result();
 
-    /*
     test_longfunc();
     test_strcopy_len();
     test_strcopy();
@@ -386,7 +384,7 @@ func main(): int {
     test_tuple_argument();
     test_tuple_return_value();
     test_array_assignment_lvalue();
-    test_array_argument();*/
+    test_array_argument();
     test_array_return_value();
 
     //mem::dealloc(cast[raw_ptr] newtext);
