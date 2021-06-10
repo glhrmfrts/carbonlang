@@ -169,8 +169,7 @@ bool compare_types_exact(const type_def& a, const type_def& b) {
     return a.kind == b.kind
         && a.alias_to == b.alias_to
         && a.alignment == b.alignment
-        && a.array.is_static == b.array.is_static
-        && a.array.size == b.array.size
+        && a.array.length == b.array.length
         && a.elem_type == b.elem_type
         && a.flags == b.flags
         && a.func.arg_types == b.func.arg_types
@@ -281,8 +280,8 @@ type_id get_pointer_type_to(type_system& ts, type_id elem_type) {
     return execute_type_constructor(ts, ts.builtin_scope->scope, *ts.ptr_type_constructor, { elem_type });
 }
 
-type_id get_mutable_pointer_type_to(type_system& ts, type_id elem_type) {
-    return execute_type_constructor(ts, ts.builtin_scope->scope, *ts.mutable_ptr_type_constructor, { elem_type });
+type_id get_reference_type_to(type_system& ts, type_id elem_type) {
+    return execute_type_constructor(ts, ts.builtin_scope->scope, *ts.ref_type_constructor, { elem_type });
 }
 
 type_id get_optional_type_to(type_system& ts, type_id elem_type) {
@@ -312,27 +311,32 @@ bool is_assignable_to(type_system& ts, type_id a, type_id b) {
     return false;
 }
 
-// is A implicitly convertible to B?
-bool is_convertible_to(type_system& ts, type_id a, type_id b) {
-    if (a == invalid_type || b == invalid_type) return false;
-    if (is_assignable_to(ts, a, b)) return true;
+// is A implicitly convertible to B? and does it need to cast?
+std::pair<bool, bool> is_convertible_to(type_system& ts, type_id a, type_id b) {
+    if (a == invalid_type || b == invalid_type) return std::make_pair(false, false);
+    if (is_assignable_to(ts, a, b)) return std::make_pair(true, false);
 
     auto& ta = get_type(ts, a);
     auto& tb = get_type(ts, b);
 
     if (ta.kind == tb.kind && tb.kind == type_kind::integral) {
-        return tb.size >= ta.size;
+        return std::make_pair(tb.size >= ta.size, true);
     }
 
-    if (ta.kind == type_kind::mutable_pointer && tb.kind == type_kind::pointer) {
+    if (ta.kind == type_kind::reference && tb.kind == type_kind::pointer) {
         return is_convertible_to(ts, ta.elem_type, tb.elem_type);
     }
 
-    return false;
+    return std::make_pair(false, false);
 }
 
-bool is_comparable(type_system& ts, type_id a, type_id b) {
-    return is_convertible_to(ts, a, b) || is_convertible_to(ts, b, a);
+std::tuple<bool, bool, int> is_comparable(type_system& ts, type_id a, type_id b) {
+    auto leftres = is_convertible_to(ts, a, b);
+    if (!leftres.first) {
+        auto rightres = is_convertible_to(ts, b, a);
+        return std::make_tuple(rightres.first, rightres.second, 1);
+    }
+    return std::make_tuple(leftres.first, leftres.second, 0);
 }
 
 std::optional<std::string> get_conversion_error_detail(type_system& ts, type_id a, type_id b) {
@@ -408,7 +412,7 @@ arena_ptr<ast_node> generate_init_list_zero_values(type_system& ts, type_id id) 
 bool is_pointer(type_id id) {
     if (!id.valid()) return false;
 
-    return id.get().kind == type_kind::pointer || id.get().kind == type_kind::mutable_pointer;
+    return id.get().kind == type_kind::pointer || id.get().kind == type_kind::reference;
 }
 
 bool is_aggregate(type_id id) {
@@ -428,7 +432,7 @@ bool is_type_kind(type_id id, type_kind k) {
 }
 
 bool type_allows_no_init(type_system& ts, type_id id) {
-    if (id.get().kind == type_kind::pointer || id.get().kind == type_kind::mutable_pointer) {
+    if (id.get().kind == type_kind::pointer || id.get().kind == type_kind::reference) {
         if (id != ts.raw_string_type) {
             return false;
         }
@@ -523,7 +527,7 @@ bool check_aggregate_types_match(type_system& ts, const position& pos, type_id s
         auto& fa = ffa[i];
         auto& fb = ffb[i];
         if (fa.type != fb.type) {
-            if (!is_convertible_to(ts, fa.type, fb.type)) {
+            if (!is_convertible_to(ts, fa.type, fb.type).first) {
                 if (!msg_already) {
                     add_type_error(ts, pos, "types '%s' and '%s' do not match", type_to_string(a).c_str(), type_to_string(b).c_str());
                     msg_already = true;
@@ -657,7 +661,7 @@ static std::unordered_map<type_kind, cast_check_func> cast_check_funcs = {
 // is A explicitly castable to B?
 bool is_castable_to(type_system& ts, type_id a, type_id b) {
     if (a == invalid_type || b == invalid_type) return false;
-    if (is_convertible_to(ts, a, b)) return true;
+    if (is_convertible_to(ts, a, b).first) return true;
 
     auto& ta = get_type(ts, a);
     auto& tb = get_type(ts, b);
@@ -794,16 +798,35 @@ type_id get_value_node_type(type_system& ts, ast_node& node) {
         }
 
         if (is_cmp_binary_op(node.op)) {
-            if (!is_comparable(ts, node.children[0]->type_id, node.children[1]->type_id)) {
+            bool needcast = false;
+            auto [comp, ncast, castidx] = is_comparable(ts, node.children[0]->type_id, node.children[1]->type_id);
+            if (!comp) {
                 try_coerce_to(ts, *node.children[1], node.children[0]->type_id);
+                try_coerce_to(ts, *node.children[0], node.children[1]->type_id);
 
-                if (!is_comparable(ts, node.children[0]->type_id, node.children[1]->type_id)) {
+                auto [comp, ncast, castidx] = is_comparable(ts, node.children[0]->type_id, node.children[1]->type_id);
+                if (!comp) {
                     node.type_error = true;
                     add_type_error(ts, node.pos, "cannot compare types '%s' and '%s'", 
                         type_to_string(node.children[0]->type_id).c_str(), type_to_string(node.children[1]->type_id).c_str()
                     );
                     return invalid_type;
-                }   
+                }
+                else if (ncast) {
+                    needcast = true;
+                }
+            }
+            else if (ncast) {
+                needcast = true;
+            }
+
+            if (needcast) {
+                if (castidx == 0) {
+                    node.children[0] = make_cast_to(ts, std::move(node.children[0]), node.children[1]->type_id);
+                }
+                else {
+                    node.children[1] = make_cast_to(ts, std::move(node.children[1]), node.children[0]->type_id);
+                }
             }
 
             node.type_error = false;
@@ -863,9 +886,9 @@ type_id get_type_expr_node_type(type_system& ts, ast_node& node) {
             auto elem_type = get_type_expr_node_type(ts, *node.children[0]);
             node.type_id = get_pointer_type_to(ts, elem_type);
         }
-        if (node.type_qual == type_qualifier::mutable_pointer) {
+        if (node.type_qual == type_qualifier::reference) {
             auto elem_type = get_type_expr_node_type(ts, *node.children[0]);
-            node.type_id = get_mutable_pointer_type_to(ts, elem_type);
+            node.type_id = get_reference_type_to(ts, elem_type);
         }
         if (node.type_qual == type_qualifier::optional) {
             auto elem_type = get_type_expr_node_type(ts, *node.children[0]);
@@ -982,7 +1005,7 @@ void update_local_variable_type(type_system& ts, ast_node& l, type_id tid) {
 }
 
 void update_local_aggregate_argument(type_system& ts, ast_node& l) {
-    update_local_variable_type(ts, l, get_mutable_pointer_type_to(ts, l.type_id));
+    update_local_variable_type(ts, l, get_reference_type_to(ts, l.type_id));
     for (auto ref : l.local.refs) {
         auto parent = ref->parent;
         auto idx = find_child_index(parent, ref);
@@ -1000,9 +1023,11 @@ bool match_arg_list(type_system& ts, std::vector<arena_ptr<ast_node>>& func_args
     for (std::size_t i = 0; i < func_args.size(); i++) {
         auto& farg = func_args[i];
         auto& carg = call_args[i];
-        if (!is_convertible_to(ts, carg->type_id, farg->type_id)) {
+
+        // TODO: check for needed casts
+        if (!is_convertible_to(ts, carg->type_id, farg->type_id).first) {
             try_coerce_to(ts, *carg, farg->type_id);
-            if (!is_convertible_to(ts, carg->type_id, farg->type_id)) {
+            if (!is_convertible_to(ts, carg->type_id, farg->type_id).first) {
                 return false;
             }
         }
@@ -1076,7 +1101,8 @@ type_id resolve_func_type(type_system& ts, ast_node& f) {
                 type_to_string(ret_type).c_str());
         }
         for (auto retst : f.func.return_statements) {
-            if (!is_convertible_to(ts, retst->type_id, ret_type)) {
+            // TODO: check for needed casts
+            if (!is_convertible_to(ts, retst->type_id, ret_type).first) {
                 add_type_error(ts, retst->pos,
                     "cannot return type '%s' from function '%s' declared returning type '%s'",
                     type_to_string(retst->type_id).c_str(),
@@ -1306,10 +1332,13 @@ void resolve_assignment_type(type_system& ts, ast_node& node) {
         }
     }
 
-    if (!is_convertible_to(ts, node.children[1]->type_id, node.children[0]->type_id)) {
+    bool needs_cast = false;
+    auto [convertible, ncast] = is_convertible_to(ts, node.children[1]->type_id, node.children[0]->type_id);
+    if (!convertible) {
         try_coerce_to(ts, *node.children[1], node.children[0]->type_id);
 
-        if (!is_convertible_to(ts, node.children[1]->type_id, node.children[0]->type_id)) {
+        auto [convertible, ncast] = is_convertible_to(ts, node.children[1]->type_id, node.children[0]->type_id);
+        if (!convertible) {
             add_type_error(ts, node.children[1]->pos, "cannot convert type '%s' to '%s'",
                 type_to_string(node.children[1]->type_id).c_str(),
                 type_to_string(node.children[0]->type_id).c_str());
@@ -1323,6 +1352,16 @@ void resolve_assignment_type(type_system& ts, ast_node& node) {
             node.type_error = true;
             return;
         }
+        else if (ncast) {
+            needs_cast = true;
+        }
+    }
+    else if (ncast) {
+        needs_cast = true;
+    }
+
+    if (needs_cast) {
+        node.children[1] = make_cast_to(ts, std::move(node.children[1]), node.children[0]->type_id);
     }
 
     node.type_error = false;
@@ -1338,7 +1377,17 @@ void register_for_declarations(type_system& ts, ast_node& node) {
     // TODO: handle array as well
 
     if (!node.forinfo.self && node.children[1]->type_id.valid() && elem_node) {
-        if (node.children[1]->type_id.get().constructor_type == ts.range_type_constructor->self->type_def.id) {
+        if (node.children[1]->type_id.get().kind == type_kind::tuple) {
+            int numfields = node.children[1]->type_id.get().structure.fields.size();
+            if (numfields != 2) {
+                add_type_error(ts, node.children[1]->pos, "a for statement requires a tuple of {start, end} or {start, end, step}");
+                return;
+            }
+
+            type_id greater_type{};
+            for (int i = 0; i < numfields; i++) {
+            }
+
             auto iterdecl = make_var_decl_with_value(*ts.ast_arena, "$foriter", std::move(node.children[1]));
             resolve_and_declare_local_variable(ts, string_hash{ "$foriter" }, *iterdecl);
 
@@ -1348,10 +1397,10 @@ void register_for_declarations(type_system& ts, ast_node& node) {
             auto iterref2 = make_identifier_node(*ts.ast_arena, {}, { "$foriter" });
             resolve_node_type(ts, iterref2.get());
 
-            auto iterstart = make_struct_field_access(*ts.ast_arena, std::move(iterref1), "start");
+            auto iterstart = make_struct_field_access(*ts.ast_arena, std::move(iterref1), "first");
             resolve_node_type(ts, iterstart.get());
 
-            auto iterend   = make_struct_field_access(*ts.ast_arena, std::move(iterref2), "end");
+            auto iterend   = make_struct_field_access(*ts.ast_arena, std::move(iterref2), "second");
             resolve_node_type(ts, iterend.get());
 
             // declare the variable to hold the element of the range
@@ -1367,8 +1416,10 @@ void register_for_declarations(type_system& ts, ast_node& node) {
                 token_from_char('<'), copy_var_ref(ts, *elemref), std::move(iterend)
             );
 
+            // TODO: handle custom step
+            auto step = make_int_literal_node(*ts.ast_arena, {}, 1);
             auto elem_plus = make_binary_expr_node(*ts.ast_arena, {},
-                token_from_char('+'), copy_var_ref(ts, *elemref), make_int_literal_node(*ts.ast_arena, {}, 1)
+                token_from_char('+'), copy_var_ref(ts, *elemref), std::move(step)
             );
             node.forinfo.increase_elem = make_assignment(*ts.ast_arena, copy_var_ref(ts, *elemref), std::move(elem_plus));
 
@@ -1376,6 +1427,9 @@ void register_for_declarations(type_system& ts, ast_node& node) {
             resolve_node_type(ts, node.forinfo.compare_elem_to_range_end.get());
             resolve_node_type(ts, node.forinfo.increase_elem.get());
             node.forinfo.self = &node;
+        }
+        else {
+            add_type_error(ts, node.children[1]->pos, "a for statement requires a tuple of {start, end} or {start, end, step}");
         }
     }
 }
@@ -1427,48 +1481,7 @@ ast_node* find_valid_parent_to_add_pre_children(type_system& ts, ast_node& node)
 }
 
 void resolve_range_expr(type_system& ts, ast_node& node) {
-    if (!node.range_start()->type_id.valid() || node.range_start()->type_id.get().kind != type_kind::integral) {
-        node.type_error = true;
-        add_type_error(ts, node.pos, "range expression start value has type '%s', it must be an integral number",
-            type_to_string(node.range_start()->type_id).c_str());
-    }
-    if (!node.range_end()->type_id.valid() || node.range_end()->type_id.get().kind != type_kind::integral) {
-        node.type_error = true;
-        add_type_error(ts, node.pos, "range expression end value has type '%s', it must be an integral number",
-            type_to_string(node.range_end()->type_id).c_str());
-    }
-
-    if (!is_convertible_to(ts, node.children[1]->type_id, node.children[0]->type_id)) {
-        try_coerce_to(ts, *node.children[1], node.children[0]->type_id);
-        try_coerce_to(ts, *node.children[0], node.children[1]->type_id);
-
-        if (!is_convertible_to(ts, node.children[1]->type_id, node.children[0]->type_id)) {
-            node.type_error = true;
-            add_type_error(ts, node.pos, "types '%s' and '%s' do not match in range expression",
-                type_to_string(node.children[0]->type_id).c_str(),
-                type_to_string(node.children[1]->type_id).c_str());
-        }
-    }
-
-    if (!node.type_error) {
-        node.range.self = &node;
-        node.type_id = get_range_type(ts, node.children[0]->type_id);
-
-        // transform the binary expression (a .. b) into a init list { a, b }
-        node.type = ast_type::init_expr;
-        auto startexpr = std::move(node.children[0]);
-        auto endexpr = std::move(node.children[1]);
-
-        std::vector<arena_ptr<ast_node>> list;
-        list.push_back(std::move(startexpr)); list.push_back(std::move(endexpr));
-
-        auto arglist = make_arg_list_node(*ts.ast_arena, {}, std::move(list));
-
-        std::vector<arena_ptr<ast_node>> children;
-        children.push_back({ nullptr, nullptr }); // no need to have a type node since we already resolved it
-        children.push_back(std::move(arglist));
-        node.children = std::move(children);
-    }
+    assert(!"range not supported anymore");
 }
 
 // Section: main visitor
@@ -1610,9 +1623,9 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
             complement_error(ts, node.pos, "in %s statement condition", stmt);
             node.type_error = true;
         }
-        else if (!is_convertible_to(ts, node.children[0]->type_id, ts.bool_type)) {
+        else if (!is_convertible_to(ts, node.children[0]->type_id, ts.bool_type).first) {
             try_coerce_to(ts, *node.children[0], ts.bool_type);
-            if (!is_convertible_to(ts, node.children[0]->type_id, ts.bool_type)) {
+            if (!is_convertible_to(ts, node.children[0]->type_id, ts.bool_type).first) {
                 add_type_error(ts, node.pos, "%s statement condition must have bool type or be convertible to bool", stmt);
                 node.type_error = true;
             }
@@ -1762,7 +1775,7 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
                 node.type_error = true;
                 add_type_error(ts, node.pos, "cannot access field of optional type '%s', check in an if statement", type_to_string(ltype).c_str());
             }
-            else if ((ltype.get().kind == type_kind::pointer || ltype.get().kind == type_kind::mutable_pointer) && is_aggregate(ltype.get().elem_type)) {
+            else if ((ltype.get().kind == type_kind::pointer || ltype.get().kind == type_kind::reference) && is_aggregate(ltype.get().elem_type)) {
                 is_struct = true;
                 is_pointer = true;
                 stype = ltype.get().elem_type;
@@ -1943,7 +1956,7 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
                 node.type_error = true;
             }
             else {
-                node.type_id = get_mutable_pointer_type_to(ts, node.children[0]->type_id);
+                node.type_id = get_reference_type_to(ts, node.children[0]->type_id);
                 node.type_error = false;
             }
         }
@@ -1951,10 +1964,10 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
             if (!node.children[0]->type_id.valid() || node.children[0]->type_error) {
                 node.type_error = true;
             }
-            else if (!is_convertible_to(ts, node.children[0]->type_id, ts.bool_type)) {
+            else if (!is_convertible_to(ts, node.children[0]->type_id, ts.bool_type).first) {
                 try_coerce_to(ts, *node.children[0], ts.bool_type);
 
-                if (!is_convertible_to(ts, node.children[0]->type_id, ts.bool_type)) {
+                if (!is_convertible_to(ts, node.children[0]->type_id, ts.bool_type).first) {
                     add_type_error(ts, node.pos, "right side of unary '!' (negation) has type '%s', it must be a bool",
                         type_to_string(node.children[0]->type_id).c_str());
                     node.type_error = true;
@@ -2260,7 +2273,7 @@ type_system::type_system(memory_arena& arena) {
     {
         auto node = make_in_arena<ast_node>(*ast_arena);
         node->type_def.name = string_hash{ "*" };
-        node->type_def.mangled_name = string_hash{ "const_ptr" };
+        node->type_def.mangled_name = string_hash{ "ptr" };
         node->type_def.kind = type_kind::constructor;
 
         type_constructor* ptr_template = &node->type_def.constructor;
@@ -2272,7 +2285,7 @@ type_system::type_system(memory_arena& arena) {
 
             tf.kind = type_kind::pointer;
             tf.name = string_hash{ "*" + type_arg.get().name.str };
-            tf.mangled_name = string_hash{ "const_ptr$$" + type_arg.get().mangled_name.str + "$$" };
+            tf.mangled_name = string_hash{ "ptr$$" + type_arg.get().mangled_name.str + "$$" };
             tf.size = sizeof(void*);
             tf.alignment = alignof(void*);
             tf.elem_type = type_arg;
@@ -2286,8 +2299,8 @@ type_system::type_system(memory_arena& arena) {
 
     {
         auto node = make_in_arena<ast_node>(*ast_arena);
-        node->type_def.name = string_hash{ "!" };
-        node->type_def.mangled_name = string_hash{ "mutable_ptr" };
+        node->type_def.name = string_hash{ "&" };
+        node->type_def.mangled_name = string_hash{ "ref" };
         node->type_def.kind = type_kind::constructor;
 
         type_constructor* ptr_template = &node->type_def.constructor;
@@ -2297,16 +2310,16 @@ type_system::type_system(memory_arena& arena) {
             auto node = make_in_arena<ast_node>(*ast_arena);
             type_def& tf = node->type_def;
 
-            tf.kind = type_kind::mutable_pointer;
-            tf.name = string_hash{ "!" + type_arg.get().name.str };
-            tf.mangled_name = string_hash{ "mutable_ptr$$" + type_arg.get().mangled_name.str + "$$" };
+            tf.kind = type_kind::reference;
+            tf.name = string_hash{ "&" + type_arg.get().name.str };
+            tf.mangled_name = string_hash{ "ref$$" + type_arg.get().mangled_name.str + "$$" };
             tf.size = sizeof(void*);
             tf.alignment = alignof(void*);
             tf.elem_type = type_arg;
             return node;
         };
 
-        mutable_ptr_type_constructor = ptr_template;
+        ref_type_constructor = ptr_template;
         register_type(*this, builtin_scope->scope, *node);
         builtin_type_nodes.push_back(std::move(node));
     }
@@ -2327,7 +2340,7 @@ type_system::type_system(memory_arena& arena) {
             tf.kind = type_kind::optional;
             tf.name = string_hash{ "?" + type_arg.get().name.str };
             tf.mangled_name = string_hash{ "optional$$" + type_arg.get().mangled_name.str + "$$" };
-            if (type_arg.get().kind == type_kind::pointer || type_arg.get().kind == type_kind::mutable_pointer) {
+            if (type_arg.get().kind == type_kind::pointer || type_arg.get().kind == type_kind::reference) {
                 tf.size = sizeof(void*);
                 tf.alignment = alignof(void*);
             }
@@ -2521,6 +2534,7 @@ void type_system::resolve_and_check() {
 
     if (!current_error.msg.empty()) {
         errors.push_back(current_error);
+        current_error = {};
     }
 
     if (errors.empty()) {

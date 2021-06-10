@@ -50,6 +50,13 @@ arena_ptr<ast_node> copy_var_ref(type_system& ts, ast_node& node) {
     return { nullptr, nullptr };
 }
 
+arena_ptr<ast_node> make_cast_to(type_system& ts, arena_ptr<ast_node>&& expr, type_id t) {
+    auto type_expr = make_type_resolver_node(*ts.ast_arena, t);
+    auto res = make_cast_expr_node(*ts.ast_arena, expr->pos, std::move(type_expr), std::move(expr));
+    res->type_id = t;
+    return res;
+}
+
 // TODO: obviously need better stuff here
 static int temp_count = 0;
 

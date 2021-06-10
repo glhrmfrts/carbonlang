@@ -49,12 +49,12 @@ struct parser_impl {
         else if (TOK_CHAR == '[') {
             result = parse_array_type_expr();
         }
-        else if (TOK_CHAR == '!') {
+        else if (TOK_CHAR == '&') {
             lex->next();
 
             auto to_type = parse_type_expr(false, true); // no wrap
             if (to_type) {
-                result = make_type_qualifier_node(*ast_arena, pos, type_qualifier::mutable_pointer, std::move(to_type));
+                result = make_type_qualifier_node(*ast_arena, pos, type_qualifier::reference, std::move(to_type));
             }
         }
         else if (TOK_CHAR == '*') {
@@ -300,7 +300,7 @@ struct parser_impl {
             lex->next(); // eat the '('
 
             auto ids = make_arg_list_node(*ast_arena, pos, {});
-            auto expr = parse_expr();
+            auto expr = parse_braceless_tuple_expr();
             auto iter = arena_ptr<ast_node>{nullptr, nullptr};
 
             if (expr->type == ast_type::identifier) {
@@ -320,7 +320,7 @@ struct parser_impl {
                     lex->next();
                     ids->children.push_back(std::move(expr));
 
-                    iter = parse_expr();
+                    iter = parse_braceless_tuple_expr();
                     if (!iter) {
                         throw parse_error(filename, lex->pos(), "expecting an expression after 'in' in for statement");
                     }
@@ -396,7 +396,7 @@ struct parser_impl {
         auto pos = lex->pos();
         lex->next(); // eat the 'return'
 
-        auto expr = parse_expr();
+        auto expr = parse_braceless_tuple_expr();
         return make_return_stmt_node(*ast_arena, pos, std::move(expr));
     }
 
@@ -598,7 +598,7 @@ struct parser_impl {
         auto body = arena_ptr<ast_node>{ nullptr, nullptr };
         if (TOK_CHAR == '=') {
             lex->next();
-            body = parse_expr();
+            body = parse_braceless_tuple_expr();
         }
         else if (TOK_CHAR == '{') {
             body = parse_compound_stmt();
@@ -628,7 +628,7 @@ struct parser_impl {
         arena_ptr<ast_node> value{nullptr, nullptr};
         if (TOK_CHAR == '=') {
             lex->next();
-            value = parse_expr();
+            value = parse_braceless_tuple_expr();
         } else if (kind != token_type::var && (ctx() == parse_context::root)) {
             //throw parse_error(filename, lex->pos(), "expected initial value in let declaration");
         }
@@ -638,8 +638,32 @@ struct parser_impl {
 
     // Section: expressions
 
+    arena_ptr<ast_node> parse_braceless_tuple_expr() {
+        auto expr = parse_expr();
+        if (TOK_CHAR == ',') {
+            auto pos = expr->pos;
+            auto list = make_arg_list_node(*ast_arena, pos, {});
+            list->children.push_back(std::move(expr));
+
+            while (TOK_CHAR == ',') {
+                lex->next();
+                auto curexpr = parse_expr();
+                if (curexpr) {
+                    list->children.push_back(std::move(curexpr));
+                }
+                else {
+                    break;
+                }
+            }
+
+            return make_init_expr_node(*ast_arena, pos, { nullptr,nullptr }, std::move(list));
+        }
+        return expr;
+    }
+
     arena_ptr<ast_node> parse_expr() {
-        return parse_binary_expr(parse_unary_expr(), 0);
+        auto expr = parse_binary_expr(parse_unary_expr(), 0);
+        return expr;
     }
 
     arena_ptr<ast_node> parse_binary_expr(arena_ptr<ast_node>&& lhs, int min_prec) {

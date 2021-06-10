@@ -27,14 +27,14 @@ enum class type_qualifier {
     new_,
     optional,
     pointer,
-    mutable_pointer,
+    reference,
 };
 
 enum class type_kind {
     void_,
     new_,
     pointer,
-    mutable_pointer,
+    reference,
     optional,
     integral,
     real,
@@ -90,8 +90,7 @@ struct type_def {
     };
 
     struct array_type {
-        std::size_t size;
-        bool is_static;
+        std::size_t length;
     };
 
     struct func_type {
@@ -318,7 +317,7 @@ struct type_system {
     type_id raw_string_type{};
 
     type_constructor* ptr_type_constructor;
-    type_constructor* mutable_ptr_type_constructor;
+    type_constructor* ref_type_constructor;
     type_constructor* optional_type_constructor;
     type_constructor* new_type_constructor;
     type_constructor* range_type_constructor;
@@ -363,7 +362,7 @@ string_hash build_type_constructor_mangled_name(const std::string& mangled_name,
 
 type_id get_pointer_type_to(type_system& ts, type_id elem_type);
 
-type_id get_mutable_pointer_type_to(type_system& ts, type_id elem_type);
+type_id get_reference_type_to(type_system& ts, type_id elem_type);
 
 type_id get_optional_type_to(type_system& ts, type_id elem_type);
 

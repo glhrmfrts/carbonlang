@@ -106,7 +106,7 @@ func test_short(): bool {
 func test_for_stmt() {
     let newstr = "helloworld".copy;
 
-    for (i in 0 .. newstr.len) {
+    for (i in 0, newstr.len) {
         let c = '0' + cast[int8] i;
         newstr[i] = c;
     }
@@ -187,7 +187,7 @@ func sum_range_ptr(r: *range[usize]): usize {
     return r.start + r.end - 1;
 }
 
-func sum_range_ptr(r: !range[usize]): usize {
+func sum_range_ptr(r: &range[usize]): usize {
     return r.start + r.end;
 }
 
@@ -275,7 +275,7 @@ func test_tuple_argument() {
 
 
 func do_stuff(): {raw_string, bool} {
-    return {"some_status", true};
+    return "some_status", true;
 }
 
 func test_tuple_return_value(): {} {

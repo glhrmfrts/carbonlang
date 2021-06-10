@@ -11,6 +11,7 @@ namespace {
 static const std::string opnames[] = {
     "ir_load",
     "ir_copy",
+    "ir_cast",
     "ir_add",
     "ir_sub",
     "ir_mul",
@@ -657,6 +658,14 @@ void generate_ir_init_expr(ast_node& node) {
     }
 }
 
+void generate_ir_cast_expr(ast_node& node) {
+    generate_ir_node(*node.children[1]);
+    if (node.type_id.get().size != node.children[1]->type_id.get().size && node.children[1]->type != ast_type::int_literal) {
+        temit(ir_cast, node.type_id, pop());
+        push(ir_stack{ node.type_id });
+    }
+}
+
 void generate_ir_identifier(ast_node& node) {
     auto local = node.lvalue.symbol->scope->local_defs[node.lvalue.symbol->local_index];
     if (local->flags & local_flag::is_argument) {
@@ -733,6 +742,9 @@ void generate_ir_node(ast_node& node) {
         break;
     case ast_type::identifier:
         generate_ir_identifier(node);
+        break;
+    case ast_type::cast_expr:
+        generate_ir_cast_expr(node);
         break;
     case ast_type::int_literal:
     case ast_type::bool_literal:

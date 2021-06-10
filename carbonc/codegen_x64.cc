@@ -641,6 +641,20 @@ struct generator {
             push(toop(dest));
             break;
         }
+        case ir_cast: {
+            auto [a, atype] = transform_ir_operand(instr.operands[0]);
+            auto dest = adjust_for_type(instr_dest_to_gen_dest(idata.dest), instr.result_type);
+
+            if (is_mem(a) && is_mem(dest)) {
+                move(adjust_for_type(reg_intermediate, instr.result_type), instr.result_type, a, atype);
+                a = toop(adjust_for_type(reg_intermediate, instr.result_type));
+            }
+
+            move(dest, instr.result_type, a, atype);
+
+            push(toop(dest));
+            break;
+        }
         }
 
         if (instr.op != ir_asm) {
