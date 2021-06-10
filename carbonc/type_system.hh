@@ -8,6 +8,7 @@
 #include "memory.hh"
 #include "common.hh"
 #include "token.hh"
+#include "carbonc.hh"
 
 namespace carbon {
 
@@ -74,7 +75,7 @@ struct struct_field {
     bool operator ==(const struct_field& other) const { return names == other.names && type == other.type && offset == other.offset; }
 };
 
-using type_constructor_arg = std::variant<type_id, ast_node*>;
+using type_constructor_arg = std::variant<type_id, int_type, ast_node*>;
 using type_constructor_func = std::function<arena_ptr<ast_node>(const std::vector<type_constructor_arg>&)>;
 
 struct type_constructor {
@@ -322,6 +323,7 @@ struct type_system {
     type_constructor* new_type_constructor;
     type_constructor* range_type_constructor;
     type_constructor* tuple_type_constructor;
+    type_constructor* arr_type_constructor;
 
     explicit type_system(memory_arena&);
 

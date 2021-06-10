@@ -88,6 +88,7 @@ void check_func_return_aggregate_type(type_system& ts, ast_node& func) {
         }
 
         clear_func_resolved_state(func);
+        func.local.flags |= local_flag::is_aggregate_argument;
     }
 }
 
@@ -185,15 +186,15 @@ void desugar(type_system& ts, ast_node* nodeptr) {
         break;
     }
     case ast_type::call_expr: {
-        visit_pre_children(ts, node);
-        visit_children(ts, node);
-
         for (int i = 0; i < node.call_args().size(); i++) {
             check_call_arg_bool_op(ts, node, i);
             check_call_arg_aggregate_type(ts, node, i);
         }
 
         check_temp_aggregate_call(ts, node);
+
+        visit_pre_children(ts, node);
+        visit_children(ts, node);
         break;
     }
     case ast_type::init_expr: {

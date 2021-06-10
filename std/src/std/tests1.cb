@@ -6,6 +6,7 @@ import std::memory as mem;
 import std::libc::stdio;
 import std::libc::stdlib;
 
+/*
 func print_the_char(v: char, d: *char) {
     puts(&v);
 }
@@ -170,6 +171,30 @@ func test_tuple_init() {
     }
 }
 
+
+func test_array_zeroinit() {
+    let a: [16]int;
+
+    if (a[0] == 0 && a[12] == 0) {
+        println("[OK] test_array_zeroinit");
+    }
+    else {
+        println("[NOK] test_array_zeroinit");
+    }
+}
+
+func test_array_init() {
+    let a = [3]int{ 1, 2, 3 };
+
+    if (a[0] == 1 && a[1] == 2 && a[2] == 3) {
+        println("[OK] test_array_init");
+    }
+    else {
+        println("[NOK] test_array_init");
+    }
+}
+
+
 func test_struct_assignment_lvalue() {
     let a: range[usize] = { 3, 5 };
     let b = a;
@@ -290,11 +315,58 @@ func test_tuple_return_value(): {} {
 }
 
 
+func test_array_assignment_lvalue() {
+    let a = [6]uint{ 3, 5 };
+    let b = a;
+
+    if (a[0] == b[0] && a[1] == b[1] && a[2] == b[2]) {
+        println("[OK] test_array_assignment_lvalue");
+    }
+    else {
+        println("[NOK] test_array_assignment_lvalue");
+    }
+}
+
+*/
+func sum_array(t: [6]int): int {
+    var res = 0;
+    for (i in 0, 6) {
+        res = res+t[i];
+    }
+    return res;
+}
+/*
+func test_array_argument() {
+    let ares = sum_array([6]int{ 1, 2, 3 });
+    if (ares == 1+2+3) {
+        println("[OK] test_array_argument");
+    }
+    else {
+        println("[NOK] test_array_argument");
+    }
+}
+*/
+
+func get_array_data(): [6]int {
+    return [6]int{ 5, 6, 7 };
+}
+
+func test_array_return_value() {
+    if (sum_array(get_array_data()) == 5+6+7) {
+        println("[OK] test_array_return_value");
+    }
+    else {
+        println("[NOK] test_array_return_value");
+    }
+}
+
+
 func get_result(): int { return 2; }
 
-func main(): int {  
+func main(): int {
     //let result = get_result();
 
+    /*
     test_longfunc();
     test_strcopy_len();
     test_strcopy();
@@ -305,12 +377,17 @@ func main(): int {
     test_struct_init();
     test_tuple_zeroinit();
     test_tuple_init();
+    test_array_zeroinit();
+    test_array_init();
     test_struct_assignment_lvalue();
     test_struct_argument();
     test_struct_return_value();
     test_tuple_assignment_lvalue();
     test_tuple_argument();
     test_tuple_return_value();
+    test_array_assignment_lvalue();
+    test_array_argument();*/
+    test_array_return_value();
 
     //mem::dealloc(cast[raw_ptr] newtext);
     //return a[0];//result*2;

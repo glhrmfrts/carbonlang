@@ -751,7 +751,7 @@ struct parser_impl {
     arena_ptr<ast_node> parse_call_or_index_or_field_expr() {
         auto pos = lex->pos();
         auto expr = parse_primary_expr();
-        while (TOK_CHAR == '(' || TOK_CHAR == '[' || TOK_CHAR == '.') {
+        while (expr && (TOK_CHAR == '(' || TOK_CHAR == '[' || TOK_CHAR == '.')) {
             if (TOK_CHAR == '(') {
                 auto arg_list = parse_arg_list(')', [this]() {
                     return parse_expr();
