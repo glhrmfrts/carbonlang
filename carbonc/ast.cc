@@ -319,6 +319,16 @@ arena_ptr<ast_node> make_array_type_node(memory_arena& arena, const position& po
     return ptr;
 }
 
+arena_ptr<ast_node> make_slice_type_node(memory_arena& arena, const position& pos, token_type op, arena_ptr<ast_node>&& item_type) {
+    auto ptr = make_in_arena<ast_node>(arena);
+    ptr->node_id = node_id_gen++;
+    ptr->type = ast_type::slice_type;
+    ptr->pos = pos;
+    ptr->op = op;
+    ptr->children.push_back(std::move(item_type));
+    return ptr;
+}
+
 arena_ptr<ast_node> make_type_qualifier_node(memory_arena& arena, const position& pos, type_qualifier q, arena_ptr<ast_node>&& to_type) {
     auto ptr = make_in_arena<ast_node>(arena);
     ptr->node_id = node_id_gen++;

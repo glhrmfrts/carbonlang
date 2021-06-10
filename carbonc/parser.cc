@@ -176,13 +176,40 @@ struct parser_impl {
 
         auto size_expr = arena_ptr<ast_node>{ nullptr, nullptr };
         if (TOK_CHAR != ']') {
+            if (TOK_CHAR == '*' || TOK_CHAR == '&') {
+                lex->save();
+
+                lex->next();
+
+                if (TOK_CHAR == ']') {
+                    lex->restore();
+                    auto op = TOK;
+                    lex->next();
+
+                    if (TOK_CHAR != ']') {
+                        throw parse_error(filename, lex->pos(), "expected closing bracket in slice type");
+                    }
+                    lex->next();
+
+                    auto item_type = parse_type_expr();
+                    if (!item_type) {
+                        throw parse_error(filename, lex->pos(), "error parsing slice item type");
+                    }
+
+                    return make_slice_type_node(*ast_arena, pos, op, std::move(item_type));
+                }
+                else {
+                    lex->restore();
+                }
+            }
+
             size_expr = parse_expr();
             if (!size_expr) {
                 throw parse_error(filename, lex->pos(), "error parsing array size expression");
             }
 
             if (TOK_CHAR != ']') {
-                throw parse_error(filename, lex->pos(), "expected closing bracket in sized array");
+                throw parse_error(filename, lex->pos(), "expected closing bracket in array type size");
             }
             lex->next();
         }
@@ -770,7 +797,7 @@ struct parser_impl {
             }
             else {
                 lex->next();
-                auto index_expr = parse_expr();
+                auto index_expr = parse_braceless_tuple_expr();
                 if (TOK_CHAR != ']') {
                     throw parse_error(filename, lex->pos(), "expected closing ']' in index expression");
                 }

@@ -613,7 +613,9 @@ void generate_ir_deref_expr(ast_node& node) {
 
 void generate_ir_addr_expr(ast_node& node) {
     // check if it's a transformed aggregate argument pointer
-    if (node.children[0]->type == ast_type::unary_expr && node.children[0]->op == token_from_char('*')) {
+    bool noop = node.children[0]->type == ast_type::unary_expr && node.children[0]->op == token_from_char('*');
+    noop = noop || (node.children[0]->slice.self != nullptr);
+    if (noop) {
         generate_ir_node(*node.children[0]->children[0]);
         return;
     }
@@ -639,7 +641,13 @@ void generate_ir_var(ast_node& node) {
     if (node.var_value()) {
         generate_ir_node(*node.var_value());
 
+        // Check noop conditions.
         if (node.var_value()->type == ast_type::init_expr) {
+            // Already handled in init list assignments
+            return;
+        }
+        if (node.var_value()->type == ast_type::unary_expr && node.var_value()->children[0]->slice.self) {
+            // Mutable slice case, already handled in init list assignments.
             return;
         }
 

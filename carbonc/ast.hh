@@ -48,6 +48,7 @@ enum class ast_type {
     struct_type,
     tuple_type,
     array_type,
+    slice_type,
     type_constructor_instance,
     type_qualifier,
     linkage_specifier,
@@ -118,7 +119,7 @@ struct ast_node {
     call_info call;
     global_data global_data;
     for_info forinfo;
-    range_info range;
+    slice_info slice;
     field_access field;
     init_list initlist;
     bool type_error = false;
@@ -141,9 +142,6 @@ struct ast_node {
 
     ast_node*                         call_func() const  { return children[0].get(); }
     std::vector<arena_ptr<ast_node>>& call_args() const  { return children[1]->children; }
-
-    ast_node* range_start() const  { return children[0].get(); }
-    ast_node* range_end() const  { return children[1].get(); }
 
     ast_node* field_struct() const  { return children[0].get(); }
     ast_node* field_field() const  { return children[1].get(); }
@@ -221,6 +219,8 @@ arena_ptr<ast_node> make_struct_type_node(memory_arena& arena, const position& p
 arena_ptr<ast_node> make_tuple_type_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& field_list);
 
 arena_ptr<ast_node> make_array_type_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& size_expr, arena_ptr<ast_node>&& item_type);
+
+arena_ptr<ast_node> make_slice_type_node(memory_arena& arena, const position& pos, token_type op, arena_ptr<ast_node>&& item_type);
 
 arena_ptr<ast_node> make_type_constructor_instance_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& tpl, arena_ptr<ast_node>&& arg_list);
 

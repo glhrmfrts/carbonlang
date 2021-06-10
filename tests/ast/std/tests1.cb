@@ -283,78 +283,6 @@ compound_stmt{
             arg_list(
               )}}}}
     func_decl{
-      identifier{"test_struct_zeroinit"}
-      arg_list()
-compound_stmt{
-        decl_list{
-          var_decl{
-            identifier{"a"}
-            :type_expr{
-              }}
-          var_decl{
-            identifier{"b"}
-            :type_expr{
-              }
-            =init_expr{
-              arg_list()}}}
-        stmt_list{
-          }}}
-    func_decl{
-      identifier{"test_struct_init"}
-      arg_list()
-compound_stmt{
-        decl_list{
-          var_decl{
-            identifier{"a"}
-            :type_expr{
-              }
-            =init_expr{
-              arg_list(
-                int_literal{3}
-                int_literal{5})}}
-          var_decl{
-            identifier{"b"}
-            :type_expr{
-              }
-            =init_expr{
-              arg_list(
-                binary_expr{
-                  binary_expr{
-                    int_literal{24}
-                    *
-                    int_literal{7}}
-                  +
-                  int_literal{2}}
-                )}}
-          var_decl{
-            identifier{"c"}
-            =init_expr{
-              type=type_expr{
-                }
-              arg_list(
-                binary_expr{
-                  binary_expr{
-                    
-                    *
-                    int_literal{3}}
-                  *
-                  int_literal{9}}
-                binary_expr{
-                  binary_expr{
-                    
-                    *
-                    int_literal{2}}
-                  *
-                  int_literal{2}})}}
-          var_decl{
-            identifier{"d"}
-            =init_expr{
-              type=type_expr{
-                }
-              arg_list()}}}
-        stmt_list{
-          }}}
-    func_decl{
       identifier{"test_tuple_zeroinit"}
       arg_list()
 compound_stmt{
@@ -431,211 +359,6 @@ compound_stmt{
                 int_literal{1}
                 int_literal{2}
                 int_literal{3})}}}
-        stmt_list{
-          }}}
-    func_decl{
-      identifier{"test_struct_assignment_lvalue"}
-      arg_list()
-compound_stmt{
-        decl_list{
-          var_decl{
-            identifier{"a"}
-            :type_expr{
-              }
-            =init_expr{
-              arg_list(
-                int_literal{3}
-                int_literal{5})}}
-          var_decl{
-            identifier{"b"}
-            =identifier{"a"}}}
-        stmt_list{
-          }}}
-    func_decl{
-      identifier{"sum_range_ptr"}
-      arg_list(
-        var_decl{
-          identifier{"r"}
-          :type_expr{
-            type_qualifier{pointer,
-              }}})
-      :type_expr{
-        identifier{"usize"}}
-compound_stmt{
-        stmt_list{
-          return_stmt{
-                        binary_expr{
-              binary_expr{
-                
-                +
-                }
-              -
-              int_literal{1}}}}}}
-    func_decl{
-      identifier{"sum_range_ptr"}
-      arg_list(
-        var_decl{
-          identifier{"r"}
-          :type_expr{
-            type_qualifier{reference,
-              }}})
-      :type_expr{
-        identifier{"usize"}}
-compound_stmt{
-        stmt_list{
-          return_stmt{
-                        binary_expr{
-              
-              +
-              }}}}}
-    func_decl{
-      identifier{"sum_range_val"}
-      arg_list(
-        var_decl{
-          identifier{"r"}
-          :type_expr{
-            }})
-      :type_expr{
-        identifier{"usize"}}
-compound_stmt{
-        stmt_list{
-          return_stmt{
-                        binary_expr{
-              
-              +
-              }}}}}
-    func_decl{
-      identifier{"sum_range_copy"}
-      arg_list(
-        var_decl{
-          identifier{"r"}
-          :type_expr{
-            }})
-      :type_expr{
-        identifier{"usize"}}
-compound_stmt{
-        decl_list{
-          var_decl{
-            identifier{"r2"}
-            =identifier{"r"}}}
-        stmt_list{
-          return_stmt{
-                        binary_expr{
-              
-              +
-              }}}}}
-    func_decl{
-      identifier{"test_struct_argument"}
-      arg_list()
-      :type_expr{
-        tuple_type{
-}}
-compound_stmt{
-        decl_list{
-          var_decl{
-            identifier{"a"}
-            :type_expr{
-              }
-            =init_expr{
-              arg_list(
-                int_literal{10}
-                int_literal{20})}}
-          var_decl{
-            identifier{"result"}
-            =call_expr{
-              identifier{"sum_range_ptr"}
-              arg_list(
-                unary_expr{
-                  &
-                  identifier{"a"}})}}
-          var_decl{
-            identifier{"valres"}
-            =call_expr{
-              identifier{"sum_range_val"}
-              arg_list(
-                identifier{"a"})}}
-          var_decl{
-            identifier{"cpres"}
-            =call_expr{
-              identifier{"sum_range_copy"}
-              arg_list(
-                identifier{"a"})}}}
-        stmt_list{
-          }}}
-    func_decl{
-      identifier{"make_range"}
-      arg_list()
-      :type_expr{
-        }
-compound_stmt{
-        stmt_list{
-          return_stmt{
-                        init_expr{
-              type=type_expr{
-                }
-              arg_list(
-                int_literal{30}
-                int_literal{40})}}}}}
-    func_decl{
-      identifier{"make_range_with"}
-      arg_list(
-        var_decl{
-          identifier{"a"}
-          :type_expr{
-            identifier{"usize"}}}
-        var_decl{
-          identifier{"b"}
-          :type_expr{
-            identifier{"usize"}}})
-      :type_expr{
-        }
-compound_stmt{
-        stmt_list{
-          return_stmt{
-                        init_expr{
-              type=type_expr{
-                }
-              arg_list(
-                identifier{"a"}
-                identifier{"b"})}}}}}
-    func_decl{
-      identifier{"make_range_zero_one"}
-      arg_list()
-      :type_expr{
-        }
-compound_stmt{
-        stmt_list{
-          return_stmt{
-                        call_expr{
-              identifier{"make_range_with"}
-              arg_list(
-                int_literal{0}
-                int_literal{1})}}}}}
-    func_decl{
-      identifier{"test_struct_return_value"}
-      arg_list()
-      :type_expr{
-        tuple_type{
-}}
-compound_stmt{
-        decl_list{
-          var_decl{
-            identifier{"r"}
-            =call_expr{
-              identifier{"make_range"}
-              arg_list()}}
-          var_decl{
-            identifier{"r2"}
-            =call_expr{
-              identifier{"make_range_with"}
-              arg_list(
-                int_literal{570}
-                int_literal{600})}}
-          var_decl{
-            identifier{"r3"}
-            =call_expr{
-              identifier{"make_range_zero_one"}
-              arg_list()}}}
         stmt_list{
           }}}
     func_decl{
@@ -843,6 +566,102 @@ compound_stmt{
         stmt_list{
           }}}
     func_decl{
+      identifier{"test_slice"}
+      arg_list()
+compound_stmt{
+        decl_list{
+          var_decl{
+            identifier{"arr"}
+            =init_expr{
+              type=type_expr{
+                array_type{
+                  size=int_literal{10}
+                  type_expr{
+                    identifier{"int"}}}}
+              arg_list(
+                int_literal{0}
+                int_literal{0}
+                int_literal{1}
+                int_literal{2}
+                int_literal{3}
+                int_literal{4}
+                int_literal{5})}}
+          var_decl{
+            identifier{"sli"}
+            :type_expr{
+              }
+            =index_expr{
+              identifier{"arr"}
+              init_expr{
+                arg_list(
+                  int_literal{2}
+                  int_literal{7})}}}}
+        stmt_list{
+          }}}
+    func_decl{
+      identifier{"test_mutable_slice"}
+      arg_list()
+compound_stmt{
+        decl_list{
+          var_decl{
+            identifier{"arr"}
+            =init_expr{
+              type=type_expr{
+                array_type{
+                  size=int_literal{10}
+                  type_expr{
+                    identifier{"int"}}}}
+              arg_list(
+                int_literal{0}
+                int_literal{0}
+                int_literal{1}
+                int_literal{2}
+                int_literal{3}
+                int_literal{4}
+                int_literal{5})}}
+          var_decl{
+            identifier{"sli"}
+            :type_expr{
+              }
+            =index_expr{
+              identifier{"arr"}
+              init_expr{
+                arg_list(
+                  int_literal{2}
+                  int_literal{7})}}}
+          var_decl{
+            identifier{"mut"}
+            :type_expr{
+              }
+            =unary_expr{
+              &
+              index_expr{
+                identifier{"arr"}
+                init_expr{
+                  arg_list(
+                    int_literal{0}
+                    int_literal{7})}}}}}
+        stmt_list{
+          binary_expr{
+            index_expr{
+              identifier{"sli"}
+              int_literal{0}}
+            =
+            int_literal{3}}
+          binary_expr{
+            index_expr{
+              identifier{"mut"}
+              int_literal{2}}
+            =
+            int_literal{10}}
+          binary_expr{
+            index_expr{
+              identifier{"mut"}
+              int_literal{3}}
+            =
+            int_literal{20}}
+          }}}
+    func_decl{
       identifier{"get_result"}
       arg_list()
       :type_expr{
@@ -877,12 +696,6 @@ compound_stmt{
             identifier{"test_for_stmt"}
             arg_list()}
           call_expr{
-            identifier{"test_struct_zeroinit"}
-            arg_list()}
-          call_expr{
-            identifier{"test_struct_init"}
-            arg_list()}
-          call_expr{
             identifier{"test_tuple_zeroinit"}
             arg_list()}
           call_expr{
@@ -893,15 +706,6 @@ compound_stmt{
             arg_list()}
           call_expr{
             identifier{"test_array_init"}
-            arg_list()}
-          call_expr{
-            identifier{"test_struct_assignment_lvalue"}
-            arg_list()}
-          call_expr{
-            identifier{"test_struct_argument"}
-            arg_list()}
-          call_expr{
-            identifier{"test_struct_return_value"}
             arg_list()}
           call_expr{
             identifier{"test_tuple_assignment_lvalue"}
@@ -920,6 +724,12 @@ compound_stmt{
             arg_list()}
           call_expr{
             identifier{"test_array_return_value"}
+            arg_list()}
+          call_expr{
+            identifier{"test_slice"}
+            arg_list()}
+          call_expr{
+            identifier{"test_mutable_slice"}
             arg_list()}}
         decl_list{
           var_decl{

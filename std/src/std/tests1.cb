@@ -120,6 +120,7 @@ func test_for_stmt() {
     mem::dealloc(cast[raw_ptr] newstr);
 }
 
+/*
 func test_struct_zeroinit() {
     var a: range[int];
     var b: range[int] = { };
@@ -145,6 +146,7 @@ func test_struct_init() {
         println("[NOK] test_struct_init");
     }
 }
+*/
 
 func test_tuple_zeroinit() {
     var a: {int, int};
@@ -193,7 +195,7 @@ func test_array_init() {
     }
 }
 
-
+/*
 func test_struct_assignment_lvalue() {
     let a: range[usize] = { 3, 5 };
     let b = a;
@@ -264,7 +266,7 @@ func test_struct_return_value(): {} {
         println("[NOK] test_struct_return_value");
     }
 }
-
+*/
 
 func test_tuple_assignment_lvalue() {
     let a = {3,4,5};
@@ -360,6 +362,36 @@ func test_array_return_value() {
 }
 
 
+func test_slice() {
+    let arr = [10]int{ 0, 0, 1, 2, 3, 4, 5 };
+    let sli: [*]int = arr[2,7];
+
+    if (sli[0] == 1 && sli[1] == 2 && sli.len == 5) {
+        println("[OK] test_slice");
+    }
+    else {
+        println("[NOK] test_slice");
+    }
+}
+
+func test_mutable_slice() {
+    let arr = [10]int{ 0, 0, 1, 2, 3, 4, 5 };
+    let sli: [*]int = arr[2,7];
+    let mut: [&]int = &arr[0,7];
+
+    sli[0] = 3;
+    mut[2] = 10;
+    mut[3] = 20;
+
+    if (sli[0] == 10 && sli[1] == 20 && sli.len == 5 && mut.len == 7) {
+        println("[OK] test_mutable_slice");
+    }
+    else {
+        println("[NOK] test_mutable_slice");
+    }
+}
+
+
 func get_result(): int { return 2; }
 
 func main(): int {
@@ -371,21 +403,23 @@ func main(): int {
     test_strcopy_saving();
     test_while_statement();
     test_for_stmt();
-    test_struct_zeroinit();
-    test_struct_init();
+    //test_struct_zeroinit();
+    //test_struct_init();
     test_tuple_zeroinit();
     test_tuple_init();
     test_array_zeroinit();
     test_array_init();
-    test_struct_assignment_lvalue();
-    test_struct_argument();
-    test_struct_return_value();
+    //test_struct_assignment_lvalue();
+    //test_struct_argument();
+    //test_struct_return_value();
     test_tuple_assignment_lvalue();
     test_tuple_argument();
     test_tuple_return_value();
     test_array_assignment_lvalue();
     test_array_argument();
     test_array_return_value();
+    test_slice();
+    test_mutable_slice();
 
     //mem::dealloc(cast[raw_ptr] newtext);
     //return a[0];//result*2;

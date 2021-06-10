@@ -40,7 +40,7 @@ enum class type_kind {
     integral,
     real,
     array,
-    map,
+    slice,
     structure,
     tuple,
     func,
@@ -201,7 +201,7 @@ struct for_info {
     arena_ptr<ast_node> increase_elem{nullptr, nullptr};
 };
 
-struct range_info {
+struct slice_info {
     ast_node* self;
     //ast_node* start_node;
     //ast_node* end_node;
@@ -287,6 +287,7 @@ enum class type_system_pass {
 
 struct type_error {
     position pos;
+    string_hash hash;
     std::string filename;
     std::string msg;
 };
@@ -315,15 +316,17 @@ struct type_system {
     type_id uintptr_type{};
     type_id ptrdiff_type{};
     type_id bool_type{};
+    type_id usize_type{};
     type_id raw_string_type{};
 
     type_constructor* ptr_type_constructor;
     type_constructor* ref_type_constructor;
     type_constructor* optional_type_constructor;
     type_constructor* new_type_constructor;
-    type_constructor* range_type_constructor;
     type_constructor* tuple_type_constructor;
     type_constructor* arr_type_constructor;
+    type_constructor* slice_type_constructor;
+    type_constructor* mut_slice_type_constructor;
 
     explicit type_system(memory_arena&);
 

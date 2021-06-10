@@ -93,7 +93,7 @@ void check_func_return_aggregate_type(type_system& ts, ast_node& func) {
 }
 
 void transform_aggregate_call_into_pointer_argument_helper(type_system& ts, ast_node& receiver, ast_node* call) {
-    auto ref = copy_var_ref(ts, receiver);
+    auto ref = copy_node(ts, receiver);
     ref->type_id = call->type_id;
 
     auto addr = make_address_of_expr(ts, std::move(ref));
