@@ -28,6 +28,7 @@ enum class token_type : unsigned int {
     const_,
     pure,
     type,
+    typealias,
     asm_,
     private_,
     public_,

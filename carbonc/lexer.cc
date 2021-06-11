@@ -213,6 +213,11 @@ struct lexer_impl {
                 return token_type::internal_;
             }
             break;
+        case 9:
+            if (!std::strcmp("typealias", l.string)) {
+                return token_type::typealias;
+            }
+            break;
         case 10:
             if (!std::strcmp("nullrawptr", l.string)) {
                 return token_type::nullrawptr;

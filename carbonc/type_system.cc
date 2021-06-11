@@ -1678,6 +1678,24 @@ void resolve_range_expr(type_system& ts, ast_node& node) {
     assert(!"range not supported anymore");
 }
 
+bool check_reserved_call(type_system& ts, ast_node& node) {
+    if (node.children[0]->type == ast_type::identifier) {
+        if (node.children[0]->id_parts.front() == "sizeof") {
+            resolve_node_type(ts, node.children[1]->children[0].get());
+            if (node.children[1]->children[0]->type_id.valid()) {
+                node.type = ast_type::int_literal;
+                node.type_id = ts.usize_type;
+                node.int_value = node.children[1]->children[0]->type_id.get().size;
+                node.type_error = false;
+            }
+            else {
+                node.type_error = true;
+            }
+            return true;
+        }
+    }
+}
+
 // Section: main visitor
 
 void clear_type_errors(type_system& ts, ast_node& node) {
@@ -1886,6 +1904,10 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
     }
     case ast_type::call_expr: {
         if (ts.pass != type_system_pass::perform_checks && node.type_id != invalid_type) return node.type_id;
+
+        if (check_reserved_call(ts, node)) {
+            break;
+        }
 
         if (!node.call.self) {
             node.call.self = &node;

@@ -19,7 +19,7 @@ private {
 
 func init_command_line(): [&]string {
     let cmdline = GetCommandLineA();
-    let data = cast[&string] mem::alloc(16);
+    let data = cast[&string] mem::alloc(sizeof(string));
     let result = [&]string{ data, 1 };
     result[0] = string{ cmdline, cmdline.strlen };
     return result;
@@ -35,10 +35,6 @@ extern(C) func carbon_main(): int {
     for (i in 0, args.len) {
         println(args[i].data);
     }
-
-    //let str = "0";
-    //let l = "asd".strlen;
-    //str[0] = '0' + cast[char] l;
 
     let s = "0";
     if ("asdasdad".strlen == 8) {

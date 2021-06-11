@@ -601,7 +601,6 @@ struct generator {
 
             em->push(rdi);
             em->push(rsi);
-            em->push(rcx);
 
             if (is_mem(a)) {
                 load_address(rdi, todest(a), atype);
@@ -621,7 +620,6 @@ struct generator {
 
             em->emitln(" rep movsb");
 
-            em->pop(rcx);
             em->pop(rsi);
             em->pop(rdi);
             break;
