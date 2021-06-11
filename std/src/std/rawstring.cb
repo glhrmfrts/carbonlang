@@ -1,22 +1,22 @@
-import std::memory as mem;
+import std::alloc as alloc;
 
 func copy(str: *char): *char {
     return copy(str, str.strlen);
 }
 
 func copy(str: *char, size: usize): *char {
-    let newstr = cast[*char] mem::alloc(size+1);
+    let newstr = cast[*char] alloc::alloc(size+1);
     copy(newstr, str, size);
     newstr[size] = 0;
     return newstr;
 }
 
 func copy(dest: *char, src: *char, size: usize) {
-    mem::copy(cast[raw_ptr] dest, cast[raw_ptr] src, size);
+    alloc::copy(cast[raw_ptr] dest, cast[raw_ptr] src, size);
 }
 
 func set(dest: *char, value: char, count: usize) {
-    mem::set(cast[raw_ptr] dest, value, count);
+    alloc::set(cast[raw_ptr] dest, value, count);
 }
 
 import std::io;

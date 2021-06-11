@@ -1,36 +1,18 @@
+import std::alloc as alloc;
+import std::os::windows;
+
+type WideString = [*]int16;
+
+type MutableWideString = [&]int16;
 /*
-import std::memory as mem;
-
-depends {
-    allocator : mem::Allocator = default_allocator{},
-};
-
-type wstring = [*]int16;
-
-type mutable_wstring = [&]int16;
-
-func widen(text: string): wstring {
-    if (!text.len) { return wstring{}; }
+func widen(text: String): WideString {
+    if (!text.len) { return WideString{}; }
 
     let charcount = MultiByteToWideChar(CP_UTF8, 0, text.data, text.len, nullrawptr, 0) - (if size == -1 then 1 else 0);
-    let data = allocator.alloc |> charcount * sizeof(wstring::elem_type);
+    let data = alloc::alloc |> charcount * sizeof(WideString::ElemType);
 
-    let result = mutable_wstring{ data, 0 };
+    let result = MutableWideString{ data, charcount };
     MultiByteToWideChar(CP_UTF8, 0, text, size, result.data, result.len);
     return result;
 }
-
-func narrow(text: wstring): string {
-
-}
-
-import std::unicode;
-
-func main() {
-    import std::unicode { allocator=new_arena_allocator() };
-
-
-}
 */
-
-func ok() {}

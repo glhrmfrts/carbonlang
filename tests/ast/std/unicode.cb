@@ -1,7 +1,16 @@
 code_unit{
   std/unicode.cb
   decl_list{
-    func_decl{
-      identifier{"ok"}
-      arg_list()
-compound_stmt{}}}}
+    import_decl{
+      identifier{"std::alloc"}
+      identifier{"alloc"}}
+    import_decl{
+      identifier{"std::os::windows"}}
+    type_decl{
+      identifier{"WideString"}
+      =type_expr{
+        }}
+    type_decl{
+      identifier{"MutableWideString"}
+      =type_expr{
+        }}}}

@@ -8,26 +8,15 @@ code_unit{
     import_decl{
       identifier{"std::rawstring"}}
     import_decl{
-      identifier{"std::memory"}
-      identifier{"mem"}}
-    visibility_specifier{
-      private
-      linkage_specifier{
-        extern(C)
-        decl_list{
-          linkage_specifier{
-            extern(C)
-            func_decl{
-              identifier{"GetCommandLineA"}
-              arg_list()
-              :type_expr{
-                type_qualifier{reference,
-                  identifier{"char"}}}}}}}}
+      identifier{"std::alloc"}
+      identifier{"alloc"}}
+    import_decl{
+      identifier{"std::os::windows"}}
     visibility_specifier{
       private
       decl_list{
         func_decl{
-          identifier{"init_command_line"}
+          identifier{"initCommandLine"}
           arg_list()
           :type_expr{
             }
@@ -57,14 +46,14 @@ compound_stmt{
                 =
                 init_expr{
                   type=type_expr{
-                    identifier{"string"}}
+                    identifier{"String"}}
                   arg_list(
                     identifier{"cmdline"}
                     )}}
               return_stmt{
                                 identifier{"result"}}}}}
         func_decl{
-          identifier{"free_command_line"}
+          identifier{"freeCommandLine"}
           arg_list(
             var_decl{
               identifier{"args"}
@@ -73,7 +62,7 @@ compound_stmt{
 compound_stmt{
             stmt_list{
               call_expr{
-                identifier{"mem::free"}
+                identifier{"alloc::free"}
                 arg_list(
                   )}}}}
         linkage_specifier{
@@ -88,7 +77,7 @@ compound_stmt{
                 var_decl{
                   identifier{"args"}
                   =call_expr{
-                    identifier{"init_command_line"}
+                    identifier{"initCommandLine"}
                     arg_list()}}}
               stmt_list{
                 }
@@ -100,7 +89,7 @@ compound_stmt{
                 }
               stmt_list{
                 call_expr{
-                  identifier{"free_command_line"}
+                  identifier{"freeCommandLine"}
                   arg_list(
                     identifier{"args"})}
                 return_stmt{

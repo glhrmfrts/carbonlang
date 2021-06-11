@@ -3,34 +3,25 @@
 import std::io;
 import std::string;
 import std::rawstring;
-import std::memory as mem;
-
-//version(windows) {
-
-private extern(C) {
-
-extern(C) func GetCommandLineA(): &char;
-
-}
-
-//}
+import std::alloc as alloc;
+import std::os::windows;
 
 private {
 
-func init_command_line(): [&]string {
+func initCommandLine(): [&]String {
     let cmdline = GetCommandLineA();
-    let data = cast[&string] mem::alloc(sizeof(string));
-    let result = [&]string{ data, 1 };
-    result[0] = string{ cmdline, cmdline.strlen };
+    let data = cast[&String] alloc::alloc(sizeof(String));
+    let result = [&]String{ data, 1 };
+    result[0] = String{ cmdline, cmdline.strlen };
     return result;
 }
 
-func free_command_line(args: [&]string) {
-    mem::free(cast[raw_ptr] args.data);
+func freeCommandLine(args: [&]String) {
+    alloc::free(cast[raw_ptr] args.data);
 }
 
 extern(C) func carbon_main(): int {
-    let args = init_command_line();
+    let args = initCommandLine();
 
     for (i in 0, args.len) {
         println(args[i].data);
@@ -41,7 +32,7 @@ extern(C) func carbon_main(): int {
         println("asd");
     }
 
-    free_command_line(args);
+    freeCommandLine(args);
     return 0;
 }
 

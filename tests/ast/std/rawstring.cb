@@ -2,8 +2,8 @@ code_unit{
   std/rawstring.cb
   decl_list{
     import_decl{
-      identifier{"std::memory"}
-      identifier{"mem"}}
+      identifier{"std::alloc"}
+      identifier{"alloc"}}
     func_decl{
       identifier{"copy"}
       arg_list(
@@ -78,7 +78,7 @@ compound_stmt{
 compound_stmt{
         stmt_list{
           call_expr{
-            identifier{"mem::copy"}
+            identifier{"alloc::copy"}
             arg_list(
               
               
@@ -102,7 +102,7 @@ compound_stmt{
 compound_stmt{
         stmt_list{
           call_expr{
-            identifier{"mem::set"}
+            identifier{"alloc::set"}
             arg_list(
               
               identifier{"value"}

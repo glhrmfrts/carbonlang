@@ -1681,15 +1681,29 @@ void resolve_range_expr(type_system& ts, ast_node& node) {
 bool check_reserved_call(type_system& ts, ast_node& node) {
     if (node.children[0]->type == ast_type::identifier) {
         if (node.children[0]->id_parts.front() == "sizeof") {
-            resolve_node_type(ts, node.children[1]->children[0].get());
-            if (node.children[1]->children[0]->type_id.valid()) {
-                node.type = ast_type::int_literal;
-                node.type_id = ts.usize_type;
-                node.int_value = node.children[1]->children[0]->type_id.get().size;
-                node.type_error = false;
-            }
-            else {
+            for (int i = 0; i < 2; i++) {
                 node.type_error = true;
+                if (i == 0) {
+                    resolve_node_type(ts, node.children[1]->children[0].get());
+                    if (node.children[1]->children[0]->type_id.valid()) {
+                        node.type = ast_type::int_literal;
+                        node.type_id = ts.usize_type;
+                        node.int_value = node.children[1]->children[0]->type_id.get().size;
+                        node.type_error = false;
+                    }
+                }
+                else {
+                    if (!node.sizeof_type_expr) {
+                        node.sizeof_type_expr = make_type_expr_node(*ts.ast_arena, node.children[1]->children[0]->pos, copy_node(ts, *node.children[1]->children[0]));
+                    }
+                    resolve_node_type(ts, node.sizeof_type_expr.get());
+                    if (node.sizeof_type_expr->type_id.valid()) {
+                        node.type = ast_type::int_literal;
+                        node.type_id = ts.usize_type;
+                        node.int_value = node.sizeof_type_expr->type_id.get().size;
+                        node.type_error = false;
+                    }
+                }
             }
             return true;
         }

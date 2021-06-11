@@ -1,0 +1,98 @@
+code_unit{
+  std/alloc.cb
+  decl_list{
+    import_decl{
+      identifier{"std::os::windows"}}
+    func_decl{
+      identifier{"alloc"}
+      arg_list(
+        var_decl{
+          identifier{"size"}
+          :type_expr{
+            identifier{"usize"}}})
+      :type_expr{
+        identifier{"raw_ptr"}}
+compound_stmt{
+        stmt_list{
+          return_stmt{
+                        call_expr{
+              identifier{"HeapAlloc"}
+              arg_list(
+                call_expr{
+                  identifier{"GetProcessHeap"}
+                  arg_list()}
+                int_literal{0}
+                identifier{"size"})}}}}}
+    func_decl{
+      identifier{"free"}
+      arg_list(
+        var_decl{
+          identifier{"ptr"}
+          :type_expr{
+            identifier{"raw_ptr"}}})
+compound_stmt{
+        stmt_list{
+          call_expr{
+            identifier{"HeapFree"}
+            arg_list(
+              call_expr{
+                identifier{"GetProcessHeap"}
+                arg_list()}
+              int_literal{0}
+              identifier{"ptr"})}}}}
+    func_decl{
+      identifier{"copy"}
+      arg_list(
+        var_decl{
+          identifier{"dest"}
+          :type_expr{
+            identifier{"raw_ptr"}}}
+        var_decl{
+          identifier{"src"}
+          :type_expr{
+            identifier{"raw_ptr"}}}
+        var_decl{
+          identifier{"size"}
+          :type_expr{
+            identifier{"usize"}}})
+compound_stmt{
+        decl_list{
+          asm_stmt{
+            push rdi
+push rsi
+
+mov rdi,rcx
+mov rsi,rdx
+mov rcx,r8
+rep movsb
+
+pop rsi
+pop rdi
+    }}}}
+    func_decl{
+      identifier{"set"}
+      arg_list(
+        var_decl{
+          identifier{"dest"}
+          :type_expr{
+            identifier{"raw_ptr"}}}
+        var_decl{
+          identifier{"value"}
+          :type_expr{
+            identifier{"char"}}}
+        var_decl{
+          identifier{"count"}
+          :type_expr{
+            identifier{"usize"}}})
+compound_stmt{
+        decl_list{
+          asm_stmt{
+            push rdi
+
+mov rdi,rcx
+mov rax,rdx
+mov rcx,r8
+rep stosb
+
+pop rdi
+    }}}}}}

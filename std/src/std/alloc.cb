@@ -1,20 +1,4 @@
-private extern(C) {
-
-func HeapAlloc(
-  hHeap:   int,
-  dwFlags: int,
-  dwBytes: usize
-): raw_ptr;
-
-func HeapFree(
-  hHeap:   int,
-  dwFlags: int,
-  lpMem:   raw_ptr
-): bool;
-
-func GetProcessHeap(): int;
-
-}
+import std::os::windows;
 
 func alloc(size: usize): raw_ptr {
     return HeapAlloc(GetProcessHeap(), 0, size);
