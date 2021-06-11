@@ -1,5 +1,5 @@
 import std::libc::stdio;
 
-func println(c: raw_string): {} {
+func println(c: *char): {} {
     puts(c);
 }

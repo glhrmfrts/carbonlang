@@ -168,10 +168,11 @@ symbol_info* find_symbol(type_system& ts, const std::pair<string_hash, string_ha
             auto mod = scope->imports_map.find(pair.first);
             if (mod != scope->imports_map.end()) {
                 auto impscope = ts.modules[scope->imports[mod->second].qual_name];
-
-                auto it = impscope->symbols.find(pair.second);
-                if (it != impscope->symbols.end()) {
-                    return it->second.get();
+                if (impscope) {
+                    auto it = impscope->symbols.find(pair.second);
+                    if (it != impscope->symbols.end()) {
+                        return it->second.get();
+                    }
                 }
             }
         }

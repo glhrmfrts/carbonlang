@@ -1,0 +1,52 @@
+/// Initialization routines
+
+import std::io;
+import std::string;
+import std::rawstring;
+import std::memory as mem;
+
+//version(windows) {
+
+private extern(C) {
+
+extern(C) func GetCommandLineA(): &char;
+
+}
+
+//}
+
+private {
+
+func init_command_line(): [&]string {
+    let cmdline = GetCommandLineA();
+    let data = cast[&string] mem::alloc(16);
+    let result = [&]string{ data, 1 };
+    result[0] = string{ cmdline, cmdline.strlen };
+    return result;
+}
+
+func free_command_line(args: [&]string) {
+    mem::free(cast[raw_ptr] args.data);
+}
+
+extern(C) func carbon_main(): int {
+    let args = init_command_line();
+
+    for (i in 0, args.len) {
+        println(args[i].data);
+    }
+
+    //let str = "0";
+    //let l = "asd".strlen;
+    //str[0] = '0' + cast[char] l;
+
+    let s = "0";
+    if ("asdasdad".strlen == 8) {
+        println("asd");
+    }
+
+    free_command_line(args);
+    return 0;
+}
+
+}

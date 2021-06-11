@@ -1,0 +1,11 @@
+code_unit{
+  std/string.cb
+  decl_list{
+    type_decl{
+      identifier{"string"}
+      =type_expr{
+        }}
+    type_decl{
+      identifier{"mutable_string"}
+      =type_expr{
+        }}}}

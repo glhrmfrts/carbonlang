@@ -1,5 +1,6 @@
 // test stuff
 
+/*
 import std::io;
 import std::rawstring;
 import std::memory as mem;
@@ -146,7 +147,6 @@ func test_struct_init() {
         println("[NOK] test_struct_init");
     }
 }
-*/
 
 func test_tuple_zeroinit() {
     var a: {int, int};
@@ -266,7 +266,7 @@ func test_struct_return_value(): {} {
         println("[NOK] test_struct_return_value");
     }
 }
-*/
+
 
 func test_tuple_assignment_lvalue() {
     let a = {3,4,5};
@@ -377,7 +377,7 @@ func test_slice() {
 func test_mutable_slice() {
     let arr = [10]int{ 0, 0, 1, 2, 3, 4, 5 };
     let sli: [*]int = arr[2,7];
-    let mut: [&]int = &arr[0,7];
+    let mut: [&]int = & arr[0,7];
 
     sli[0] = 3;
     mut[2] = 10;
@@ -391,11 +391,52 @@ func test_mutable_slice() {
     }
 }
 
+type IntPair = {fst: int, snd: int, desc: raw_string};
 
 func get_result(): int { return 2; }
 
-func main(): int {
+
+
+
+//extern(C) func GetCommandLineA(): raw_string;
+
+extern(C) func CommandLineToArgvW(c: &uint16, nargs: &int): raw_ptr;
+
+extern(C) func GetCommandLineW(): &uint16;
+
+extern(C) func mainCRTStartup() {
+    let nargs : int;
+    let arglist = CommandLineToArgvW(GetCommandLineW(), &nargs);
+
+    let str = "0";
+    str[0] = '0' + cast[int8] nargs;
+    println(str);
+}
+
+
+func main(argc: int): int {
     //let result = get_result();
+
+    //mainCRTStartup();
+
+    let str = "0";
+    str[0] = '0' + cast[char] argc;
+    println(str);
+
+    if (argc == 0) {
+        println("zero arguments");
+    }
+    if (argc == 1) {
+        println("one arguments");
+    }
+    if (argc == 2) {
+        println("two arguments");
+    }
+
+    var p : IntPair;
+    p.fst = 3;
+    p.snd = 1023;
+    p.desc = "asdasdasdasd";
 
     test_longfunc();
     test_strcopy_len();
@@ -433,3 +474,6 @@ func main(): int {
 
     return a[b[get_result()]];
 }
+*/
+
+func ok() {}

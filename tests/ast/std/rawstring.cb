@@ -2,8 +2,6 @@ code_unit{
   std/rawstring.cb
   decl_list{
     import_decl{
-      identifier{"std::libc::string"}}
-    import_decl{
       identifier{"std::memory"}
       identifier{"mem"}}
     func_decl{
@@ -12,9 +10,11 @@ code_unit{
         var_decl{
           identifier{"str"}
           :type_expr{
-            identifier{"raw_string"}}})
+            type_qualifier{pointer,
+              identifier{"char"}}}})
       :type_expr{
-        identifier{"raw_string"}}
+        type_qualifier{pointer,
+          identifier{"char"}}}
 compound_stmt{
         stmt_list{
           return_stmt{
@@ -29,13 +29,15 @@ compound_stmt{
         var_decl{
           identifier{"str"}
           :type_expr{
-            identifier{"raw_string"}}}
+            type_qualifier{pointer,
+              identifier{"char"}}}}
         var_decl{
           identifier{"size"}
           :type_expr{
             identifier{"usize"}}})
       :type_expr{
-        identifier{"raw_string"}}
+        type_qualifier{pointer,
+          identifier{"char"}}}
 compound_stmt{
         decl_list{
           var_decl{
@@ -62,11 +64,13 @@ compound_stmt{
         var_decl{
           identifier{"dest"}
           :type_expr{
-            identifier{"raw_string"}}}
+            type_qualifier{pointer,
+              identifier{"char"}}}}
         var_decl{
           identifier{"src"}
           :type_expr{
-            identifier{"raw_string"}}}
+            type_qualifier{pointer,
+              identifier{"char"}}}}
         var_decl{
           identifier{"size"}
           :type_expr{
@@ -85,7 +89,8 @@ compound_stmt{
         var_decl{
           identifier{"dest"}
           :type_expr{
-            identifier{"raw_string"}}}
+            type_qualifier{pointer,
+              identifier{"char"}}}}
         var_decl{
           identifier{"value"}
           :type_expr{
@@ -102,33 +107,45 @@ compound_stmt{
               
               identifier{"value"}
               identifier{"count"})}}}}
+    import_decl{
+      identifier{"std::io"}}
     func_decl{
-      identifier{"len"}
+      identifier{"strlen"}
       arg_list(
         var_decl{
           identifier{"str"}
           :type_expr{
-            identifier{"raw_string"}}})
+            type_qualifier{pointer,
+              identifier{"char"}}}})
       :type_expr{
         identifier{"usize"}}
 compound_stmt{
+        decl_list{
+          var_decl{
+            identifier{"c"}
+            :type_expr{
+              identifier{"usize"}}}
+          var_decl{
+            identifier{"p"}
+            =identifier{"str"}}}
+        stmt_list{
+          }
         stmt_list{
           return_stmt{
-                        call_expr{
-              identifier{"strlen"}
-              arg_list(
-                identifier{"str"})}}}}}
+                        identifier{"c"}}}}}
     func_decl{
       identifier{"equals"}
       arg_list(
         var_decl{
           identifier{"a"}
           :type_expr{
-            identifier{"raw_string"}}}
+            type_qualifier{pointer,
+              identifier{"char"}}}}
         var_decl{
           identifier{"b"}
           :type_expr{
-            identifier{"raw_string"}}})
+            type_qualifier{pointer,
+              identifier{"char"}}}})
       :type_expr{
         identifier{"bool"}}
 compound_stmt{

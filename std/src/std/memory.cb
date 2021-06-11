@@ -1,13 +1,27 @@
-import std::libc::stdlib;
+private extern(C) {
 
-/// Allocates [size] bytes of memory and returns the address.
-func alloc(size: usize): raw_ptr {
-    return malloc(size);
+func HeapAlloc(
+  hHeap:   int,
+  dwFlags: int,
+  dwBytes: usize
+): raw_ptr;
+
+func HeapFree(
+  hHeap:   int,
+  dwFlags: int,
+  lpMem:   raw_ptr
+): bool;
+
+func GetProcessHeap(): int;
+
 }
 
-/// Deallocates the memory pointed by [ptr].
-func dealloc(ptr: raw_ptr) {
-    free(ptr);
+func alloc(size: usize): raw_ptr {
+    return HeapAlloc(GetProcessHeap(), 0, size);
+}
+
+func free(ptr: raw_ptr) {
+    HeapFree(GetProcessHeap(), 0, ptr);
 }
 
 /// Copies [size] bytes from [src] to [dest].

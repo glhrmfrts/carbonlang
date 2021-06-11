@@ -1,1 +1,1 @@
-nasm -fwin64 ..\_carbon\build\std.asm && link ..\_carbon\build\std.obj /entry:main /defaultlib:ucrt.lib /largeaddressaware:no && std.exe
+nasm -fwin64 ..\_carbon\build\std.asm && ..\..\bin\win64\GoLink ..\_carbon\build\std.obj /console /entry carbon_main kernel32.dll shell32.dll ucrtbase.dll

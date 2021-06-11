@@ -707,6 +707,7 @@ void generate_ir_node(ast_node& node) {
 
     switch (node.type) {
     case ast_type::import_decl:
+    case ast_type::type_decl:
     case ast_type::type_expr:
         break;
     case ast_type::func_decl:

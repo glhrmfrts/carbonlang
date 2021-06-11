@@ -138,7 +138,7 @@ struct parser_impl {
                         // lookahead 1 token
                         lex->save();
                         lex->next();
-                        if (TOK_CHAR == ':') {   
+                        if (TOK_CHAR == ':') {
                             lex->restore();
                             mode = STRUCT;
                             return parse_var_decl(token_type::let);

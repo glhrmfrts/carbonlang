@@ -1,5 +1,5 @@
 code_unit{
-  std/tests1.cb
+  std/unicode.cb
   decl_list{
     func_decl{
       identifier{"ok"}

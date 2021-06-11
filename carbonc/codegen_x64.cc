@@ -519,9 +519,15 @@ struct generator {
             move(reg_intermediate, ts->raw_ptr_type, b, btype);
 
             std::size_t elem_size = instr.result_type.get().size;
+            std::size_t esize_offs = elem_size > 8 ? 1 : elem_size;
+
+            if (elem_size > 8) {
+                em->imul(reg_intermediate, int_type(elem_size));
+            }
+
             if (is_reg(a)) {
                 auto offset_expr = gen_offset{ elem_size, std::vector<gen_offset_expr>{
-                    std::get<gen_register>(a), '+', reg_intermediate, '*', int_type(elem_size)
+                    std::get<gen_register>(a), '+', reg_intermediate, '*', int_type(esize_offs)
                 } };
                 load_address(dest, offset_expr, ts->raw_ptr_type);
             }
@@ -530,7 +536,7 @@ struct generator {
                 offs.expr.push_back('+');
                 offs.expr.push_back(reg_intermediate);
                 offs.expr.push_back('*');
-                offs.expr.push_back(int_type(elem_size));
+                offs.expr.push_back(int_type(esize_offs));
                 load_address(dest, todest(a), ts->raw_ptr_type);
             }
 

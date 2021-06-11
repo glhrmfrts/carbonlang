@@ -46,6 +46,9 @@ arena_ptr<ast_node> copy_node(type_system& ts, ast_node& node) {
     else if (node.type == ast_type::field_expr) {
         return make_field_expr_node(*ts.ast_arena, node.pos, copy_node(ts, *node.children[0]), copy_node(ts, *node.children[1]));
     }
+    else if (node.type == ast_type::index_expr) {
+        return make_index_expr_node(*ts.ast_arena, node.pos, copy_node(ts, *node.children[0]), copy_node(ts, *node.children[1]));
+    }
     else if (node.type == ast_type::unary_expr) {
         return make_unary_expr_node(*ts.ast_arena, node.pos, node.op, copy_node(ts, *node.children[0]));
     }
