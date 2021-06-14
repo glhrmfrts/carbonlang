@@ -1,51 +1,8 @@
 code_unit{
   std/os/windows.cb
   decl_list{
-    linkage_specifier{
-      extern(C)
-      decl_list{
-        func_decl{
-          identifier{"HeapAlloc"}
-          arg_list(
-            var_decl{
-              identifier{"hHeap"}
-              :type_expr{
-                identifier{"int"}}}
-            var_decl{
-              identifier{"dwFlags"}
-              :type_expr{
-                identifier{"int"}}}
-            var_decl{
-              identifier{"dwBytes"}
-              :type_expr{
-                identifier{"usize"}}})
-          :type_expr{
-            identifier{"raw_ptr"}}}
-        func_decl{
-          identifier{"HeapFree"}
-          arg_list(
-            var_decl{
-              identifier{"hHeap"}
-              :type_expr{
-                identifier{"int"}}}
-            var_decl{
-              identifier{"dwFlags"}
-              :type_expr{
-                identifier{"int"}}}
-            var_decl{
-              identifier{"lpMem"}
-              :type_expr{
-                identifier{"raw_ptr"}}})
-          :type_expr{
-            identifier{"bool"}}}
-        func_decl{
-          identifier{"GetProcessHeap"}
-          arg_list()
-          :type_expr{
-            identifier{"int"}}}
-        func_decl{
-          identifier{"GetCommandLineA"}
-          arg_list()
-          :type_expr{
-            type_qualifier{reference,
-              identifier{"char"}}}}}}}}
+    linkage_specifier{ extern(C) decl_list{
+        func_decl{HeapAlloc (var_decl{hHeap: type_expr{int}}, var_decl{dwFlags: type_expr{int}}, var_decl{dwBytes: type_expr{usize}}): type_expr{raw_ptr} }
+        func_decl{HeapFree (var_decl{hHeap: type_expr{int}}, var_decl{dwFlags: type_expr{int}}, var_decl{lpMem: type_expr{raw_ptr}}): type_expr{bool} }
+        func_decl{GetProcessHeap (): type_expr{int} }
+        func_decl{GetCommandLineA (): type_expr{type_qualifier{reference, char}} }}}}}

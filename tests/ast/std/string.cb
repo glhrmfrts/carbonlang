@@ -1,11 +1,5 @@
 code_unit{
   std/string.cb
   decl_list{
-    type_decl{
-      identifier{"String"}
-      =type_expr{
-        }}
-    type_decl{
-      identifier{"MutableString"}
-      =type_expr{
-        }}}}
+    type_decl{String = type_expr{slice_type{[*] type_expr{char}}}}
+    type_decl{MutableString = type_expr{slice_type{[&] type_expr{char}}}}}}

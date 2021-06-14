@@ -709,6 +709,7 @@ void generate_ir_node(ast_node& node) {
     case ast_type::import_decl:
     case ast_type::type_decl:
     case ast_type::type_expr:
+    case ast_type::ternary_expr:
         break;
     case ast_type::func_decl:
         generate_ir_func(node);

@@ -27,10 +27,7 @@ extern(C) func carbon_main(): int {
         println(args[i].data);
     }
 
-    let s = "0";
-    if ("asdasdad".strlen == 8) {
-        println("asd");
-    }
+    println(1 == 1 then "5685" else "231");
 
     freeCommandLine(args);
     return 0;

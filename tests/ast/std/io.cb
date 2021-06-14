@@ -1,22 +1,7 @@
 code_unit{
   std/io.cb
   decl_list{
-    import_decl{
-      identifier{"std::libc::stdio"}}
-    func_decl{
-      identifier{"println"}
-      arg_list(
-        var_decl{
-          identifier{"c"}
-          :type_expr{
-            type_qualifier{pointer,
-              identifier{"char"}}}})
-      :type_expr{
-        tuple_type{
-}}
-compound_stmt{
+    import_decl{ std::libc::stdio}
+    func_decl{println (var_decl{c: type_expr{type_qualifier{pointer, char}}}): type_expr{tuple_type{}} compound_stmt{
         stmt_list{
-          call_expr{
-            identifier{"puts"}
-            arg_list(
-              identifier{"c"})}}}}}}
+          call{puts (c)}}}}}}

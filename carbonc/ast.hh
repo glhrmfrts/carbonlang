@@ -27,6 +27,7 @@ enum class ast_type {
     init_expr,
     cast_expr,
     field_expr,
+    ternary_expr,
 
     type_decl,
     var_decl,
@@ -63,6 +64,14 @@ struct global_data {
     std::string label;
 };
 
+struct desugar_flag {
+    using type = unsigned int;
+
+    static constexpr type none = 0;
+    static constexpr type bool_op_desugared = 1;
+    static constexpr type ternary_desugared = 2;
+};
+
 struct ast_node {
     static constexpr std::size_t child_binary_expr_left = 0;
     static constexpr std::size_t child_binary_expr_right = 1;
@@ -90,6 +99,10 @@ struct ast_node {
     static constexpr std::size_t child_array_type_size_expr = 0;
     static constexpr std::size_t child_array_type_item_type = 1;
 
+    static constexpr std::size_t child_if_cond = 0;
+    static constexpr std::size_t child_if_body = 1;
+    static constexpr std::size_t child_if_else = 2;
+
     ast_node(const ast_node&) = delete;
 
     ast_node& operator=(const ast_node&) = delete;
@@ -110,6 +123,7 @@ struct ast_node {
     std::vector<arena_ptr<ast_node>> temps{};
     arena_ptr<ast_node> sizeof_type_expr{nullptr, nullptr};
     ast_node* parent = nullptr;
+    desugar_flag::type desugar_flags = 0;
 
     // data filled by the type system
     scope_def scope;
@@ -186,6 +200,8 @@ arena_ptr<ast_node> make_index_expr_node(memory_arena& arena, const position& po
 arena_ptr<ast_node> make_field_expr_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& left, arena_ptr<ast_node>&& field);
 
 arena_ptr<ast_node> make_cast_expr_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& type_expr, arena_ptr<ast_node>&& value);
+
+arena_ptr<ast_node> make_ternary_expr_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& cond, arena_ptr<ast_node>&& then_expr, arena_ptr<ast_node>&& else_expr);
 
 arena_ptr<ast_node> make_import_decl_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& mod, arena_ptr<ast_node>&& alias);
 

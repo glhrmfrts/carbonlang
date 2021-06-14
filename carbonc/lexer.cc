@@ -177,6 +177,9 @@ struct lexer_impl {
             if (!std::strcmp("else", l.string)) {
                 return token_type::else_;
             }
+            if (!std::strcmp("then", l.string)) {
+                return token_type::then;
+            }
             break;
         case 5:
             if (!std::strcmp("false", l.string)) {

@@ -1,64 +1,16 @@
 code_unit{
   std/alloc.cb
   decl_list{
-    import_decl{
-      identifier{"std::os::windows"}}
-    func_decl{
-      identifier{"alloc"}
-      arg_list(
-        var_decl{
-          identifier{"size"}
-          :type_expr{
-            identifier{"usize"}}})
-      :type_expr{
-        identifier{"raw_ptr"}}
-compound_stmt{
+    import_decl{ std::os::windows}
+    func_decl{alloc (var_decl{size: type_expr{usize}}): type_expr{raw_ptr} compound_stmt{
         stmt_list{
-          return_stmt{
-                        call_expr{
-              identifier{"HeapAlloc"}
-              arg_list(
-                call_expr{
-                  identifier{"GetProcessHeap"}
-                  arg_list()}
-                int_literal{0}
-                identifier{"size"})}}}}}
-    func_decl{
-      identifier{"free"}
-      arg_list(
-        var_decl{
-          identifier{"ptr"}
-          :type_expr{
-            identifier{"raw_ptr"}}})
-compound_stmt{
+          return_stmt{call{HeapAlloc (call{GetProcessHeap ()}, 0, size)}}}}}
+    func_decl{free (var_decl{ptr: type_expr{raw_ptr}}) compound_stmt{
         stmt_list{
-          call_expr{
-            identifier{"HeapFree"}
-            arg_list(
-              call_expr{
-                identifier{"GetProcessHeap"}
-                arg_list()}
-              int_literal{0}
-              identifier{"ptr"})}}}}
-    func_decl{
-      identifier{"copy"}
-      arg_list(
-        var_decl{
-          identifier{"dest"}
-          :type_expr{
-            identifier{"raw_ptr"}}}
-        var_decl{
-          identifier{"src"}
-          :type_expr{
-            identifier{"raw_ptr"}}}
-        var_decl{
-          identifier{"size"}
-          :type_expr{
-            identifier{"usize"}}})
-compound_stmt{
+          call{HeapFree (call{GetProcessHeap ()}, 0, ptr)}}}}
+    func_decl{copy (var_decl{dest: type_expr{raw_ptr}}, var_decl{src: type_expr{raw_ptr}}, var_decl{size: type_expr{usize}}) compound_stmt{
         decl_list{
-          asm_stmt{
-            push rdi
+          asm_stmt{push rdi
 push rsi
 
 mov rdi,rcx
@@ -69,25 +21,9 @@ rep movsb
 pop rsi
 pop rdi
     }}}}
-    func_decl{
-      identifier{"set"}
-      arg_list(
-        var_decl{
-          identifier{"dest"}
-          :type_expr{
-            identifier{"raw_ptr"}}}
-        var_decl{
-          identifier{"value"}
-          :type_expr{
-            identifier{"char"}}}
-        var_decl{
-          identifier{"count"}
-          :type_expr{
-            identifier{"usize"}}})
-compound_stmt{
+    func_decl{set (var_decl{dest: type_expr{raw_ptr}}, var_decl{value: type_expr{char}}, var_decl{count: type_expr{usize}}) compound_stmt{
         decl_list{
-          asm_stmt{
-            push rdi
+          asm_stmt{push rdi
 
 mov rdi,rcx
 mov rax,rdx

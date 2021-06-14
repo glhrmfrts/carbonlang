@@ -1,16 +1,7 @@
 code_unit{
   std/unicode.cb
   decl_list{
-    import_decl{
-      identifier{"std::alloc"}
-      identifier{"alloc"}}
-    import_decl{
-      identifier{"std::os::windows"}}
-    type_decl{
-      identifier{"WideString"}
-      =type_expr{
-        }}
-    type_decl{
-      identifier{"MutableWideString"}
-      =type_expr{
-        }}}}
+    import_decl{ std::alloc alloc}
+    import_decl{ std::os::windows}
+    type_decl{WideString = type_expr{slice_type{[*] type_expr{int16}}}}
+    type_decl{MutableWideString = type_expr{slice_type{[&] type_expr{int16}}}}}}

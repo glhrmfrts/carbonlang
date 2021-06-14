@@ -1,5 +1,6 @@
 #include "prettyprint.hh"
 #include "ast.hh"
+#include "type_system.hh"
 
 namespace carbon {
 
@@ -12,118 +13,136 @@ void do_indent(std::ostream& stream, int indent) {
 }
 
 void prettyprint(const ast_node& node, std::ostream& stream, int indent, bool doindent) {
+    for (const auto& child : node.pre_children) {
+        if (child) { prettyprint(*child, stream, indent, doindent); stream << "\n"; }
+    }
     if (doindent) do_indent(stream, indent);
     switch (node.type) {
     case ast_type::invalid:
         stream << "invalid node";
         break;
     case ast_type::bool_literal:
-        stream << "bool_literal{" << std::boolalpha << bool(node.int_value) << "}";
+        stream << std::boolalpha << bool(node.int_value);
         break;
     case ast_type::int_literal:
-        stream << "int_literal{" << node.int_value << "}";
+        stream << node.int_value;
         break;
     case ast_type::float_literal:
-        stream << "float_literal{" << node.float_value << "}";
+        stream << node.float_value;
         break;
     case ast_type::string_literal:
-        stream << "string_literal{\"" << node.string_value << "\"}";
+        stream << "\"" << node.string_value << "\"";
         break;
     case ast_type::identifier:
-        stream << "identifier{\"" << build_identifier_value(node.id_parts) << "\"}";
+        stream << "" << build_identifier_value(node.id_parts) << "";
         break;
     case ast_type::unary_expr:
-        stream << "unary_expr{\n";
-        do_indent(stream, indent + 1);
-        stream << token_to_char(node.op) << "\n";
-        prettyprint(*node.children.front().get(), stream, indent + 1);
+        stream << "{";
+        stream << token_to_char(node.op) << " ";
+        prettyprint(*node.children.front().get(), stream, indent, false);
         stream << "}";
         break;
     case ast_type::binary_expr:
-        stream << "binary_expr{\n";
-        prettyprint(*node.children.front().get(), stream, indent + 1);
-        stream << "\n";
-        do_indent(stream, indent + 1);
-        stream << token_to_char(node.op) << "\n";
-        prettyprint(*node.children.back().get(), stream, indent + 1);
+        stream << "{";
+        prettyprint(*node.children.front().get(), stream, indent, false);
+        stream << " ";
+        stream << token_to_char(node.op) << " ";
+        prettyprint(*node.children.back().get(), stream, indent, false);
         stream << "}";
         break;
     case ast_type::call_expr:
-        stream << "call_expr{\n";
-        prettyprint(*node.children.front().get(), stream, indent + 1);
-        stream << "\n";
-        prettyprint(*node.children.back().get(), stream, indent + 1);
+        stream << "call{";
+        prettyprint(*node.children.front().get(), stream, indent, false);
+        stream << " ";
+        prettyprint(*node.children.back().get(), stream, indent, false);
         stream << "}";
         break;
     case ast_type::index_expr:
-        stream << "index_expr{\n";
-        prettyprint(*node.children.front().get(), stream, indent + 1);
-        stream << "\n";
-        prettyprint(*node.children.back().get(), stream, indent + 1);
+        prettyprint(*node.children.front().get(), stream, indent + 1, false);
+        stream << "[";
+        prettyprint(*node.children.back().get(), stream, indent + 1, false);
+        stream << "]";
+        break;
+    case ast_type::field_expr:
+        prettyprint(*node.children.front().get(), stream, indent + 1, false);
+        stream << ".";
+        prettyprint(*node.children.back().get(), stream, indent + 1, false);
+        break;
+    case ast_type::cast_expr: {
+        stream << "cast_expr{";
+        prettyprint(*node.children.front().get(), stream, indent + 1, false);
+        stream << " ";
+        prettyprint(*node.children.back().get(), stream, indent + 1, false);
         stream << "}";
         break;
+    }
     case ast_type::init_expr: {
-        stream << "init_expr{\n";
-
+        stream << "init{";
         auto init_type = node.children.front().get();
         if (init_type) {
-            do_indent(stream, indent + 1); stream << "type=";
+            stream << "type=";
             prettyprint(*init_type, stream, indent + 1, false);
-            stream << "\n";
-        }
+            stream << " ";
 
-        prettyprint(*node.children.back().get(), stream, indent + 1);
+        }
+        if (!node.initlist.assignments.empty()) {
+            stream << "\n";
+            for (const auto& a : node.initlist.assignments) {
+                prettyprint(*a, stream, indent + 1, true);
+                stream << "\n";
+            }
+            do_indent(stream, indent + 1);
+        }
+        else {
+            prettyprint(*node.children.back().get(), stream, indent + 1, false);
+        }
         stream << "}";
         break;
     }
     case ast_type::type_decl:
-        stream << "type_decl{\n";
-        prettyprint(*node.children.front().get(), stream, indent + 1);
+        stream << "type_decl{";
+        prettyprint(*node.children.front().get(), stream, indent + 1, false);
         if (node.children.at(ast_node::child_type_decl_contents).get()) {
-            stream << "\n"; do_indent(stream, indent + 1);
-            stream << "=";
+            stream << " = ";
             prettyprint(*node.children.at(ast_node::child_var_decl_type).get(), stream, indent + 1, false);
         }
         stream << "}";
         break;
     case ast_type::var_decl:
-        stream << "var_decl{\n";
-        prettyprint(*node.children.front().get(), stream, indent + 1);
+        stream << "var_decl{";
+        prettyprint(*node.children.front().get(), stream, indent + 1, false);
         if (node.children.at(ast_node::child_var_decl_type).get()) {
-            stream << "\n"; do_indent(stream, indent + 1);
-            stream << ":";
+            stream << ": ";
             prettyprint(*node.children.at(ast_node::child_var_decl_type).get(), stream, indent + 1, false);
         }
-        if (node.children.at(ast_node::child_var_decl_value).get()) {
-            stream << "\n"; do_indent(stream, indent + 1);
-            stream << "=";
+        if (node.children.at(ast_node::child_var_decl_value).get()) {            
+            stream << " = ";
             prettyprint(*node.children.at(ast_node::child_var_decl_value).get(), stream, indent + 1, false);
         }
         stream << "}";
         break;
     case ast_type::func_decl:
-        stream << "func_decl{\n";
-        prettyprint(*node.children.front().get(), stream, indent + 1);
+        stream << "func_decl{";
+        prettyprint(*node.children.front().get(), stream, indent, false);
+        stream << " ";
         if (node.children.at(ast_node::child_func_decl_arg_list).get()) {
-            stream << "\n";// do_indent(stream, indent);
-            prettyprint(*node.children.at(ast_node::child_func_decl_arg_list).get(), stream, indent + 1);
+            prettyprint(*node.children.at(ast_node::child_func_decl_arg_list).get(), stream, indent + 1, false);
         }
         if (node.children.at(ast_node::child_func_decl_ret_type).get()) {
-            stream << "\n"; do_indent(stream, indent + 1);
-            stream << ":";
+            stream << ": ";
             prettyprint(*node.children.at(ast_node::child_func_decl_ret_type).get(), stream, indent + 1, false);
         }
+        stream << " ";
         if (node.children.at(ast_node::child_func_decl_body).get()) {
-            stream << "\n";// do_indent(stream, indent + 1);
             prettyprint(*node.children.at(ast_node::child_func_decl_body).get(), stream, indent + 1, false);
         }
         stream << "}";
         break;
     case ast_type::arg_list:
-        stream << "arg_list(";
+        stream << "(";
         for (std::size_t i = 0; i < node.children.size(); i++) {
-            stream << "\n";
-            prettyprint(*node.children[i].get(), stream, indent + 1);
+            if (i > 0) { stream << ", "; }
+            prettyprint(*node.children[i].get(), stream, indent + 1, false);
         }
         stream << ")";
         break;
@@ -145,50 +164,65 @@ void prettyprint(const ast_node& node, std::ostream& stream, int indent, bool do
         break;
     case ast_type::compound_stmt:
         stream << "compound_stmt{";
-        for (std::size_t i = 0; i < node.children.size(); i++) {
+        for (std::size_t i = 0; i < node.children.size(); i++) {            
             stream << "\n";
             prettyprint(*node.children[i].get(), stream, indent + 1);
         }
         stream << "}";
         break;
     case ast_type::return_stmt:
-        stream << "return_stmt{\n";
-        do_indent(stream, indent + 1);
-        prettyprint(*node.children.front().get(), stream, indent + 1);
+        stream << "return_stmt{";
+        prettyprint(*node.children.front().get(), stream, indent + 1, false);
         stream << "}";
         break;
     case ast_type::asm_stmt:
-        stream << "asm_stmt{\n";
-        do_indent(stream, indent + 1);
+        stream << "asm_stmt{";
         stream << node.string_value;
         stream << "}";
         break;
+    case ast_type::if_stmt: {
+        stream << "if_stmt{";
+        prettyprint(*node.children[0].get(), stream, indent + 1, false);
+        stream << " ";
+        prettyprint(*node.children[1].get(), stream, indent + 1, false);
+        if (node.children.size() == 3) {
+            stream << " else ";
+            prettyprint(*node.children[2].get(), stream, indent + 1, false);
+        }
+        stream << "}";
+        break;
+    }
     case ast_type::type_expr:
-        stream << "type_expr{\n";
-        prettyprint(*node.children.front().get(), stream, indent + 1);
+        stream << "type_expr{";
+        prettyprint(*node.children.front().get(), stream, indent + 1, false);
         stream << "}";
         break;
     case ast_type::struct_type:
-        stream << "struct_type{\n";
-        prettyprint(*node.children.front().get(), stream, indent + 1);
+        stream << "struct_type{";
+        prettyprint(*node.children.front().get(), stream, indent + 1, false);
         stream << "}";
         break;
     case ast_type::tuple_type:
-        stream << "tuple_type{\n";
-        if (node.children.front()) { prettyprint(*node.children.front().get(), stream, indent + 1); }
+        stream << "tuple_type{";
+        if (node.children.front()) { prettyprint(*node.children.front().get(), stream, indent + 1, false); }
+        stream << "}";
+        break;
+    case ast_type::slice_type:
+        stream << "slice_type{";
+        stream << "[" << token_to_char(node.op) << "] ";
+        if (node.children.front()) { prettyprint(*node.children.front().get(), stream, indent + 1, false); }
         stream << "}";
         break;
     case ast_type::array_type: {
-        stream << "array_type{\n";
-        do_indent(stream, indent + 1);
+        stream << "array_type{";
         stream << "size=";
 
         auto size_expr = node.children.front().get();
-        if (size_expr) { prettyprint(*size_expr, stream, indent + 1,false); }
+        if (size_expr) { prettyprint(*size_expr, stream, indent + 1, false); }
         else { stream << "dynamic"; }
 
-        stream << "\n";
-        prettyprint(*node.children.back().get(), stream, indent + 1);
+        stream << " ";
+        prettyprint(*node.children.back().get(), stream, indent + 1, false);
         stream << "}";
         break;
     }
@@ -205,41 +239,39 @@ void prettyprint(const ast_node& node, std::ostream& stream, int indent, bool do
             stream << "pointer,";
             break;
         }
-        stream << "\n";
-        prettyprint(*node.children.back().get(), stream, indent + 1);
+        stream << " ";
+        prettyprint(*node.children.back().get(), stream, indent + 1, false);
         stream << "}";
         break;
     case ast_type::linkage_specifier: {
-        stream << "linkage_specifier{\n";
-        do_indent(stream, indent + 1);
+        stream << "linkage_specifier{ ";
         stream << func_linkage_name(node.func.linkage);
         auto& content = node.children.front();
         if (content) {
-            stream << "\n";
-            prettyprint(*content, stream, indent + 1);
+            stream << " ";
+            prettyprint(*content, stream, indent + 1, false);
         }
         stream << "}";
         break;
     }
     case ast_type::visibility_specifier: {
-        stream << "visibility_specifier{\n";
-        do_indent(stream, indent + 1);
+        stream << "visibility_specifier{ ";
         stream << visibility_name(node.op);
         auto& content = node.children.front();
         if (content) {
-            stream << "\n";
-            prettyprint(*content, stream, indent + 1);
+            stream << " ";
+            prettyprint(*content, stream, indent + 1, false);
         }
         stream << "}";
         break;
     }
     case ast_type::import_decl: {
-        stream << "import_decl{\n";
-        prettyprint(*node.children.front().get(), stream, indent + 1);
+        stream << "import_decl{ ";
+        prettyprint(*node.children.front().get(), stream, indent + 1, false);
         auto& alias = node.children.back();
         if (alias) {
-            stream << "\n";
-            prettyprint(*alias, stream, indent + 1);
+            stream << " ";
+            prettyprint(*alias, stream, indent + 1, false);
         }
         stream << "}";
         break;
@@ -251,6 +283,12 @@ void prettyprint(const ast_node& node, std::ostream& stream, int indent, bool do
         prettyprint(*node.children.front().get(), stream, indent + 1);
         stream << "}";
         break;
+    default: {
+        for (const auto& child : node.children) {
+            if (child) { prettyprint(*child, stream, indent + 1, doindent); }
+        }
+        break;
+    }
     }
 }
 

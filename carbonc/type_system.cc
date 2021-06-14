@@ -1393,6 +1393,7 @@ void resolve_and_declare_local_variable(type_system& ts, const string_hash& id, 
     resolve_local_variable_type(ts, node);
 
     declare_local_symbol(ts, id, node);
+    node.local.self = &node;
 
     if (node.type_id.valid() && node.type_id.get().size == 0) {
         add_type_error(ts, node.pos, "cannot create value of an anonymous empty type");
@@ -1441,8 +1442,6 @@ void resolve_and_declare_local_variable(type_system& ts, const string_hash& id, 
 }
 
 void register_var_declaration_node(type_system& ts, ast_node& node) {
-    node.local.self = &node;
-
     auto id = string_hash{ build_identifier_value(node.var_id()->id_parts) };
     auto prev = find_symbol_in_current_scope(ts, id);
     if (prev) {
@@ -1621,6 +1620,11 @@ void register_for_declarations(type_system& ts, ast_node& node) {
             resolve_node_type(ts, node.forinfo.compare_elem_to_range_end.get());
             resolve_node_type(ts, node.forinfo.increase_elem.get());
             node.forinfo.self = &node;
+
+            node.forinfo.declare_for_iter->parent = &node;
+            node.forinfo.declare_elem_to_range_start->parent = &node;
+            node.forinfo.compare_elem_to_range_end->parent = &node;
+            node.forinfo.increase_elem->parent = &node;
         }
         else {
             add_type_error(ts, node.children[1]->pos, "a for statement requires a tuple of {start, end} or {start, end, step}");
@@ -1869,12 +1873,9 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
             complement_error(ts, node.pos, "in %s statement condition", stmt);
             node.type_error = true;
         }
-        else if (!is_convertible_to(ts, node.children[0]->type_id, ts.bool_type).first) {
-            try_coerce_to(ts, *node.children[0], ts.bool_type);
-            if (!is_convertible_to(ts, node.children[0]->type_id, ts.bool_type).first) {
-                add_type_error(ts, node.pos, "%s statement condition must have bool type or be convertible to bool", stmt);
-                node.type_error = true;
-            }
+        else if (!is_assignable_to(ts, node.children[0]->type_id, ts.bool_type)) {
+            add_type_error(ts, node.pos, "%s statement condition must have 'bool' type", stmt);
+            node.type_error = true;
         }
 
         if (!node.type_error && !is_bool_op(*node.children[0])) {
@@ -2304,6 +2305,33 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
         else {
             node.type_id = node.children[0]->type_id;
         }
+        break;
+    }
+    case ast_type::ternary_expr: {
+        visit_children(ts, node);
+        if (!is_assignable_to(ts, node.if_cond()->type_id, ts.bool_type)) {
+            add_type_error(ts, node.pos, "ternary expression condition must have 'bool' type");
+            node.type_error = true;
+            break;
+        }
+
+        if (!(node.if_body()->type_id.valid() && node.if_else()->type_id.valid())) {
+            node.type_error = true;
+            break;
+        }
+
+        try_coerce_to(ts, *node.if_else(), node.if_body()->type_id);
+        try_coerce_to(ts, *node.if_body(), node.if_else()->type_id);
+        auto [conv, ncast] = is_convertible_to(ts, node.if_else()->type_id, node.if_body()->type_id);
+        if (!conv) {
+            add_type_error(ts, node.pos, "non-compatible types in ternary expression branches: '%s' else '%s'",
+                type_to_string(node.if_body()->type_id).c_str(), type_to_string(node.if_else()->type_id).c_str());
+        }
+        if (ncast) {
+            node.children[2] = make_cast_to(ts, std::move(node.children[2]), node.if_body()->type_id);
+        }
+
+        node.type_id = node.if_body()->type_id;
         break;
     }
     case ast_type::cast_expr:
@@ -2900,6 +2928,7 @@ void type_system::resolve_and_check() {
             this->pass = type_system_pass::desugar;
             this->subpass = i;
             for (auto unit : this->code_units) {
+                parent_tree(*unit);
                 enter_scope(*unit);
                 visit_tree(*this, *unit);
                 leave_scope();

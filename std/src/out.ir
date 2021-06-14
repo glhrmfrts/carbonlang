@@ -1,6 +1,5 @@
-string #0: "0";
-string #1: "asdasdad";
-string #2: "asd";
+string #0: "5685";
+string #1: "231";
 func cb$Nstd$Nalloc$Nalloc$AB$Ausize -> raw_ptr
     arg #0 size: usize;
     ir_call GetProcessHeap;
@@ -78,8 +77,8 @@ endf
 
 func carbon_main -> int
     local #0 args: mut_slice$$U_String$$;
-    local #1 s: raw_string;
-    local #2 $cbT0: mut_slice$$U_String$$;
+    local #1 $cbT0: raw_string;
+    local #2 $cbT1: mut_slice$$U_String$$;
     local #3 $foriter: tuple$$int$usize$$;
     local #4 i: int;
     local #5 i: int;
@@ -99,15 +98,16 @@ func carbon_main -> int
     ir_load L5 ST;
     ir_jmp carbon_main$f194$cond;
     ir_make_label carbon_main$f194$end;
+    ir_jmp_neq 1 1 carbon_main$if771$else;
+    ir_make_label carbon_main$if771$body;
     ir_load_addr STR0;
     ir_load L1 ST;
+    ir_jmp carbon_main$if771$end;
+    ir_make_label carbon_main$if771$else;
     ir_load_addr STR1;
-    ir_call cb$Nstd$Nrawstring$Nstrlen$AB$Aptr$$char$$ ST;
-    ir_jmp_neq ST 8 carbon_main$if211$else;
-    ir_make_label carbon_main$if211$body;
-    ir_load_addr STR2;
-    ir_call cb$Nstd$Nio$Nprintln$AB$Aptr$$char$$ ST;
-    ir_make_label carbon_main$if211$else;
+    ir_load L1 ST;
+    ir_make_label carbon_main$if771$end;
+    ir_call cb$Nstd$Nio$Nprintln$AB$Aptr$$char$$ L1;
     ir_copy L2 L0 16;
     ir_load_addr L2;
     ir_call cb$Nstd$Ninit$NfreeCommandLine$AB$Aref$$mut_slice$$U_String$$$$ ST;
@@ -196,17 +196,17 @@ func cb$Nstd$Nrawstring$Nstrlen$AB$Aptr$$char$$ -> usize
     local #1 p: ptr$$char$$;
     ir_load L0 0;
     ir_load L1 A0;
-    ir_make_label cb$Nstd$Nrawstring$Nstrlen$AB$Aptr$$char$$$w546$cond;
+    ir_make_label cb$Nstd$Nrawstring$Nstrlen$AB$Aptr$$char$$$w537$cond;
     ir_deref L1;
     ir_cast ST;
-    ir_jmp_eq ST 0 cb$Nstd$Nrawstring$Nstrlen$AB$Aptr$$char$$$w546$end;
-    ir_make_label cb$Nstd$Nrawstring$Nstrlen$AB$Aptr$$char$$$w546$body;
+    ir_jmp_eq ST 0 cb$Nstd$Nrawstring$Nstrlen$AB$Aptr$$char$$$w537$end;
+    ir_make_label cb$Nstd$Nrawstring$Nstrlen$AB$Aptr$$char$$$w537$body;
     ir_add L1 1;
     ir_load L1 ST;
     ir_add L0 1;
     ir_load L0 ST;
-    ir_jmp cb$Nstd$Nrawstring$Nstrlen$AB$Aptr$$char$$$w546$cond;
-    ir_make_label cb$Nstd$Nrawstring$Nstrlen$AB$Aptr$$char$$$w546$end;
+    ir_jmp cb$Nstd$Nrawstring$Nstrlen$AB$Aptr$$char$$$w537$cond;
+    ir_make_label cb$Nstd$Nrawstring$Nstrlen$AB$Aptr$$char$$$w537$end;
     ir_return L0;
 endf
 
@@ -218,30 +218,30 @@ func cb$Nstd$Nrawstring$Nequals$AB$Aptr$$char$$$Aptr$$char$$ -> bool
     local #2 i: int;
     ir_call cb$Nstd$Nrawstring$Nstrlen$AB$Aptr$$char$$ A0;
     ir_call cb$Nstd$Nrawstring$Nstrlen$AB$Aptr$$char$$ A1;
-    ir_jmp_eq ST ST cb$Nstd$Nrawstring$Nequals$AB$Aptr$$char$$$Aptr$$char$$$if578$else;
-    ir_make_label cb$Nstd$Nrawstring$Nequals$AB$Aptr$$char$$$Aptr$$char$$$if578$body;
+    ir_jmp_eq ST ST cb$Nstd$Nrawstring$Nequals$AB$Aptr$$char$$$Aptr$$char$$$if569$else;
+    ir_make_label cb$Nstd$Nrawstring$Nequals$AB$Aptr$$char$$$Aptr$$char$$$if569$body;
     ir_return 0;
-    ir_make_label cb$Nstd$Nrawstring$Nequals$AB$Aptr$$char$$$Aptr$$char$$$if578$else;
+    ir_make_label cb$Nstd$Nrawstring$Nequals$AB$Aptr$$char$$$Aptr$$char$$$if569$else;
     ir_load [L0 . 0] 0;
     ir_call cb$Nstd$Nrawstring$Nstrlen$AB$Aptr$$char$$ A0;
     ir_load [L0 . 1] ST;
     ir_load L2 [L0 . 0];
-    ir_make_label cb$Nstd$Nrawstring$Nequals$AB$Aptr$$char$$$Aptr$$char$$$f602$cond;
+    ir_make_label cb$Nstd$Nrawstring$Nequals$AB$Aptr$$char$$$Aptr$$char$$$f593$cond;
     ir_cast L2;
-    ir_jmp_gte ST [L0 . 1] cb$Nstd$Nrawstring$Nequals$AB$Aptr$$char$$$Aptr$$char$$$f602$end;
-    ir_make_label cb$Nstd$Nrawstring$Nequals$AB$Aptr$$char$$$Aptr$$char$$$f602$body;
+    ir_jmp_gte ST [L0 . 1] cb$Nstd$Nrawstring$Nequals$AB$Aptr$$char$$$Aptr$$char$$$f593$end;
+    ir_make_label cb$Nstd$Nrawstring$Nequals$AB$Aptr$$char$$$Aptr$$char$$$f593$body;
     ir_deref A0;
     ir_index ST L2;
     ir_deref A1;
     ir_index ST L2;
-    ir_jmp_eq ST ST cb$Nstd$Nrawstring$Nequals$AB$Aptr$$char$$$Aptr$$char$$$if599$else;
-    ir_make_label cb$Nstd$Nrawstring$Nequals$AB$Aptr$$char$$$Aptr$$char$$$if599$body;
+    ir_jmp_eq ST ST cb$Nstd$Nrawstring$Nequals$AB$Aptr$$char$$$Aptr$$char$$$if590$else;
+    ir_make_label cb$Nstd$Nrawstring$Nequals$AB$Aptr$$char$$$Aptr$$char$$$if590$body;
     ir_return 0;
-    ir_make_label cb$Nstd$Nrawstring$Nequals$AB$Aptr$$char$$$Aptr$$char$$$if599$else;
+    ir_make_label cb$Nstd$Nrawstring$Nequals$AB$Aptr$$char$$$Aptr$$char$$$if590$else;
     ir_add L2 1;
     ir_load L2 ST;
-    ir_jmp cb$Nstd$Nrawstring$Nequals$AB$Aptr$$char$$$Aptr$$char$$$f602$cond;
-    ir_make_label cb$Nstd$Nrawstring$Nequals$AB$Aptr$$char$$$Aptr$$char$$$f602$end;
+    ir_jmp cb$Nstd$Nrawstring$Nequals$AB$Aptr$$char$$$Aptr$$char$$$f593$cond;
+    ir_make_label cb$Nstd$Nrawstring$Nequals$AB$Aptr$$char$$$Aptr$$char$$$f593$end;
     ir_return 1;
 endf
 

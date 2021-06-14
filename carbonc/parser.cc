@@ -666,7 +666,7 @@ struct parser_impl {
     // Section: expressions
 
     arena_ptr<ast_node> parse_braceless_tuple_expr() {
-        auto expr = parse_expr();
+        auto expr = parse_ternary_expr();
         if (TOK_CHAR == ',') {
             auto pos = expr->pos;
             auto list = make_arg_list_node(*ast_arena, pos, {});
@@ -674,7 +674,7 @@ struct parser_impl {
 
             while (TOK_CHAR == ',') {
                 lex->next();
-                auto curexpr = parse_expr();
+                auto curexpr = parse_ternary_expr();
                 if (curexpr) {
                     list->children.push_back(std::move(curexpr));
                 }
@@ -689,7 +689,31 @@ struct parser_impl {
     }
 
     arena_ptr<ast_node> parse_expr() {
+        return parse_ternary_expr();
+    }
+
+    arena_ptr<ast_node> parse_ternary_expr() {
         auto expr = parse_binary_expr(parse_unary_expr(), 0);
+        if (TOK == token_type::then) {
+            lex->next();
+
+            auto then_expr = parse_braceless_tuple_expr();
+            if (!then_expr) {
+                throw parse_error(filename, expr->pos, "expected then-expression in ternary operator");
+            }
+
+            if (TOK != token_type::else_) {
+                throw parse_error(filename, expr->pos, "expected 'else' token in ternary operator");
+            }
+            lex->next();
+
+            auto else_expr = parse_braceless_tuple_expr();
+            if (!else_expr) {
+                throw parse_error(filename, expr->pos, "expected else-expression in ternary operator");
+            }
+
+            return make_ternary_expr_node(*ast_arena, expr->pos, std::move(expr), std::move(then_expr), std::move(else_expr));
+        }
         return expr;
     }
 
@@ -846,7 +870,7 @@ struct parser_impl {
             switch (c) {
             case '(': {
                 lex->next();
-                auto expr = parse_expr();
+                auto expr = parse_braceless_tuple_expr();
                 if (TOK_CHAR != ')') {
                     throw parse_error(filename, lex->pos(), "expected closing parentheses");
                 }

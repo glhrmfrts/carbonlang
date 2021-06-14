@@ -1,7 +1,4 @@
 code_unit{
   std/tests1.cb
   decl_list{
-    func_decl{
-      identifier{"ok"}
-      arg_list()
-compound_stmt{}}}}
+    func_decl{ok () compound_stmt{}}}}

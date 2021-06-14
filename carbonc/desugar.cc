@@ -10,23 +10,27 @@ static const type_id invalid_type{};
 
 void check_assignment_bool_op(type_system& ts, ast_node& node) {
     if (node.children[1] && is_bool_op(*node.children[1])) {
+        node.children[1]->desugar_flags |= desugar_flag::bool_op_desugared;
+
         auto temp = make_temp_variable_for_bool_op_resolved(ts, std::move(node.children[1]), std::move(node.children[0]));
         node.pre_children.push_back(std::move(temp));
     }
 }
 
-void check_call_arg_bool_op(type_system& ts, ast_node& call, int idx) {
-    if (is_bool_op(*call.call_args()[idx])) {
-        auto [temp, ref] = make_temp_variable_for_bool_op_resolved(ts, std::move(call.children[ast_node::child_call_expr_arg_list]->children[idx]));
+void check_assignment_ternary_expr(type_system& ts, ast_node& node) {
+    if (node.children[1] && node.children[1]->type == ast_type::ternary_expr) {
+        node.children[1]->desugar_flags |= desugar_flag::ternary_desugared;
 
-        call.children[ast_node::child_call_expr_arg_list]->children[idx] = std::move(ref);
-        call.pre_children.push_back(std::move(temp));
+        auto temp = make_temp_variable_for_ternary_expr_resolved(ts, std::move(node.children[1]), std::move(node.children[0]));
+        node.pre_children.push_back(std::move(temp));
     }
 }
 
 void check_var_decl_bool_op(type_system& ts, ast_node& node) {
     if (node.var_value() && is_bool_op(*node.var_value())) {
         node.local.flags |= local_flag::is_temp;
+        node.var_value()->desugar_flags |= desugar_flag::bool_op_desugared;
+
         auto idref = make_identifier_node(*ts.ast_arena, {}, node.var_id()->id_parts);
         auto temp = make_temp_variable_for_bool_op_resolved(ts, std::move(node.children[ast_node::child_var_decl_value]), std::move(idref));
 
@@ -34,13 +38,40 @@ void check_var_decl_bool_op(type_system& ts, ast_node& node) {
     }
 }
 
-void check_return_bool_op(type_system& ts, ast_node& node) {
-    if (node.children.empty()) return;
+void check_var_decl_ternary_expr(type_system& ts, ast_node& node) {
+    if (node.var_value() && node.var_value()->type == ast_type::ternary_expr) {
+        node.local.flags |= local_flag::is_temp;
+        node.var_value()->desugar_flags |= desugar_flag::ternary_desugared;
 
-    if (is_bool_op(*node.children[0])) {
-        auto [temp, ref] = make_temp_variable_for_bool_op_resolved(ts, std::move(node.children[0]));
+        auto idref = make_identifier_node(*ts.ast_arena, {}, node.var_id()->id_parts);
+        auto temp = make_temp_variable_for_ternary_expr_resolved(ts, std::move(node.children[ast_node::child_var_decl_value]), std::move(idref));
+        
+        node.pre_children.push_back(std::move(temp));
+    }
+}
 
-        node.children[0] = std::move(ref);
+void check_temp_bool_op(type_system& ts, ast_node& node) {
+    if (is_bool_op(node) && !(node.desugar_flags & desugar_flag::bool_op_desugared)) {
+        auto cpy = copy_node_typed(ts, node);
+        auto [temp, ref] = make_temp_variable_for_bool_op_resolved(ts, std::move(cpy));
+
+        node.type = ref->type;
+        node.type_id = ref->type_id;
+        node.lvalue = ref->lvalue;
+        node.id_parts = ref->id_parts;
+        node.pre_children.push_back(std::move(temp));
+    }
+}
+
+void check_temp_ternary_expr(type_system& ts, ast_node& node) {
+    if (node.type == ast_type::ternary_expr && !(node.desugar_flags & desugar_flag::ternary_desugared)) {
+        auto cpy = copy_node_typed(ts, node);
+        auto [temp, ref] = make_temp_variable_for_ternary_expr_resolved(ts, std::move(cpy));
+
+        node.type = ref->type;
+        node.type_id = ref->type_id;
+        node.lvalue = ref->lvalue;
+        node.id_parts = ref->id_parts;
         node.pre_children.push_back(std::move(temp));
     }
 }
@@ -158,7 +189,7 @@ void desugar(type_system& ts, ast_node* nodeptr) {
     }
     case ast_type::if_stmt:
     case ast_type::while_stmt:
-    case ast_type::compound_stmt: {
+    case ast_type::compound_stmt: {        
         if (node.scope.self) {
             enter_scope_local(ts, node);
             visit_pre_children(ts, node);
@@ -187,8 +218,9 @@ void desugar(type_system& ts, ast_node* nodeptr) {
     }
     case ast_type::call_expr: {
         for (int i = 0; i < node.call_args().size(); i++) {
-            check_call_arg_bool_op(ts, node, i);
             check_call_arg_aggregate_type(ts, node, i);
+            check_temp_bool_op(ts, *(node.call_args()[i]));
+            check_temp_ternary_expr(ts, *(node.call_args()[i]));
         }
 
         check_temp_aggregate_call(ts, node);
@@ -201,32 +233,47 @@ void desugar(type_system& ts, ast_node* nodeptr) {
         for (auto& as : node.initlist.assignments) {
             visit_tree(ts, *as);
         }
+        visit_pre_children(ts, node);
         break;
     }
     case ast_type::binary_expr: {
         if (token_to_char(node.op) == '=') {
             check_assignment_aggregate_call(ts, node);
+            check_assignment_bool_op(ts, node);
+            check_assignment_ternary_expr(ts, node);
+        }
+        else {
+            for (int i = 0; i < 2; i++) {
+                check_temp_aggregate_call(ts, *node.children[i]);
+                check_temp_bool_op(ts, *node.children[i]);
+                check_temp_ternary_expr(ts, *node.children[i]);
+            }
         }
 
         visit_pre_children(ts, node);
         visit_children(ts, node);
-
-        if (token_to_char(node.op) == '=') {
-            check_assignment_bool_op(ts, node);
-        }
+        break;
+    }
+    case ast_type::ternary_expr: {
+        visit_pre_children(ts, node);
+        visit_children(ts, node);
         break;
     }
     case ast_type::var_decl: {
         check_var_decl_aggregate_call(ts, node);
+        check_var_decl_bool_op(ts, node);
+        check_var_decl_ternary_expr(ts, node);
         visit_pre_children(ts, node);
         visit_children(ts, node);
-        check_var_decl_bool_op(ts, node);
         break;
     }
     case ast_type::return_stmt: {
+        if (node.children[0]) { 
+            check_temp_bool_op(ts, *node.children[0]);
+            check_temp_ternary_expr(ts, *node.children[0]);
+        }
         visit_pre_children(ts, node);
         visit_children(ts, node);
-        check_return_bool_op(ts, node);
         break;
     }
     default: {

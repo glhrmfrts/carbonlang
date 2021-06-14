@@ -1,158 +1,45 @@
 code_unit{
   std/rawstring.cb
   decl_list{
-    import_decl{
-      identifier{"std::alloc"}
-      identifier{"alloc"}}
-    func_decl{
-      identifier{"copy"}
-      arg_list(
-        var_decl{
-          identifier{"str"}
-          :type_expr{
-            type_qualifier{pointer,
-              identifier{"char"}}}})
-      :type_expr{
-        type_qualifier{pointer,
-          identifier{"char"}}}
-compound_stmt{
+    import_decl{ std::alloc alloc}
+    func_decl{copy (var_decl{str: type_expr{type_qualifier{pointer, char}}}): type_expr{type_qualifier{pointer, char}} compound_stmt{
         stmt_list{
-          return_stmt{
-                        call_expr{
-              identifier{"copy"}
-              arg_list(
-                identifier{"str"}
-                )}}}}}
-    func_decl{
-      identifier{"copy"}
-      arg_list(
-        var_decl{
-          identifier{"str"}
-          :type_expr{
-            type_qualifier{pointer,
-              identifier{"char"}}}}
-        var_decl{
-          identifier{"size"}
-          :type_expr{
-            identifier{"usize"}}})
-      :type_expr{
-        type_qualifier{pointer,
-          identifier{"char"}}}
-compound_stmt{
+          return_stmt{call{copy (str, str.strlen)}}}}}
+    func_decl{copy (var_decl{str: type_expr{type_qualifier{pointer, char}}}, var_decl{size: type_expr{usize}}): type_expr{type_qualifier{pointer, char}} compound_stmt{
         decl_list{
-          var_decl{
-            identifier{"newstr"}
-            =}}
+          var_decl{newstr = cast_expr{type_expr{type_qualifier{pointer, char}} call{alloc::alloc ({size + 1})}}}}
         stmt_list{
-          call_expr{
-            identifier{"copy"}
-            arg_list(
-              identifier{"newstr"}
-              identifier{"str"}
-              identifier{"size"})}
-          binary_expr{
-            index_expr{
-              identifier{"newstr"}
-              identifier{"size"}}
-            =
-            int_literal{0}}
-          return_stmt{
-                        identifier{"newstr"}}}}}
-    func_decl{
-      identifier{"copy"}
-      arg_list(
-        var_decl{
-          identifier{"dest"}
-          :type_expr{
-            type_qualifier{pointer,
-              identifier{"char"}}}}
-        var_decl{
-          identifier{"src"}
-          :type_expr{
-            type_qualifier{pointer,
-              identifier{"char"}}}}
-        var_decl{
-          identifier{"size"}
-          :type_expr{
-            identifier{"usize"}}})
-compound_stmt{
+          call{copy (newstr, str, size)}
+          {newstr[size] = 0}
+          return_stmt{newstr}}}}
+    func_decl{copy (var_decl{dest: type_expr{type_qualifier{pointer, char}}}, var_decl{src: type_expr{type_qualifier{pointer, char}}}, var_decl{size: type_expr{usize}}) compound_stmt{
         stmt_list{
-          call_expr{
-            identifier{"alloc::copy"}
-            arg_list(
-              
-              
-              identifier{"size"})}}}}
-    func_decl{
-      identifier{"set"}
-      arg_list(
-        var_decl{
-          identifier{"dest"}
-          :type_expr{
-            type_qualifier{pointer,
-              identifier{"char"}}}}
-        var_decl{
-          identifier{"value"}
-          :type_expr{
-            identifier{"char"}}}
-        var_decl{
-          identifier{"count"}
-          :type_expr{
-            identifier{"usize"}}})
-compound_stmt{
+          call{alloc::copy (cast_expr{type_expr{raw_ptr} dest}, cast_expr{type_expr{raw_ptr} src}, size)}}}}
+    func_decl{set (var_decl{dest: type_expr{type_qualifier{pointer, char}}}, var_decl{value: type_expr{char}}, var_decl{count: type_expr{usize}}) compound_stmt{
         stmt_list{
-          call_expr{
-            identifier{"alloc::set"}
-            arg_list(
-              
-              identifier{"value"}
-              identifier{"count"})}}}}
-    import_decl{
-      identifier{"std::io"}}
-    func_decl{
-      identifier{"strlen"}
-      arg_list(
-        var_decl{
-          identifier{"str"}
-          :type_expr{
-            type_qualifier{pointer,
-              identifier{"char"}}}})
-      :type_expr{
-        identifier{"usize"}}
-compound_stmt{
+          call{alloc::set (cast_expr{type_expr{raw_ptr} dest}, value, count)}}}}
+    import_decl{ std::io}
+    func_decl{strlen (var_decl{str: type_expr{type_qualifier{pointer, char}}}): type_expr{usize} compound_stmt{
         decl_list{
-          var_decl{
-            identifier{"c"}
-            :type_expr{
-              identifier{"usize"}}}
-          var_decl{
-            identifier{"p"}
-            =identifier{"str"}}}
+          var_decl{c: type_expr{usize}}
+          var_decl{p = str}}
         stmt_list{
-          }
+                      {{* p}  0}            compound_stmt{
+              stmt_list{
+                {p = {p + 1}}
+                {c = {c + 1}}}}}
         stmt_list{
-          return_stmt{
-                        identifier{"c"}}}}}
-    func_decl{
-      identifier{"equals"}
-      arg_list(
-        var_decl{
-          identifier{"a"}
-          :type_expr{
-            type_qualifier{pointer,
-              identifier{"char"}}}}
-        var_decl{
-          identifier{"b"}
-          :type_expr{
-            type_qualifier{pointer,
-              identifier{"char"}}}})
-      :type_expr{
-        identifier{"bool"}}
-compound_stmt{
+          return_stmt{c}}}}
+    func_decl{equals (var_decl{a: type_expr{type_qualifier{pointer, char}}}, var_decl{b: type_expr{type_qualifier{pointer, char}}}): type_expr{bool} compound_stmt{
         stmt_list{
-          }
+          if_stmt{{a.strlen  b.strlen} compound_stmt{
+              stmt_list{
+                return_stmt{false}}}}}
         stmt_list{
-          }
+                      (i)            init{(0, a.strlen)}            compound_stmt{
+              stmt_list{
+                if_stmt{{a[i]  b[i]} compound_stmt{
+                    stmt_list{
+                      return_stmt{false}}}}}}}
         stmt_list{
-          return_stmt{
-                        bool_literal{true}}}}}}}
+          return_stmt{true}}}}}}

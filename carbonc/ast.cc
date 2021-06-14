@@ -142,6 +142,17 @@ arena_ptr<ast_node> make_cast_expr_node(memory_arena& arena, const position& pos
     return ptr;
 }
 
+arena_ptr<ast_node> make_ternary_expr_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& cond, arena_ptr<ast_node>&& then_expr, arena_ptr<ast_node>&& else_expr) {
+    auto ptr = make_in_arena<ast_node>(arena);
+    ptr->node_id = node_id_gen++;
+    ptr->type = ast_type::ternary_expr;
+    ptr->pos = pos;
+    ptr->children.push_back(std::move(cond));
+    ptr->children.push_back(std::move(then_expr));
+    ptr->children.push_back(std::move(else_expr));
+    return ptr;
+}
+
 arena_ptr<ast_node> make_import_decl_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& mod, arena_ptr<ast_node>&& alias) {
     auto ptr = make_in_arena<ast_node>(arena);
     ptr->node_id = node_id_gen++;

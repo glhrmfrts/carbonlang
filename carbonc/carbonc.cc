@@ -118,6 +118,13 @@ int run_project_mode() {
         return 1;
     }
 
+    ensure_directory_exists("../_carbon/build/std.ast");
+    {
+        std::ofstream ast_file{"../_carbon/build/std.ast"};
+        prettyprint(*target_node, ast_file);
+        ast_file << "\n";
+    }
+
     auto irprog = generate_ir(ts, *target_node);
 
     ensure_directory_exists("../_carbon/build/std.asm");
