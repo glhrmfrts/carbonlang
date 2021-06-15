@@ -42,10 +42,16 @@ Source code -> Tokens (Lexer) -> Untyped AST (Parser) -> Typed AST (Type System)
 - [X] user types
 - [X] defer statements
 - [ ] defer expression sugar
+- [ ] hello world example
+- [ ] average grade example
+- [ ] game of life example
 - [ ] function pointers
+- [ ] sum types
+- [ ] optional type
+- [ ] expected type
 - [ ] global vars (?)
-- [ ] more/better type checking and errors
 - [ ] floating point types support
+- [ ] more/better type checking and errors
 - [ ] for statement (array-based)
 - [ ] catch up on the codegen
 - [ ] investigate entry points for receiving command-line args
