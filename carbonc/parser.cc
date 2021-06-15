@@ -244,6 +244,8 @@ struct parser_impl {
             return parse_return_stmt();
         case token_type::asm_:
             return parse_asm_stmt();
+        case token_type::defer:
+            return parse_defer_stmt();
         }
 
         return parse_expr();
@@ -448,6 +450,14 @@ struct parser_impl {
         else {
             throw parse_error(filename, lex->pos(), "expecting a '%' in asm statement");
         }
+    }
+
+    arena_ptr<ast_node> parse_defer_stmt() {
+        auto pos = lex->pos();
+        lex->next();
+
+        auto stmt = parse_stmt();
+        return make_defer_stmt_node(*ast_arena, pos, std::move(stmt));
     }
 
     // Section: declarations

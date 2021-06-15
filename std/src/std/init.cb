@@ -1,4 +1,4 @@
-/// Initialization routines
+/// Initialization routines for the runtime
 
 import std::io;
 import std::string;
@@ -22,14 +22,13 @@ func freeCommandLine(args: [&]String) {
 
 extern(C) func carbon_main(): int {
     let args = initCommandLine();
+    defer args.freeCommandLine;
 
     for (i in 0, args.len) {
         println(args[i].data);
     }
 
     println(1 == 1 then "5685" else "231");
-
-    freeCommandLine(args);
     return 0;
 }
 

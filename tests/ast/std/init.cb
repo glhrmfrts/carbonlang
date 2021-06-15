@@ -7,25 +7,25 @@ code_unit{
     import_decl{ std::alloc alloc}
     import_decl{ std::os::windows}
     visibility_specifier{ private decl_list{
-        func_decl{initCommandLine (): type_expr{slice_type{[&] type_expr{String}}} compound_stmt{
+        func_decl{initCommandLine (): type_expr{slice_type{[&] type_expr{String}}} {
             decl_list{
               var_decl{cmdline = call{GetCommandLineA ()}}
               var_decl{data = cast_expr{type_expr{type_qualifier{reference, String}} call{alloc::alloc (call{sizeof (String)})}}}
               var_decl{result = init{type=type_expr{slice_type{[&] type_expr{String}}} (data, 1)}}}
             stmt_list{
               {result[0] = init{type=type_expr{String} (cmdline, cmdline.strlen)}}
-              return_stmt{result}}}}
-        func_decl{freeCommandLine (var_decl{args: type_expr{slice_type{[&] type_expr{String}}}}) compound_stmt{
+              return{result}}}}
+        func_decl{freeCommandLine (var_decl{args: type_expr{slice_type{[&] type_expr{String}}}}) {
             stmt_list{
               call{alloc::free (cast_expr{type_expr{raw_ptr} args.data})}}}}
-        linkage_specifier{ extern(C) func_decl{carbon_main (): type_expr{int} compound_stmt{
+        linkage_specifier{ extern(C) func_decl{carbon_main (): type_expr{int} {
               decl_list{
                 var_decl{args = call{initCommandLine ()}}}
               stmt_list{
-                                  (i)                  init{(0, args.len)}                  compound_stmt{
+                defer{args.freeCommandLine}
+                                  (i)                  init{(0, args.len)}                  {
                     stmt_list{
                       call{println (args[i].data)}}}}
               stmt_list{
                 call{println ({1  1}"5685""231")}
-                call{freeCommandLine (args)}
-                return_stmt{0}}}}}}}}}
+                return{0}}}}}}}}}

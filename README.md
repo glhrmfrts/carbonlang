@@ -37,16 +37,17 @@ Source code -> Tokens (Lexer) -> Untyped AST (Parser) -> Typed AST (Type System)
 - [X] aggregate type function arguments
 - [X] aggregate type return value
 - [X] struct / tuples
-- [ ] arrays
-- [ ] slices
-- [ ] defer statements and expression
-- [ ] user types
-- [ ] for statement (array-based)
+- [X] arrays
+- [X] slices
+- [X] user types
+- [X] defer statements
+- [ ] defer expression sugar
 - [ ] function pointers
 - [ ] global vars (?)
-- [ ] catch up on the codegen
 - [ ] more/better type checking and errors
 - [ ] floating point types support
+- [ ] for statement (array-based)
+- [ ] catch up on the codegen
 - [ ] investigate entry points for receiving command-line args
 - [ ] catch up on the codegen
 - [ ] integrate linking process

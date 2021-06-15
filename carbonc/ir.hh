@@ -113,6 +113,8 @@ struct ir_node_data {
     std::string if_end_label;
 
     std::string while_cond_label;
+
+    std::vector<ast_node*> scope_defer_statements;
 };
 
 struct ir_program {

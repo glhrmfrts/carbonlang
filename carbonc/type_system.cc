@@ -244,14 +244,16 @@ string_hash build_type_constructor_name(const std::string& name, const std::vect
 
 string_hash build_type_constructor_mangled_name(const std::string& mangled_name, const std::vector<type_constructor_arg>& args) {
     auto result = mangled_name;
-    result.append("$$");
     for (const auto& arg : args) {
         if (auto tt = std::get_if<type_id>(&arg); tt) {
+            result.append("__T");
             result.append(tt->get().mangled_name.str);
-            result.append("$");
+        }
+        else if (auto tt = std::get_if<int_type>(&arg); tt) {
+            result.append("__I");
+            result.append(std::to_string(*tt));
         }
     }
-    result.append("$");
     return { result };
 }
 
@@ -1213,14 +1215,13 @@ string_hash mangle_func_name(type_system& ts, const std::vector<std::string>& id
     if (linkage == func_linkage::local_carbon || linkage == func_linkage::external_carbon) {
         std::string name = "cb";
         for (const auto& part : id_parts) {
-            name.append("$N");
+            name.append("__N");
             name.append(part);
         }
-        name.append("$AB");
         for (auto& arg : args) {
             assert(arg->type_id != invalid_type);
             auto tdef = arg->type_id.get();
-            name.append("$A");
+            name.append("__A");
             name.append(tdef.mangled_name.str);
         }
         return string_hash{ name };
@@ -1823,6 +1824,11 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
         break;
     }
     case ast_type::return_stmt: {
+        if (ts.inside_defer) {
+            add_type_error(ts, node.pos, "illegal use of return statement while inside defer statement");
+            node.type_error = true;
+        }
+
         if (ts.pass != type_system_pass::perform_checks && node.type_id != invalid_type) return node.type_id;
 
         node.type_id = resolve_node_type(ts, node.children.front().get());
@@ -1883,6 +1889,18 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
         }
 
         leave_scope_local(ts);
+        break;
+    }
+    case ast_type::defer_stmt: {
+        if (ts.inside_defer) {
+            add_type_error(ts, node.pos, "illegal use of defer statement inside another defer statement");
+            node.type_error = true;
+        }
+
+        check_for_unresolved = false;
+        ts.inside_defer = true;
+        visit_children(ts, node);
+        ts.inside_defer = false;
         break;
     }
     case ast_type::linkage_specifier: {
@@ -2606,7 +2624,7 @@ type_system::type_system(memory_arena& arena) {
 
             tf.kind = type_kind::pointer;
             tf.name = string_hash{ "*" + type_arg.get().name.str };
-            tf.mangled_name = string_hash{ "ptr$$" + type_arg.get().mangled_name.str + "$$" };
+            tf.mangled_name = string_hash{ "ptr__T" + type_arg.get().mangled_name.str };
             tf.size = sizeof(void*);
             tf.alignment = alignof(void*);
             tf.elem_type = type_arg;
@@ -2633,7 +2651,7 @@ type_system::type_system(memory_arena& arena) {
 
             tf.kind = type_kind::reference;
             tf.name = string_hash{ "&" + type_arg.get().name.str };
-            tf.mangled_name = string_hash{ "ref$$" + type_arg.get().mangled_name.str + "$$" };
+            tf.mangled_name = string_hash{ "ref__T" + type_arg.get().mangled_name.str };
             tf.size = sizeof(void*);
             tf.alignment = alignof(void*);
             tf.elem_type = type_arg;
@@ -2660,7 +2678,7 @@ type_system::type_system(memory_arena& arena) {
 
             tf.kind = type_kind::optional;
             tf.name = string_hash{ "?" + type_arg.get().name.str };
-            tf.mangled_name = string_hash{ "optional$$" + type_arg.get().mangled_name.str + "$$" };
+            tf.mangled_name = string_hash{ "optional__T" + type_arg.get().mangled_name.str };
             if (type_arg.get().kind == type_kind::pointer || type_arg.get().kind == type_kind::reference) {
                 tf.size = sizeof(void*);
                 tf.alignment = alignof(void*);
@@ -2689,7 +2707,7 @@ type_system::type_system(memory_arena& arena) {
 
             tf.kind = type_kind::new_;
             tf.name = string_hash{ "@" + type_arg.get().name.str };
-            tf.mangled_name = string_hash{ "new$$" + type_arg.get().mangled_name.str + "$$" };
+            tf.mangled_name = string_hash{ "new__T" + type_arg.get().mangled_name.str };
             tf.size = type_arg.get().size;
             tf.alignment = type_arg.get().alignment;
             tf.elem_type = type_arg;

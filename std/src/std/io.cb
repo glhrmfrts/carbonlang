@@ -3,3 +3,54 @@ import std::libc::stdio;
 func println(c: *char): {} {
     puts(c);
 }
+
+/*
+struct Vector3 {
+    x : float,
+    y : float,
+    z : float
+}
+
+struct Vector2 {
+    x : float,
+    y : float
+}
+
+func Array(T: type) {
+    const cls = new ClassDefinition()
+    cls.addMember("size", @uint64)
+    cls.addMember("capacity", @uint64)
+    return cls
+}
+
+class Entity {
+    pos : Vector3
+    vel : Vector3
+}
+
+struct Player {
+
+}
+
+void gpio_read(nvm_t* nvm, void* userdata) {
+    cvm_reg(cvm, NVM_REG_RET) = gpioRead( cvm_to_uint32( cvm_reg(cvm, NVM_REG_ARG0 + i) ) );
+
+    cvm_reg(cvm, CVM_REG_RET) = ;
+}
+
+module gpio {
+    builtin func read(pin: uint32): uint32;
+    builtin func write(pin: uint32, val: uint32);
+}
+
+var v = 3;
+var l = 5;
+
+var value : any_unchecked;
+
+value = 3;
+value = "qweqwe";
+
+var str = cast(String) value;
+
+nvm_register_builtin_func("gpio.read", gpio_read);*/

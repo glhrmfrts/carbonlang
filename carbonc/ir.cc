@@ -377,6 +377,14 @@ void generate_ir_func(ast_node& node) {
             generate_ir_node(*child);
         }
     }
+
+    if (node.func.return_statements.empty()) {
+        for (std::size_t i = node.ir.scope_defer_statements.size(); i > 0; i--) {
+            auto dstmt = node.ir.scope_defer_statements[i - 1];
+            generate_ir_node(*dstmt->children[0]);
+        }
+    }
+
     ts->leave_scope();
 }
 
@@ -435,13 +443,32 @@ void generate_if_stmt(ast_node& node) {
     }
 }
 
+std::vector<ast_node*> collect_defer_statements_for_return() {
+    std::vector<ast_node*> result;
+    auto scope = ts->current_scope;
+    while (scope) {
+        for (auto d : scope->self->ir.scope_defer_statements) {
+            result.push_back(d);
+        }
+
+        if (scope->kind == scope_kind::func_body) { break; }
+
+        scope = scope->parent;
+    }
+    return result;
+}
+
 void generate_ir_return_stmt(ast_node& node) {
+    auto stmts = collect_defer_statements_for_return();
     auto& expr = node.children[0];
     if (expr) {
         generate_ir_node(*expr);
-        temit(ir_return, node.type_id, pop());
+        auto val = pop();
+        for (auto s : stmts) { generate_ir_node(*s->children[0]); }
+        temit(ir_return, node.type_id, val);
     }
     else {
+        for (auto s : stmts) { generate_ir_node(*s->children[0]); }
         temit(ir_return, node.type_id, 0);
     }
 }
@@ -718,16 +745,34 @@ void generate_ir_node(ast_node& node) {
         generate_ir_var(node);
         break;
     case ast_type::for_stmt:
+        ts->enter_scope(node);
         generate_for_stmt(node);
+        ts->leave_scope();
         break;
     case ast_type::while_stmt:
+        ts->enter_scope(node);
         generate_while_stmt(node);
+        ts->leave_scope();
         break;
     case ast_type::if_stmt:
+        ts->enter_scope(node);
         generate_if_stmt(node);
+        ts->leave_scope();
+        break;
+    case ast_type::compound_stmt:
+        ts->enter_scope(node);
+        generate_ir_children(node);
+        for (std::size_t i = node.ir.scope_defer_statements.size(); i > 0; i--) {
+            auto dstmt = node.ir.scope_defer_statements[i - 1];
+            generate_ir_node(*dstmt->children[0]);
+        }
+        ts->leave_scope();
         break;
     case ast_type::return_stmt:
         generate_ir_return_stmt(node);
+        break;
+    case ast_type::defer_stmt:
+        ts->current_scope->self->ir.scope_defer_statements.push_back(&node);
         break;
     case ast_type::asm_stmt:
         generate_ir_asm_stmt(node);

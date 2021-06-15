@@ -2,6 +2,6 @@ code_unit{
   std/io.cb
   decl_list{
     import_decl{ std::libc::stdio}
-    func_decl{println (var_decl{c: type_expr{type_qualifier{pointer, char}}}): type_expr{tuple_type{}} compound_stmt{
+    func_decl{println (var_decl{c: type_expr{type_qualifier{pointer, char}}}): type_expr{tuple_type{}} {
         stmt_list{
           call{puts (c)}}}}}}

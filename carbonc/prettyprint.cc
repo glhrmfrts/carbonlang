@@ -163,7 +163,7 @@ void prettyprint(const ast_node& node, std::ostream& stream, int indent, bool do
         stream << "}";
         break;
     case ast_type::compound_stmt:
-        stream << "compound_stmt{";
+        stream << "{";
         for (std::size_t i = 0; i < node.children.size(); i++) {            
             stream << "\n";
             prettyprint(*node.children[i].get(), stream, indent + 1);
@@ -171,17 +171,26 @@ void prettyprint(const ast_node& node, std::ostream& stream, int indent, bool do
         stream << "}";
         break;
     case ast_type::return_stmt:
-        stream << "return_stmt{";
-        prettyprint(*node.children.front().get(), stream, indent + 1, false);
+        stream << "return{";
+        if (node.children.front()) {
+            prettyprint(*node.children.front().get(), stream, indent + 1, false);
+        }
+        stream << "}";
+        break;
+    case ast_type::defer_stmt:
+        stream << "defer{";
+        if (node.children.front()) {
+            prettyprint(*node.children.front().get(), stream, indent + 1, false);
+        }
         stream << "}";
         break;
     case ast_type::asm_stmt:
-        stream << "asm_stmt{";
+        stream << "asm{";
         stream << node.string_value;
         stream << "}";
         break;
     case ast_type::if_stmt: {
-        stream << "if_stmt{";
+        stream << "if{";
         prettyprint(*node.children[0].get(), stream, indent + 1, false);
         stream << " ";
         prettyprint(*node.children[1].get(), stream, indent + 1, false);

@@ -310,6 +310,8 @@ struct type_system {
     std::vector<type_error> errors;
     type_error current_error{};
 
+    bool inside_defer = false;
+
     type_id type_type{};
     type_id void_type{};
     type_id raw_ptr_type{};

@@ -293,6 +293,15 @@ arena_ptr<ast_node> make_for_stmt_node(memory_arena& arena, const position& pos,
     return ptr;
 }
 
+arena_ptr<ast_node> make_defer_stmt_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& stmt) {
+    auto ptr = make_in_arena<ast_node>(arena);
+    ptr->node_id = node_id_gen++;
+    ptr->type = ast_type::defer_stmt;
+    ptr->pos = pos;
+    ptr->children.push_back(std::move(stmt));
+    return ptr;
+}
+
 arena_ptr<ast_node> make_type_expr_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& expr) {
     auto ptr = make_in_arena<ast_node>(arena);
     ptr->node_id = node_id_gen++;

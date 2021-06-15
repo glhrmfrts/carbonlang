@@ -191,6 +191,9 @@ struct lexer_impl {
             if (!std::strcmp("while", l.string)) {
                 return token_type::while_;
             }
+            if (!std::strcmp("defer", l.string)) {
+                return token_type::defer;
+            }
             break;
         case 6:
             if (!std::strcmp("return", l.string)) {

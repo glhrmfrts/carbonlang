@@ -2,15 +2,15 @@ code_unit{
   std/alloc.cb
   decl_list{
     import_decl{ std::os::windows}
-    func_decl{alloc (var_decl{size: type_expr{usize}}): type_expr{raw_ptr} compound_stmt{
+    func_decl{alloc (var_decl{size: type_expr{usize}}): type_expr{raw_ptr} {
         stmt_list{
-          return_stmt{call{HeapAlloc (call{GetProcessHeap ()}, 0, size)}}}}}
-    func_decl{free (var_decl{ptr: type_expr{raw_ptr}}) compound_stmt{
+          return{call{HeapAlloc (call{GetProcessHeap ()}, 0, size)}}}}}
+    func_decl{free (var_decl{ptr: type_expr{raw_ptr}}) {
         stmt_list{
           call{HeapFree (call{GetProcessHeap ()}, 0, ptr)}}}}
-    func_decl{copy (var_decl{dest: type_expr{raw_ptr}}, var_decl{src: type_expr{raw_ptr}}, var_decl{size: type_expr{usize}}) compound_stmt{
+    func_decl{copy (var_decl{dest: type_expr{raw_ptr}}, var_decl{src: type_expr{raw_ptr}}, var_decl{size: type_expr{usize}}) {
         decl_list{
-          asm_stmt{push rdi
+          asm{push rdi
 push rsi
 
 mov rdi,rcx
@@ -21,9 +21,9 @@ rep movsb
 pop rsi
 pop rdi
     }}}}
-    func_decl{set (var_decl{dest: type_expr{raw_ptr}}, var_decl{value: type_expr{char}}, var_decl{count: type_expr{usize}}) compound_stmt{
+    func_decl{set (var_decl{dest: type_expr{raw_ptr}}, var_decl{value: type_expr{char}}, var_decl{count: type_expr{usize}}) {
         decl_list{
-          asm_stmt{push rdi
+          asm{push rdi
 
 mov rdi,rcx
 mov rax,rdx
