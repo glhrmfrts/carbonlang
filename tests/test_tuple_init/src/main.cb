@@ -1,0 +1,17 @@
+import std::io;
+import std::string;
+import std::rawstring;
+
+func main(args: [*]String): int {
+    let a = {3, 4, 5};
+    let b = {"nice", "second", false};
+
+    if ((a.first == 3 && a.second == 4 && a.third == 5) && (equals(b[0], "nice") && equals(b[1], "second") && !b[2])) {
+        println("[OK] test_tuple_init");
+        return 1;
+    }
+    else {
+        println("[NOK] test_tuple_init");
+        return 0;
+    }
+}

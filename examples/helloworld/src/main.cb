@@ -1,0 +1,7 @@
+import std::io;
+import std::string;
+
+func main(args: [*]String): int {
+    println(args.data[0].data);
+    return 0;
+}

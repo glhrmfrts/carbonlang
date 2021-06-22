@@ -22,17 +22,18 @@ struct parser_impl {
     std::unique_ptr<lexer> lex;
     memory_arena* ast_arena;
     std::string filename;
+    std::string modname;
     std::stack<parse_context> ctx_stack;
     int func_body_level = 0;
 
-    explicit parser_impl(memory_arena& arena, std::string_view src, const std::string& fn)
-        : ast_arena{ &arena }, lex{ std::make_unique<lexer>(src, fn) }, filename{ fn }, ctx_stack{ {parse_context::root} }, func_body_level{ 0 } {}
+    explicit parser_impl(memory_arena& arena, std::string_view src, const std::string& fn, const std::string& mname)
+        : ast_arena{ &arena }, lex{ std::make_unique<lexer>(src, fn) }, filename{ fn }, modname{ mname }, ctx_stack{ {parse_context::root} }, func_body_level{ 0 } {}
 
     arena_ptr<ast_node> parse_code_unit() {
         auto pos = lex->pos();
         auto decls = parse_decl_list();
         if (decls) {
-            return make_code_unit_node(*ast_arena, pos, filename, std::move(decls));
+            return make_code_unit_node(*ast_arena, pos, modname, std::move(decls));
         }
         return arena_ptr<ast_node>{nullptr, nullptr};
     }
@@ -1019,7 +1020,7 @@ struct parser_impl {
     parse_context ctx() const { return ctx_stack.top(); }
 };
 
-parser::parser(memory_arena& arena, std::string_view src, const std::string& filename) : _impl{ new parser_impl{arena, src, filename} } {}
+parser::parser(memory_arena& arena, std::string_view src, const std::string& filename, const std::string& modname) : _impl{ new parser_impl{arena, src, filename, modname} } {}
 
 parser::~parser() { delete _impl; }
 

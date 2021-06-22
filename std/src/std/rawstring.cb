@@ -19,8 +19,6 @@ func set(dest: *char, value: char, count: usize) {
     alloc::set(cast[raw_ptr] dest, value, count);
 }
 
-import std::io;
-
 func strlen(str: *char): usize {
     var c : usize;
     var p = str;

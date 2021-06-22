@@ -1,0 +1,30 @@
+import std::io;
+import std::string;
+import std::rawstring;
+import std::alloc as alloc;
+import std::os::windows;
+
+private {
+
+func init_command_line(): [&]String {
+    let cmdline = GetCommandLineA();
+    let data = cast[&String] alloc::alloc(sizeof(String));
+    let result = [&]String{ data, 1 };
+    result[0] = String{ cmdline, cmdline.strlen };
+    return result;
+}
+
+func free_command_line(args: [&]String) {
+    alloc::free(cast[raw_ptr] args.data);
+}
+
+extern(C) func carbon_main(): int {
+    let args = init_command_line();
+    defer args.free_command_line;
+
+    import main;
+    let result = main(args);
+    return result;
+}
+
+}

@@ -54,6 +54,7 @@ void check_temp_bool_op(type_system& ts, ast_node& node) {
     if (is_bool_op(node) && !(node.desugar_flags & desugar_flag::bool_op_desugared)) {
         auto cpy = copy_node_typed(ts, node);
         auto [temp, ref] = make_temp_variable_for_bool_op_resolved(ts, std::move(cpy));
+        node.desugar_flags |= desugar_flag::bool_op_desugared;
 
         node.type = ref->type;
         node.type_id = ref->type_id;
@@ -245,8 +246,10 @@ void desugar(type_system& ts, ast_node* nodeptr) {
         else {
             for (int i = 0; i < 2; i++) {
                 check_temp_aggregate_call(ts, *node.children[i]);
-                check_temp_bool_op(ts, *node.children[i]);
                 check_temp_ternary_expr(ts, *node.children[i]);
+                if (!is_bool_op(node)) {
+                    check_temp_bool_op(ts, *node.children[i]);
+                }
             }
         }
 

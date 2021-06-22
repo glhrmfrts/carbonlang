@@ -11,7 +11,7 @@ struct parser_impl;
 struct parser {
     parser_impl* _impl;
 
-    explicit parser(memory_arena& ast_arena, std::string_view src, const std::string& filename);
+    explicit parser(memory_arena& ast_arena, std::string_view src, const std::string& filename, const std::string& modname);
 
     ~parser();
 

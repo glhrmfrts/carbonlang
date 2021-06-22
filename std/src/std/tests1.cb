@@ -1,9 +1,8 @@
 // test stuff
-
 /*
 import std::io;
 import std::rawstring;
-import std::memory as mem;
+import std::alloc as alloc;
 import std::libc::stdio;
 import std::libc::stdlib;
 
@@ -29,14 +28,14 @@ func test_strcopy_len() {
     let str = "hello";
     let newstr = str.copy;
 
-    if (str.len == newstr.len) {
+    if (str.strlen == newstr.strlen) {
         println("[OK] test_strcopy_len");
     }
     else {
         println("[NOK] test_strcopy_len");
     }
 
-    mem::dealloc(cast[raw_ptr] newstr);
+    alloc::free(cast[raw_ptr] newstr);
 }
 
 func test_strcopy() {
@@ -50,7 +49,7 @@ func test_strcopy() {
         println("[NOK] test_strcopy");
     }
 
-    mem::dealloc(cast[raw_ptr] newstr);
+    alloc::free(cast[raw_ptr] newstr);
 }
 
 func test_strcopy_saving() {
@@ -70,7 +69,7 @@ func test_strcopy_saving() {
         println("[NOK] test_strcopy_saving");
     }
     
-    mem::dealloc(cast[raw_ptr] newstr);
+    alloc::free(cast[raw_ptr] newstr);
 }
 
 func test_while_statement() {
@@ -96,7 +95,7 @@ func test_while_statement() {
         println("[NOK] test_while_statement");
     }
     
-    mem::dealloc(cast[raw_ptr] newstr);
+    alloc::free(cast[raw_ptr] newstr);
 }
 
 func test_short(): bool {
@@ -107,7 +106,7 @@ func test_short(): bool {
 func test_for_stmt() {
     let newstr = "helloworld".copy;
 
-    for (i in 0, newstr.len) {
+    for (i in 0, newstr.strlen) {
         let c = '0' + cast[int8] i;
         newstr[i] = c;
     }
@@ -118,13 +117,14 @@ func test_for_stmt() {
     else {
         println("[NOK] test_for_stmt");
     }
-    mem::dealloc(cast[raw_ptr] newstr);
+    alloc::free(cast[raw_ptr] newstr);
 }
 
-/*
+type Range = {start: usize, end: usize};
+
 func test_struct_zeroinit() {
-    var a: range[int];
-    var b: range[int] = { };
+    var a: Range;
+    var b: Range = { };
 
     if ((a.start == 0 && a.end == 0) && (b.start == 0 && b.end == 0)) {
         println("[OK] test_struct_zeroinit");
@@ -135,10 +135,10 @@ func test_struct_zeroinit() {
 }
 
 func test_struct_init() {
-    let a: range[int] = { 3, 5 };
-    let b: range[int] = { 24*7+2, a.end };
-    let c = range[int]{ b.start*3*9, b.end*2*2 };
-    let d = range[int]{};
+    let a: Range = { 3, 5 };
+    let b: Range = { 24*7+2, a.end };
+    let c = Range{ b.start*3*9, b.end*2*2 };
+    let d = Range{};
 
     if ((a.start == 3 && a.end == 5) && (b.start == 24*7+2 && b.end == a.end) && (c.start == b.start*3*9 && c.end && b.end*2*2)) {
         println("[OK] test_struct_init");
@@ -152,7 +152,7 @@ func test_tuple_zeroinit() {
     var a: {int, int};
     var b: {raw_string, bool};
 
-    if ((a[0] == 0 && a.second == 0) && (equals(b[0], "") && b[1] == false)) {
+    if (equals(b[0], "") && b.second == false) {
         println("[OK] test_tuple_zeroinit");
     }
     else {
@@ -195,9 +195,8 @@ func test_array_init() {
     }
 }
 
-/*
 func test_struct_assignment_lvalue() {
-    let a: range[usize] = { 3, 5 };
+    let a: Range = { 3, 5 };
     let b = a;
 
     if (a.start == b.start && a.end == b.end) {
@@ -209,25 +208,25 @@ func test_struct_assignment_lvalue() {
 }
 
 
-func sum_range_ptr(r: *range[usize]): usize {
+func sum_range_ptr(r: *Range): usize {
     return r.start + r.end - 1;
 }
 
-func sum_range_ptr(r: &range[usize]): usize {
+func sum_range_ptr(r: &Range): usize {
     return r.start + r.end;
 }
 
-func sum_range_val(r: range[usize]): usize {
+func sum_range_val(r: Range): usize {
     return r.start + r.end;
 }
 
-func sum_range_copy(r: range[usize]): usize {
+func sum_range_copy(r: Range): usize {
     let r2 = r;
     return r2.start + r2.end;
 }
 
 func test_struct_argument(): {} {
-    let a: range[usize] = { 10, 20 };
+    let a: Range = { 10, 20 };
 
     let result = sum_range_ptr(&a);
     let valres = sum_range_val(a);
@@ -242,15 +241,15 @@ func test_struct_argument(): {} {
 }
 
 
-func make_range(): range[usize] {
-    return range[usize]{ 30, 40 };
+func make_range(): Range {
+    return Range{ 30, 40 };
 }
 
-func make_range_with(a: usize, b: usize): range[usize] {
-    return range[usize]{ a, b };
+func make_range_with(a: usize, b: usize): Range {
+    return Range{ a, b };
 }
 
-func make_range_zero_one(): range[usize] {
+func make_range_zero_one(): Range {
     return make_range_with(0, 1);
 }
 
@@ -396,42 +395,10 @@ type IntPair = {fst: int, snd: int, desc: raw_string};
 func get_result(): int { return 2; }
 
 
-
-
-//extern(C) func GetCommandLineA(): raw_string;
-
-extern(C) func CommandLineToArgvW(c: &uint16, nargs: &int): raw_ptr;
-
-extern(C) func GetCommandLineW(): &uint16;
-
-extern(C) func mainCRTStartup() {
-    let nargs : int;
-    let arglist = CommandLineToArgvW(GetCommandLineW(), &nargs);
-
-    let str = "0";
-    str[0] = '0' + cast[int8] nargs;
-    println(str);
-}
-
-
-func main(argc: int): int {
+func tests1(): int {
     //let result = get_result();
 
     //mainCRTStartup();
-
-    let str = "0";
-    str[0] = '0' + cast[char] argc;
-    println(str);
-
-    if (argc == 0) {
-        println("zero arguments");
-    }
-    if (argc == 1) {
-        println("one arguments");
-    }
-    if (argc == 2) {
-        println("two arguments");
-    }
 
     var p : IntPair;
     p.fst = 3;
@@ -462,7 +429,7 @@ func main(argc: int): int {
     test_slice();
     test_mutable_slice();
 
-    //mem::dealloc(cast[raw_ptr] newtext);
+    //alloc::dealloc(cast[raw_ptr] newtext);
     //return a[0];//result*2;
 
     //let s = "adqwe";

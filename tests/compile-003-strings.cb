@@ -1,6 +1,0 @@
-func main(): int {
-    let value = "hello world";
-    let value2 = "{somedata: true}";
-    let other = 3;
-    return 0;
-}

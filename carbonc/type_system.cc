@@ -32,9 +32,11 @@ template <typename... Args> void add_module_error(type_system& ts, const positio
     static char msgb[1024];
     snprintf(msgb, sizeof(msgb), fmt, std::forward<Args>(args)...);
 
-    const char* filename = find_nearest_scope_local(ts, scope_kind::code_unit)->self->string_value.data();
+    string_hash error_hash = string_hash{ std::string{ fmt } };
+
+    const char* filename = pos.filename.c_str();
     snprintf(wholeb, sizeof(wholeb), "carbonc - ERROR - %s\n\n[%s:%d:%d]\t%s\n", filename, filename, pos.line_number, pos.col_offs, msgb);
-    ts.current_error = { pos, std::string{filename}, std::string{wholeb} };
+    ts.current_error = { pos, error_hash, std::string{filename}, std::string{wholeb} };
 }
 
 template <typename... Args> void unk_type_error(type_system& ts, type_id tid, const position& pos, const char* fmt, Args&&... args) {
@@ -49,7 +51,7 @@ template <typename... Args> void unk_type_error(type_system& ts, type_id tid, co
         static char msgb[1024];
         snprintf(msgb, sizeof(msgb), fmt, std::forward<Args>(args)...);
 
-        const char* filename = find_nearest_scope_local(ts, scope_kind::code_unit)->self->string_value.data();
+        const char* filename = pos.filename.c_str();
         snprintf(wholeb, sizeof(wholeb), "carbonc - ERROR %zX - %s\n\n[%s:%d:%d] %s\n", error_hash.hash, filename, filename, pos.line_number, pos.col_offs, msgb);
         ts.current_error = { pos, error_hash, std::string{filename}, std::string{wholeb} };
     }
@@ -65,7 +67,7 @@ template <typename... Args> void complement_error(type_system& ts, const positio
         static char msgb[1024];
         snprintf(msgb, sizeof(msgb), fmt, std::forward<Args>(args)...);
 
-        const char* filename = find_nearest_scope_local(ts, scope_kind::code_unit)->self->string_value.data();
+        const char* filename = pos.filename.c_str();
         snprintf(wholeb, sizeof(wholeb), "[%s:%d:%d] %s\n", filename, pos.line_number, pos.col_offs, msgb);
         ts.current_error.msg.append(wholeb);
     }
@@ -1132,7 +1134,14 @@ type_id resolve_identifier(type_system& ts, ast_node& node) {
         node.lvalue.symbol = sym;
         node.type_id = local->self->type_id;
 
-        if (was_unresolved) { local->refs.push_back(&node); }
+        if (was_unresolved && node.type_id.valid()) { 
+            for (auto ref : local->refs) {
+                if (ref == &node) {
+                    assert(!"about to insert duplicate ref");
+                }
+            }
+            local->refs.push_back(&node);
+        }
 
         if (!node.type_id.valid()) {
             unk_type_error(ts, node.type_id, node.pos, "cannot determine type of symbol '%s'", node_to_string(node).c_str());
@@ -2170,6 +2179,8 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
                     node.lvalue.self = &node;
 
                     const auto& field = fields[node.children[1]->int_value];
+
+                    //node.children[1] = make_identifier_node(*ts.ast_arena, node.children[1]->pos, { field.names.front() });
                     node.field.self = &node;
                     node.field.field_index = node.children[1]->int_value;
                     node.type = ast_type::field_expr;
@@ -2909,6 +2920,15 @@ void type_system::resolve_and_check() {
         leave_scope();
     }
 
+    if (!current_error.msg.empty()) {
+        errors.push_back(current_error);
+        current_error = {};
+    }
+    if (!errors.empty()) {
+        // TODO: continue even if with module errors for further type checking?
+        return;
+    }
+
     this->pass = type_system_pass::resolve_all;
     for (int i = 0; i < 100; i++) {
         this->subpass = i;
@@ -2920,7 +2940,7 @@ void type_system::resolve_and_check() {
             leave_scope();
         }
         if (this->unresolved_types) {
-            printf("unresolved types\n");
+            //printf("unresolved types\n");
         }
         else {
             break;

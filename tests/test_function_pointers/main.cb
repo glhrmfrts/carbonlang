@@ -1,0 +1,17 @@
+func square(a: int) {
+    return a * a;
+}
+
+func identity(a: int) {
+    return a;
+}
+
+extern(C) func main() {
+    let fp : {int} -> int;
+
+    fp = #square(:int);
+    write_line(fp(5));
+
+    fp = #identity(:int);
+    write_line(fp(5));
+}

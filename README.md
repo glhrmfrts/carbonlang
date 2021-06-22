@@ -1,6 +1,6 @@
 # Carbon
 
-Carbon is a statically-strongly-typed programming language.
+Carbon is a statically-typed, ahead-of-time compiled programming language.
 
 <p align="center">
 <img src="https://github.com/glhrmfrts/carbon/blob/main/carbon.png">
@@ -41,11 +41,12 @@ Source code -> Tokens (Lexer) -> Untyped AST (Parser) -> Typed AST (Type System)
 - [X] slices
 - [X] user types
 - [X] defer statements
+- [ ] fix defer statement (return function call)
+- [ ] function pointers
 - [ ] defer expression sugar
 - [ ] hello world example
 - [ ] average grade example
 - [ ] game of life example
-- [ ] function pointers
 - [ ] sum types
 - [ ] optional type
 - [ ] expected type

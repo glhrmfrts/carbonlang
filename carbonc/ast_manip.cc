@@ -74,7 +74,17 @@ arena_ptr<ast_node> copy_node_helper(type_system& ts, ast_node& node) {
     else if (node.type == ast_type::type_resolver) {
         return make_type_resolver_node(*ts.ast_arena, node.type_id);
     }
-    assert(!"copy_var_ref: node type not handled!");
+    else if (node.type == ast_type::call_expr) {
+        return make_call_expr_node(*ts.ast_arena, node.pos, copy_node(ts, *node.children[0]), copy_node(ts, *node.children[1]));
+    }
+    else if (node.type == ast_type::arg_list) {
+        std::vector<arena_ptr<ast_node>> args;
+        for (auto& arg : node.children) {
+            args.push_back(copy_node(ts, *arg));
+        }
+        return make_arg_list_node(*ts.ast_arena, node.pos, std::move(args));
+    }
+    assert(!"copy_node: node type not handled!");
     return { nullptr, nullptr };
 }
 

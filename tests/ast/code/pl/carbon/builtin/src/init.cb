@@ -1,0 +1,30 @@
+code_unit{
+  init.cb
+  decl_list{
+    import_decl{ std::io}
+    import_decl{ std::string}
+    import_decl{ std::rawstring}
+    import_decl{ std::alloc alloc}
+    import_decl{ std::os::windows}
+    visibility_specifier{ private decl_list{
+        func_decl{init_command_line (): type_expr{slice_type{[&] type_expr{String}}} {
+            decl_list{
+              var_decl{cmdline = call{GetCommandLineA ()}}
+              var_decl{data = cast_expr{type_expr{type_qualifier{reference, String}} call{alloc::alloc (call{sizeof (String)})}}}
+              var_decl{result = init{type=type_expr{slice_type{[&] type_expr{String}}} (data, 1)}}}
+            stmt_list{
+              {result[0] = init{type=type_expr{String} (cmdline, cmdline.strlen)}}
+              return{result}}}}
+        func_decl{free_command_line (var_decl{args: type_expr{slice_type{[&] type_expr{String}}}}) {
+            stmt_list{
+              call{alloc::free (cast_expr{type_expr{raw_ptr} args.data})}}}}
+        linkage_specifier{ extern(C) func_decl{carbon_main (): type_expr{int} {
+              decl_list{
+                var_decl{args = call{init_command_line ()}}}
+              stmt_list{
+                defer{args.free_command_line}}
+              decl_list{
+                import_decl{ main}
+                var_decl{result = call{main (args)}}}
+              stmt_list{
+                return{result}}}}}}}}}

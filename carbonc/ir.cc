@@ -345,12 +345,7 @@ void generate_ir_func(ast_node& node) {
         return;
     }
 
-    if (node.var_id()->id_parts.front() == "main") {
-        func.name = node.var_id()->id_parts.front();
-    }
-    else {
-        func.name = mangled_name;
-    }
+    func.name = mangled_name;
 
     for (auto& arg : node.func_args()) {
         ir_arg_data iarg;

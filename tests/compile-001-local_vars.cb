@@ -1,5 +1,0 @@
-func main(): int {
-    let value = 50;
-    let i = 3;
-    return value * i;
-}

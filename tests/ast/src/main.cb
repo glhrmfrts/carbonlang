@@ -1,0 +1,10 @@
+code_unit{
+  main.cb
+  decl_list{
+    import_decl{ std::io}
+    import_decl{ std::string}
+    import_decl{ std::rawstring}
+    func_decl{main (var_decl{args: type_expr{slice_type{[*] type_expr{String}}}}): type_expr{int} {
+        stmt_list{
+          call{println (args[0].data)}
+          return{0}}}}}}

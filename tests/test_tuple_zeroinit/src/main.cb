@@ -1,0 +1,17 @@
+import std::io;
+import std::string;
+import std::rawstring;
+
+func main(args: [*]String): int {
+    var a: {int, int};
+    var b: {raw_string, bool};
+
+    if (equals(b[0], "") && b.second == false) {
+        println("[OK] test_tuple_zeroinit");
+        return 1;
+    }
+    else {
+        println("[NOK] test_tuple_zeroinit");
+        return 0;
+    }
+}

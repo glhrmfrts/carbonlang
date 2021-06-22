@@ -1,0 +1,8 @@
+code_unit{
+  std/os/windows.cb
+  decl_list{
+    linkage_specifier{ extern(C) decl_list{
+        func_decl{HeapAlloc (var_decl{hHeap: type_expr{int}}, var_decl{dwFlags: type_expr{int}}, var_decl{dwBytes: type_expr{usize}}): type_expr{raw_ptr} }
+        func_decl{HeapFree (var_decl{hHeap: type_expr{int}}, var_decl{dwFlags: type_expr{int}}, var_decl{lpMem: type_expr{raw_ptr}}): type_expr{bool} }
+        func_decl{GetProcessHeap (): type_expr{int} }
+        func_decl{GetCommandLineA (): type_expr{type_qualifier{reference, char}} }}}}}

@@ -1,0 +1,7 @@
+type ConfigurationGroup = {
+    name: [*]char
+};
+
+type Configuration = {
+    first_group: &ConfigurationGroup
+};
