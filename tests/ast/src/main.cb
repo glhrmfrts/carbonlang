@@ -4,7 +4,32 @@ code_unit{
     import_decl{ std::io}
     import_decl{ std::string}
     import_decl{ std::rawstring}
+    type_decl{CalculateFunc = type_expr{(type_expr{int})type_expr{int}}}
     func_decl{main (var_decl{args: type_expr{slice_type{[*] type_expr{String}}}}): type_expr{int} {
         stmt_list{
-          call{println (args[0].data)}
-          return{0}}}}}}
+          call{println (args[0].data)}}
+        decl_list{
+          var_decl{fp: type_expr{(type_expr{int})type_expr{int}} = squaretype_expr{tuple_type{(type_expr{int})}}}
+          var_decl{a = call{fp (5)}}}
+        stmt_list{
+          {fp = identitytype_expr{tuple_type{(type_expr{int})}}}}
+        decl_list{
+          var_decl{b = call{fp (10)}}}
+        stmt_list{
+          if{{{a  25} 	 {b  10}} {
+              stmt_list{
+                call{println ("[OK] test_function_pointers")}}} else {
+              stmt_list{
+                call{println ("[NOK] test_function_pointers")}}}}}
+        stmt_list{
+          return{0}}}}
+    func_decl{square (var_decl{a: type_expr{int}}): type_expr{int} {
+        decl_list{
+          var_decl{res = {a * a}}}
+        stmt_list{
+          call{println ("from square")}
+          return{res}}}}
+    func_decl{identity (var_decl{a: type_expr{int}}): type_expr{int} {
+        stmt_list{
+          call{println ("from identity")}
+          return{a}}}}}}

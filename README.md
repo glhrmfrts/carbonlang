@@ -41,7 +41,7 @@ Source code -> Tokens (Lexer) -> Untyped AST (Parser) -> Typed AST (Type System)
 - [X] slices
 - [X] user types
 - [X] defer statements
-- [ ] fix defer statement (return function call)
+- [X] fix defer statement (return function call)
 - [ ] function pointers
 - [ ] defer expression sugar
 - [ ] hello world example
@@ -81,6 +81,43 @@ func main(argv: []string) {
 Like C/C++, Carbon is a statically typed, compiled language with manual memory management.
 
 ## Variables and Assignments
+
+## Lifetime
+
+```go
+func example() lifetime I+1 {
+    let X : Data; // X.lifetime = { owner = self };
+    let rX = X[0,5]; // rX.lifetime = { owner = X.lifetime };
+    let rrX = rX[0.3]; // rrX.lifetime = { owner = rX.lifetime };
+    
+    // X.lifetime.ownership_lost_point = scope.expr_counter;
+    let rY = custom_slice(X); // rY.lifetime = { owner = self, promotable = true };
+    
+    // scope.expr_counter here > X.lifetime.ownership_lost_point;
+    let brX = X; // ERROR: trying to use value 'X' after ownership was lost.
+    
+    return rX; // if (rX.lifetime is promotable) { promote lifetime of rX } else error();
+    
+    // if (X.lifetime.owner == X.lifetime) { X.lifetime.level += 1; }
+    // else if (X.lifetime.level < X.lifetime.owner.level) { X.lifetime.level = X.lifetime.owner.level; }
+    // else { error("cannot return reference to a value with inferior lifetime"); }
+    
+    // rX.lifetime.level = rX.lifetime.owner.level;
+    // rrX.lifetime.level = rrX.lifetime.owner.level;
+    // if (rX.lifetime.level < rX.lifetime.owner.level) { rX.lifetime.level = rX.lifetime.owner.level; ok; } else { error; }
+    return X, rX, rrX;
+    
+    for local in scope {
+        if not lifetime.was_promoted {
+            mark_to_destroy(local);
+        }
+    }
+}
+
+func client() {
+    let XX with lifetime of example()+1 = example();
+}
+```
 
 ### Declarations
 

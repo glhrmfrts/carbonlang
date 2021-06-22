@@ -1,5 +1,6 @@
 #include "ir.hh"
 #include "ast.hh"
+#include <cassert>
 #include <stack>
 #include <fstream>
 #include <sstream>
@@ -30,6 +31,7 @@ static const std::string opnames[] = {
     "ir_jmp_gte",
     "ir_jmp_lt",
     "ir_jmp_lte",
+    "ir_noop",
 };
 
 static ir_program* prog;
@@ -37,6 +39,8 @@ static ir_func* fn;
 static type_system* ts;
 static std::stack<ir_operand> operand_stack;
 static std::unordered_map<std::string, int> string_map;
+
+void generate_ir_defer_stmt(ast_node& node);
 
 void generate_ir_node(ast_node& node);
 
@@ -54,12 +58,6 @@ ir_operand pop() {
     return res;
 }
 
-void discard_stack() {
-    while (!operand_stack.empty()) {
-        operand_stack.pop();
-    }
-}
-
 template <typename... Args> void emit(ir_op op, Args&&... args) {
     fn->instrs.push_back({ op, {}, std::vector<ir_operand>{ std::forward<Args>(args)... }, (int)fn->instrs.size() });
 }
@@ -70,6 +68,17 @@ template <typename... Args> void temit(ir_op op, type_id t, Args&&... args) {
 
 void emitops(ir_op op, type_id t, const std::vector<ir_operand>& args) {
     fn->instrs.push_back({ op, t, args, (int)fn->instrs.size() });
+}
+
+void discard_opstack(std::size_t tosize) {
+    // discard any effect on the opstack
+    if (operand_stack.size() > tosize) {
+        std::vector<ir_operand> args;
+        for (std::size_t i = tosize; i < operand_stack.size(); i++) {
+            args.push_back(pop());
+        }
+        emitops(ir_noop, ts->void_type, args);
+    }
 }
 
 int find_or_add_global_string_data(std::string data) {
@@ -376,7 +385,7 @@ void generate_ir_func(ast_node& node) {
     if (node.func.return_statements.empty()) {
         for (std::size_t i = node.ir.scope_defer_statements.size(); i > 0; i--) {
             auto dstmt = node.ir.scope_defer_statements[i - 1];
-            generate_ir_node(*dstmt->children[0]);
+            generate_ir_defer_stmt(*dstmt->children[0]);
         }
     }
 
@@ -453,17 +462,23 @@ std::vector<ast_node*> collect_defer_statements_for_return() {
     return result;
 }
 
+void generate_ir_defer_stmt(ast_node& node) {
+    std::size_t begin_opstack_size = operand_stack.size();
+    generate_ir_node(node);
+    discard_opstack(begin_opstack_size);
+}
+
 void generate_ir_return_stmt(ast_node& node) {
-    auto stmts = collect_defer_statements_for_return();
+    auto defer_stmts = collect_defer_statements_for_return();
     auto& expr = node.children[0];
     if (expr) {
         generate_ir_node(*expr);
         auto val = pop();
-        for (auto s : stmts) { generate_ir_node(*s->children[0]); }
+        for (auto s : defer_stmts) { generate_ir_defer_stmt(*s->children[0]); }
         temit(ir_return, node.type_id, val);
     }
     else {
-        for (auto s : stmts) { generate_ir_node(*s->children[0]); }
+        for (auto s : defer_stmts) { generate_ir_defer_stmt(*s->children[0]); }
         temit(ir_return, node.type_id, 0);
     }
 }
@@ -504,13 +519,22 @@ void generate_ir_index_expr(ast_node& node) {
 }
 
 void generate_ir_call_expr(ast_node& node) {
-    auto func_node = node.call.func_type_id.get().self;
-    if (func_node->func.linkage == func_linkage::external_c) {
-        fn->calls_extern_c = true;
-    }
-
     std::vector<ir_operand> args;
-    args.push_back(ir_label{ node.call.mangled_name.str });
+
+    if (node.call.func_type_id.get().kind == type_kind::func) {
+        auto func_node = node.call.func_type_id.get().self;
+        if (func_node->func.linkage == func_linkage::external_c) {
+            fn->calls_extern_c = true;
+        }
+        args.push_back(ir_label{ node.call.mangled_name.str });
+    }
+    else if (node.call.func_type_id.get().kind == type_kind::func_pointer) {
+        generate_ir_node(*node.call_func());
+        args.push_back(pop());
+    }
+    else {
+        assert(!"generate_ir_call_expr: invalid call func type");
+    }
 
     for (std::size_t i = 0; i < node.call_args().size(); i++) {
         auto& arg = node.call_args()[i];
@@ -530,6 +554,11 @@ void generate_ir_call_expr(ast_node& node) {
     else {
         emitops(ir_call, ts->void_type, args);
     }
+}
+
+void generate_ir_func_overload_selector_expr(ast_node& node) {
+    temit(ir_load_addr, node.type_id, ir_funclabel{ node.call.mangled_name.str, node.type_id });
+    push(ir_stack{ node.type_id });
 }
 
 void generate_ir_assignment(ast_node& node) {
@@ -781,6 +810,9 @@ void generate_ir_node(ast_node& node) {
     case ast_type::call_expr:
         generate_ir_call_expr(node);
         break;
+    case ast_type::func_overload_selector_expr:
+        generate_ir_func_overload_selector_expr(node);
+        break;
     case ast_type::binary_expr:
         generate_ir_binary_expr(node);
         break;
@@ -809,8 +841,9 @@ void generate_ir_node(ast_node& node) {
     case ast_type::stmt_list:
         for (auto& child : node.children) {
             if (child) {
+                std::size_t opsize = operand_stack.size();
                 generate_ir_node(*child);
-                discard_stack();
+                discard_opstack(opsize);
             }
         }
         break;
@@ -841,6 +874,9 @@ void print_opr(std::ostream& f, const ir_operand& opr) {
     }
     if (auto lab = std::get_if<ir_label>(&opr); lab) {
         f << lab->name;
+    }
+    if (auto lab = std::get_if<ir_funclabel>(&opr); lab) {
+        f << "func(" << lab->name << ")";
     }
     if (auto arg = std::get_if<ir_field>(&opr); arg) {
         f << "[";

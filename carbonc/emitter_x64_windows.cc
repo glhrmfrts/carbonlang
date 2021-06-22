@@ -340,6 +340,10 @@ void emitter::call(const char* func_name) {
     emitln(" call %s", func_name);
 }
 
+void emitter::calldest(gen_destination dest) {
+    emitln(" call %s", tostr_sized(dest).c_str());
+}
+
 void emitter::push(gen_operand reg) {
     emitln(" push %s", tostr_sized(reg).c_str());
 }

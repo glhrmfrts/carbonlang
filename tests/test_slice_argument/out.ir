@@ -4,7 +4,7 @@ func cb__Nmain__Nmain__Aref__Tslice__TU_String -> int
     ir_deref [ST . 0];
     ir_index ST 0;
     ir_call cb__Nstd__Nio__Nprintln__Aptr__Tchar [ST . 0];
-    ir_return 0;
+    ir_return 234;
 endf
 
 func cb__Ninit__Ninit_command_line__Aref__Tmut_slice__TU_String -> ref__Tmut_slice__TU_String
@@ -38,19 +38,17 @@ endf
 
 func carbon_main -> int
     local #0 args: mut_slice__TU_String;
-    local #1 result: int;
-    local #2 $cbT0: mut_slice__TU_String;
-    local #3 $cbT1: mut_slice__TU_String;
+    local #1 $cbT0: mut_slice__TU_String;
+    local #2 $cbT1: mut_slice__TU_String;
     ir_load_addr L0;
     ir_call cb__Ninit__Ninit_command_line__Aref__Tmut_slice__TU_String ST;
-    ir_copy L3 L0 16;
-    ir_load_addr L3;
-    ir_call cb__Nmain__Nmain__Aref__Tslice__TU_String ST;
-    ir_load L1 ST;
     ir_copy L2 L0 16;
     ir_load_addr L2;
+    ir_call cb__Nmain__Nmain__Aref__Tslice__TU_String ST;
+    ir_copy L1 L0 16;
+    ir_load_addr L1;
     ir_call cb__Ninit__Nfree_command_line__Aref__Tmut_slice__TU_String ST;
-    ir_return L1;
+    ir_return ST;
 endf
 
 func cb__Nstd__Nalloc__Nalloc__Ausize -> raw_ptr
@@ -64,6 +62,7 @@ func cb__Nstd__Nalloc__Nfree__Araw_ptr -> void
     arg #0 ptr: raw_ptr;
     ir_call GetProcessHeap;
     ir_call HeapFree ST 0 A0;
+    ir_noop ST;
 endf
 
 func cb__Nstd__Nalloc__Ncopy__Araw_ptr__Araw_ptr__Ausize -> void
@@ -101,6 +100,7 @@ endf
 func cb__Nstd__Nio__Nprintln__Aptr__Tchar -> void
     arg #0 c: ptr__Tchar;
     ir_call puts A0;
+    ir_noop ST;
 endf
 
 func puts -> int
@@ -180,17 +180,17 @@ func cb__Nstd__Nrawstring__Nstrlen__Aptr__Tchar -> usize
     local #1 p: ptr__Tchar;
     ir_load L0 0;
     ir_load L1 A0;
-    ir_make_label cb__Nstd__Nrawstring__Nstrlen__Aptr__Tchar$w570$cond;
+    ir_make_label cb__Nstd__Nrawstring__Nstrlen__Aptr__Tchar$w567$cond;
     ir_deref L1;
     ir_cast ST;
-    ir_jmp_eq ST 0 cb__Nstd__Nrawstring__Nstrlen__Aptr__Tchar$w570$end;
-    ir_make_label cb__Nstd__Nrawstring__Nstrlen__Aptr__Tchar$w570$body;
+    ir_jmp_eq ST 0 cb__Nstd__Nrawstring__Nstrlen__Aptr__Tchar$w567$end;
+    ir_make_label cb__Nstd__Nrawstring__Nstrlen__Aptr__Tchar$w567$body;
     ir_add L1 1;
     ir_load L1 ST;
     ir_add L0 1;
     ir_load L0 ST;
-    ir_jmp cb__Nstd__Nrawstring__Nstrlen__Aptr__Tchar$w570$cond;
-    ir_make_label cb__Nstd__Nrawstring__Nstrlen__Aptr__Tchar$w570$end;
+    ir_jmp cb__Nstd__Nrawstring__Nstrlen__Aptr__Tchar$w567$cond;
+    ir_make_label cb__Nstd__Nrawstring__Nstrlen__Aptr__Tchar$w567$end;
     ir_return L0;
 endf
 
@@ -202,30 +202,30 @@ func cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar -> bool
     local #2 i: int;
     ir_call cb__Nstd__Nrawstring__Nstrlen__Aptr__Tchar A0;
     ir_call cb__Nstd__Nrawstring__Nstrlen__Aptr__Tchar A1;
-    ir_jmp_eq ST ST cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$if602$else;
-    ir_make_label cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$if602$body;
+    ir_jmp_eq ST ST cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$if599$else;
+    ir_make_label cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$if599$body;
     ir_return 0;
-    ir_make_label cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$if602$else;
+    ir_make_label cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$if599$else;
     ir_load [L0 . 0] 0;
     ir_call cb__Nstd__Nrawstring__Nstrlen__Aptr__Tchar A0;
     ir_load [L0 . 1] ST;
     ir_load L2 [L0 . 0];
-    ir_make_label cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$f626$cond;
+    ir_make_label cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$f623$cond;
     ir_cast L2;
-    ir_jmp_gte ST [L0 . 1] cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$f626$end;
-    ir_make_label cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$f626$body;
+    ir_jmp_gte ST [L0 . 1] cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$f623$end;
+    ir_make_label cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$f623$body;
     ir_deref A0;
     ir_index ST L2;
     ir_deref A1;
     ir_index ST L2;
-    ir_jmp_eq ST ST cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$if623$else;
-    ir_make_label cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$if623$body;
+    ir_jmp_eq ST ST cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$if620$else;
+    ir_make_label cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$if620$body;
     ir_return 0;
-    ir_make_label cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$if623$else;
+    ir_make_label cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$if620$else;
     ir_add L2 1;
     ir_load L2 ST;
-    ir_jmp cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$f626$cond;
-    ir_make_label cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$f626$end;
+    ir_jmp cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$f623$cond;
+    ir_make_label cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$f623$end;
     ir_return 1;
 endf
 

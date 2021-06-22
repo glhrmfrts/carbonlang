@@ -39,6 +39,8 @@ struct emitter {
 
     void call(const char* func_name);
 
+    void calldest(gen_destination dest);
+
     void push(gen_operand reg);
 
     void pop(gen_operand reg);

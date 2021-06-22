@@ -1,0 +1,35 @@
+import std::io;
+import std::string;
+import std::rawstring;
+
+type CalculateFunc = {int} -> int;
+
+func main(args: [*]String): int {
+    println(args[0].data);
+
+    var fp : {int} -> int = square\{int};
+    let a = fp(5);
+
+    fp = identity\{int};
+    let b = fp(10);
+
+    if (a == 25 && b == 10) {
+        println("[OK] test_function_pointers");
+    }
+    else {
+        println("[NOK] test_function_pointers");
+    }
+
+    return 0;
+}
+
+func square(a: int): int {
+    let res = a * a;
+    println("from square");
+    return res;
+}
+
+func identity(a: int): int {
+    println("from identity");
+    return a;
+}

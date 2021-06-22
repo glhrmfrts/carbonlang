@@ -1,5 +1,5 @@
 extern(C) {
 
-func strlen(s: raw_string): usize;
+func strlen(s: rawstring): usize;
 
 }

@@ -44,6 +44,7 @@ enum class type_kind {
     structure,
     tuple,
     func,
+    func_pointer,
     type,
     constructor,
 };
@@ -329,6 +330,7 @@ struct type_system {
     type_constructor* arr_type_constructor;
     type_constructor* slice_type_constructor;
     type_constructor* mut_slice_type_constructor;
+    type_constructor* func_pointer_type_constructor;
 
     explicit type_system(memory_arena&);
 

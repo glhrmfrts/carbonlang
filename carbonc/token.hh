@@ -47,6 +47,7 @@ enum class token_type : unsigned int {
     nil,
     nullrawptr,
     defer,
+    arrow_right,
 };
 
 struct position {

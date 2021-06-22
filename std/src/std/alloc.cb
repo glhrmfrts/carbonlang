@@ -1,15 +1,15 @@
 import std::os::windows;
 
-func alloc(size: usize): raw_ptr {
+func alloc(size: usize): rawptr {
     return HeapAlloc(GetProcessHeap(), 0, size);
 }
 
-func free(ptr: raw_ptr) {
+func free(ptr: rawptr) {
     HeapFree(GetProcessHeap(), 0, ptr);
 }
 
 /// Copies [size] bytes from [src] to [dest].
-func copy(dest: raw_ptr, src: raw_ptr, size: usize) {
+func copy(dest: rawptr, src: rawptr, size: usize) {
     asm%{
 push rdi
 push rsi
@@ -25,7 +25,7 @@ pop rdi
 }
 
 /// Stores [count] amount of [value] in [dest].
-func set(dest: raw_ptr, value: char, count: usize) {
+func set(dest: rawptr, value: char, count: usize) {
     asm%{
 push rdi
 

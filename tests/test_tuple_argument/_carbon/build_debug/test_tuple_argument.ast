@@ -58,11 +58,10 @@ call{sum_tuple ({& $cbT0})}}}
                   defer{var_decl{$cbT1 = args}
 call{free_command_line ({& $cbT1})}}}
                 decl_list{
-                  import_decl{ main}
-                  var_decl{result = var_decl{$cbT2 = args}
-call{main ({& $cbT2})}}}
+                  import_decl{ main}}
                 stmt_list{
-                  return{result}}}}}}}}}  code_unit{
+                  return{var_decl{$cbT2 = args}
+call{main ({& $cbT2})}}}}}}}}}}  code_unit{
     std/alloc.cb
     decl_list{
       import_decl{ std::os::windows}

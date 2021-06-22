@@ -29,6 +29,7 @@ enum ir_op {
     ir_jmp_gte,
     ir_jmp_lt,
     ir_jmp_lte,
+    ir_noop,
 };
 
 struct ir_local_data {
@@ -69,6 +70,11 @@ struct ir_float {
     type_id type;
 };
 
+struct ir_funclabel {
+    std::string name;
+    type_id type;
+};
+
 struct ir_label {
     std::string name;
 };
@@ -82,7 +88,7 @@ struct ir_field {
     int field_index;
 };
 
-using ir_operand = std::variant<std::string, ir_field, ir_label, ir_local, ir_arg, ir_stack, ir_string, ir_int, ir_float, char>;
+using ir_operand = std::variant<std::string, ir_field, ir_label, ir_funclabel, ir_local, ir_arg, ir_stack, ir_string, ir_int, ir_float, char>;
 
 struct ir_instr {
     ir_op op;

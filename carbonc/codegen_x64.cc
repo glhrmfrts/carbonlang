@@ -463,7 +463,8 @@ struct generator {
             break;
         }
         case ir_call: {
-            ir_label funclabel = std::get<ir_label>(instr.operands[0]);
+            bool is_fptr = !std::holds_alternative<ir_label>(instr.operands[0]);
+
             std::size_t num_args = instr.operands.size() - 1;
             if (num_args > arg_registers.size()) {
                 for (std::size_t i = num_args; i > arg_registers.size(); i--) {
@@ -481,7 +482,19 @@ struct generator {
                 move(dest, optype, op, optype);
             }
 
-            em->call(funclabel.name.c_str());
+            if (!is_fptr) {
+                ir_label funclabel = std::get<ir_label>(instr.operands[0]);
+                em->call(funclabel.name.c_str());
+            }
+            else {
+                auto [f, ftype] = transform_ir_operand(instr.operands[0]);
+                if (!is_reg(f)) {
+                    auto arax = adjust_for_type(reg_result, ftype);
+                    move(arax, ftype, f, ftype);
+                    f = toop(arax);
+                }
+                em->calldest(todest(f));
+            }
 
             if (instr.result_type != ts->void_type) {
                 auto dest = adjust_for_type(instr_dest_to_gen_dest(idata.dest), instr.result_type);
@@ -659,6 +672,12 @@ struct generator {
             push(toop(dest));
             break;
         }
+        case ir_noop: {
+            for (std::size_t i = 0; i < instr.operands.size(); i++) {
+                (void)transform_ir_operand(instr.operands[i]);
+            }
+            break;
+        }
         }
 
         if (instr.op != ir_asm) {
@@ -764,6 +783,9 @@ struct generator {
             auto cgop = pop();
             return std::make_pair(cgop, arg->type);
         }
+        else if (auto arg = std::get_if<ir_funclabel>(&opr); arg) {
+            return std::make_pair(gen_data_offset{ arg->name }, arg->type);
+        }
         else if (auto arg = std::get_if<ir_string>(&opr); arg) {
             return std::make_pair(gen_data_offset{ get_string_label(arg->index) }, ts->raw_string_type);
         }
@@ -817,6 +839,9 @@ struct generator {
             return arg->type;
         }
         else if (auto arg = std::get_if<ir_stack>(&opr); arg) {            
+            return arg->type;
+        }
+        else if (auto arg = std::get_if<ir_funclabel>(&opr); arg) {
             return arg->type;
         }
         else if (auto arg = std::get_if<ir_string>(&opr); arg) {

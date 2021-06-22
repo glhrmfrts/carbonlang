@@ -4,10 +4,35 @@
       import_decl{ std::io}
       import_decl{ std::string}
       import_decl{ std::rawstring}
+      type_decl{CalculateFunc = type_expr{(type_expr{int})type_expr{int}}}
       func_decl{main (var_decl{args: type_expr{slice_type{[*] type_expr{String}}}}): type_expr{int} {
           stmt_list{
-            call{println ({* args}.data[0].data)}
-            return{234}}}}}}  code_unit{
+            call{println ({* args}.data[0].data)}}
+          decl_list{
+            var_decl{fp: type_expr{(type_expr{int})type_expr{int}} = squaretype_expr{tuple_type{(type_expr{int})}}}
+            var_decl{a = call{fp (5)}}}
+          stmt_list{
+            {fp = identitytype_expr{tuple_type{(type_expr{int})}}}}
+          decl_list{
+            var_decl{b = call{fp (10)}}}
+          stmt_list{
+            if{{{a  25} 	 {b  10}} {
+                stmt_list{
+                  call{println ("[OK] test_function_pointers")}}} else {
+                stmt_list{
+                  call{println ("[NOK] test_function_pointers")}}}}}
+          stmt_list{
+            return{0}}}}
+      func_decl{square (var_decl{a: type_expr{int}}): type_expr{int} {
+          decl_list{
+            var_decl{res = {a * a}}}
+          stmt_list{
+            call{println ("from square")}
+            return{res}}}}
+      func_decl{identity (var_decl{a: type_expr{int}}): type_expr{int} {
+          stmt_list{
+            call{println ("from identity")}
+            return{a}}}}}}  code_unit{
     init.cb
     decl_list{
       import_decl{ std::io}
@@ -33,7 +58,7 @@
                 return{$cb_agg_ret}}}}
           func_decl{free_command_line (var_decl{args: type_expr{slice_type{[&] type_expr{String}}}}): type_expr{tuple_type{}} {
               stmt_list{
-                call{alloc::free (cast_expr{type_expr{raw_ptr} {* args}.data})}}}}
+                call{alloc::free (cast_expr{type_expr{rawptr} {* args}.data})}}}}
           linkage_specifier{ extern(C) func_decl{carbon_main (): type_expr{int} {
                 decl_list{
                   call{init_command_line ({& args})}
@@ -49,13 +74,13 @@ call{main ({& $cbT1})}}}}}}}}}}  code_unit{
     std/alloc.cb
     decl_list{
       import_decl{ std::os::windows}
-      func_decl{alloc (var_decl{size: type_expr{usize}}): type_expr{raw_ptr} {
+      func_decl{alloc (var_decl{size: type_expr{usize}}): type_expr{rawptr} {
           stmt_list{
             return{call{HeapAlloc (call{GetProcessHeap ()}, 0, size)}}}}}
-      func_decl{free (var_decl{ptr: type_expr{raw_ptr}}): type_expr{tuple_type{}} {
+      func_decl{free (var_decl{ptr: type_expr{rawptr}}): type_expr{tuple_type{}} {
           stmt_list{
             call{HeapFree (call{GetProcessHeap ()}, 0, ptr)}}}}
-      func_decl{copy (var_decl{dest: type_expr{raw_ptr}}, var_decl{src: type_expr{raw_ptr}}, var_decl{size: type_expr{usize}}): type_expr{tuple_type{}} {
+      func_decl{copy (var_decl{dest: type_expr{rawptr}}, var_decl{src: type_expr{rawptr}}, var_decl{size: type_expr{usize}}): type_expr{tuple_type{}} {
           decl_list{
             asm{push rdi
 push rsi
@@ -68,7 +93,7 @@ rep movsb
 pop rsi
 pop rdi
     }}}}
-      func_decl{set (var_decl{dest: type_expr{raw_ptr}}, var_decl{value: type_expr{char}}, var_decl{count: type_expr{usize}}): type_expr{tuple_type{}} {
+      func_decl{set (var_decl{dest: type_expr{rawptr}}, var_decl{value: type_expr{char}}, var_decl{count: type_expr{usize}}): type_expr{tuple_type{}} {
           decl_list{
             asm{push rdi
 
@@ -92,25 +117,25 @@ pop rdi
     std/libc/stdio.cb
     decl_list{
       linkage_specifier{ extern(C) decl_list{
-          func_decl{puts (var_decl{c: type_expr{raw_string}}): type_expr{int} }
-          func_decl{putc (var_decl{c: type_expr{char}}, var_decl{stream: type_expr{raw_ptr}}): type_expr{int} }}}}}  code_unit{
+          func_decl{puts (var_decl{c: type_expr{rawstring}}): type_expr{int} }
+          func_decl{putc (var_decl{c: type_expr{char}}, var_decl{stream: type_expr{rawptr}}): type_expr{int} }}}}}  code_unit{
     std/libc/stdlib.cb
     decl_list{
       linkage_specifier{ extern(C) decl_list{
           func_decl{exit (var_decl{status: type_expr{int}}): type_expr{tuple_type{}} }
-          func_decl{free (var_decl{ptr: type_expr{raw_ptr}}): type_expr{int} }
-          func_decl{malloc (var_decl{size: type_expr{usize}}): type_expr{raw_ptr} }
+          func_decl{free (var_decl{ptr: type_expr{rawptr}}): type_expr{int} }
+          func_decl{malloc (var_decl{size: type_expr{usize}}): type_expr{rawptr} }
           func_decl{rand (): type_expr{int} }
-          func_decl{system (var_decl{c: type_expr{raw_string}}): type_expr{int} }}}}}  code_unit{
+          func_decl{system (var_decl{c: type_expr{rawstring}}): type_expr{int} }}}}}  code_unit{
     std/libc/string.cb
     decl_list{
       linkage_specifier{ extern(C) decl_list{
-          func_decl{strlen (var_decl{s: type_expr{raw_string}}): type_expr{usize} }}}}}  code_unit{
+          func_decl{strlen (var_decl{s: type_expr{rawstring}}): type_expr{usize} }}}}}  code_unit{
     std/os/windows.cb
     decl_list{
       linkage_specifier{ extern(C) decl_list{
-          func_decl{HeapAlloc (var_decl{hHeap: type_expr{int}}, var_decl{dwFlags: type_expr{int}}, var_decl{dwBytes: type_expr{usize}}): type_expr{raw_ptr} }
-          func_decl{HeapFree (var_decl{hHeap: type_expr{int}}, var_decl{dwFlags: type_expr{int}}, var_decl{lpMem: type_expr{raw_ptr}}): type_expr{bool} }
+          func_decl{HeapAlloc (var_decl{hHeap: type_expr{int}}, var_decl{dwFlags: type_expr{int}}, var_decl{dwBytes: type_expr{usize}}): type_expr{rawptr} }
+          func_decl{HeapFree (var_decl{hHeap: type_expr{int}}, var_decl{dwFlags: type_expr{int}}, var_decl{lpMem: type_expr{rawptr}}): type_expr{bool} }
           func_decl{GetProcessHeap (): type_expr{int} }
           func_decl{GetCommandLineA (): type_expr{type_qualifier{reference, char}} }}}}}  code_unit{
     std/rawstring.cb
@@ -128,10 +153,10 @@ pop rdi
             return{newstr}}}}
       func_decl{copy (var_decl{dest: type_expr{type_qualifier{pointer, char}}}, var_decl{src: type_expr{type_qualifier{pointer, char}}}, var_decl{size: type_expr{usize}}): type_expr{tuple_type{}} {
           stmt_list{
-            call{alloc::copy (cast_expr{type_expr{raw_ptr} dest}, cast_expr{type_expr{raw_ptr} src}, size)}}}}
+            call{alloc::copy (cast_expr{type_expr{rawptr} dest}, cast_expr{type_expr{rawptr} src}, size)}}}}
       func_decl{set (var_decl{dest: type_expr{type_qualifier{pointer, char}}}, var_decl{value: type_expr{char}}, var_decl{count: type_expr{usize}}): type_expr{tuple_type{}} {
           stmt_list{
-            call{alloc::set (cast_expr{type_expr{raw_ptr} dest}, value, count)}}}}
+            call{alloc::set (cast_expr{type_expr{rawptr} dest}, value, count)}}}}
       func_decl{strlen (var_decl{str: type_expr{type_qualifier{pointer, char}}}): type_expr{usize} {
           decl_list{
             var_decl{c: type_expr{usize} = 0}

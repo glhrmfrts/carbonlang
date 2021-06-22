@@ -28,6 +28,7 @@ enum class ast_type {
     cast_expr,
     field_expr,
     ternary_expr,
+    func_overload_selector_expr,
 
     type_decl,
     var_decl,
@@ -51,6 +52,7 @@ enum class ast_type {
     tuple_type,
     array_type,
     slice_type,
+    func_pointer_type,
     type_constructor_instance,
     type_qualifier,
     linkage_specifier,
@@ -172,6 +174,12 @@ struct ast_node {
     ast_node* for_elems() const  { return children[0].get(); }
     ast_node* for_iter()  const  { return children[1].get(); }
     ast_node* for_body()  const  { return children[2].get(); }
+
+    ast_node*                         func_overload_fn() const { return children[0].get(); }
+    std::vector<arena_ptr<ast_node>>& func_overload_args() const { return children[1]->children[0]->children[0]->children; }
+
+    std::vector<arena_ptr<ast_node>>& func_type_args() const { return children[0]->children; }
+    ast_node*                         func_type_ret() const { return children[1].get(); }
 };
 
 arena_ptr<ast_node> make_nil_literal_node(memory_arena& arena, const position& pos);
@@ -203,6 +211,8 @@ arena_ptr<ast_node> make_field_expr_node(memory_arena& arena, const position& po
 arena_ptr<ast_node> make_cast_expr_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& type_expr, arena_ptr<ast_node>&& value);
 
 arena_ptr<ast_node> make_ternary_expr_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& cond, arena_ptr<ast_node>&& then_expr, arena_ptr<ast_node>&& else_expr);
+
+arena_ptr<ast_node> make_func_overload_selector_expr_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& fn, arena_ptr<ast_node>&& arg_types);
 
 arena_ptr<ast_node> make_import_decl_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& mod, arena_ptr<ast_node>&& alias);
 
@@ -241,6 +251,8 @@ arena_ptr<ast_node> make_tuple_type_node(memory_arena& arena, const position& po
 arena_ptr<ast_node> make_array_type_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& size_expr, arena_ptr<ast_node>&& item_type);
 
 arena_ptr<ast_node> make_slice_type_node(memory_arena& arena, const position& pos, token_type op, arena_ptr<ast_node>&& item_type);
+
+arena_ptr<ast_node> make_func_pointer_type_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& arg_types, arena_ptr<ast_node>&& ret_type);
 
 arena_ptr<ast_node> make_type_constructor_instance_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& tpl, arena_ptr<ast_node>&& arg_list);
 

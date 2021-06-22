@@ -12,11 +12,11 @@ func copy(str: *char, size: usize): *char {
 }
 
 func copy(dest: *char, src: *char, size: usize) {
-    alloc::copy(cast[raw_ptr] dest, cast[raw_ptr] src, size);
+    alloc::copy(cast[rawptr] dest, cast[rawptr] src, size);
 }
 
 func set(dest: *char, value: char, count: usize) {
-    alloc::set(cast[raw_ptr] dest, value, count);
+    alloc::set(cast[rawptr] dest, value, count);
 }
 
 func strlen(str: *char): usize {

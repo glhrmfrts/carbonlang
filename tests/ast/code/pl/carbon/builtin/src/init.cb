@@ -17,14 +17,13 @@ code_unit{
               return{result}}}}
         func_decl{free_command_line (var_decl{args: type_expr{slice_type{[&] type_expr{String}}}}) {
             stmt_list{
-              call{alloc::free (cast_expr{type_expr{raw_ptr} args.data})}}}}
+              call{alloc::free (cast_expr{type_expr{rawptr} args.data})}}}}
         linkage_specifier{ extern(C) func_decl{carbon_main (): type_expr{int} {
               decl_list{
                 var_decl{args = call{init_command_line ()}}}
               stmt_list{
                 defer{args.free_command_line}}
               decl_list{
-                import_decl{ main}
-                var_decl{result = call{main (args)}}}
+                import_decl{ main}}
               stmt_list{
-                return{result}}}}}}}}}
+                return{call{main (args)}}}}}}}}}}

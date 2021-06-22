@@ -153,6 +153,16 @@ arena_ptr<ast_node> make_ternary_expr_node(memory_arena& arena, const position& 
     return ptr;
 }
 
+arena_ptr<ast_node> make_func_overload_selector_expr_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& fn, arena_ptr<ast_node>&& arg_types) {
+    auto ptr = make_in_arena<ast_node>(arena);
+    ptr->node_id = node_id_gen++;
+    ptr->type = ast_type::func_overload_selector_expr;
+    ptr->pos = pos;
+    ptr->children.push_back(std::move(fn));
+    ptr->children.push_back(std::move(arg_types));
+    return ptr;
+}
+
 arena_ptr<ast_node> make_import_decl_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& mod, arena_ptr<ast_node>&& alias) {
     auto ptr = make_in_arena<ast_node>(arena);
     ptr->node_id = node_id_gen++;
@@ -346,6 +356,16 @@ arena_ptr<ast_node> make_slice_type_node(memory_arena& arena, const position& po
     ptr->pos = pos;
     ptr->op = op;
     ptr->children.push_back(std::move(item_type));
+    return ptr;
+}
+
+arena_ptr<ast_node> make_func_pointer_type_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& arg_types, arena_ptr<ast_node>&& ret_type) {
+    auto ptr = make_in_arena<ast_node>(arena);
+    ptr->node_id = node_id_gen++;
+    ptr->type = ast_type::func_pointer_type;
+    ptr->pos = pos;
+    ptr->children.push_back(std::move(arg_types));
+    ptr->children.push_back(std::move(ret_type));
     return ptr;
 }
 

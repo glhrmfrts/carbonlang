@@ -160,6 +160,15 @@ struct parser_impl {
             });
         }
 
+        if (TOK == token_type::arrow_right) {
+            lex->next();
+            auto ret_type = parse_type_expr();
+            if (!ret_type) {
+                throw parse_error(filename, lex->pos(), "expecting function pointer type's return type");
+            }
+            return make_func_pointer_type_node(*ast_arena, pos, std::move(field_list), std::move(ret_type));
+        }
+
         if (mode == TUPLE) {
             return make_tuple_type_node(*ast_arena, pos, std::move(field_list));
         }
@@ -874,7 +883,14 @@ struct parser_impl {
             return make_string_literal_node(*ast_arena, lex->pos(), lex->string_value());
         }
         case token_type::identifier: {
-            return parse_qualified_identifier();
+            auto id = parse_qualified_identifier();
+            if (TOK_CHAR == '\\') {
+                lex->next();
+                // function overload selector
+                auto type = parse_type_expr();
+                return make_func_overload_selector_expr_node(*ast_arena, id->pos, std::move(id), std::move(type));
+            }
+            return id;
         }
         default: {
             char c = TOK_CHAR;
