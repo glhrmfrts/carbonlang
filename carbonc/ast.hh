@@ -28,6 +28,7 @@ enum class ast_type {
     cast_expr,
     field_expr,
     ternary_expr,
+    func_expr,
     func_overload_selector_expr,
 
     type_decl,
@@ -123,6 +124,7 @@ struct ast_node {
     std::vector<std::string> id_parts{};
     std::vector<arena_ptr<ast_node>> pre_children{};
     std::vector<arena_ptr<ast_node>> children{};
+    std::vector<arena_ptr<ast_node>> children_to_add{};
     std::vector<arena_ptr<ast_node>> temps{};
     arena_ptr<ast_node> sizeof_type_expr{nullptr, nullptr};
     ast_node* parent = nullptr;
@@ -135,6 +137,7 @@ struct ast_node {
     type_def type_def;
     lvalue lvalue;
     call_info call;
+    func_overload_info func_overload;
     global_data global_data;
     for_info forinfo;
     slice_info slice;
@@ -211,6 +214,8 @@ arena_ptr<ast_node> make_field_expr_node(memory_arena& arena, const position& po
 arena_ptr<ast_node> make_cast_expr_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& type_expr, arena_ptr<ast_node>&& value);
 
 arena_ptr<ast_node> make_ternary_expr_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& cond, arena_ptr<ast_node>&& then_expr, arena_ptr<ast_node>&& else_expr);
+
+arena_ptr<ast_node> make_func_expr_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& id, arena_ptr<ast_node>&& arg_list, arena_ptr<ast_node>&& ret_type, arena_ptr<ast_node>&& body, func_linkage linkage);
 
 arena_ptr<ast_node> make_func_overload_selector_expr_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& fn, arena_ptr<ast_node>&& arg_types);
 

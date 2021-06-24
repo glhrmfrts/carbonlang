@@ -1,0 +1,115 @@
+type Field2D = {
+	maxx: int,
+	maxy: int,
+	data: &int,
+    a: &Allocator,
+};
+
+struct Automaton {
+    field: Field2D,
+    new_field: Field2D,
+};
+
+macro make_raw_array(T, size, a): ?& T {
+    return `(cast[?& $T] $a.alloc($a, $size * sizeof($T)));
+}
+
+type runtime_error = {
+    kind: symbol,
+    description: []char,
+    user_data: rawptr,
+    user_data_deleter: ?{rawptr} -> {},
+
+    [debug] info: runtime_error_debug_info,
+
+    dispose {
+        if (user_data_deleter) {
+            user_data_deleter(user_data)
+        }
+    }
+};
+
+func make_field(sx: int, sy: int, a: &Allocator): Field2D|e {
+    /// PANIC(debug): unhandled runtime error:
+    ///
+    /// {#out_of_memory, "Allocator (std::alloc::default_allocator@0xFCBABA) out of memory"}
+    ///
+    /// panic arised from unhandled error at [src/main.cb:16:10]:
+    ///
+    /// 15 | 
+    /// 16 |    let g = panic gun();
+    /// 17 |            ^^^^^^^^^^^^
+    ///
+    /// origin of error at [src/automaton.cb:27:5]:
+    ///
+    /// 26 | if (alloc_result is #nil) {
+    /// 27 |     error{#out_of_memory, "Allocator (%db) out of memory".format(a)};
+    /// 28 | }
+    ///
+    /// backtrace (from most nested to less):
+    ///
+    /// [src/automaton.cb:27:5]  at func make_field(sx: int, sy: int): Field2D|e
+    /// [src/automaton.cb:40:15] at func make_automaton(field: []char): Automaton|e
+    /// [src/automaton.cb:86:15] at func gun(): Automaton|e
+    /// [src/main.cb:16:10]      at func main(args: [][]char): int
+    /// [(builtin init):16:10]   at func carbon_main(): int
+
+    let res = panic make_raw_array(int, maxx * maxy, a);
+
+    if (res !is &int) {
+        return res;
+    }
+
+    return Field2D{
+        maxx, maxy, res, a
+    };
+}
+
+func make_automaton(field: []char) {
+    let f: Field2D = make_field();
+    let fn: Field2D = make_field();
+    return Automaton{
+        field, fn
+    };
+}
+
+func update(a: const &Automaton) {
+    return a;
+}
+
+func gun(): ?Automaton {
+    let gunfield = eof%{
+*******************************************
+*                                         *
+*  A shooting gun:                        *
+*                          #              *
+*                        # #              *
+*              ##      ##            ##   *
+*             #   #    ##            ##   *
+*  ##        #     #   ##                 *
+*  ##        #   # ##    # #              *
+*            #     #       #              *
+*             #   #                       *
+*              ##                         *
+*                                         *
+*  Tetris Life:                           *
+*                                         *
+*  ##       ####                          *
+*  ##                                     *
+*                                         *
+*                                         *
+*                                         *
+*  #         ##                           *
+*  ###      ##                            *
+*                                         *
+*                                         *
+*                                         *
+*        #                                *
+*       ###                               *
+*                                         *
+*                                         *
+*                                         *
+*                                         *
+*******************************************}%eof;
+    return gunfield;
+}

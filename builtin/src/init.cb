@@ -6,15 +6,15 @@ import std::os::windows;
 
 private {
 
-func init_command_line(): [&]String {
+func init_command_line(): [&]string {
     let cmdline = GetCommandLineA();
-    let data = cast[&String] alloc::alloc(sizeof(String));
-    let result = [&]String{ data, 1 };
-    result[0] = String{ cmdline, cmdline.strlen };
+    let data = cast[&string] alloc::alloc(sizeof(string));
+    let result = [&]string{ data, 1 };
+    result[0] = string{ cmdline, cmdline.strlen };
     return result;
 }
 
-func free_command_line(args: [&]String) {
+func free_command_line(args: [&]string) {
     alloc::free(cast[rawptr] args.data);
 }
 

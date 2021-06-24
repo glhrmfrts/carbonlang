@@ -153,6 +153,19 @@ arena_ptr<ast_node> make_ternary_expr_node(memory_arena& arena, const position& 
     return ptr;
 }
 
+arena_ptr<ast_node> make_func_expr_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& id, arena_ptr<ast_node>&& arg_list, arena_ptr<ast_node>&& ret_type, arena_ptr<ast_node>&& body, func_linkage linkage) {
+    auto ptr = make_in_arena<ast_node>(arena);
+    ptr->node_id = node_id_gen++;
+    ptr->type = ast_type::func_expr;
+    ptr->pos = pos;
+    ptr->func.linkage = linkage;
+    ptr->children.push_back(std::move(id));
+    ptr->children.push_back(std::move(arg_list));
+    ptr->children.push_back(std::move(ret_type));
+    ptr->children.push_back(std::move(body));
+    return ptr;
+}
+
 arena_ptr<ast_node> make_func_overload_selector_expr_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& fn, arena_ptr<ast_node>&& arg_types) {
     auto ptr = make_in_arena<ast_node>(arena);
     ptr->node_id = node_id_gen++;

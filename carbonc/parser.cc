@@ -612,16 +612,20 @@ struct parser_impl {
         return parse_var_decl(token_type::let);
     }
 
-    arena_ptr<ast_node> parse_func_decl() {
+    arena_ptr<ast_node> parse_func_decl(bool as_expr = false) {
         auto pos = lex->pos();
         lex->next(); // eat the 'func'
 
-        if (TOK != token_type::identifier) {
-            throw parse_error(filename, lex->pos(), "expected identifier in func declaration");
+        arena_ptr<ast_node> id{nullptr, nullptr};
+        if (!as_expr) {
+            if (TOK != token_type::identifier) {
+                throw parse_error(filename, lex->pos(), "expected identifier in func declaration");
+            }
+            id = make_identifier_node(*ast_arena, lex->pos(), { lex->string_value() });
+            lex->next();
         }
-        auto id = make_identifier_node(*ast_arena, lex->pos(), { lex->string_value() });
-        lex->next();
 
+        // parse the argument list
         auto arg_list = arena_ptr<ast_node>{ nullptr, nullptr };
         if (TOK_CHAR == '(') {
             ctx_stack.push(parse_context::func_arg_decl);
@@ -651,6 +655,9 @@ struct parser_impl {
             body = parse_compound_stmt();
         }
 
+        if (as_expr) {
+            return make_func_expr_node(*ast_arena, pos, std::move(id), std::move(arg_list), std::move(ret_type), std::move(body), func_linkage::local_carbon);
+        }
         return make_func_decl_node(*ast_arena, pos, std::move(id), std::move(arg_list), std::move(ret_type), std::move(body), func_linkage::local_carbon);
     }
 
@@ -891,6 +898,9 @@ struct parser_impl {
                 return make_func_overload_selector_expr_node(*ast_arena, id->pos, std::move(id), std::move(type));
             }
             return id;
+        }
+        case token_type::func: {
+            return parse_func_decl(/*as_expr=*/true);
         }
         default: {
             char c = TOK_CHAR;

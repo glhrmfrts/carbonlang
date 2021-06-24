@@ -182,6 +182,7 @@ struct call_flag {
     using type = unsigned int;
 
     static constexpr type none = 0;
+    static constexpr type is_method_sugar_call = 1;
     static constexpr type is_aggregate_return = 4;
 };
 
@@ -192,6 +193,11 @@ struct call_info {
     std::vector<type_id> arg_types;
     string_hash mangled_name;
     type_id func_type_id{};
+};
+
+struct func_overload_info {
+    ast_node* self;
+    ast_node* from_lambda;
 };
 
 struct for_info {

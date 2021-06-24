@@ -10,7 +10,7 @@ func widen(text: [*]char, a: *Allocator): [&]int16 {
     if (!text.len) { return WideString{}; }
 
     let charcount = MultiByteToWideChar(CP_UTF8, 0, text.data, text.len, nullrawptr, 0) - (size == -1 then 1 else 0);
-    let data = a.alloc(charcount * sizeof(WideString::ElemType));
+    let data = a.alloc(a, charcount * sizeof(WideString::ElemType));
 
     let result = MutableWideString{ data, charcount };
     MultiByteToWideChar(CP_UTF8, 0, text, size, result.data, result.len);

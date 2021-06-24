@@ -12,6 +12,9 @@
 
 namespace carbon {
 
+constexpr int MIN_PASS_FOR_METHOD_CALL_SUGAR = 10;
+constexpr int MIN_PASS_FOR_FIELD_CALL_SUGAR = 12;
+
 static const type_id invalid_type{};
 
 type_id get_type_expr_node_type(type_system& ts, const ast_node& node);
@@ -53,7 +56,7 @@ template <typename... Args> void unk_type_error(type_system& ts, type_id tid, co
         snprintf(msgb, sizeof(msgb), fmt, std::forward<Args>(args)...);
 
         const char* filename = pos.filename.c_str();
-        snprintf(wholeb, sizeof(wholeb), "carbonc - ERROR %zX - %s\n\n[%s:%d:%d] %s\n", error_hash.hash, filename, filename, pos.line_number, pos.col_offs, msgb);
+        snprintf(wholeb, sizeof(wholeb), "carbonc - ERROR %zX - %s\n\n[%s:%d:%d] %s\n", error_hash.hash & 0xFFFF, filename, filename, pos.line_number, pos.col_offs, msgb);
         ts.current_error = { pos, error_hash, std::string{filename}, std::string{wholeb} };
     }
 }
@@ -387,6 +390,10 @@ std::pair<bool, bool> is_convertible_to(type_system& ts, type_id a, type_id b) {
         else {
             return std::make_pair(is_assignable_to(ts, ta.elem_type, tb.elem_type), false);
         }
+    }
+
+    if (ta.kind == type_kind::func_pointer && tb.kind == type_kind::func_pointer) {
+        // TODO
     }
 
     return std::make_pair(false, false);
@@ -1253,6 +1260,37 @@ bool match_arg_list(type_system& ts, std::vector<arena_ptr<ast_node>>& func_args
     return true;
 }
 
+std::tuple<bool,bool,bool> match_method_arg_list(type_system& ts, std::vector<arena_ptr<ast_node>>& func_args, std::vector<arena_ptr<ast_node>>& call_args) {
+    if (func_args.size() != call_args.size()) return std::make_tuple(false, false, false);
+
+    bool need_cast_ptr = false;
+    bool need_cast_ref = false;
+    for (std::size_t i = 0; i < func_args.size(); i++) {
+        auto& farg = func_args[i];
+        auto& carg = call_args[i];
+
+        // TODO: check for needed casts
+        if (!is_convertible_to(ts, carg->type_id, farg->type_id).first) {
+            try_coerce_to(ts, *carg, farg->type_id);
+            if (!is_convertible_to(ts, carg->type_id, farg->type_id).first) {
+                if (i == 0) {
+                    if (farg->type_id.get().kind == type_kind::pointer && farg->type_id.get().elem_type == carg->type_id) {
+                        need_cast_ptr = true;
+                        continue;
+                    }
+                    if (farg->type_id.get().kind == type_kind::reference && farg->type_id.get().elem_type == carg->type_id) {
+                        need_cast_ref = true;
+                        continue;
+                    }
+                }
+                return std::make_tuple(false, false, false);
+            }
+        }
+    }
+
+    return std::make_tuple(true, need_cast_ptr, need_cast_ref);
+}
+
 string_hash mangle_func_name(type_system& ts, const std::vector<std::string>& id_parts, const std::vector<arena_ptr<ast_node>>& args, func_linkage linkage) {
     //assert(f.type_id != invalid_type);
 
@@ -1757,6 +1795,7 @@ bool check_reserved_call(type_system& ts, ast_node& node) {
             return true;
         }
     }
+    return false;
 }
 
 // Section: main visitor
@@ -1786,6 +1825,10 @@ void visit_children(type_system& ts, ast_node& node) {
             visit_tree(ts, *child);
         }
     }
+    for (auto& child : node.children_to_add) {
+        node.children.push_back(std::move(child));
+    }
+    node.children_to_add.clear();
 }
 
 template <typename F> void for_each_child_recur(ast_node& node, ast_type type, F f) {
@@ -1979,7 +2022,43 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
         }
         break;
     }
+    case ast_type::func_expr: {
+        assert(!node.func_overload.self);
+
+        auto encfunc = find_nearest_scope_local(ts, scope_kind::func_body)->self;
+        auto encname = build_identifier_value(encfunc->func_id()->id_parts);
+        auto lambda_name = encname + "__lambda__" + std::to_string(string_hash{ node.pos.filename }.hash) + "__" + std::to_string(node.pos.src_offs);
+        auto lambda_id = make_identifier_node(*ts.ast_arena, {}, { lambda_name });
+        auto new_func_decl = make_func_decl_node(
+            *ts.ast_arena, node.pos, std::move(lambda_id),
+            std::move(node.children[1]), std::move(node.children[2]), std::move(node.children[3]), func_linkage::local_carbon
+        );
+        auto new_func_decl_ptr = new_func_decl.get();
+        encfunc->parent->children_to_add.push_back(std::move(new_func_decl));
+
+        // Transform into a overload selector to get the function pointer as a result
+        node.children.clear();
+        node.type = ast_type::func_overload_selector_expr;
+        node.func_overload.from_lambda = new_func_decl_ptr;
+        node.func_overload.self = &node;
+        break;
+    }
     case ast_type::func_overload_selector_expr: {
+        if (node.func_overload.from_lambda) {
+            auto func = node.func_overload.from_lambda;
+            node.call.funcdef = &func->func;
+
+            if (func->type_def.id.valid()) {
+                node.type_id = get_func_pointer_type_to(ts, func->type_def.id);
+                node.type_error = false;
+            }
+            else {
+                node.type_error = true;
+            }
+            break;
+        }
+
+        node.func_overload.self = &node;
         visit_tree(ts, *node.func_overload_fn());
 
         bool args_resolved = true;
@@ -2130,7 +2209,30 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
                         bool resolved = false;
                         for (std::size_t i = 0; i < bsym->overload_funcs.size(); i++) {
                             auto func = bsym->overload_funcs[i];
-                            if (match_arg_list(ts, func->self->func_args(), node.call_args())) {
+                            if (node.call.flags & call_flag::is_method_sugar_call) {
+                                // The matching for 'method' call sugar is different in that we allow the receiver to be cast
+                                // to a pointer or reference in case it's a value type
+                                auto [match, need_cast_ptr, need_cast_ref] = match_method_arg_list(ts, func->self->func_args(), node.call_args());
+                                if (match) {
+                                    resolved = true;
+                                    node.type_id = func->self->type_def.func.ret_type;
+                                    node.call.func_type_id = func->self->type_id;
+                                    node.call.funcdef = func;
+                                    node.type_error = false;
+
+                                    auto& arg_list = *node.children[1];
+                                    if (need_cast_ptr) {
+                                        arg_list.children[0] = make_address_of_expr(ts, std::move(arg_list.children[0]));
+                                        arg_list.children[0]->type_id = get_pointer_type_to(ts, arg_list.children[0]->children[0]->type_id);
+                                    }
+                                    else if (need_cast_ref) {
+                                        arg_list.children[0] = make_address_of_expr(ts, std::move(arg_list.children[0]));
+                                        arg_list.children[0]->type_id = get_reference_type_to(ts, arg_list.children[0]->children[0]->type_id);
+                                    }
+                                    break;
+                                }
+                            }
+                            else if (match_arg_list(ts, func->self->func_args(), node.call_args())) {
                                 resolved = true;
                                 node.type_id = func->self->type_def.func.ret_type;
                                 node.call.func_type_id = func->self->type_id;
@@ -2166,10 +2268,24 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
                 //printf("asda");
             }
         }
-        else if (node.call_func()->type_id.get().kind == type_kind::func_pointer) {
+        else if (node.call_func()->type_id.valid() && node.call_func()->type_id.get().kind == type_kind::func_pointer) {
             node.type_id = node.call_func()->type_id.get().func.ret_type;
             node.call.func_type_id = node.call_func()->type_id;
             node.type_error = false;
+        }
+        else if (node.call_func()->type == ast_type::field_expr) {
+            if (ts.pass == type_system_pass::resolve_all && ts.subpass > MIN_PASS_FOR_METHOD_CALL_SUGAR) { // TODO: tune this number
+                auto field_expr = std::move(node.children[0]);
+                auto field_receiver = std::move(field_expr->children[0]);
+                auto field_id = std::move(field_expr->children[1]);
+
+                // Insert the 'receiver' into the beginning of the argument list
+                node.children[1]->children.insert(node.children[1]->children.begin(), std::move(field_receiver));
+
+                // The new callee is the 'field'
+                node.children[0] = std::move(field_id);
+                node.call.flags |= call_flag::is_method_sugar_call;
+            }
         }
 
         //report_type_error(node.type_id, node.pos, "cannot resolve type of function call %s", node_to_string(node));
@@ -2210,7 +2326,7 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
                 node.field.field_index = field_index;
                 node.type_id = stype.get().structure.fields[field_index].type;
             }
-            else {
+            else if (ts.pass == type_system_pass::resolve_all && ts.subpass > MIN_PASS_FOR_FIELD_CALL_SUGAR) {
                 // TODO: handle call sugar
                 auto children = std::move(node.children);
 
@@ -3073,11 +3189,14 @@ void type_system::process_code_unit(ast_node& node) {
     this->pass = type_system_pass::resolve_literals_and_register_declarations;
     this->code_units.push_back(&node);
 
-    parent_tree(node);
+    for (int i = 0; i < 2; i++) {
+        this->subpass = i;
+        parent_tree(node);
 
-    add_scope(*this, node, scope_kind::code_unit);
-    visit_tree(*this, node);
-    leave_scope();
+        add_scope(*this, node, scope_kind::code_unit);
+        visit_tree(*this, node);
+        leave_scope();
+    }
 }
 
 void type_system::resolve_and_check() {
