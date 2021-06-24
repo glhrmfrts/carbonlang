@@ -604,10 +604,12 @@ struct generator {
             if (is_mem(b)) {
                 move(adjust_for_type(reg_intermediate, atype), atype, b, btype);
                 b = toop(adjust_for_type(reg_intermediate, atype));
+                btype = atype;
             }
             else if (!is_reg(b)) {
                 move(adjust_for_type(reg_intermediate, btype), btype, b, btype);
                 b = toop(adjust_for_type(reg_intermediate, atype));
+                btype = atype;
             }
             move(todest(a), atype, b, btype);
             break;
@@ -903,6 +905,11 @@ struct generator {
             else {
                 em->movzx(dest, op);
             }
+        }
+        else if (dest_tid.get().size < tid.get().size && !is_lit(op)) {
+            em->mov(adjust_for_type(reg_intermediate, tid), op);
+            em->mov(dest, toop(adjust_for_type(reg_intermediate, dest_tid)));
+            //em->mov(dest, op);
         }
         else {
             em->mov(dest, op);

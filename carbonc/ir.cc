@@ -289,6 +289,7 @@ void analyse_node(ast_node& node) {
         break;
     }
     case ast_type::binary_expr: {
+        analyse_children(node);
         /*
         // create temporary variables for nested expressions
         auto& left = node.children[0];
@@ -312,8 +313,6 @@ void analyse_node(ast_node& node) {
                 node_data[node.node_id].bin_temp_register = temp_reg;
             }
         }
-
-        analyse_children(node);
 
         if (temp_reg) {
             free_temp_register();
@@ -488,6 +487,8 @@ void generate_ir_asm_stmt(ast_node& node) {
 }
 
 void generate_ir_field_expr(ast_node& node) {
+    assert(node.field.self);
+
     generate_ir_node(*node.children[0]);
     auto a = pop();
     
@@ -902,7 +903,7 @@ void print_opr(std::ostream& f, const ir_operand& opr) {
         f << arg->val;
     }
     if (auto arg = std::get_if<char>(&opr); arg) {
-        f << "'" << *arg << "'";
+        f << "#" << (int)*arg;
     }
 }
 

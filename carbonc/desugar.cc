@@ -267,6 +267,10 @@ void desugar(type_system& ts, ast_node* nodeptr) {
         break;
     }
     case ast_type::ternary_expr: {
+        check_temp_ternary_expr(ts, *node.children[1]);
+        check_temp_bool_op(ts, *node.children[1]);
+        check_temp_ternary_expr(ts, *node.children[2]);
+        check_temp_bool_op(ts, *node.children[2]);
         visit_pre_children(ts, node);
         visit_children(ts, node);
         break;

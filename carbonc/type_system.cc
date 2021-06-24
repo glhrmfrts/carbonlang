@@ -361,7 +361,35 @@ bool is_assignable_to(type_system& ts, type_id a, type_id b) {
         return true;
     }
 
-    if (get_type(ts, a).alias_to == b || get_type(ts, b).alias_to == a) {
+    auto& ta = get_type(ts, a);
+    auto& tb = get_type(ts, b);
+
+    if (ta.alias_to == b || tb.alias_to == a) {
+        return true;
+    }
+
+    if (ta.kind == type_kind::pointer && tb.kind == type_kind::pointer) {
+        return is_assignable_to(ts, ta.elem_type, tb.elem_type);
+    }
+    if (ta.kind == type_kind::reference && tb.kind == type_kind::pointer) {
+        return is_assignable_to(ts, ta.elem_type, tb.elem_type);
+    }
+    if (ta.kind == type_kind::reference && tb.kind == type_kind::reference) {
+        return is_assignable_to(ts, ta.elem_type, tb.elem_type);
+    }
+
+    if (ta.kind == type_kind::slice && tb.kind == type_kind::slice) {
+        if (ta.constructor_type == ts.slice_type_constructor->self->type_def.id) {
+            // immutable slice only convertible to another immutable slice
+            return tb.constructor_type == ta.constructor_type && is_assignable_to(ts, ta.elem_type, tb.elem_type);
+        }
+        else {
+            return is_assignable_to(ts, ta.elem_type, tb.elem_type);
+        }
+    }
+
+    if (ta.kind == type_kind::func_pointer && tb.kind == type_kind::func_pointer) {
+        // TODO
         return true;
     }
 
@@ -378,24 +406,6 @@ std::pair<bool, bool> is_convertible_to(type_system& ts, type_id a, type_id b) {
 
     if (ta.kind == tb.kind && tb.kind == type_kind::integral) {
         return std::make_pair(tb.size >= ta.size, true);
-    }
-
-    if (ta.kind == type_kind::reference && tb.kind == type_kind::pointer) {
-        return is_convertible_to(ts, ta.elem_type, tb.elem_type);
-    }
-
-    if (ta.kind == type_kind::slice && tb.kind == type_kind::slice) {
-        if (ta.constructor_type == ts.slice_type_constructor->self->type_def.id) {
-            // immutable slice only convertible to another immutable slice
-            return std::make_pair(tb.constructor_type == ta.constructor_type && is_assignable_to(ts, ta.elem_type, tb.elem_type), false);
-        }
-        else {
-            return std::make_pair(is_assignable_to(ts, ta.elem_type, tb.elem_type), false);
-        }
-    }
-
-    if (ta.kind == type_kind::func_pointer && tb.kind == type_kind::func_pointer) {
-        // TODO
     }
 
     return std::make_pair(false, false);
@@ -1282,6 +1292,10 @@ std::tuple<bool,bool,bool> match_method_arg_list(type_system& ts, std::vector<ar
         auto& farg = func_args[i];
         auto& carg = call_args[i];
 
+        //if (!is_convertible_to(ts, carg->type_id, farg->type_id).first) {
+            //printf("NOT MATCHING: %s --> %s\n", type_to_string(carg->type_id).c_str(), type_to_string(farg->type_id).c_str());
+        //}
+
         // TODO: check for needed casts
         if (!is_convertible_to(ts, carg->type_id, farg->type_id).first) {
             try_coerce_to(ts, *carg, farg->type_id);
@@ -1296,6 +1310,8 @@ std::tuple<bool,bool,bool> match_method_arg_list(type_system& ts, std::vector<ar
                         continue;
                     }
                 }
+
+                //printf("NOT MATCHING: %s --> %s\n", type_to_string(carg->type_id).c_str(), type_to_string(farg->type_id).c_str());
                 return std::make_tuple(false, false, false);
             }
         }
@@ -1944,8 +1960,6 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
             node.type_error = true;
         }
 
-        if (ts.pass != type_system_pass::perform_checks && node.type_id != invalid_type) return node.type_id;
-
         node.type_id = resolve_node_type(ts, node.children.front().get());
         if (!node.type_id.valid() || node.type_error) {
             auto funcname = node_to_string(
@@ -2184,8 +2198,6 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
         break;
     }
     case ast_type::call_expr: {
-        if (ts.pass != type_system_pass::perform_checks && node.type_id != invalid_type) return node.type_id;
-
         if (check_reserved_call(ts, node)) {
             break;
         }
@@ -2331,10 +2343,16 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
     }
     case ast_type::field_expr: {
         resolve_node_type(ts, node.children[0].get());
+
+        auto fieldid = build_identifier_value(node.children[1]->id_parts);
+        if (fieldid == "strlen") {
+            //printf("asdqwe\n");
+        }
+
         if (node.children[0]->type_id.valid() && !node.type_id.valid()) {
             auto ltype = node.children[0]->type_id;
             auto stype = ltype;
-            auto fieldid = build_identifier_value(node.children[1]->id_parts);
+            
             bool is_pointer = false;
             bool is_optional = false;
             bool is_struct = false;

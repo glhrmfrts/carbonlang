@@ -4,6 +4,7 @@ code_unit{
     import_decl{ std::alloc alloc}
     import_decl{ std::io}
     import_decl{ std::string}
+    import_decl{ std::rawstring}
     type_decl{Field2D = type_expr{struct_type{(var_decl{width: type_expr{int}}, var_decl{height: type_expr{int}}, var_decl{data: type_expr{type_qualifier{reference, int}}})}}}
     type_decl{Automaton = type_expr{struct_type{(var_decl{field: type_expr{Field2D}}, var_decl{new_field: type_expr{Field2D}})}}}
     func_decl{split (var_decl{str: type_expr{string}}, var_decl{delim: type_expr{char}}): type_expr{slice_type{[&] type_expr{string}}} {
@@ -43,7 +44,7 @@ code_unit{
           call{alloc::set (cast_expr{type_expr{rawptr} f.data}, 0, {{f.width * f.height} * call{sizeof (int)}})}}}}
     func_decl{make_automaton (var_decl{ftext: type_expr{string}}): type_expr{Automaton} {
         decl_list{
-          var_decl{f = call{split (ftext, )}}
+          var_decl{f = call{call{call{ftext.split ()}.map ((var_decl{it: type_expr{string}})type_expr{string}it.trim)}.filter ((var_decl{it: type_expr{string}})type_expr{bool}{it.len > 0})}}
           var_decl{height = cast_expr{type_expr{int} f.len}}
           var_decl{width = 0}}
         stmt_list{

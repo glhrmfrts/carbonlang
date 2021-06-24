@@ -4,6 +4,7 @@ code_unit{
     import_decl{ std::alloc alloc}
     import_decl{ std::io}
     import_decl{ std::string}
+    import_decl{ std::rawstring}
     type_decl{Field2D = type_expr{struct_type{(var_decl{width: type_expr{int}}, var_decl{height: type_expr{int}}, var_decl{data: type_expr{type_qualifier{reference, int}}})}}}
     type_decl{Automaton = type_expr{struct_type{(var_decl{field: type_expr{Field2D}}, var_decl{new_field: type_expr{Field2D}})}}}
     func_decl{split (var_decl{$cb_agg_ret: }, var_decl{str: }, var_decl{delim: type_expr{char}}):  {
@@ -77,8 +78,12 @@ code_unit{
           call{alloc::set (cast_expr{type_expr{rawptr} f.data}, 0, {{f.width * f.height} * 4})}}}}
     func_decl{make_automaton (var_decl{$cb_agg_ret: }, var_decl{ftext: }):  {
         decl_list{
-          var_decl{$cbT0 = {* ftext}}
-          call{split ({& f}, {& $cbT0}, )}
+          var_decl{$cbT2 = {* ftext}}
+          call{split ({& $cbT1}, {& $cbT2}, )}
+          var_decl{$cbT1}
+          call{map ({& $cbT0}, {& $cbT1}, )}
+          var_decl{$cbT0}
+          call{filter ({& f}, {& $cbT0}, )}
           var_decl{f}
           var_decl{height = cast_expr{type_expr{int} f.len}}
           var_decl{width = 0}}
@@ -123,8 +128,8 @@ code_unit{
 { = }}
                       var_decl{alive}}
                     stmt_list{
-                      call{set ({& a.new_field}, x, y, if{{alive  false} {$cbT1 = 1} else {$cbT1 = 0}}
-$cbT1)}}}}}}
+                      call{set ({& a.new_field}, x, y, if{{alive  false} {$cbT3 = 1} else {$cbT3 = 0}}
+$cbT3)}}}}}}
         decl_list{
           var_decl{tmp = a.field}}
         stmt_list{
@@ -143,8 +148,8 @@ $cbT1)}}}}}}
                     decl_list{
                       var_decl{cell = call{get ({& a.field}, x, y)}}}
                     stmt_list{
-                      call{append ({& s}, {& s}, if{{cell  1} {$cbT2 = } else {$cbT2 = }}
-$cbT2)}
+                      call{append ({& s}, {& s}, if{{cell  1} {$cbT4 = } else {$cbT4 = }}
+$cbT4)}
                       {s = }}}}
               stmt_list{
                 call{println (s.data)}}}}
@@ -185,11 +190,11 @@ $cbT2)}
 *                                         *
 *******************************************"}}
         stmt_list{
-          var_decl{$cbT3 = init{type=type_expr{string} 
-              {$cbT3.data = gunfield}
-              {$cbT3.len = gunfield.strlen}
+          var_decl{$cbT5 = init{type=type_expr{string} 
+              {$cbT5.data = gunfield}
+              {$cbT5.len = call{strlen (gunfield)}}
               }}
-          call{make_automaton ({& {* $cb_agg_ret}}, {& $cbT3})}
+          call{make_automaton ({& {* $cb_agg_ret}}, {& $cbT5})}
           {{* $cb_agg_ret} = }
           return{$cb_agg_ret}}}}
     func_decl{main (var_decl{args: }): type_expr{int} {
@@ -202,4 +207,14 @@ $cbT2)}
                 call{update ({& a})}
                 call{print ({& a})}}}}
         stmt_list{
-          return{0}}}}}}
+          return{0}}}}
+    func_decl{make_automaton__lambda__13880377907378507347__1488 (var_decl{it: }): type_expr{bool} {
+        stmt_list{
+          return{if{{{* it}.len > cast_expr{ 0}} {$cbT6 = true} else {$cbT6 = false}}
+$cbT6}}}}
+    func_decl{make_automaton__lambda__13880377907378507347__1445 (var_decl{$cb_agg_ret: }, var_decl{it: }):  {
+        stmt_list{
+          var_decl{$cbT7 = {* it}}
+          call{trim ({& {* $cb_agg_ret}}, {& $cbT7})}
+          {{* $cb_agg_ret} = }
+          return{$cb_agg_ret}}}}}}

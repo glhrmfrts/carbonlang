@@ -30,10 +30,10 @@ code_unit{
                 call{init_command_line ({& args})}
                 var_decl{args}}
               stmt_list{
-                defer{var_decl{$cbT4 = args}
-call{free_command_line ({& $cbT4})}}}
+                defer{var_decl{$cbT8 = args}
+call{free_command_line ({& $cbT8})}}}
               decl_list{
                 import_decl{ main}}
               stmt_list{
-                return{var_decl{$cbT5 = args}
-call{main ({& $cbT5})}}}}}}}}}}
+                return{var_decl{$cbT9 = args}
+call{main ({& $cbT9})}}}}}}}}}}

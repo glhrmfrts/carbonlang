@@ -1,6 +1,7 @@
 import std::alloc as alloc;
 import std::io;
 import std::string;
+import std::rawstring;
 //import std::seqs; // map, filter, split, trim
 
 // TODO:
@@ -63,8 +64,7 @@ func clear(f: &Field2D) {
 }
 
 func make_automaton(ftext: string): Automaton {
-    //let f = ftext.split('\n').map(func(it: string): string = it.trim).filter(func(it: string): bool = it.len > 0);
-    let f = split(ftext, '\n');
+    let f = ftext.split('\n').map(func(it: string): string = it.trim).filter(func(it: string): bool = it.len > 0);
 
     let height = cast[int] f.len;
     var width  = 0;
