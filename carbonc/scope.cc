@@ -145,13 +145,12 @@ symbol_info* find_symbol_in_current_scope(type_system& ts, const string_hash& ha
 symbol_info* find_symbol(type_system& ts, const std::pair<string_hash, string_hash>& pair) {
     auto scope = ts.current_scope;
     while (scope != nullptr) {
-
-        auto it = scope->symbols.find(pair.second);
-        if (it != scope->symbols.end()) {
-            return it->second.get();
-        }
-
         if (pair.first.str.empty()) {
+            auto it = scope->symbols.find(pair.second);
+            if (it != scope->symbols.end()) {
+                return it->second.get();
+            }
+
             for (const auto& imp : scope->imports) {
                 if (!imp.alias) {
                     auto impscope = ts.modules[imp.qual_name];

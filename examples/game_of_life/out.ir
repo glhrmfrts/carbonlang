@@ -1,0 +1,700 @@
+string #0: "";
+string #1: "    ";
+string #2: "*******************************************
+*                                         *
+*  A shooting gun:                        *
+*                          #              *
+*                        # #              *
+*              ##      ##            ##   *
+*             #   #    ##            ##   *
+*  ##        #     #   ##                 *
+*  ##        #   # ##    # #              *
+*            #     #       #              *
+*             #   #                       *
+*              ##                         *
+*                                         *
+*  Tetris Life:                           *
+*                                         *
+*  ##       ####                          *
+*  ##                                     *
+*                                         *
+*                                         *
+*                                         *
+*  #         ##                           *
+*  ###      ##                            *
+*                                         *
+*                                         *
+*                                         *
+*        #                                *
+*       ###                               *
+*                                         *
+*                                         *
+*                                         *
+*                                         *
+*******************************************";
+func cb__Nmain__Nsplit__Aref__Tmut_slice__TU_string__Aref__TU_string__Achar -> ref__Tmut_slice__TU_string
+    arg #0 $cb_agg_ret: ref__Tmut_slice__TU_string;
+    arg #1 str: ref__TU_string;
+    arg #2 delim: char;
+    local #0 s: U_string;
+    ir_load_addr STR0;
+    ir_load [L0 . 0] ST;
+    ir_load [L0 . 1] 0;
+    ir_deref A0;
+    ir_load_addr L0;
+    ir_load [ST . 0] ST;
+    ir_deref A0;
+    ir_load [ST . 1] 1;
+    ir_return A0;
+endf
+
+func cb__Nmain__Nmap__Aref__Tmut_slice__TU_string__Aref__Tslice__TU_string__Afuncptr__TU_string__TU_string -> ref__Tmut_slice__TU_string
+    arg #0 $cb_agg_ret: ref__Tmut_slice__TU_string;
+    arg #1 str: ref__Tslice__TU_string;
+    arg #2 f: funcptr__TU_string__TU_string;
+    local #0 s: U_string;
+    ir_load_addr STR0;
+    ir_load [L0 . 0] ST;
+    ir_load [L0 . 1] 0;
+    ir_deref A0;
+    ir_load_addr L0;
+    ir_load [ST . 0] ST;
+    ir_deref A0;
+    ir_load [ST . 1] 1;
+    ir_return A0;
+endf
+
+func cb__Nmain__Nfilter__Aref__Tmut_slice__TU_string__Aref__Tslice__TU_string__Afuncptr__TU_string__Tbool -> ref__Tmut_slice__TU_string
+    arg #0 $cb_agg_ret: ref__Tmut_slice__TU_string;
+    arg #1 str: ref__Tslice__TU_string;
+    arg #2 f: funcptr__TU_string__Tbool;
+    local #0 s: U_string;
+    ir_load_addr STR0;
+    ir_load [L0 . 0] ST;
+    ir_load [L0 . 1] 0;
+    ir_deref A0;
+    ir_load_addr L0;
+    ir_load [ST . 0] ST;
+    ir_deref A0;
+    ir_load [ST . 1] 1;
+    ir_return A0;
+endf
+
+func cb__Nmain__Ntrim__Aref__TU_string__Aref__TU_string -> ref__TU_string
+    arg #0 $cb_agg_ret: ref__TU_string;
+    arg #1 str: ref__TU_string;
+    local #0 f: char;
+    ir_load L0 3;
+    ir_deref A0;
+    ir_load_addr L0;
+    ir_load [ST . 0] ST;
+    ir_deref A0;
+    ir_load [ST . 1] 1;
+    ir_return A0;
+endf
+
+func cb__Nmain__Nappend__Aref__TU_string__Aptr__TU_string__Achar -> ref__TU_string
+    arg #0 $cb_agg_ret: ref__TU_string;
+    arg #1 str: ptr__TU_string;
+    arg #2 c: char;
+    ir_deref A0;
+    ir_load_addr STR0;
+    ir_load [ST . 0] ST;
+    ir_deref A0;
+    ir_load [ST . 1] 0;
+    ir_return A0;
+endf
+
+func cb__Nmain__Nmake_field__Aref__TU_Field2D__Aint__Aint -> ref__TU_Field2D
+    arg #0 $cb_agg_ret: ref__TU_Field2D;
+    arg #1 sx: int;
+    arg #2 sy: int;
+    ir_deref A0;
+    ir_load [ST . 0] A1;
+    ir_deref A0;
+    ir_load [ST . 1] A2;
+    ir_deref A0;
+    ir_mul 4 A1;
+    ir_mul ST A2;
+    ir_call cb__Nstd__Nalloc__Nalloc__Ausize ST;
+    ir_load [ST . 2] ST;
+    ir_return A0;
+endf
+
+func cb__Nmain__Nset__Aref__TU_Field2D__Aint__Aint__Aint -> void
+    arg #0 f: ref__TU_Field2D;
+    arg #1 x: int;
+    arg #2 y: int;
+    arg #3 val: int;
+    ir_deref A0;
+    ir_deref [ST . 2];
+    ir_deref A0;
+    ir_mul A2 [ST . 0];
+    ir_add ST A1;
+    ir_index ST ST;
+    ir_load ST A3;
+endf
+
+func cb__Nmain__Nget__Aptr__TU_Field2D__Aint__Aint -> int
+    arg #0 f: ptr__TU_Field2D;
+    arg #1 x: int;
+    arg #2 y: int;
+    ir_deref A0;
+    ir_deref [ST . 2];
+    ir_deref A0;
+    ir_mul A2 [ST . 0];
+    ir_add ST A1;
+    ir_index ST ST;
+    ir_return ST;
+endf
+
+func cb__Nmain__Nclear__Aref__TU_Field2D -> void
+    arg #0 f: ref__TU_Field2D;
+    ir_deref A0;
+    ir_deref A0;
+    ir_deref A0;
+    ir_mul [ST . 0] [ST . 1];
+    ir_mul ST 4;
+    ir_call cb__Nstd__Nalloc__Nset__Arawptr__Achar__Ausize [ST . 2] 0 ST;
+endf
+
+func cb__Nmain__Nmake_automaton__Aref__TU_Automaton__Aref__TU_string -> ref__TU_Automaton
+    arg #0 $cb_agg_ret: ref__TU_Automaton;
+    arg #1 ftext: ref__TU_string;
+    local #0 f: mut_slice__TU_string;
+    local #1 height: int;
+    local #2 width: int;
+    local #3 field: U_Field2D;
+    local #4 newfield: U_Field2D;
+    local #5 $cbT0: U_string;
+    local #6 $foriter: tuple__Tint__Tusize;
+    local #7 y: int;
+    local #8 y: int;
+    local #9 $foriter: tuple__Tint__Tint;
+    local #10 y: int;
+    local #11 y: int;
+    local #12 $foriter: tuple__Tint__Tint;
+    local #13 x: int;
+    local #14 x: int;
+    local #15 val: int;
+    ir_deref A1;
+    ir_copy L5 ST 16;
+    ir_load_addr L0;
+    ir_load_addr L5;
+    ir_call cb__Nmain__Nsplit__Aref__Tmut_slice__TU_string__Aref__TU_string__Achar ST ST '
+';
+    ir_cast [L0 . 1];
+    ir_load L1 ST;
+    ir_load L2 0;
+    ir_load [L6 . 0] 0;
+    ir_load [L6 . 1] [L0 . 1];
+    ir_load L8 [L6 . 0];
+    ir_make_label cb__Nmain__Nmake_automaton__Aref__TU_Automaton__Aref__TU_string$f401$cond;
+    ir_cast L8;
+    ir_jmp_gte ST [L6 . 1] cb__Nmain__Nmake_automaton__Aref__TU_Automaton__Aref__TU_string$f401$end;
+    ir_make_label cb__Nmain__Nmake_automaton__Aref__TU_Automaton__Aref__TU_string$f401$body;
+    ir_cast L2;
+    ir_deref [L0 . 0];
+    ir_index ST L8;
+    ir_jmp_gte ST [ST . 1] cb__Nmain__Nmake_automaton__Aref__TU_Automaton__Aref__TU_string$if398$else;
+    ir_make_label cb__Nmain__Nmake_automaton__Aref__TU_Automaton__Aref__TU_string$if398$body;
+    ir_deref [L0 . 0];
+    ir_index ST L8;
+    ir_cast [ST . 1];
+    ir_load L2 ST;
+    ir_make_label cb__Nmain__Nmake_automaton__Aref__TU_Automaton__Aref__TU_string$if398$else;
+    ir_add L8 1;
+    ir_load L8 ST;
+    ir_jmp cb__Nmain__Nmake_automaton__Aref__TU_Automaton__Aref__TU_string$f401$cond;
+    ir_make_label cb__Nmain__Nmake_automaton__Aref__TU_Automaton__Aref__TU_string$f401$end;
+    ir_load_addr L3;
+    ir_call cb__Nmain__Nmake_field__Aref__TU_Field2D__Aint__Aint ST L2 L1;
+    ir_load_addr L4;
+    ir_call cb__Nmain__Nmake_field__Aref__TU_Field2D__Aint__Aint ST L2 L1;
+    ir_load [L9 . 0] 0;
+    ir_load [L9 . 1] [L3 . 1];
+    ir_load L11 [L9 . 0];
+    ir_make_label cb__Nmain__Nmake_automaton__Aref__TU_Automaton__Aref__TU_string$f468$cond;
+    ir_jmp_gte L11 [L9 . 1] cb__Nmain__Nmake_automaton__Aref__TU_Automaton__Aref__TU_string$f468$end;
+    ir_make_label cb__Nmain__Nmake_automaton__Aref__TU_Automaton__Aref__TU_string$f468$body;
+    ir_load [L12 . 0] 0;
+    ir_load [L12 . 1] [L3 . 0];
+    ir_load L14 [L12 . 0];
+    ir_make_label cb__Nmain__Nmake_automaton__Aref__TU_Automaton__Aref__TU_string$f465$cond;
+    ir_jmp_gte L14 [L12 . 1] cb__Nmain__Nmake_automaton__Aref__TU_Automaton__Aref__TU_string$f465$end;
+    ir_make_label cb__Nmain__Nmake_automaton__Aref__TU_Automaton__Aref__TU_string$f465$body;
+    ir_cast L14;
+    ir_deref [L0 . 0];
+    ir_index ST L11;
+    ir_jmp_gte ST [ST . 1] cb__Nmain__Nmake_automaton__Aref__TU_Automaton__Aref__TU_string$if2013$else;
+    ir_deref [L0 . 0];
+    ir_index ST L11;
+    ir_deref [ST . 0];
+    ir_index ST L14;
+    ir_jmp_neq ST '#' cb__Nmain__Nmake_automaton__Aref__TU_Automaton__Aref__TU_string$if2013$else;
+    ir_make_label cb__Nmain__Nmake_automaton__Aref__TU_Automaton__Aref__TU_string$if2013$body;
+    ir_load L15 1;
+    ir_jmp cb__Nmain__Nmake_automaton__Aref__TU_Automaton__Aref__TU_string$if2013$end;
+    ir_make_label cb__Nmain__Nmake_automaton__Aref__TU_Automaton__Aref__TU_string$if2013$else;
+    ir_load L15 0;
+    ir_make_label cb__Nmain__Nmake_automaton__Aref__TU_Automaton__Aref__TU_string$if2013$end;
+    ir_load_addr L3;
+    ir_call cb__Nmain__Nset__Aref__TU_Field2D__Aint__Aint__Aint ST L14 L11 L15;
+    ir_add L14 1;
+    ir_load L14 ST;
+    ir_jmp cb__Nmain__Nmake_automaton__Aref__TU_Automaton__Aref__TU_string$f465$cond;
+    ir_make_label cb__Nmain__Nmake_automaton__Aref__TU_Automaton__Aref__TU_string$f465$end;
+    ir_add L11 1;
+    ir_load L11 ST;
+    ir_jmp cb__Nmain__Nmake_automaton__Aref__TU_Automaton__Aref__TU_string$f468$cond;
+    ir_make_label cb__Nmain__Nmake_automaton__Aref__TU_Automaton__Aref__TU_string$f468$end;
+    ir_deref A0;
+    ir_copy [ST . 0] L3 16;
+    ir_deref A0;
+    ir_copy [ST . 1] L4 16;
+    ir_return A0;
+endf
+
+func cb__Nmain__Nupdate__Aref__TU_Automaton -> void
+    arg #0 a: ref__TU_Automaton;
+    local #0 tmp: U_Field2D;
+    local #1 $foriter: tuple__Tint__Tint;
+    local #2 y: int;
+    local #3 y: int;
+    local #4 $foriter: tuple__Tint__Tint;
+    local #5 x: int;
+    local #6 x: int;
+    local #7 moore_sum: int;
+    local #8 $cbT1: int;
+    local #9 cell: int;
+    local #10 alive: bool;
+    ir_deref A0;
+    ir_load_addr [ST . 1];
+    ir_call cb__Nmain__Nclear__Aref__TU_Field2D ST;
+    ir_load [L1 . 0] 1;
+    ir_deref A0;
+    ir_load [L1 . 1] [ . 1];
+    ir_load L3 [L1 . 0];
+    ir_make_label cb__Nmain__Nupdate__Aref__TU_Automaton$f669$cond;
+    ir_jmp_gte L3 [L1 . 1] cb__Nmain__Nupdate__Aref__TU_Automaton$f669$end;
+    ir_make_label cb__Nmain__Nupdate__Aref__TU_Automaton$f669$body;
+    ir_load [L4 . 0] 1;
+    ir_deref A0;
+    ir_load [L4 . 1] [ . 0];
+    ir_load L6 [L4 . 0];
+    ir_make_label cb__Nmain__Nupdate__Aref__TU_Automaton$f666$cond;
+    ir_jmp_gte L6 [L4 . 1] cb__Nmain__Nupdate__Aref__TU_Automaton$f666$end;
+    ir_make_label cb__Nmain__Nupdate__Aref__TU_Automaton$f666$body;
+    ir_deref A0;
+    ir_load_addr [ST . 0];
+    ir_sub L6 1;
+    ir_sub L3 1;
+    ir_call cb__Nmain__Nget__Aptr__TU_Field2D__Aint__Aint ST ST ST;
+    ir_add 0 ST;
+    ir_deref A0;
+    ir_load_addr [ST . 0];
+    ir_add L3 1;
+    ir_call cb__Nmain__Nget__Aptr__TU_Field2D__Aint__Aint ST L6 ST;
+    ir_add ST ST;
+    ir_deref A0;
+    ir_load_addr [ST . 0];
+    ir_add L6 1;
+    ir_sub L3 1;
+    ir_call cb__Nmain__Nget__Aptr__TU_Field2D__Aint__Aint ST ST ST;
+    ir_add ST ST;
+    ir_deref A0;
+    ir_load_addr [ST . 0];
+    ir_sub L6 1;
+    ir_call cb__Nmain__Nget__Aptr__TU_Field2D__Aint__Aint ST ST L3;
+    ir_add ST ST;
+    ir_add ST 0;
+    ir_deref A0;
+    ir_load_addr [ST . 0];
+    ir_add L6 1;
+    ir_call cb__Nmain__Nget__Aptr__TU_Field2D__Aint__Aint ST ST L3;
+    ir_add ST ST;
+    ir_deref A0;
+    ir_load_addr [ST . 0];
+    ir_sub L6 1;
+    ir_add L3 1;
+    ir_call cb__Nmain__Nget__Aptr__TU_Field2D__Aint__Aint ST ST ST;
+    ir_add ST ST;
+    ir_deref A0;
+    ir_load_addr [ST . 0];
+    ir_add L3 1;
+    ir_call cb__Nmain__Nget__Aptr__TU_Field2D__Aint__Aint ST L6 ST;
+    ir_add ST ST;
+    ir_deref A0;
+    ir_load_addr [ST . 0];
+    ir_add L6 1;
+    ir_add L3 1;
+    ir_call cb__Nmain__Nget__Aptr__TU_Field2D__Aint__Aint ST ST ST;
+    ir_add ST ST;
+    ir_load L7 ST;
+    ir_deref A0;
+    ir_load_addr [ST . 0];
+    ir_call cb__Nmain__Nget__Aptr__TU_Field2D__Aint__Aint ST L6 L3;
+    ir_load L9 ST;
+    ir_jmp_neq L9 1 cb__Nmain__Nupdate__Aref__TU_Automaton$if2019$else;
+    ir_make_label cb__Nmain__Nupdate__Aref__TU_Automaton$if2019$body;
+    ir_jmp_eq L7 2 ;
+    ir_jmp_eq L7 3 ;
+    ir_load L10 1;
+    ir_jmp ;
+    ir_make_label ;
+    ir_load L10 0;
+    ir_make_label ;
+    ir_jmp cb__Nmain__Nupdate__Aref__TU_Automaton$if2019$end;
+    ir_make_label cb__Nmain__Nupdate__Aref__TU_Automaton$if2019$else;
+    ir_jmp_eq L7 3 ;
+    ir_load L10 1;
+    ir_jmp ;
+    ir_make_label ;
+    ir_load L10 0;
+    ir_make_label ;
+    ir_make_label cb__Nmain__Nupdate__Aref__TU_Automaton$if2019$end;
+    ir_deref A0;
+    ir_load_addr [ST . 1];
+    ir_jmp_eq L10 0 cb__Nmain__Nupdate__Aref__TU_Automaton$if2047$else;
+    ir_make_label cb__Nmain__Nupdate__Aref__TU_Automaton$if2047$body;
+    ir_load L8 1;
+    ir_jmp cb__Nmain__Nupdate__Aref__TU_Automaton$if2047$end;
+    ir_make_label cb__Nmain__Nupdate__Aref__TU_Automaton$if2047$else;
+    ir_load L8 0;
+    ir_make_label cb__Nmain__Nupdate__Aref__TU_Automaton$if2047$end;
+    ir_call cb__Nmain__Nset__Aref__TU_Field2D__Aint__Aint__Aint ST L6 L3 L8;
+    ir_add L6 1;
+    ir_load L6 ST;
+    ir_jmp cb__Nmain__Nupdate__Aref__TU_Automaton$f666$cond;
+    ir_make_label cb__Nmain__Nupdate__Aref__TU_Automaton$f666$end;
+    ir_add L3 1;
+    ir_load L3 ST;
+    ir_jmp cb__Nmain__Nupdate__Aref__TU_Automaton$f669$cond;
+    ir_make_label cb__Nmain__Nupdate__Aref__TU_Automaton$f669$end;
+    ir_deref A0;
+    ir_copy L0 [ST . 0] 16;
+    ir_deref A0;
+    ir_deref A0;
+    ir_copy [ST . 0] [ST . 1] 16;
+    ir_deref A0;
+    ir_copy [ST . 1] L0 16;
+endf
+
+func cb__Nmain__Nprint__Aptr__TU_Automaton -> void
+    arg #0 a: ptr__TU_Automaton;
+    local #0 $foriter: tuple__Tint__Tint;
+    local #1 y: int;
+    local #2 y: int;
+    local #3 s: U_string;
+    local #4 $foriter: tuple__Tint__Tint;
+    local #5 x: int;
+    local #6 x: int;
+    local #7 cell: int;
+    local #8 $cbT2: char;
+    ir_load [L0 . 0] 1;
+    ir_deref A0;
+    ir_load [L0 . 1] [ . 1];
+    ir_load L2 [L0 . 0];
+    ir_make_label cb__Nmain__Nprint__Aptr__TU_Automaton$f765$cond;
+    ir_jmp_gte L2 [L0 . 1] cb__Nmain__Nprint__Aptr__TU_Automaton$f765$end;
+    ir_make_label cb__Nmain__Nprint__Aptr__TU_Automaton$f765$body;
+    ir_load_addr STR1;
+    ir_load [L3 . 0] ST;
+    ir_load [L3 . 1] 4;
+    ir_load [L4 . 0] 1;
+    ir_deref A0;
+    ir_load [L4 . 1] [ . 0];
+    ir_load L6 [L4 . 0];
+    ir_make_label cb__Nmain__Nprint__Aptr__TU_Automaton$f755$cond;
+    ir_jmp_gte L6 [L4 . 1] cb__Nmain__Nprint__Aptr__TU_Automaton$f755$end;
+    ir_make_label cb__Nmain__Nprint__Aptr__TU_Automaton$f755$body;
+    ir_deref A0;
+    ir_load_addr [ST . 0];
+    ir_call cb__Nmain__Nget__Aptr__TU_Field2D__Aint__Aint ST L6 L2;
+    ir_load L7 ST;
+    ir_load_addr L3;
+    ir_load_addr L3;
+    ir_jmp_eq L7 1 ;
+    ir_load L8 '@';
+    ir_jmp ;
+    ir_make_label ;
+    ir_load L8 '.';
+    ir_make_label ;
+    ir_call cb__Nmain__Nappend__Aref__TU_string__Aptr__TU_string__Achar ST ST L8;
+    ir_add L6 1;
+    ir_load L6 ST;
+    ir_jmp cb__Nmain__Nprint__Aptr__TU_Automaton$f755$cond;
+    ir_make_label cb__Nmain__Nprint__Aptr__TU_Automaton$f755$end;
+    ir_call cb__Nstd__Nio__Nprintln__Aptr__Tchar [L3 . 0];
+    ir_add L2 1;
+    ir_load L2 ST;
+    ir_jmp cb__Nmain__Nprint__Aptr__TU_Automaton$f765$cond;
+    ir_make_label cb__Nmain__Nprint__Aptr__TU_Automaton$f765$end;
+    ir_load_addr STR0;
+    ir_call cb__Nstd__Nio__Nprintln__Aptr__Tchar ST;
+endf
+
+func cb__Nmain__Ngun__Aref__TU_Automaton -> ref__TU_Automaton
+    arg #0 $cb_agg_ret: ref__TU_Automaton;
+    local #0 gunfield: rawstring;
+    local #1 $cbT3: U_string;
+    ir_load_addr STR2;
+    ir_load L0 ST;
+    ir_load [L1 . 0] L0;
+    ir_deref L0;
+    ir_load [L1 . 1] [ST . 0];
+    ir_load_addr L1;
+    ir_call cb__Nmain__Nmake_automaton__Aref__TU_Automaton__Aref__TU_string A0 ST;
+    ir_return A0;
+endf
+
+func cb__Nmain__Nmain__Aref__Tslice__TU_string -> int
+    arg #0 args: ref__Tslice__TU_string;
+    local #0 a: U_Automaton;
+    local #1 $foriter: tuple__Tint__Tint;
+    local #2 i: int;
+    local #3 i: int;
+    ir_load_addr L0;
+    ir_call cb__Nmain__Ngun__Aref__TU_Automaton ST;
+    ir_load [L1 . 0] 0;
+    ir_load [L1 . 1] 50;
+    ir_load L3 [L1 . 0];
+    ir_make_label cb__Nmain__Nmain__Aref__Tslice__TU_string$f831$cond;
+    ir_jmp_gte L3 [L1 . 1] cb__Nmain__Nmain__Aref__Tslice__TU_string$f831$end;
+    ir_make_label cb__Nmain__Nmain__Aref__Tslice__TU_string$f831$body;
+    ir_load_addr L0;
+    ir_call cb__Nmain__Nupdate__Aref__TU_Automaton ST;
+    ir_load_addr L0;
+    ir_call cb__Nmain__Nprint__Aptr__TU_Automaton ST;
+    ir_add L3 1;
+    ir_load L3 ST;
+    ir_jmp cb__Nmain__Nmain__Aref__Tslice__TU_string$f831$cond;
+    ir_make_label cb__Nmain__Nmain__Aref__Tslice__TU_string$f831$end;
+    ir_return 0;
+endf
+
+func cb__Ninit__Ninit_command_line__Aref__Tmut_slice__TU_string -> ref__Tmut_slice__TU_string
+    arg #0 $cb_agg_ret: ref__Tmut_slice__TU_string;
+    local #0 cmdline: ref__Tchar;
+    local #1 data: ref__TU_string;
+    local #2 result: mut_slice__TU_string;
+    ir_call GetCommandLineA;
+    ir_load L0 ST;
+    ir_call cb__Nstd__Nalloc__Nalloc__Ausize 16;
+    ir_load L1 ST;
+    ir_load [L2 . 0] L1;
+    ir_load [L2 . 1] 1;
+    ir_deref [L2 . 0];
+    ir_index ST 0;
+    ir_load [ST . 0] L0;
+    ir_deref [L2 . 0];
+    ir_index ST 0;
+    ir_call cb__Nstd__Nrawstring__Nstrlen__Aptr__Tchar L0;
+    ir_load [ST . 1] ST;
+    ir_deref A0;
+    ir_copy ST L2 16;
+    ir_return A0;
+endf
+
+func cb__Ninit__Nfree_command_line__Aref__Tmut_slice__TU_string -> void
+    arg #0 args: ref__Tmut_slice__TU_string;
+    ir_deref A0;
+    ir_call cb__Nstd__Nalloc__Nfree__Arawptr [ST . 0];
+endf
+
+func carbon_main -> int
+    local #0 args: mut_slice__TU_string;
+    local #1 $cbT4: mut_slice__TU_string;
+    local #2 $cbT5: mut_slice__TU_string;
+    ir_load_addr L0;
+    ir_call cb__Ninit__Ninit_command_line__Aref__Tmut_slice__TU_string ST;
+    ir_copy L2 L0 16;
+    ir_load_addr L2;
+    ir_call cb__Nmain__Nmain__Aref__Tslice__TU_string ST;
+    ir_copy L1 L0 16;
+    ir_load_addr L1;
+    ir_call cb__Ninit__Nfree_command_line__Aref__Tmut_slice__TU_string ST;
+    ir_return ST;
+endf
+
+func cb__Nstd__Nalloc__Nalloc__Ausize -> rawptr
+    arg #0 size: usize;
+    ir_call GetProcessHeap;
+    ir_call HeapAlloc ST 0 A0;
+    ir_return ST;
+endf
+
+func cb__Nstd__Nalloc__Nfree__Arawptr -> void
+    arg #0 ptr: rawptr;
+    ir_call GetProcessHeap;
+    ir_call HeapFree ST 0 A0;
+    ir_noop ST;
+endf
+
+func cb__Nstd__Nalloc__Ncopy__Arawptr__Arawptr__Ausize -> void
+    arg #0 dest: rawptr;
+    arg #1 src: rawptr;
+    arg #2 size: usize;
+    ir_asm push rdi
+push rsi
+
+mov rdi,rcx
+mov rsi,rdx
+mov rcx,r8
+rep movsb
+
+pop rsi
+pop rdi
+    ;
+endf
+
+func cb__Nstd__Nalloc__Nset__Arawptr__Achar__Ausize -> void
+    arg #0 dest: rawptr;
+    arg #1 value: char;
+    arg #2 count: usize;
+    ir_asm push rdi
+
+mov rdi,rcx
+mov rax,rdx
+mov rcx,r8
+rep stosb
+
+pop rdi
+    ;
+endf
+
+func cb__Nstd__Nio__Nprintln__Aptr__Tchar -> void
+    arg #0 c: ptr__Tchar;
+    ir_call puts A0;
+    ir_noop ST;
+endf
+
+func puts -> int
+endf
+
+func putc -> int
+endf
+
+func exit -> void
+endf
+
+func free -> int
+endf
+
+func malloc -> rawptr
+endf
+
+func rand -> int
+endf
+
+func system -> int
+endf
+
+func strlen -> usize
+endf
+
+func HeapAlloc -> rawptr
+endf
+
+func HeapFree -> bool
+endf
+
+func GetProcessHeap -> int
+endf
+
+func GetCommandLineA -> ref__Tchar
+endf
+
+func cb__Nstd__Nrawstring__Ncopy__Aptr__Tchar -> ptr__Tchar
+    arg #0 str: ptr__Tchar;
+    ir_call cb__Nstd__Nrawstring__Nstrlen__Aptr__Tchar A0;
+    ir_call cb__Nstd__Nrawstring__Ncopy__Aptr__Tchar__Ausize A0 ST;
+    ir_return ST;
+endf
+
+func cb__Nstd__Nrawstring__Ncopy__Aptr__Tchar__Ausize -> ptr__Tchar
+    arg #0 str: ptr__Tchar;
+    arg #1 size: usize;
+    local #0 newstr: ptr__Tchar;
+    ir_add A1 1;
+    ir_call cb__Nstd__Nalloc__Nalloc__Ausize ST;
+    ir_load L0 ST;
+    ir_call cb__Nstd__Nrawstring__Ncopy__Aptr__Tchar__Aptr__Tchar__Ausize L0 A0 A1;
+    ir_deref L0;
+    ir_index ST A1;
+    ir_load ST 0;
+    ir_return L0;
+endf
+
+func cb__Nstd__Nrawstring__Ncopy__Aptr__Tchar__Aptr__Tchar__Ausize -> void
+    arg #0 dest: ptr__Tchar;
+    arg #1 src: ptr__Tchar;
+    arg #2 size: usize;
+    ir_call cb__Nstd__Nalloc__Ncopy__Arawptr__Arawptr__Ausize A0 A1 A2;
+endf
+
+func cb__Nstd__Nrawstring__Nset__Aptr__Tchar__Achar__Ausize -> void
+    arg #0 dest: ptr__Tchar;
+    arg #1 value: char;
+    arg #2 count: usize;
+    ir_call cb__Nstd__Nalloc__Nset__Arawptr__Achar__Ausize A0 A1 A2;
+endf
+
+func cb__Nstd__Nrawstring__Nstrlen__Aptr__Tchar -> usize
+    arg #0 str: ptr__Tchar;
+    local #0 c: usize;
+    local #1 p: ptr__Tchar;
+    ir_load L0 0;
+    ir_load L1 A0;
+    ir_make_label cb__Nstd__Nrawstring__Nstrlen__Aptr__Tchar$w1523$cond;
+    ir_deref L1;
+    ir_cast ST;
+    ir_jmp_eq ST 0 cb__Nstd__Nrawstring__Nstrlen__Aptr__Tchar$w1523$end;
+    ir_make_label cb__Nstd__Nrawstring__Nstrlen__Aptr__Tchar$w1523$body;
+    ir_add L1 1;
+    ir_load L1 ST;
+    ir_add L0 1;
+    ir_load L0 ST;
+    ir_jmp cb__Nstd__Nrawstring__Nstrlen__Aptr__Tchar$w1523$cond;
+    ir_make_label cb__Nstd__Nrawstring__Nstrlen__Aptr__Tchar$w1523$end;
+    ir_return L0;
+endf
+
+func cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar -> bool
+    arg #0 a: ptr__Tchar;
+    arg #1 b: ptr__Tchar;
+    local #0 $foriter: tuple__Tint__Tusize;
+    local #1 i: int;
+    local #2 i: int;
+    ir_call cb__Nstd__Nrawstring__Nstrlen__Aptr__Tchar A0;
+    ir_call cb__Nstd__Nrawstring__Nstrlen__Aptr__Tchar A1;
+    ir_jmp_eq ST ST cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$if1555$else;
+    ir_make_label cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$if1555$body;
+    ir_return 0;
+    ir_make_label cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$if1555$else;
+    ir_load [L0 . 0] 0;
+    ir_call cb__Nstd__Nrawstring__Nstrlen__Aptr__Tchar A0;
+    ir_load [L0 . 1] ST;
+    ir_load L2 [L0 . 0];
+    ir_make_label cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$f1579$cond;
+    ir_cast L2;
+    ir_jmp_gte ST [L0 . 1] cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$f1579$end;
+    ir_make_label cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$f1579$body;
+    ir_deref A0;
+    ir_index ST L2;
+    ir_deref A1;
+    ir_index ST L2;
+    ir_jmp_eq ST ST cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$if1576$else;
+    ir_make_label cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$if1576$body;
+    ir_return 0;
+    ir_make_label cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$if1576$else;
+    ir_add L2 1;
+    ir_load L2 ST;
+    ir_jmp cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$f1579$cond;
+    ir_make_label cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$f1579$end;
+    ir_return 1;
+endf
+
+func cb__Nstd__Ntests1__Nok -> void
+endf
+

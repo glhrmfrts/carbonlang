@@ -1,0 +1,5 @@
+code_unit{
+  std/configuration.cb
+  decl_list{
+    type_decl{ConfigurationGroup = type_expr{struct_type{(var_decl{name: type_expr{slice_type{[*] type_expr{char}}}})}}}
+    type_decl{Configuration = type_expr{struct_type{(var_decl{first_group: type_expr{type_qualifier{reference, ConfigurationGroup}}})}}}}}

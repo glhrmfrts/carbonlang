@@ -43,6 +43,9 @@ arena_ptr<ast_node> copy_node_helper(type_system& ts, ast_node& node) {
     else if (node.type == ast_type::bool_literal) {
         return make_bool_literal_node(*ts.ast_arena, node.pos, (bool)node.int_value);
     }
+    else if (node.type == ast_type::char_literal) {
+        return make_char_literal_node(*ts.ast_arena, node.pos, node.int_value);
+    }
     else if (node.type == ast_type::int_literal) {
         return make_int_literal_node(*ts.ast_arena, node.pos, node.int_value);
     }
@@ -90,6 +93,7 @@ arena_ptr<ast_node> copy_node_helper(type_system& ts, ast_node& node) {
 
 arena_ptr<ast_node> copy_node(type_system& ts, ast_node& node) {
     auto cpy = copy_node_helper(ts, node);
+    //cpy->type_id = node.type_id;
     for (auto& child : node.pre_children) {
         assert(child.get());
         cpy->pre_children.push_back(copy_node(ts, *child));

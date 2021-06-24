@@ -44,10 +44,10 @@ void prettyprint(const ast_node& node, std::ostream& stream, int indent, bool do
         break;
     case ast_type::binary_expr:
         stream << "{";
-        prettyprint(*node.children.front().get(), stream, indent, false);
+        if (node.children.front()) prettyprint(*node.children.front().get(), stream, indent, false);
         stream << " ";
         stream << token_to_char(node.op) << " ";
-        prettyprint(*node.children.back().get(), stream, indent, false);
+        if (node.children.back()) prettyprint(*node.children.back().get(), stream, indent, false);
         stream << "}";
         break;
     case ast_type::call_expr:

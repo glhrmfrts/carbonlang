@@ -1,0 +1,205 @@
+code_unit{
+  main.cb
+  decl_list{
+    import_decl{ std::alloc alloc}
+    import_decl{ std::io}
+    import_decl{ std::string}
+    type_decl{Field2D = type_expr{struct_type{(var_decl{width: type_expr{int}}, var_decl{height: type_expr{int}}, var_decl{data: type_expr{type_qualifier{reference, int}}})}}}
+    type_decl{Automaton = type_expr{struct_type{(var_decl{field: type_expr{Field2D}}, var_decl{new_field: type_expr{Field2D}})}}}
+    func_decl{split (var_decl{$cb_agg_ret: }, var_decl{str: }, var_decl{delim: type_expr{char}}):  {
+        decl_list{
+          var_decl{s = init{type=type_expr{string} 
+              {s.data = ""}
+              {s.len = cast_expr{ 0}}
+              }}}
+        stmt_list{
+          {{* $cb_agg_ret} = init{type=type_expr{slice_type{[&] type_expr{string}}} 
+            {{* $cb_agg_ret}.data = {& s}}
+            {{* $cb_agg_ret}.len = cast_expr{ 1}}
+            }}
+          return{$cb_agg_ret}}}}
+    func_decl{map (var_decl{$cb_agg_ret: }, var_decl{str: }, var_decl{f: type_expr{(type_expr{string})type_expr{string}}}):  {
+        decl_list{
+          var_decl{s = init{type=type_expr{string} 
+              {s.data = ""}
+              {s.len = cast_expr{ 0}}
+              }}}
+        stmt_list{
+          {{* $cb_agg_ret} = init{type=type_expr{slice_type{[&] type_expr{string}}} 
+            {{* $cb_agg_ret}.data = {& s}}
+            {{* $cb_agg_ret}.len = cast_expr{ 1}}
+            }}
+          return{$cb_agg_ret}}}}
+    func_decl{filter (var_decl{$cb_agg_ret: }, var_decl{str: }, var_decl{f: type_expr{(type_expr{string})type_expr{bool}}}):  {
+        decl_list{
+          var_decl{s = init{type=type_expr{string} 
+              {s.data = ""}
+              {s.len = cast_expr{ 0}}
+              }}}
+        stmt_list{
+          {{* $cb_agg_ret} = init{type=type_expr{slice_type{[&] type_expr{string}}} 
+            {{* $cb_agg_ret}.data = {& s}}
+            {{* $cb_agg_ret}.len = cast_expr{ 1}}
+            }}
+          return{$cb_agg_ret}}}}
+    func_decl{trim (var_decl{$cb_agg_ret: }, var_decl{str: }):  {
+        decl_list{
+          var_decl{f: type_expr{char} = 3}}
+        stmt_list{
+          {{* $cb_agg_ret} = init{type=type_expr{string} 
+            {{* $cb_agg_ret}.data = {& f}}
+            {{* $cb_agg_ret}.len = cast_expr{ 1}}
+            }}
+          return{$cb_agg_ret}}}}
+    func_decl{append (var_decl{$cb_agg_ret: }, var_decl{str: type_expr{type_qualifier{pointer, string}}}, var_decl{c: type_expr{char}}):  {
+        stmt_list{
+          {{* $cb_agg_ret} = init{type=type_expr{string} 
+            {{* $cb_agg_ret}.data = ""}
+            {{* $cb_agg_ret}.len = cast_expr{ 0}}
+            }}
+          return{$cb_agg_ret}}}}
+    func_decl{make_field (var_decl{$cb_agg_ret: }, var_decl{sx: type_expr{int}}, var_decl{sy: type_expr{int}}):  {
+        stmt_list{
+          {{* $cb_agg_ret} = init{type=type_expr{Field2D} 
+            {{* $cb_agg_ret}.width = sx}
+            {{* $cb_agg_ret}.height = sy}
+            {{* $cb_agg_ret}.data = cast_expr{type_expr{type_qualifier{reference, int}} call{alloc::alloc ({{4 * sx} * sy})}}}
+            }}
+          return{$cb_agg_ret}}}}
+    func_decl{set (var_decl{f: type_expr{type_qualifier{reference, Field2D}}}, var_decl{x: type_expr{int}}, var_decl{y: type_expr{int}}, var_decl{val: type_expr{int}}): type_expr{tuple_type{}} {
+        stmt_list{
+          {f.data[{{y * f.width} + x}] = val}}}}
+    func_decl{get (var_decl{f: type_expr{type_qualifier{pointer, Field2D}}}, var_decl{x: type_expr{int}}, var_decl{y: type_expr{int}}): type_expr{int} {
+        stmt_list{
+          return{f.data[{{y * f.width} + x}]}}}}
+    func_decl{clear (var_decl{f: type_expr{type_qualifier{reference, Field2D}}}): type_expr{tuple_type{}} {
+        stmt_list{
+          call{alloc::set (cast_expr{type_expr{rawptr} f.data}, 0, {{f.width * f.height} * 4})}}}}
+    func_decl{make_automaton (var_decl{$cb_agg_ret: }, var_decl{ftext: }):  {
+        decl_list{
+          var_decl{$cbT0 = {* ftext}}
+          call{split ({& f}, {& $cbT0}, )}
+          var_decl{f}
+          var_decl{height = cast_expr{type_expr{int} f.len}}
+          var_decl{width = 0}}
+        stmt_list{
+                      (y)            {
+              stmt_list{
+                if{{cast_expr{ width} < f.data[y].len} {
+                    stmt_list{
+                      {width = cast_expr{type_expr{int} f.data[y].len}}}}}}}}
+        decl_list{
+          call{make_field ({& field}, width, height)}
+          var_decl{field}
+          call{make_field ({& newfield}, width, height)}
+          var_decl{newfield}}
+        stmt_list{
+                      (y)            {
+              stmt_list{
+                                  (x)                  {
+                    decl_list{
+                      if{{{cast_expr{ x} < f.data[y].len} 	 {f.data[y].data[x]  }} {val = 1} else {val = 0}}
+                      var_decl{val}}
+                    stmt_list{
+                      call{set ({& field}, x, y, val)}}}}}}
+        stmt_list{
+          {{* $cb_agg_ret} = init{type=type_expr{Automaton} 
+            {{* $cb_agg_ret}.field = field}
+            {{* $cb_agg_ret}.new_field = newfield}
+            }}
+          return{$cb_agg_ret}}}}
+    func_decl{update (var_decl{a: type_expr{type_qualifier{reference, Automaton}}}): type_expr{tuple_type{}} {
+        stmt_list{
+          call{clear ({& a.new_field})}
+                      (y)            {
+              stmt_list{
+                                  (x)                  {
+                    decl_list{
+                      var_decl{moore_sum = {{{{{{{{{0 + call{get ({& a.field}, {x - 1}, {y - 1})}} + call{get ({& a.field}, x, {y + 1})}} + call{get ({& a.field}, {x + 1}, {y - 1})}} + call{get ({& a.field}, {x - 1}, y)}} + 0} + call{get ({& a.field}, {x + 1}, y)}} + call{get ({& a.field}, {x - 1}, {y + 1})}} + call{get ({& a.field}, x, {y + 1})}} + call{get ({& a.field}, {x + 1}, {y + 1})}}}
+                      var_decl{cell = call{get ({& a.field}, x, y)}}
+                      if{{cell  1} if{{{moore_sum  2} 
+ {moore_sum  3}} {alive = true} else {alive = false}}
+{ = } else if{{moore_sum  3} {alive = true} else {alive = false}}
+{ = }}
+                      var_decl{alive}}
+                    stmt_list{
+                      call{set ({& a.new_field}, x, y, if{{alive  false} {$cbT1 = 1} else {$cbT1 = 0}}
+$cbT1)}}}}}}
+        decl_list{
+          var_decl{tmp = a.field}}
+        stmt_list{
+          {a.field = a.new_field}
+          {a.new_field = tmp}}}}
+    func_decl{print (var_decl{a: type_expr{type_qualifier{pointer, Automaton}}}): type_expr{tuple_type{}} {
+        stmt_list{
+                      (y)            {
+              decl_list{
+                var_decl{s = init{type=type_expr{string} 
+                    {s.data = "    "}
+                    {s.len = cast_expr{ 4}}
+                    }}}
+              stmt_list{
+                                  (x)                  {
+                    decl_list{
+                      var_decl{cell = call{get ({& a.field}, x, y)}}}
+                    stmt_list{
+                      call{append ({& s}, {& s}, if{{cell  1} {$cbT2 = } else {$cbT2 = }}
+$cbT2)}
+                      {s = }}}}
+              stmt_list{
+                call{println (s.data)}}}}
+        stmt_list{
+          call{println ("")}}}}
+    func_decl{gun (var_decl{$cb_agg_ret: }):  {
+        decl_list{
+          var_decl{gunfield = "*******************************************
+*                                         *
+*  A shooting gun:                        *
+*                          #              *
+*                        # #              *
+*              ##      ##            ##   *
+*             #   #    ##            ##   *
+*  ##        #     #   ##                 *
+*  ##        #   # ##    # #              *
+*            #     #       #              *
+*             #   #                       *
+*              ##                         *
+*                                         *
+*  Tetris Life:                           *
+*                                         *
+*  ##       ####                          *
+*  ##                                     *
+*                                         *
+*                                         *
+*                                         *
+*  #         ##                           *
+*  ###      ##                            *
+*                                         *
+*                                         *
+*                                         *
+*        #                                *
+*       ###                               *
+*                                         *
+*                                         *
+*                                         *
+*                                         *
+*******************************************"}}
+        stmt_list{
+          var_decl{$cbT3 = init{type=type_expr{string} 
+              {$cbT3.data = gunfield}
+              {$cbT3.len = gunfield.strlen}
+              }}
+          call{make_automaton ({& {* $cb_agg_ret}}, {& $cbT3})}
+          {{* $cb_agg_ret} = }
+          return{$cb_agg_ret}}}}
+    func_decl{main (var_decl{args: }): type_expr{int} {
+        decl_list{
+          call{gun ({& a})}
+          var_decl{a}}
+        stmt_list{
+                      (i)            {
+              stmt_list{
+                call{update ({& a})}
+                call{print ({& a})}}}}
+        stmt_list{
+          return{0}}}}}}

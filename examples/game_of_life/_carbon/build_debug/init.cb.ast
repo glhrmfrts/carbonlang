@@ -1,0 +1,39 @@
+code_unit{
+  init.cb
+  decl_list{
+    import_decl{ std::io}
+    import_decl{ std::string}
+    import_decl{ std::rawstring}
+    import_decl{ std::alloc alloc}
+    import_decl{ std::os::windows}
+    visibility_specifier{ private decl_list{
+        func_decl{init_command_line (var_decl{$cb_agg_ret: }):  {
+            decl_list{
+              var_decl{cmdline = call{GetCommandLineA ()}}
+              var_decl{data = cast_expr{type_expr{type_qualifier{reference, string}} call{alloc::alloc (16)}}}
+              var_decl{result = init{type=type_expr{slice_type{[&] type_expr{string}}} 
+                  {result.data = data}
+                  {result.len = cast_expr{ 1}}
+                  }}}
+            stmt_list{
+              {result.data[0] = init{type=type_expr{string} 
+                {result.data[0].data = cmdline}
+                {result.data[0].len = call{strlen (cmdline)}}
+                }}
+              {{* $cb_agg_ret} = result}
+              return{$cb_agg_ret}}}}
+        func_decl{free_command_line (var_decl{args: }): type_expr{tuple_type{}} {
+            stmt_list{
+              call{alloc::free (cast_expr{type_expr{rawptr} {* args}.data})}}}}
+        linkage_specifier{ extern(C) func_decl{carbon_main (): type_expr{int} {
+              decl_list{
+                call{init_command_line ({& args})}
+                var_decl{args}}
+              stmt_list{
+                defer{var_decl{$cbT4 = args}
+call{free_command_line ({& $cbT4})}}}
+              decl_list{
+                import_decl{ main}}
+              stmt_list{
+                return{var_decl{$cbT5 = args}
+call{main ({& $cbT5})}}}}}}}}}}

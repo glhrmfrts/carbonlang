@@ -1,0 +1,44 @@
+code_unit{
+  std/rawstring.cb
+  decl_list{
+    import_decl{ std::alloc alloc}
+    func_decl{copy (var_decl{str: type_expr{type_qualifier{pointer, char}}}): type_expr{type_qualifier{pointer, char}} {
+        stmt_list{
+          return{call{copy (str, call{strlen (str)})}}}}}
+    func_decl{copy (var_decl{str: type_expr{type_qualifier{pointer, char}}}, var_decl{size: type_expr{usize}}): type_expr{type_qualifier{pointer, char}} {
+        decl_list{
+          var_decl{newstr = cast_expr{type_expr{type_qualifier{pointer, char}} call{alloc::alloc ({size + 1})}}}}
+        stmt_list{
+          call{copy (newstr, str, size)}
+          {newstr[size] = 0}
+          return{newstr}}}}
+    func_decl{copy (var_decl{dest: type_expr{type_qualifier{pointer, char}}}, var_decl{src: type_expr{type_qualifier{pointer, char}}}, var_decl{size: type_expr{usize}}): type_expr{tuple_type{}} {
+        stmt_list{
+          call{alloc::copy (cast_expr{type_expr{rawptr} dest}, cast_expr{type_expr{rawptr} src}, size)}}}}
+    func_decl{set (var_decl{dest: type_expr{type_qualifier{pointer, char}}}, var_decl{value: type_expr{char}}, var_decl{count: type_expr{usize}}): type_expr{tuple_type{}} {
+        stmt_list{
+          call{alloc::set (cast_expr{type_expr{rawptr} dest}, value, count)}}}}
+    func_decl{strlen (var_decl{str: type_expr{type_qualifier{pointer, char}}}): type_expr{usize} {
+        decl_list{
+          var_decl{c: type_expr{usize} = 0}
+          var_decl{p = str}}
+        stmt_list{
+                      {cast_expr{ {* p}}  0}            {
+              stmt_list{
+                {p = {p + 1}}
+                {c = {c + 1}}}}}
+        stmt_list{
+          return{c}}}}
+    func_decl{equals (var_decl{a: type_expr{type_qualifier{pointer, char}}}, var_decl{b: type_expr{type_qualifier{pointer, char}}}): type_expr{bool} {
+        stmt_list{
+          if{{call{strlen (a)}  call{strlen (b)}} {
+              stmt_list{
+                return{false}}}}}
+        stmt_list{
+                      (i)            {
+              stmt_list{
+                if{{a[i]  b[i]} {
+                    stmt_list{
+                      return{false}}}}}}}
+        stmt_list{
+          return{true}}}}}}

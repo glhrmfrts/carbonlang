@@ -5,10 +5,12 @@
 #include "ast.hh"
 #include "ast_manip.hh"
 #include "fs.hh"
+#include "prettyprint.hh"
 #include "desugar.hh"
 #include "scope.hh"
 #include <fstream>
 #include <numeric>
+#include <fstream>
 
 namespace carbon {
 
@@ -1172,6 +1174,10 @@ type_id resolve_identifier(type_system& ts, ast_node& node) {
         auto local = get_symbol_local(*sym);
         bool was_unresolved = !node.type_id.valid();
 
+        if (node.node_id == 353) {
+            printf("asd\n");
+        }
+
         node.lvalue.self = &node;
         node.lvalue.symbol = sym;
         node.type_id = local->self->type_id;
@@ -1219,6 +1225,10 @@ type_id resolve_local_variable_type(type_system& ts, ast_node& l) {
         l.type_error = l.var_value()->type_error;
     }
 
+    if (l.node_id == 348) {
+        printf("asd\n");
+    }
+
     return l.type_id;
 }
 
@@ -1231,6 +1241,9 @@ void update_local_variable_type(type_system& ts, ast_node& l, type_id tid) {
 
 void update_local_aggregate_argument(type_system& ts, ast_node& l) {
     update_local_variable_type(ts, l, get_reference_type_to(ts, l.type_id));
+    if (l.type == ast_type::var_decl) {
+        l.children[ast_node::child_var_decl_type] = make_type_resolver_node(*ts.ast_arena, l.type_id);
+    }
     for (auto ref : l.local.refs) {
         auto parent = ref->parent;
         auto idx = find_child_index(parent, ref);
@@ -1433,7 +1446,7 @@ void register_func_declaration_node(type_system& ts, ast_node& node) {
 
     auto& id = node.children[ast_node::child_func_decl_id];
     auto& arg_list = node.children[ast_node::child_func_decl_arg_list]->children;
-    auto& body = node.children[ast_node::child_func_decl_body];
+    auto body = node.children[ast_node::child_func_decl_body].get();
 
     if (!node.func_ret_type()) {
         auto id_void = make_tuple_type_node(*ts.ast_arena, node.pos, {nullptr, nullptr});
@@ -1451,6 +1464,21 @@ void register_func_declaration_node(type_system& ts, ast_node& node) {
     resolve_node_type(ts, node.func_ret_type());
 
     if (body) {
+        if (body->type != ast_type::compound_stmt) {
+            auto new_return = make_return_stmt_node(*ts.ast_arena, body->pos, std::move(node.children[ast_node::child_func_decl_body]));
+
+            auto stmts = std::vector<arena_ptr<ast_node>>{};
+            stmts.push_back(std::move(new_return));
+            auto new_slist = make_stmt_list_node(*ts.ast_arena, body->pos, std::move(stmts));
+
+            auto new_lists = std::vector<arena_ptr<ast_node>>{};
+            new_lists.push_back(std::move(new_slist));
+            auto new_body = make_compound_stmt_node(*ts.ast_arena, body->pos, std::move(new_lists));
+
+            node.children[ast_node::child_func_decl_body] = std::move(new_body);
+            body = node.children[ast_node::child_func_decl_body].get();
+            parent_tree(*body);
+        }
         body->parent = &node;
         add_func_scope(ts, node, *body);
     }
@@ -1929,7 +1957,17 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
         // TODO: check if scope / sanity check
         if (ts.pass == type_system_pass::resolve_literals_and_register_declarations) {
             auto scope = find_nearest_scope_local(ts, scope_kind::func_body);
-            scope->self->func.return_statements.push_back(nodeptr);
+
+            bool exists = false;
+            for (auto ret : scope->self->func.return_statements) {
+                if (ret == nodeptr) {
+                    exists = true;
+                    break;
+                }
+            }
+            if (!exists) {
+                scope->self->func.return_statements.push_back(nodeptr);
+            }
         }
         break;
     }
@@ -3274,6 +3312,13 @@ void type_system::resolve_and_check() {
 
     if (!current_error.msg.empty()) {
         errors.push_back(current_error);
+    }
+
+    for (auto unit : this->code_units) {
+        ensure_directory_exists("_carbon/build_debug/" + basename(std::string{ unit->string_value }) + ".ast");
+        std::ofstream ast_file{ "_carbon/build_debug/" + basename(std::string{unit->string_value}) + ".ast" };
+        prettyprint(*unit, ast_file);
+        ast_file << "\n";
     }
 }
 

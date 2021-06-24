@@ -80,7 +80,7 @@ void check_temp_ternary_expr(type_system& ts, ast_node& node) {
 // Section: aggregate arguments/return value
 
 void check_func_arg_aggregate_type(type_system& ts, ast_node& func, int idx) {
-    if (is_aggregate_type(func.func_args()[idx]->type_id)) {
+    if (is_aggregate_type(func.func_args()[idx]->type_id) && !(func.func_args()[idx]->local.flags & local_flag::is_aggregate_argument)) {
         func.func_args()[idx]->local.flags |= local_flag::is_aggregate_argument;
         update_local_aggregate_argument(ts, *func.func_args()[idx]);
     }
@@ -224,10 +224,12 @@ void desugar(type_system& ts, ast_node* nodeptr) {
             check_temp_ternary_expr(ts, *(node.call_args()[i]));
         }
 
-        check_temp_aggregate_call(ts, node);
-
         visit_pre_children(ts, node);
         visit_children(ts, node);
+
+        if (ts.subpass == 1) {
+            check_temp_aggregate_call(ts, node);
+        }
         break;
     }
     case ast_type::init_expr: {
@@ -239,13 +241,11 @@ void desugar(type_system& ts, ast_node* nodeptr) {
     }
     case ast_type::binary_expr: {
         if (token_to_char(node.op) == '=') {
-            check_assignment_aggregate_call(ts, node);
             check_assignment_bool_op(ts, node);
             check_assignment_ternary_expr(ts, node);
         }
         else {
             for (int i = 0; i < 2; i++) {
-                check_temp_aggregate_call(ts, *node.children[i]);
                 check_temp_ternary_expr(ts, *node.children[i]);
                 if (!is_bool_op(node)) {
                     check_temp_bool_op(ts, *node.children[i]);
@@ -255,6 +255,15 @@ void desugar(type_system& ts, ast_node* nodeptr) {
 
         visit_pre_children(ts, node);
         visit_children(ts, node);
+
+        if (token_to_char(node.op) == '=') {
+            check_assignment_aggregate_call(ts, node);
+        }
+        else {
+            for (int i = 0; i < 2; i++) {
+                check_temp_aggregate_call(ts, *node.children[i]);
+            }
+        }
         break;
     }
     case ast_type::ternary_expr: {
@@ -263,11 +272,11 @@ void desugar(type_system& ts, ast_node* nodeptr) {
         break;
     }
     case ast_type::var_decl: {
-        check_var_decl_aggregate_call(ts, node);
         check_var_decl_bool_op(ts, node);
         check_var_decl_ternary_expr(ts, node);
         visit_pre_children(ts, node);
         visit_children(ts, node);
+        check_var_decl_aggregate_call(ts, node);
         break;
     }
     case ast_type::return_stmt: {

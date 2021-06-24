@@ -81,15 +81,6 @@ void process_source_directory(type_system& ts, ast_node& target, const std::stri
     process_directory(ts, target, srcdir, srcdir);
 }
 
-std::string basename(const std::string& path) {
-    return path.substr(path.find_last_of('/') + 1);
-}
-
-std::string from_native_path(std::string path) {
-    while (replace(path, "\\", "/"));
-    return path;
-}
-
 const char* find_arg(const char* name, int argc, const char* argv[]) {
     for (int i = 1; i < argc; i++) {
         if (!strcmp(name, argv[i]) && i < argc - 1) {

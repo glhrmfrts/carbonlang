@@ -161,6 +161,14 @@ bool ensure_directory_exists(const std::string& path) {
     return true;
 }
 
+std::string basename(const std::string& path) {
+    return path.substr(path.find_last_of('/') + 1);
+}
+
+std::string from_native_path(std::string path) {
+    while (replace(path, "\\", "/"));
+    return path;
+}
 
 bool split_extension(const std::string& filename, std::string& root, std::string& ext)
 {

@@ -230,7 +230,7 @@ struct generator {
     }
 
     int use_temp_local(type_id tid) {
-        int available = (fn->locals.size() - temp_locals_base) + used_temp_locals;
+        int available = fn->locals.size() - temp_locals_base - used_temp_locals;
         if (available == 0) {
             used_temp_locals++;
             fn->locals.push_back(ir_local_data{ "codegentemp", tid });
@@ -266,6 +266,8 @@ struct generator {
 
     void determine_instrs_destination() {
         temp_locals_base = fn->locals.size();
+        used_temp_locals = 0;
+        used_temp_registers = 0;
 
         for (std::size_t i = 0; i < fn->instrs.size(); i++) {
             auto& instr = fn->instrs[i];
@@ -283,6 +285,9 @@ struct generator {
             fndata->instr_data[instr.index].dest = reg_result;
             if (next_instr) {
                 if (instr_pushes_to_stack(instr) && instr_opstack_consumption(*next_instr) == 0) {
+                    if (instr.index == 19 && instr.op == ir_sub) {
+                        printf("asd\n");
+                    }
                     fndata->instr_data[instr.index].dest = use_temp_destination(instr.result_type);
                 }
             }

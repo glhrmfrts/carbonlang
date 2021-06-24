@@ -16,30 +16,33 @@ type Field2D = {
 };
 
 type Automaton = {
-    field: Field2D,
-    new_field: Field2D,
+    field:      Field2D,
+    new_field:  Field2D,
 };
 
 func split(str: string, delim: char): [&]string {
-    return [&]string{};
+    var s = string{"", 0};
+    return [&]string{ &s, 1 };
 }
 
 func map(str: [*]string, f: {string} -> string): [&]string {
-    return [&]string{};
+    var s = string{"", 0};
+    return [&]string{ &s, 1 };
 }
 
 func filter(str: [*]string, f: {string} -> bool): [&]string {
-    return [&]string{};
+    var s = string{"", 0};
+    return [&]string{ &s, 1 };
 }
 
-func trim(str: string): [&]char {
-    return [&]char{};
+func trim(str: string): string {
+    let f : char = 3;
+    return string{ &f, 1 };
 }
 
 func append(str: *string, c: char): string {
-    return string{};
+    return string{"", 0};
 }
-
 
 func make_field(sx: int, sy: int): Field2D {
     return Field2D{
@@ -56,15 +59,15 @@ func get(f: *Field2D, x: int, y: int): int {
 }
 
 func clear(f: &Field2D) {
-    alloc::set(cast[rawptr] f.data, f.width*f.height*sizeof(int), 0);
+    alloc::set(cast[rawptr] f.data, 0, f.width*f.height*sizeof(int));
 }
 
 func make_automaton(ftext: string): Automaton {
-    let f = ftext.split('\n').map(func(it: string): string = it.trim).filter(func(it: string): bool = it.len > 0);
-    // defer f.unzone;
+    //let f = ftext.split('\n').map(func(it: string): string = it.trim).filter(func(it: string): bool = it.len > 0);
+    let f = split(ftext, '\n');
 
     let height = cast[int] f.len;
-    var width = 0;
+    var width  = 0;
 
     for (y in 0,f.len) {
         if (width < f[y].len) {
@@ -72,15 +75,17 @@ func make_automaton(ftext: string): Automaton {
         }
     }
 
-    let field = make_field(width, height);
+    let field    = make_field(width, height);
     let newfield = make_field(width, height);
-	for (y in 0, field.height) {
-		for (x in 0, field.width) {
-			let val = x < f[y].len && f[y][x] == '#' then 1 else 0;
-			field.set(x, y, val);
-		}
-	}
-	return Automaton{field, newfield};
+
+    for (y in 0, field.height) {
+        for (x in 0, field.width) {
+            let val = x < f[y].len && f[y][x] == '#' then 1 else 0;
+            field.set(x, y, val);
+        }
+    }
+
+    return Automaton{field, newfield};
 }
 
 func update(a: &Automaton) {
