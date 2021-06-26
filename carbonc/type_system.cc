@@ -1462,6 +1462,18 @@ void declare_func_arguments(type_system& ts, ast_node& func) {
     }
 }
 
+bool is_func_generic(ast_node& func) {
+    auto& arg_list = func.func_args();
+    for (auto& arg : arg_list) {
+        assert(arg->type == ast_type::var_decl);
+
+        if (!arg->var_type()) {
+            return true;
+        }
+    }
+    return false;
+}
+
 void register_func_declaration_node(type_system& ts, ast_node& node) {
     node.scope.self = &node;
     node.func.self = &node;
@@ -1471,10 +1483,12 @@ void register_func_declaration_node(type_system& ts, ast_node& node) {
     auto& arg_list = node.children[ast_node::child_func_decl_arg_list]->children;
     auto body = node.children[ast_node::child_func_decl_body].get();
 
+    node.func.decl_scope = ts.current_scope;
     node.func.base_symbol = build_identifier_value(node.var_id()->id_parts);
     auto ovbase = find_symbol_in_current_scope(ts, node.func.base_symbol);
     if (!ovbase) {
         declare_overloaded_func_base_symbol(ts, node.func.base_symbol);
+        ovbase = find_symbol_in_current_scope(ts, node.func.base_symbol);
     }
 
     if (node.func_ret_type()) {
@@ -1497,23 +1511,79 @@ void register_func_declaration_node(type_system& ts, ast_node& node) {
             body = node.children[ast_node::child_func_decl_body].get();
             parent_tree(*body);
         }
-        body->parent = &node;
-        add_func_scope(ts, node, *body);
     }
-    
-    declare_func_arguments(ts, node);
+
+    node.func.is_generic = is_func_generic(node);
+    if (!node.func.is_generic) {
+        if (body) {
+            body->parent = &node;
+            add_func_scope(ts, node, *body);
+        }
+
+        declare_func_arguments(ts, node);
+        for (auto& arg : arg_list) {
+            resolve_local_variable_type(ts, *arg);
+        }
+
+        if (body) {
+            visit_tree(ts, *body);
+            leave_scope_local(ts);
+        }
+
+        // try to resolve the func type already
+        node.func.args_unresolved = true; // assume args are unresolved, possibly wasting a type check pass
+        resolve_func_type(ts, node);
+    }
+    else {
+        node.func.is_generic = true;
+        ovbase->generic_funcs.push_back(&node.func);
+    }
+}
+
+arena_ptr<ast_node> generate_func_for_arguments(type_system& ts, ast_node& gnode, std::vector<arena_ptr<ast_node>>& args) {
+    auto node = copy_node(ts, &gnode);
+    node->func.self = node.get();
+    node->scope.self = node.get();
+    node->local.self = node.get();
+    node->func.decl_scope = gnode.func.decl_scope;
+    node->func.base_symbol = gnode.func.base_symbol;
+
+    auto prev_scope = ts.current_scope;
+    ts.current_scope = gnode.func.decl_scope;
+    scope_guard _{ [&]() { ts.current_scope = prev_scope;  } };
+
+    auto& arg_list = node->children[ast_node::child_func_decl_arg_list]->children;
+    for (std::size_t i = 0; i < arg_list.size(); i++) {
+        auto& argdecl = arg_list[i];
+
+        // TODO: declare comptime symbol if declaration has comptime expression for the type
+        argdecl->children[ast_node::child_var_decl_type] = make_type_resolver_node(*ts.ast_arena, args[i]->type_id);
+    }
+
+    auto body = node->children[ast_node::child_func_decl_body].get();
+    if (body) {
+        body->parent = node.get();
+        add_func_scope(ts, *node, *body);
+    }
+
+    declare_func_arguments(ts, *node);
     for (auto& arg : arg_list) {
         resolve_local_variable_type(ts, *arg);
     }
+
+    // TODO: check for compilation errors in the body and discard this generic overload
 
     if (body) {
         visit_tree(ts, *body);
         leave_scope_local(ts);
     }
 
+    resolve_func_args_type(ts, *node);
+
     // try to resolve the func type already
-    node.func.args_unresolved = true; // assume args are unresolved, possibly wasting a type check pass
-    resolve_func_type(ts, node);
+    resolve_func_type(ts, *node);
+
+    return std::move(node);
 }
 
 void resolve_and_declare_local_variable(type_system& ts, const string_hash& id, ast_node& node) {
@@ -1844,6 +1914,104 @@ bool check_reserved_call(type_system& ts, ast_node& node) {
     return false;
 }
 
+void resolve_call_funcdef(type_system& ts, ast_node& node) {
+    auto pair = separate_module_identifier(node.call_func()->id_parts);
+
+    for (const auto& linkage : { func_linkage::local_carbon, func_linkage::external_c }) {
+        node.call.mangled_name = mangle_func_name(ts, { pair.second.str }, node.call_args(), linkage);
+
+        auto sym = find_symbol(ts, { pair.first, node.call.mangled_name });
+        if (sym && sym->kind == symbol_kind::top_level_func) {
+            auto local = sym->scope->local_defs[sym->local_index];
+            node.type_id = local->self->type_def.func.ret_type;
+            node.call.func_type_id = local->self->type_id;
+            node.call.funcdef = &local->self->func;
+            node.type_error = false;
+            if (local->flags & local_flag::is_aggregate_argument) {
+                node.type_id = node.type_id.get().elem_type;
+            }
+            break;
+        }
+    }
+
+    if (!node.type_id.valid()) {
+        node.type_error = true;
+
+        auto funcname = node_to_string(*node.call_func());
+        auto bsym = find_symbol(ts, pair);
+        if (bsym && bsym->kind == symbol_kind::overloaded_func_base) {
+            // try to match the arguments performing implicit conversions using the function non-generic overloads
+            bool resolved = false;
+            for (std::size_t i = 0; i < bsym->overload_funcs.size(); i++) {
+                auto func = bsym->overload_funcs[i];
+                if (node.call.flags & call_flag::is_method_sugar_call) {
+                    // The matching for 'method' call sugar is different in that we allow the receiver to be cast
+                    // to a pointer in case it's a value type
+                    auto [match, need_cast_ptr] = match_method_arg_list(ts, func->self->func_args(), node.call_args());
+                    if (match) {
+                        resolved = true;
+                        node.type_id = func->self->type_def.func.ret_type;
+                        node.call.func_type_id = func->self->type_id;
+                        node.call.funcdef = func;
+                        node.type_error = false;
+
+                        auto& arg_list = *node.children[1];
+                        if (need_cast_ptr) {
+                            arg_list.children[0] = make_address_of_expr(ts, std::move(arg_list.children[0]));
+                            arg_list.children[0]->type_id = get_pointer_type_to(ts, arg_list.children[0]->children[0]->type_id);
+                        }
+                        break;
+                    }
+                }
+                else if (match_arg_list(ts, func->self->func_args(), node.call_args())) {
+                    resolved = true;
+                    node.type_id = func->self->type_def.func.ret_type;
+                    node.call.func_type_id = func->self->type_id;
+                    node.call.funcdef = func;
+                    node.type_error = false;
+                    break;
+                }
+            }
+
+            // try to match the arguments performing implicit conversions using the function GENERIC overloads
+            for (std::size_t i = 0; i < bsym->generic_funcs.size(); i++) {
+                auto func = bsym->generic_funcs[i];
+                if (func->self->func_args().size() != node.call_args().size()) { continue; }
+
+                auto genfunc = generate_func_for_arguments(ts, *func->self, node.call_args());
+                if (genfunc) {
+                    resolved = true;
+                    node.type_id = genfunc->type_def.func.ret_type;
+                    node.call.func_type_id = genfunc->type_id;
+                    node.call.funcdef = &genfunc->func;
+                    node.type_error = false;
+                    func->self->parent->children_to_add.push_back(std::move(genfunc));
+                    break;
+                }
+            }
+
+            if (!resolved) {
+                unk_type_error(ts, node.type_id, node.pos, "cannot determine type of function call to '%s'", funcname.c_str());
+                complement_error(ts, node.pos, "function exists but cannot find a matching argument list");
+                for (std::size_t i = 0; i < bsym->overload_funcs.size(); i++) {
+                    auto func = bsym->overload_funcs[i];
+                    complement_error(ts, node.pos, "candidate #%d: '%s' declared in %s:%d",
+                        (i + 1), func_declaration_to_string(func).c_str(), func->self->pos.filename.c_str(), func->self->pos.line_number);
+                }
+                complement_error(ts, node.pos, "call arguments: (%s)", type_list_to_string(node.call.arg_types).c_str());
+            }
+        }
+        else if (bsym) {
+            unk_type_error(ts, node.type_id, node.pos, "cannot determine type of function call to '%s'", funcname.c_str());
+            complement_error(ts, node.pos, "symbol '%s' is not a function", funcname.c_str());
+        }
+        else {
+            unk_type_error(ts, node.type_id, node.pos, "cannot determine type of function call to '%s'", funcname.c_str());
+            complement_error(ts, node.pos, "undefined symbol '%s'", funcname.c_str());
+        }
+    }
+}
+
 // Section: main visitor
 
 void clear_type_errors(type_system& ts, ast_node& node) {
@@ -2101,7 +2269,7 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
         if (ts.pass == type_system_pass::resolve_literals_and_register_declarations) {
             register_func_declaration_node(ts, node);
         }
-        else {
+        else if (!node.func.is_generic) {
             auto funcname = node_to_string(*node.var_id());
             resolve_func_args_type(ts, node);
 
@@ -2230,7 +2398,7 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
                         complement_error(ts, node.pos, "candidate #%d: '%s' declared in %s:%d",
                             (i + 1), func_declaration_to_string(func).c_str(), func->self->pos.filename.c_str(), func->self->pos.line_number);
                     }
-                    complement_error(ts, node.pos, "call arguments: (%s)", type_list_to_string(node.call.arg_types).c_str());
+                    complement_error(ts, node.pos, "requested arguments: (%s)", type_list_to_string(node.call.arg_types).c_str());
                 }
             }
             else if (bsym) {
@@ -2277,84 +2445,7 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
         if (node.call_func()->type == ast_type::identifier && !node.call_func()->type_id.valid()) {
             if (args_resolved) {
                 // both args and func resolved
-                auto pair = separate_module_identifier(node.call_func()->id_parts);
-
-                for (const auto& linkage : { func_linkage::local_carbon, func_linkage::external_c }) {
-                    node.call.mangled_name = mangle_func_name(ts, { pair.second.str }, node.call_args(), linkage);
-
-                    auto sym = find_symbol(ts, { pair.first, node.call.mangled_name });
-                    if (sym && sym->kind == symbol_kind::top_level_func) {
-                        auto local = sym->scope->local_defs[sym->local_index];
-                        node.type_id = local->self->type_def.func.ret_type;
-                        node.call.func_type_id = local->self->type_id;
-                        node.call.funcdef = &local->self->func;
-                        node.type_error = false;
-                        if (local->flags & local_flag::is_aggregate_argument) {
-                            node.type_id = node.type_id.get().elem_type;
-                        }
-                        break;
-                    }
-                }
-
-                if (!node.type_id.valid()) {
-                    node.type_error = true;
-
-                    auto funcname = node_to_string(*node.call_func());
-                    auto bsym = find_symbol(ts, pair);
-                    if (bsym && bsym->kind == symbol_kind::overloaded_func_base) {
-                        // try to match the arguments performing implicit conversions
-                        bool resolved = false;
-                        for (std::size_t i = 0; i < bsym->overload_funcs.size(); i++) {
-                            auto func = bsym->overload_funcs[i];
-                            if (node.call.flags & call_flag::is_method_sugar_call) {
-                                // The matching for 'method' call sugar is different in that we allow the receiver to be cast
-                                // to a pointer in case it's a value type
-                                auto [match, need_cast_ptr] = match_method_arg_list(ts, func->self->func_args(), node.call_args());
-                                if (match) {
-                                    resolved = true;
-                                    node.type_id = func->self->type_def.func.ret_type;
-                                    node.call.func_type_id = func->self->type_id;
-                                    node.call.funcdef = func;
-                                    node.type_error = false;
-
-                                    auto& arg_list = *node.children[1];
-                                    if (need_cast_ptr) {
-                                        arg_list.children[0] = make_address_of_expr(ts, std::move(arg_list.children[0]));
-                                        arg_list.children[0]->type_id = get_pointer_type_to(ts, arg_list.children[0]->children[0]->type_id);
-                                    }
-                                    break;
-                                }
-                            }
-                            else if (match_arg_list(ts, func->self->func_args(), node.call_args())) {
-                                resolved = true;
-                                node.type_id = func->self->type_def.func.ret_type;
-                                node.call.func_type_id = func->self->type_id;
-                                node.call.funcdef = func;
-                                node.type_error = false;
-                                break;
-                            }
-                        }
-
-                        if (!resolved) {
-                            unk_type_error(ts, node.type_id, node.pos, "cannot determine type of function call to '%s'", funcname.c_str());
-                            complement_error(ts, node.pos, "function exists but cannot find a matching argument list");
-                            for (std::size_t i = 0; i < bsym->overload_funcs.size(); i++) {
-                                auto func = bsym->overload_funcs[i];
-                                complement_error(ts, node.pos, "candidate #%d: '%s' declared in %s:%d",
-                                    (i + 1), func_declaration_to_string(func).c_str(), func->self->pos.filename.c_str(), func->self->pos.line_number);
-                            }
-                            complement_error(ts, node.pos, "call arguments: (%s)", type_list_to_string(node.call.arg_types).c_str());
-                        }
-                    }
-                    else if (bsym) {
-                        unk_type_error(ts, node.type_id, node.pos, "cannot determine type of function call to '%s'", funcname.c_str());
-                        complement_error(ts, node.pos, "symbol '%s' is not a function", funcname.c_str());
-                    }
-                    else {
-                        unk_type_error(ts, node.type_id, node.pos, "cannot determine type of function call to '%s'", funcname.c_str());
-                        complement_error(ts, node.pos, "undefined symbol '%s'", funcname.c_str());
-                    }
-                }
+                resolve_call_funcdef(ts, node);
             }
 
             if (!node.call.funcdef) {
@@ -2741,6 +2832,8 @@ void remangle_names(type_system& ts, ast_node* nodeptr) {
         break;
     }
     case ast_type::func_decl: {
+        if (node.func.is_generic) { break; }
+
         // remangle the function name with the fully qualified module name
         if ((node.func.linkage == func_linkage::external_carbon || node.func.linkage == func_linkage::local_carbon)
             && !node.func.args_unresolved) {

@@ -204,6 +204,8 @@ void desugar(type_system& ts, ast_node* nodeptr) {
         break;
     }
     case ast_type::func_decl: {
+        if (node.func.is_generic) { break; }
+
         if (node.scope.body_node) { enter_scope_local(ts, node); }
 
         for (int i = 0; i < node.func_args().size(); i++) {

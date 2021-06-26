@@ -153,6 +153,7 @@ struct symbol_info {
     
     // if kind == overloaded_func_base
     std::vector<func_def*> overload_funcs;
+    std::vector<func_def*> generic_funcs;
 
     // if kind == comptime
     comptime_value ctvalue;
@@ -244,6 +245,8 @@ struct func_def {
     std::vector<ast_node*> return_statements;
     func_linkage linkage;
     bool args_unresolved = false;
+    bool is_generic = false;
+    scope_def* decl_scope;
     string_hash base_symbol;
 };
 

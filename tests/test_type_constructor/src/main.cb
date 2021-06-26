@@ -12,9 +12,20 @@ func add(a: int, b: int) {
     return a + b
 }
 
+func sub(a, b) {
+    return a - b
+}
+
+func printsome(c) {
+    println(c)
+}
+
 func main(args: []string) {
     println(args[0].data)
     let arr = Array(char){"beautiful", 10, 10}
-    println(arr.data)
+    printsome(arr.data)
+    let x = sub(3, 2)
+    let y = sub(cast(char)10, cast(char)5)
+    let d : int = "asdqwe"
     return add(1, 2)
 }

@@ -11,6 +11,12 @@ code_unit{
     func_decl{add (var_decl{a: type_expr{int}}, var_decl{b: type_expr{int}}) {
         stmt_list{
           return{{a + b}}}}}
+    func_decl{sub (var_decl{a}, var_decl{b}) {
+        stmt_list{
+          return{{a - b}}}}}
+    func_decl{printsome (var_decl{c}) {
+        stmt_list{
+          call{println (c)}}}}
     func_decl{main (var_decl{args: }) {
         stmt_list{
           call{println ({* args}.data[0].data)}}
@@ -21,6 +27,19 @@ code_unit{
               {arr.cap = cast_expr{ 10}}
               }}}
         stmt_list{
-          call{println (arr.data)}}
+          call{printsome (arr.data)}}
+        decl_list{
+          var_decl{x = call{sub (3, 2)}}
+          var_decl{y = call{sub (cast_expr{type_expr{char} 10}, cast_expr{type_expr{char} 5})}}
+          var_decl{d: type_expr{int} = "asdqwe"}}
         stmt_list{
-          return{call{add (1, 2)}}}}}}}
+          return{call{add (1, 2)}}}}}
+    func_decl{printsome (var_decl{c: }) {
+        decl_list{
+          call{println (c)}}}}
+    func_decl{sub (var_decl{a: }, var_decl{b: }) {
+        decl_list{
+          return{{a - b}}}}}
+    func_decl{sub (var_decl{a: }, var_decl{b: }) {
+        decl_list{
+          return{{a - b}}}}}}}

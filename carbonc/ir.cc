@@ -765,7 +765,9 @@ void generate_ir_node(ast_node& node) {
     case ast_type::ternary_expr:
         break;
     case ast_type::func_decl:
-        generate_ir_func(node);
+        if (!node.func.is_generic) {
+            generate_ir_func(node);
+        }
         break;
     case ast_type::var_decl:
         generate_ir_var(node);
