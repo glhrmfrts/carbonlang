@@ -1,7 +1,7 @@
-type ConfigurationGroup = {
-    name: [*]char
+type configuration_group = struct {
+    name: []char
 };
 
-type Configuration = {
-    first_group: &ConfigurationGroup
+type configuration = struct {
+    first_group: &configuration_group
 };

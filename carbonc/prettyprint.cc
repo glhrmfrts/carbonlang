@@ -241,9 +241,6 @@ void prettyprint(const ast_node& node, std::ostream& stream, int indent, bool do
         case type_qualifier::optional:
             stream << "optional,";
             break;
-        case type_qualifier::reference:
-            stream << "reference,";
-            break;
         case type_qualifier::pointer:
             stream << "pointer,";
             break;

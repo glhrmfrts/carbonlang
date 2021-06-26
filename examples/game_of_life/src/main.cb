@@ -1,8 +1,8 @@
-import std::alloc as alloc;
-import std::io;
-import std::string;
-import std::rawstring;
-//import std::seqs; // map, filter, split, trim
+import std::alloc as alloc
+import std::io
+import std::string
+import std::rawstring
+//import std::seqs // map, filter, split, trim
 
 // TODO:
 //  - parse unified function call with arguments
@@ -10,115 +10,114 @@ import std::rawstring;
 //  - support user-defined long strings
 //  - time, seq and strings modules
 
-type Field2D = {
-	width: int,
-	height: int,
-	data: &int,
-};
-
-type Automaton = {
-    field:      Field2D,
-    new_field:  Field2D,
-};
-
-func split(str: string, delim: char): [&]string {
-    var s = string{"", 0};
-    return [&]string{ &s, 1 };
+type Field2D = struct {
+    width: int
+    height: int
+    data: &int
 }
 
-func map(str: [*]string, f: {string} -> string): [&]string {
-    var s = string{"", 0};
-    return [&]string{ &s, 1 };
+type Automaton = struct {
+    field:      Field2D
+    new_field:  Field2D
 }
 
-func filter(str: [*]string, f: {string} -> bool): [&]string {
-    var s = string{"", 0};
-    return [&]string{ &s, 1 };
+func split(str: &string, delim: char): []string {
+    let s = string{"", 0}
+    return []string{ &s, 1 }
 }
 
-func trim(str: string): string {
-    let f : char = 3;
-    return string{ &f, 1 };
+func map(str: []string, f: {string} -> string): []string {
+    let s = string{"", 0}
+    return []string{ &s, 1 }
 }
 
-func append(str: *string, c: char): string {
-    return string{"", 0};
+func filter(str: []string, f: {string} -> bool): []string {
+    let s = string{"", 0}
+    return []string{ &s, 1 }
+}
+
+func trim(str: &string): string {
+    let f : char = 3
+    return string{ &f, 1 }
+}
+
+func append(str: &string, c: char): string {
+    let f : char = 3
+    return string{ &f, 1 }
 }
 
 func make_field(sx: int, sy: int): Field2D {
     return Field2D{
-        sx, sy, cast[&int]alloc::alloc(sizeof(int)*sx*sy)
-    };
+        sx, sy, cast(&int) alloc::alloc(sizeof(int)*sx*sy)
+    }
 }
 
 func set(f: &Field2D, x: int, y: int, val: int) {
-    f.data[y * f.width + x] = val;
+    f.data[y * f.width + x] = val
 }
 
-func get(f: *Field2D, x: int, y: int): int {
-    return f.data[y * f.width + x];
+func get(f: &Field2D, x: int, y: int): int {
+    return f.data[y * f.width + x]
 }
 
 func clear(f: &Field2D) {
-    alloc::set(cast[rawptr] f.data, 0, f.width*f.height*sizeof(int));
+    alloc::set(cast(rawptr) f.data, 0, f.width*f.height*sizeof(int))
 }
 
 func make_automaton(ftext: string): Automaton {
-    let f = ftext.split('\n').map(func(it: string): string = it.trim).filter(func(it: string): bool = it.len > 0);
+    let f = ftext.split('\n').map(func(it: string): string = it.trim).filter(func(it: string): bool = it.len > 0)
 
-    let height = cast[int] f.len;
-    var width  = 0;
+    let height = cast(int) f.len
+    var width  = 0
 
     for (y in 0,f.len) {
         if (width < f[y].len) {
-            width = cast[int] f[y].len;
+            width = cast(int) f[y].len
         }
     }
 
-    let field    = make_field(width, height);
-    let newfield = make_field(width, height);
+    let field    = make_field(width, height)
+    let newfield = make_field(width, height)
 
     for (y in 0, field.height) {
         for (x in 0, field.width) {
-            let val = x < f[y].len && f[y][x] == '#' then 1 else 0;
-            field.set(x, y, val);
+            let val = x < f[y].len && f[y][x] == '#' then 1 else 0
+            field.set(x, y, val)
         }
     }
 
-    return Automaton{field, newfield};
+    return Automaton{field, newfield}
 }
 
 func update(a: &Automaton) {
-    a.new_field.clear();
+    a.new_field.clear()
     for (y in 1,a.field.height) {
         for (x in 1,a.field.width) {
             let moore_sum = (
                 0 + a.field.get(x-1, y-1) + a.field.get(x,y+1) + a.field.get(x+1, y-1) +
                 a.field.get(x-1, y) + 0 + a.field.get(x+1, y) + a.field.get(x-1, y+1) +
                 a.field.get(x,y+1) + a.field.get(x+1, y+1)
-            );
-            let cell = a.field.get(x, y);
-            let alive = cell == 1 then (moore_sum == 2 || moore_sum == 3) else moore_sum == 3;
-            a.new_field.set(x, y, alive then 1 else 0);
+            )
+            let cell = a.field.get(x, y)
+            let alive = cell == 1 then (moore_sum == 2 || moore_sum == 3) else moore_sum == 3
+            a.new_field.set(x, y, alive then 1 else 0)
         }
     }
-    let tmp = a.field;
-    a.field = a.new_field;
-    a.new_field = tmp;
+    let tmp = a.field
+    a.field = a.new_field
+    a.new_field = tmp
 }
 
-func print(a: *Automaton) {
+func print(a: &Automaton) {
     for (y in 1,a.field.height) {
-        var s = string{"    ", 4};
-        //defer s.unzone;
-
+        var s = string{"    ", 4}
         for (x in 1,a.field.width) {
-            let cell = a.field.get(x,y);
-            s = s.append(cell == 1 then '@' else '.');
+            let cell = a.field.get(x,y)
+            s = s.append(cell == 1 then '@' else '.')
         }
-        println(s.data);
+        println(s.data)
     }
-	println("");
+	println("")
 }
 
 func gun(): Automaton {
@@ -153,18 +152,18 @@ func gun(): Automaton {
 *                                         *
 *                                         *
 *                                         *
-*******************************************";
-    return make_automaton(string{ gunfield, gunfield.strlen });
+*******************************************"
+    return make_automaton(string{ gunfield, gunfield.strlen })
 }
 
-func main(args: [*]string): int {
-    let a = gun();
+func main(args: []string): int {
+    let a = gun()
     for (i in 0,50) {
-        //import std::time;
+        //import std::time
 
-        a.update();
-        a.print();
-        //sleep_ms(100);
+        a.update()
+        a.print()
+        //sleep_ms(100)
     }
-    return 0;
+    return 0
 }

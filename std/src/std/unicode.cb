@@ -1,9 +1,7 @@
 import std::alloc as alloc;
 import std::os::windows;
 
-type WideString = [*]int16;
-
-type MutableWideString = [&]int16;
+type wide_string = []int16;
 
 /*
 func widen(text: [*]char, a: *Allocator): [&]int16 {

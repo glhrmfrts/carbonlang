@@ -1,1 +1,1 @@
-type string = [*]char;
+type string = []char;

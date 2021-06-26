@@ -22,7 +22,8 @@ static std::unordered_map<int, token_type> stb_to_token = {
     {CLEX_lesseq, token_type::lteq},
     {CLEX_andand, token_type::andand},
     {CLEX_oror, token_type::oror},
-    {CLEX_arrow, token_type::arrow_right}
+    {CLEX_arrow, token_type::arrow_right},
+    {CLEX_eqarrow, token_type::double_arrow_right},
 };
 
 struct lexer_impl {
@@ -208,6 +209,9 @@ struct lexer_impl {
             }
             if (!std::strcmp("import", l.string)) {
                 return token_type::import_;
+            }
+            if (!std::strcmp("struct", l.string)) {
+                return token_type::struct_;
             }
             break;
         case 7:

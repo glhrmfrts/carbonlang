@@ -28,14 +28,12 @@ enum class type_qualifier {
     new_,
     optional,
     pointer,
-    reference,
 };
 
 enum class type_kind {
     void_,
     new_,
     pointer,
-    reference,
     optional,
     integral,
     real,
@@ -329,13 +327,11 @@ struct type_system {
     type_id raw_string_type{};
 
     type_constructor* ptr_type_constructor;
-    type_constructor* ref_type_constructor;
     type_constructor* optional_type_constructor;
     type_constructor* new_type_constructor;
     type_constructor* tuple_type_constructor;
     type_constructor* arr_type_constructor;
     type_constructor* slice_type_constructor;
-    type_constructor* mut_slice_type_constructor;
     type_constructor* func_pointer_type_constructor;
 
     explicit type_system(memory_arena&);
@@ -377,13 +373,9 @@ string_hash build_type_constructor_mangled_name(const std::string& mangled_name,
 
 type_id get_pointer_type_to(type_system& ts, type_id elem_type);
 
-type_id get_reference_type_to(type_system& ts, type_id elem_type);
-
 type_id get_optional_type_to(type_system& ts, type_id elem_type);
 
 type_id get_new_type_to(type_system& ts, type_id elem_type);
-
-type_id get_range_type(type_system& ts, type_id elem_type);
 
 
 void resolve_func_args_type(type_system& ts, ast_node& node);

@@ -1,21 +1,21 @@
-global cb__Nmain__Nsplit__Aref__Tmut_slice__TU_string__Aref__TU_string__Achar
-global cb__Nmain__Nmap__Aref__Tmut_slice__TU_string__Aref__Tslice__TU_string__Afuncptr__TU_string__TU_string
-global cb__Nmain__Nfilter__Aref__Tmut_slice__TU_string__Aref__Tslice__TU_string__Afuncptr__TU_string__Tbool
-global cb__Nmain__Ntrim__Aref__TU_string__Aref__TU_string
-global cb__Nmain__Nappend__Aref__TU_string__Aptr__TU_string__Achar
-global cb__Nmain__Nmake_field__Aref__TU_Field2D__Aint__Aint
-global cb__Nmain__Nset__Aref__TU_Field2D__Aint__Aint__Aint
+global cb__Nmain__Nsplit__Aptr__Tslice__TU_string__Aptr__TU_string__Achar
+global cb__Nmain__Nmap__Aptr__Tslice__TU_string__Aptr__Tslice__TU_string__Afuncptr__TU_string__TU_string
+global cb__Nmain__Nfilter__Aptr__Tslice__TU_string__Aptr__Tslice__TU_string__Afuncptr__TU_string__Tbool
+global cb__Nmain__Ntrim__Aptr__TU_string__Aptr__TU_string
+global cb__Nmain__Nappend__Aptr__TU_string__Aptr__TU_string__Achar
+global cb__Nmain__Nmake_field__Aptr__TU_Field2D__Aint__Aint
+global cb__Nmain__Nset__Aptr__TU_Field2D__Aint__Aint__Aint
 global cb__Nmain__Nget__Aptr__TU_Field2D__Aint__Aint
-global cb__Nmain__Nclear__Aref__TU_Field2D
-global cb__Nmain__Nmake_automaton__Aref__TU_Automaton__Aref__TU_string
-global cb__Nmain__Nupdate__Aref__TU_Automaton
+global cb__Nmain__Nclear__Aptr__TU_Field2D
+global cb__Nmain__Nmake_automaton__Aptr__TU_Automaton__Aptr__TU_string
+global cb__Nmain__Nupdate__Aptr__TU_Automaton
 global cb__Nmain__Nprint__Aptr__TU_Automaton
-global cb__Nmain__Ngun__Aref__TU_Automaton
-global cb__Nmain__Nmain__Aref__Tslice__TU_string
-global cb__Nmain__Nmake_automaton__lambda__13880377907378507347__1488__Aref__TU_string
-global cb__Nmain__Nmake_automaton__lambda__13880377907378507347__1445__Aref__TU_string__Aref__TU_string
-global cb__Ninit__Ninit_command_line__Aref__Tmut_slice__TU_string
-global cb__Ninit__Nfree_command_line__Aref__Tmut_slice__TU_string
+global cb__Nmain__Ngun__Aptr__TU_Automaton
+global cb__Nmain__Nmain__Aptr__Tslice__TU_string
+global cb__Nmain__Nmake_automaton__lambda__13880377907378507347__1504__Aptr__TU_string
+global cb__Nmain__Nmake_automaton__lambda__13880377907378507347__1461__Aptr__TU_string__Aptr__TU_string
+global cb__Ninit__Ninit_command_line__Aptr__Tslice__TU_string
+global cb__Ninit__Nfree_command_line__Aptr__Tslice__TU_string
 global carbon_main
 global cb__Nstd__Nalloc__Nalloc__Ausize
 global cb__Nstd__Nalloc__Nfree__Arawptr
@@ -46,8 +46,8 @@ $cbstr0: db 0
 $cbstr1: db 32,32,32,32,0
 $cbstr2: db 42,42,42,42,42,42,42,42,42,42,42,42,42,42,42,42,42,42,42,42,42,42,42,42,42,42,42,42,42,42,42,42,42,42,42,42,42,42,42,42,42,42,42,10,42,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,42,10,42,32,32,65,32,115,104,111,111,116,105,110,103,32,103,117,110,58,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,42,10,42,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,35,32,32,32,32,32,32,32,32,32,32,32,32,32,32,42,10,42,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,35,32,35,32,32,32,32,32,32,32,32,32,32,32,32,32,32,42,10,42,32,32,32,32,32,32,32,32,32,32,32,32,32,32,35,35,32,32,32,32,32,32,35,35,32,32,32,32,32,32,32,32,32,32,32,32,35,35,32,32,32,42,10,42,32,32,32,32,32,32,32,32,32,32,32,32,32,35,32,32,32,35,32,32,32,32,35,35,32,32,32,32,32,32,32,32,32,32,32,32,35,35,32,32,32,42,10,42,32,32,35,35,32,32,32,32,32,32,32,32,35,32,32,32,32,32,35,32,32,32,35,35,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,42,10,42,32,32,35,35,32,32,32,32,32,32,32,32,35,32,32,32,35,32,35,35,32,32,32,32,35,32,35,32,32,32,32,32,32,32,32,32,32,32,32,32,32,42,10,42,32,32,32,32,32,32,32,32,32,32,32,32,35,32,32,32,32,32,35,32,32,32,32,32,32,32,35,32,32,32,32,32,32,32,32,32,32,32,32,32,32,42,10,42,32,32,32,32,32,32,32,32,32,32,32,32,32,35,32,32,32,35,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,42,10,42,32,32,32,32,32,32,32,32,32,32,32,32,32,32,35,35,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,42,10,42,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,42,10,42,32,32,84,101,116,114,105,115,32,76,105,102,101,58,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,42,10,42,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,42,10,42,32,32,35,35,32,32,32,32,32,32,32,35,35,35,35,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,42,10,42,32,32,35,35,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,42,10,42,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,42,10,42,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,42,10,42,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,42,10,42,32,32,35,32,32,32,32,32,32,32,32,32,35,35,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,42,10,42,32,32,35,35,35,32,32,32,32,32,32,35,35,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,42,10,42,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,42,10,42,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,42,10,42,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,42,10,42,32,32,32,32,32,32,32,32,35,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,42,10,42,32,32,32,32,32,32,32,35,35,35,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,42,10,42,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,42,10,42,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,42,10,42,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,42,10,42,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,42,10,42,42,42,42,42,42,42,42,42,42,42,42,42,42,42,42,42,42,42,42,42,42,42,42,42,42,42,42,42,42,42,42,42,42,42,42,42,42,42,42,42,42,42,0
 section .code
-cb__Nmain__Nsplit__Aref__Tmut_slice__TU_string__Aref__TU_string__Achar:
- ;func split(&[&]string, &string, char): &[&]string
+cb__Nmain__Nsplit__Aptr__Tslice__TU_string__Aptr__TU_string__Achar:
+ ;func split(&[]string, &string, char): &[]string
  push rbp
  push rbx
  mov rbp,rsp
@@ -83,15 +83,15 @@ cb__Nmain__Nsplit__Aref__Tmut_slice__TU_string__Aref__TU_string__Achar:
  mov rax,rcx
  ;ir_return A0;
 
-cb__Nmain__Nsplit__Aref__Tmut_slice__TU_string__Aref__TU_string__Achar$end:
+cb__Nmain__Nsplit__Aptr__Tslice__TU_string__Aptr__TU_string__Achar$end:
  add rsp,24
  pop rbx
  pop rbp
  ret
 
 
-cb__Nmain__Nmap__Aref__Tmut_slice__TU_string__Aref__Tslice__TU_string__Afuncptr__TU_string__TU_string:
- ;func map(&[&]string, &[*]string, {string} -> string): &[&]string
+cb__Nmain__Nmap__Aptr__Tslice__TU_string__Aptr__Tslice__TU_string__Afuncptr__TU_string__TU_string:
+ ;func map(&[]string, &[]string, {string} -> string): &[]string
  push rbp
  push rbx
  mov rbp,rsp
@@ -127,15 +127,15 @@ cb__Nmain__Nmap__Aref__Tmut_slice__TU_string__Aref__Tslice__TU_string__Afuncptr_
  mov rax,rcx
  ;ir_return A0;
 
-cb__Nmain__Nmap__Aref__Tmut_slice__TU_string__Aref__Tslice__TU_string__Afuncptr__TU_string__TU_string$end:
+cb__Nmain__Nmap__Aptr__Tslice__TU_string__Aptr__Tslice__TU_string__Afuncptr__TU_string__TU_string$end:
  add rsp,24
  pop rbx
  pop rbp
  ret
 
 
-cb__Nmain__Nfilter__Aref__Tmut_slice__TU_string__Aref__Tslice__TU_string__Afuncptr__TU_string__Tbool:
- ;func filter(&[&]string, &[*]string, {string} -> bool): &[&]string
+cb__Nmain__Nfilter__Aptr__Tslice__TU_string__Aptr__Tslice__TU_string__Afuncptr__TU_string__Tbool:
+ ;func filter(&[]string, &[]string, {string} -> bool): &[]string
  push rbp
  push rbx
  mov rbp,rsp
@@ -171,14 +171,14 @@ cb__Nmain__Nfilter__Aref__Tmut_slice__TU_string__Aref__Tslice__TU_string__Afuncp
  mov rax,rcx
  ;ir_return A0;
 
-cb__Nmain__Nfilter__Aref__Tmut_slice__TU_string__Aref__Tslice__TU_string__Afuncptr__TU_string__Tbool$end:
+cb__Nmain__Nfilter__Aptr__Tslice__TU_string__Aptr__Tslice__TU_string__Afuncptr__TU_string__Tbool$end:
  add rsp,24
  pop rbx
  pop rbp
  ret
 
 
-cb__Nmain__Ntrim__Aref__TU_string__Aref__TU_string:
+cb__Nmain__Ntrim__Aptr__TU_string__Aptr__TU_string:
  ;func trim(&string, &string): &string
  push rbp
  push rbx
@@ -209,26 +209,30 @@ cb__Nmain__Ntrim__Aref__TU_string__Aref__TU_string:
  mov rax,rcx
  ;ir_return A0;
 
-cb__Nmain__Ntrim__Aref__TU_string__Aref__TU_string$end:
+cb__Nmain__Ntrim__Aptr__TU_string__Aptr__TU_string$end:
  add rsp,24
  pop rbx
  pop rbp
  ret
 
 
-cb__Nmain__Nappend__Aref__TU_string__Aptr__TU_string__Achar:
- ;func append(&string, *string, char): &string
+cb__Nmain__Nappend__Aptr__TU_string__Aptr__TU_string__Achar:
+ ;func append(&string, &string, char): &string
  push rbp
  push rbx
  mov rbp,rsp
- sub rsp,8
+ sub rsp,24
  ;prolog end
+
+ mov r10d,3
+ mov byte [rbp-1],r10b
+ ;ir_load L0 3;
 
  mov rbx,rcx
  ;ir_deref A0;
 
- lea rax,[$cbstr0]
- ;ir_load_addr STR0;
+ lea rax,byte [rbp-1]
+ ;ir_load_addr L0;
 
  mov qword [rbx+0],rax
  ;ir_load [ST . 0] ST;
@@ -236,21 +240,21 @@ cb__Nmain__Nappend__Aref__TU_string__Aptr__TU_string__Achar:
  mov rax,rcx
  ;ir_deref A0;
 
- mov r10d,0
+ mov r10d,1
  mov qword [rax+8],r10
- ;ir_load [ST . 1] 0;
+ ;ir_load [ST . 1] 1;
 
  mov rax,rcx
  ;ir_return A0;
 
-cb__Nmain__Nappend__Aref__TU_string__Aptr__TU_string__Achar$end:
- add rsp,8
+cb__Nmain__Nappend__Aptr__TU_string__Aptr__TU_string__Achar$end:
+ add rsp,24
  pop rbx
  pop rbp
  ret
 
 
-cb__Nmain__Nmake_field__Aref__TU_Field2D__Aint__Aint:
+cb__Nmain__Nmake_field__Aptr__TU_Field2D__Aint__Aint:
  ;func make_field(&Field2D, int, int): &Field2D
  mov dword [rsp+24],r8d
  mov dword [rsp+16],edx
@@ -296,14 +300,14 @@ cb__Nmain__Nmake_field__Aref__TU_Field2D__Aint__Aint:
  mov rax,qword [rbp+24]
  ;ir_return A0;
 
-cb__Nmain__Nmake_field__Aref__TU_Field2D__Aint__Aint$end:
+cb__Nmain__Nmake_field__Aptr__TU_Field2D__Aint__Aint$end:
  add rsp,24
  pop rbx
  pop rbp
  ret
 
 
-cb__Nmain__Nset__Aref__TU_Field2D__Aint__Aint__Aint:
+cb__Nmain__Nset__Aptr__TU_Field2D__Aint__Aint__Aint:
  ;func set(&Field2D, int, int, int): {}
  push rbp
  push rbx
@@ -334,7 +338,7 @@ cb__Nmain__Nset__Aref__TU_Field2D__Aint__Aint__Aint:
  mov dword [rax+0],r9d
  ;ir_load ST A3;
 
-cb__Nmain__Nset__Aref__TU_Field2D__Aint__Aint__Aint$end:
+cb__Nmain__Nset__Aptr__TU_Field2D__Aint__Aint__Aint$end:
  add rsp,8
  pop rbx
  pop rbp
@@ -342,7 +346,7 @@ cb__Nmain__Nset__Aref__TU_Field2D__Aint__Aint__Aint$end:
 
 
 cb__Nmain__Nget__Aptr__TU_Field2D__Aint__Aint:
- ;func get(*Field2D, int, int): int
+ ;func get(&Field2D, int, int): int
  push rbp
  push rbx
  mov rbp,rsp
@@ -379,7 +383,7 @@ cb__Nmain__Nget__Aptr__TU_Field2D__Aint__Aint$end:
  ret
 
 
-cb__Nmain__Nclear__Aref__TU_Field2D:
+cb__Nmain__Nclear__Aptr__TU_Field2D:
  ;func clear(&Field2D): {}
  mov qword [rsp+8],rcx
  push rbp
@@ -412,7 +416,7 @@ cb__Nmain__Nclear__Aref__TU_Field2D:
  call cb__Nstd__Nalloc__Nset__Arawptr__Achar__Ausize
  ;ir_call cb__Nstd__Nalloc__Nset__Arawptr__Achar__Ausize [ST . 2] 0 ST;
 
-cb__Nmain__Nclear__Aref__TU_Field2D$end:
+cb__Nmain__Nclear__Aptr__TU_Field2D$end:
  add rsp,32
  pop rdi
  pop rbx
@@ -420,7 +424,7 @@ cb__Nmain__Nclear__Aref__TU_Field2D$end:
  ret
 
 
-cb__Nmain__Nmake_automaton__Aref__TU_Automaton__Aref__TU_string:
+cb__Nmain__Nmake_automaton__Aptr__TU_Automaton__Aptr__TU_string:
  ;func make_automaton(&Automaton, &string): &Automaton
  mov qword [rsp+16],rdx
  mov qword [rsp+8],rcx
@@ -428,33 +432,17 @@ cb__Nmain__Nmake_automaton__Aref__TU_Automaton__Aref__TU_string:
  push rbx
  push rdi
  mov rbp,rsp
- sub rsp,208
+ sub rsp,192
  ;prolog end
 
- mov rax,qword [rbp+40]
- ;ir_deref A1;
-
- push rdi
- push rsi
- lea rdi,qword [rbp-104]
- lea rsi,qword [rax]
- mov rcx,16
- rep movsb
- pop rsi
- pop rdi
- ;ir_copy L7 ST 16;
-
- lea rbx,qword [rbp-88]
+ lea rax,qword [rbp-88]
  ;ir_load_addr L6;
 
- lea rax,qword [rbp-104]
- ;ir_load_addr L7;
-
  mov r8b,10
- mov rdx,rax
- mov rcx,rbx
- call cb__Nmain__Nsplit__Aref__Tmut_slice__TU_string__Aref__TU_string__Achar
- ;ir_call cb__Nmain__Nsplit__Aref__Tmut_slice__TU_string__Aref__TU_string__Achar ST ST #10;
+ mov rdx,qword [rbp+40]
+ mov rcx,rax
+ call cb__Nmain__Nsplit__Aptr__Tslice__TU_string__Aptr__TU_string__Achar
+ ;ir_call cb__Nmain__Nsplit__Aptr__Tslice__TU_string__Aptr__TU_string__Achar ST A1 #10;
 
  lea rbx,qword [rbp-72]
  ;ir_load_addr L5;
@@ -462,14 +450,14 @@ cb__Nmain__Nmake_automaton__Aref__TU_Automaton__Aref__TU_string:
  lea rdi,qword [rbp-88]
  ;ir_load_addr L6;
 
- lea rax,[cb__Nmain__Nmake_automaton__lambda__13880377907378507347__1445__Aref__TU_string__Aref__TU_string]
- ;ir_load_addr func(cb__Nmain__Nmake_automaton__lambda__13880377907378507347__1445__Aref__TU_string__Aref__TU_string);
+ lea rax,[cb__Nmain__Nmake_automaton__lambda__13880377907378507347__1461__Aptr__TU_string__Aptr__TU_string]
+ ;ir_load_addr func(cb__Nmain__Nmake_automaton__lambda__13880377907378507347__1461__Aptr__TU_string__Aptr__TU_string);
 
  mov r8,rax
  mov rdx,rdi
  mov rcx,rbx
- call cb__Nmain__Nmap__Aref__Tmut_slice__TU_string__Aref__Tslice__TU_string__Afuncptr__TU_string__TU_string
- ;ir_call cb__Nmain__Nmap__Aref__Tmut_slice__TU_string__Aref__Tslice__TU_string__Afuncptr__TU_string__TU_string ST ST ST;
+ call cb__Nmain__Nmap__Aptr__Tslice__TU_string__Aptr__Tslice__TU_string__Afuncptr__TU_string__TU_string
+ ;ir_call cb__Nmain__Nmap__Aptr__Tslice__TU_string__Aptr__Tslice__TU_string__Afuncptr__TU_string__TU_string ST ST ST;
 
  lea rbx,qword [rbp-16]
  ;ir_load_addr L0;
@@ -477,14 +465,14 @@ cb__Nmain__Nmake_automaton__Aref__TU_Automaton__Aref__TU_string:
  lea rdi,qword [rbp-72]
  ;ir_load_addr L5;
 
- lea rax,[cb__Nmain__Nmake_automaton__lambda__13880377907378507347__1488__Aref__TU_string]
- ;ir_load_addr func(cb__Nmain__Nmake_automaton__lambda__13880377907378507347__1488__Aref__TU_string);
+ lea rax,[cb__Nmain__Nmake_automaton__lambda__13880377907378507347__1504__Aptr__TU_string]
+ ;ir_load_addr func(cb__Nmain__Nmake_automaton__lambda__13880377907378507347__1504__Aptr__TU_string);
 
  mov r8,rax
  mov rdx,rdi
  mov rcx,rbx
- call cb__Nmain__Nfilter__Aref__Tmut_slice__TU_string__Aref__Tslice__TU_string__Afuncptr__TU_string__Tbool
- ;ir_call cb__Nmain__Nfilter__Aref__Tmut_slice__TU_string__Aref__Tslice__TU_string__Afuncptr__TU_string__Tbool ST ST ST;
+ call cb__Nmain__Nfilter__Aptr__Tslice__TU_string__Aptr__Tslice__TU_string__Afuncptr__TU_string__Tbool
+ ;ir_call cb__Nmain__Nfilter__Aptr__Tslice__TU_string__Aptr__Tslice__TU_string__Afuncptr__TU_string__Tbool ST ST ST;
 
  mov r10,qword [rbp-8]
  mov eax,r10d
@@ -498,29 +486,29 @@ cb__Nmain__Nmake_automaton__Aref__TU_Automaton__Aref__TU_string:
  ;ir_load L2 0;
 
  mov r10d,0
- mov dword [rbp-120],r10d
- ;ir_load [L8 . 0] 0;
+ mov dword [rbp-104],r10d
+ ;ir_load [L7 . 0] 0;
 
  mov r10,qword [rbp-8]
- mov qword [rbp-116],r10
- ;ir_load [L8 . 1] [L0 . 1];
+ mov qword [rbp-100],r10
+ ;ir_load [L7 . 1] [L0 . 1];
 
- mov r10d,dword [rbp-120]
- mov dword [rbp-128],r10d
- ;ir_load L10 [L8 . 0];
+ mov r10d,dword [rbp-104]
+ mov dword [rbp-112],r10d
+ ;ir_load L9 [L7 . 0];
 
-cb__Nmain__Nmake_automaton__Aref__TU_Automaton__Aref__TU_string$f436$cond:
- ;ir_make_label cb__Nmain__Nmake_automaton__Aref__TU_Automaton__Aref__TU_string$f436$cond;
+cb__Nmain__Nmake_automaton__Aptr__TU_Automaton__Aptr__TU_string$f445$cond:
+ ;ir_make_label cb__Nmain__Nmake_automaton__Aptr__TU_Automaton__Aptr__TU_string$f445$cond;
 
- movsxd rax,dword [rbp-128]
- ;ir_cast L10;
+ movsxd rax,dword [rbp-112]
+ ;ir_cast L9;
 
- cmp rax,qword [rbp-116]
- jge cb__Nmain__Nmake_automaton__Aref__TU_Automaton__Aref__TU_string$f436$end
- ;ir_jmp_gte ST [L8 . 1] cb__Nmain__Nmake_automaton__Aref__TU_Automaton__Aref__TU_string$f436$end;
+ cmp rax,qword [rbp-100]
+ jge cb__Nmain__Nmake_automaton__Aptr__TU_Automaton__Aptr__TU_string$f445$end
+ ;ir_jmp_gte ST [L7 . 1] cb__Nmain__Nmake_automaton__Aptr__TU_Automaton__Aptr__TU_string$f445$end;
 
-cb__Nmain__Nmake_automaton__Aref__TU_Automaton__Aref__TU_string$f436$body:
- ;ir_make_label cb__Nmain__Nmake_automaton__Aref__TU_Automaton__Aref__TU_string$f436$body;
+cb__Nmain__Nmake_automaton__Aptr__TU_Automaton__Aptr__TU_string$f445$body:
+ ;ir_make_label cb__Nmain__Nmake_automaton__Aptr__TU_Automaton__Aptr__TU_string$f445$body;
 
  movsxd rax,dword [rbp-24]
  ;ir_cast L2;
@@ -528,25 +516,25 @@ cb__Nmain__Nmake_automaton__Aref__TU_Automaton__Aref__TU_string$f436$body:
  mov rax,qword [rbp-16]
  ;ir_deref [L0 . 0];
 
- movsxd r10,dword [rbp-128]
+ movsxd r10,dword [rbp-112]
  imul r10,16
  lea rax,qword [rax+r10*1]
- ;ir_index ST L10;
+ ;ir_index ST L9;
 
  cmp rax,qword [rax+0+8]
- jge cb__Nmain__Nmake_automaton__Aref__TU_Automaton__Aref__TU_string$if433$else
- ;ir_jmp_gte ST [ST . 1] cb__Nmain__Nmake_automaton__Aref__TU_Automaton__Aref__TU_string$if433$else;
+ jge cb__Nmain__Nmake_automaton__Aptr__TU_Automaton__Aptr__TU_string$if442$else
+ ;ir_jmp_gte ST [ST . 1] cb__Nmain__Nmake_automaton__Aptr__TU_Automaton__Aptr__TU_string$if442$else;
 
-cb__Nmain__Nmake_automaton__Aref__TU_Automaton__Aref__TU_string$if433$body:
- ;ir_make_label cb__Nmain__Nmake_automaton__Aref__TU_Automaton__Aref__TU_string$if433$body;
+cb__Nmain__Nmake_automaton__Aptr__TU_Automaton__Aptr__TU_string$if442$body:
+ ;ir_make_label cb__Nmain__Nmake_automaton__Aptr__TU_Automaton__Aptr__TU_string$if442$body;
 
  mov rax,qword [rbp-16]
  ;ir_deref [L0 . 0];
 
- movsxd r10,dword [rbp-128]
+ movsxd r10,dword [rbp-112]
  imul r10,16
  lea rax,qword [rax+r10*1]
- ;ir_index ST L10;
+ ;ir_index ST L9;
 
  mov r10,qword [rax+0+8]
  mov eax,r10d
@@ -555,22 +543,22 @@ cb__Nmain__Nmake_automaton__Aref__TU_Automaton__Aref__TU_string$if433$body:
  mov dword [rbp-24],eax
  ;ir_load L2 ST;
 
-cb__Nmain__Nmake_automaton__Aref__TU_Automaton__Aref__TU_string$if433$else:
- ;ir_make_label cb__Nmain__Nmake_automaton__Aref__TU_Automaton__Aref__TU_string$if433$else;
+cb__Nmain__Nmake_automaton__Aptr__TU_Automaton__Aptr__TU_string$if442$else:
+ ;ir_make_label cb__Nmain__Nmake_automaton__Aptr__TU_Automaton__Aptr__TU_string$if442$else;
 
- mov r10d,dword [rbp-128]
+ mov r10d,dword [rbp-112]
  add r10d,1
  mov eax,r10d
- ;ir_add L10 1;
+ ;ir_add L9 1;
 
- mov dword [rbp-128],eax
- ;ir_load L10 ST;
+ mov dword [rbp-112],eax
+ ;ir_load L9 ST;
 
- jmp cb__Nmain__Nmake_automaton__Aref__TU_Automaton__Aref__TU_string$f436$cond
- ;ir_jmp cb__Nmain__Nmake_automaton__Aref__TU_Automaton__Aref__TU_string$f436$cond;
+ jmp cb__Nmain__Nmake_automaton__Aptr__TU_Automaton__Aptr__TU_string$f445$cond
+ ;ir_jmp cb__Nmain__Nmake_automaton__Aptr__TU_Automaton__Aptr__TU_string$f445$cond;
 
-cb__Nmain__Nmake_automaton__Aref__TU_Automaton__Aref__TU_string$f436$end:
- ;ir_make_label cb__Nmain__Nmake_automaton__Aref__TU_Automaton__Aref__TU_string$f436$end;
+cb__Nmain__Nmake_automaton__Aptr__TU_Automaton__Aptr__TU_string$f445$end:
+ ;ir_make_label cb__Nmain__Nmake_automaton__Aptr__TU_Automaton__Aptr__TU_string$f445$end;
 
  lea rax,qword [rbp-40]
  ;ir_load_addr L3;
@@ -578,8 +566,8 @@ cb__Nmain__Nmake_automaton__Aref__TU_Automaton__Aref__TU_string$f436$end:
  mov r8d,dword [rbp-20]
  mov edx,dword [rbp-24]
  mov rcx,rax
- call cb__Nmain__Nmake_field__Aref__TU_Field2D__Aint__Aint
- ;ir_call cb__Nmain__Nmake_field__Aref__TU_Field2D__Aint__Aint ST L2 L1;
+ call cb__Nmain__Nmake_field__Aptr__TU_Field2D__Aint__Aint
+ ;ir_call cb__Nmain__Nmake_field__Aptr__TU_Field2D__Aint__Aint ST L2 L1;
 
  lea rax,qword [rbp-56]
  ;ir_load_addr L4;
@@ -587,147 +575,147 @@ cb__Nmain__Nmake_automaton__Aref__TU_Automaton__Aref__TU_string$f436$end:
  mov r8d,dword [rbp-20]
  mov edx,dword [rbp-24]
  mov rcx,rax
- call cb__Nmain__Nmake_field__Aref__TU_Field2D__Aint__Aint
- ;ir_call cb__Nmain__Nmake_field__Aref__TU_Field2D__Aint__Aint ST L2 L1;
+ call cb__Nmain__Nmake_field__Aptr__TU_Field2D__Aint__Aint
+ ;ir_call cb__Nmain__Nmake_field__Aptr__TU_Field2D__Aint__Aint ST L2 L1;
+
+ mov r10d,0
+ mov dword [rbp-120],r10d
+ ;ir_load [L10 . 0] 0;
+
+ mov r10d,dword [rbp-36]
+ mov dword [rbp-116],r10d
+ ;ir_load [L10 . 1] [L3 . 1];
+
+ mov r10d,dword [rbp-120]
+ mov dword [rbp-128],r10d
+ ;ir_load L12 [L10 . 0];
+
+cb__Nmain__Nmake_automaton__Aptr__TU_Automaton__Aptr__TU_string$f512$cond:
+ ;ir_make_label cb__Nmain__Nmake_automaton__Aptr__TU_Automaton__Aptr__TU_string$f512$cond;
+
+ mov r10d,dword [rbp-128]
+ cmp r10d,dword [rbp-116]
+ jge cb__Nmain__Nmake_automaton__Aptr__TU_Automaton__Aptr__TU_string$f512$end
+ ;ir_jmp_gte L12 [L10 . 1] cb__Nmain__Nmake_automaton__Aptr__TU_Automaton__Aptr__TU_string$f512$end;
+
+cb__Nmain__Nmake_automaton__Aptr__TU_Automaton__Aptr__TU_string$f512$body:
+ ;ir_make_label cb__Nmain__Nmake_automaton__Aptr__TU_Automaton__Aptr__TU_string$f512$body;
 
  mov r10d,0
  mov dword [rbp-136],r10d
- ;ir_load [L11 . 0] 0;
+ ;ir_load [L13 . 0] 0;
 
- mov r10d,dword [rbp-36]
+ mov r10d,dword [rbp-40]
  mov dword [rbp-132],r10d
- ;ir_load [L11 . 1] [L3 . 1];
+ ;ir_load [L13 . 1] [L3 . 0];
 
  mov r10d,dword [rbp-136]
  mov dword [rbp-144],r10d
- ;ir_load L13 [L11 . 0];
+ ;ir_load L15 [L13 . 0];
 
-cb__Nmain__Nmake_automaton__Aref__TU_Automaton__Aref__TU_string$f503$cond:
- ;ir_make_label cb__Nmain__Nmake_automaton__Aref__TU_Automaton__Aref__TU_string$f503$cond;
+cb__Nmain__Nmake_automaton__Aptr__TU_Automaton__Aptr__TU_string$f509$cond:
+ ;ir_make_label cb__Nmain__Nmake_automaton__Aptr__TU_Automaton__Aptr__TU_string$f509$cond;
 
  mov r10d,dword [rbp-144]
  cmp r10d,dword [rbp-132]
- jge cb__Nmain__Nmake_automaton__Aref__TU_Automaton__Aref__TU_string$f503$end
- ;ir_jmp_gte L13 [L11 . 1] cb__Nmain__Nmake_automaton__Aref__TU_Automaton__Aref__TU_string$f503$end;
+ jge cb__Nmain__Nmake_automaton__Aptr__TU_Automaton__Aptr__TU_string$f509$end
+ ;ir_jmp_gte L15 [L13 . 1] cb__Nmain__Nmake_automaton__Aptr__TU_Automaton__Aptr__TU_string$f509$end;
 
-cb__Nmain__Nmake_automaton__Aref__TU_Automaton__Aref__TU_string$f503$body:
- ;ir_make_label cb__Nmain__Nmake_automaton__Aref__TU_Automaton__Aref__TU_string$f503$body;
+cb__Nmain__Nmake_automaton__Aptr__TU_Automaton__Aptr__TU_string$f509$body:
+ ;ir_make_label cb__Nmain__Nmake_automaton__Aptr__TU_Automaton__Aptr__TU_string$f509$body;
 
- mov r10d,0
- mov dword [rbp-152],r10d
- ;ir_load [L14 . 0] 0;
-
- mov r10d,dword [rbp-40]
- mov dword [rbp-148],r10d
- ;ir_load [L14 . 1] [L3 . 0];
-
- mov r10d,dword [rbp-152]
- mov dword [rbp-160],r10d
- ;ir_load L16 [L14 . 0];
-
-cb__Nmain__Nmake_automaton__Aref__TU_Automaton__Aref__TU_string$f500$cond:
- ;ir_make_label cb__Nmain__Nmake_automaton__Aref__TU_Automaton__Aref__TU_string$f500$cond;
-
- mov r10d,dword [rbp-160]
- cmp r10d,dword [rbp-148]
- jge cb__Nmain__Nmake_automaton__Aref__TU_Automaton__Aref__TU_string$f500$end
- ;ir_jmp_gte L16 [L14 . 1] cb__Nmain__Nmake_automaton__Aref__TU_Automaton__Aref__TU_string$f500$end;
-
-cb__Nmain__Nmake_automaton__Aref__TU_Automaton__Aref__TU_string$f500$body:
- ;ir_make_label cb__Nmain__Nmake_automaton__Aref__TU_Automaton__Aref__TU_string$f500$body;
-
- movsxd rax,dword [rbp-160]
- ;ir_cast L16;
+ movsxd rax,dword [rbp-144]
+ ;ir_cast L15;
 
  mov rax,qword [rbp-16]
  ;ir_deref [L0 . 0];
 
- movsxd r10,dword [rbp-144]
+ movsxd r10,dword [rbp-128]
  imul r10,16
  lea rax,qword [rax+r10*1]
- ;ir_index ST L13;
+ ;ir_index ST L12;
 
  cmp rax,qword [rax+0+8]
- jge cb__Nmain__Nmake_automaton__Aref__TU_Automaton__Aref__TU_string$if2074$else
- ;ir_jmp_gte ST [ST . 1] cb__Nmain__Nmake_automaton__Aref__TU_Automaton__Aref__TU_string$if2074$else;
+ jge cb__Nmain__Nmake_automaton__Aptr__TU_Automaton__Aptr__TU_string$if2076$else
+ ;ir_jmp_gte ST [ST . 1] cb__Nmain__Nmake_automaton__Aptr__TU_Automaton__Aptr__TU_string$if2076$else;
 
  mov rax,qword [rbp-16]
  ;ir_deref [L0 . 0];
 
- movsxd r10,dword [rbp-144]
+ movsxd r10,dword [rbp-128]
  imul r10,16
  lea rax,qword [rax+r10*1]
- ;ir_index ST L13;
+ ;ir_index ST L12;
 
  mov rax,qword [rax+0+0]
  ;ir_deref [ST . 0];
 
- movsxd r10,dword [rbp-160]
+ movsxd r10,dword [rbp-144]
  lea rax,byte [rax+r10*1]
- ;ir_index ST L16;
+ ;ir_index ST L15;
 
  mov r10b,byte [rax+0]
  cmp r10b,35
- jne cb__Nmain__Nmake_automaton__Aref__TU_Automaton__Aref__TU_string$if2074$else
- ;ir_jmp_neq ST #35 cb__Nmain__Nmake_automaton__Aref__TU_Automaton__Aref__TU_string$if2074$else;
+ jne cb__Nmain__Nmake_automaton__Aptr__TU_Automaton__Aptr__TU_string$if2076$else
+ ;ir_jmp_neq ST #35 cb__Nmain__Nmake_automaton__Aptr__TU_Automaton__Aptr__TU_string$if2076$else;
 
-cb__Nmain__Nmake_automaton__Aref__TU_Automaton__Aref__TU_string$if2074$body:
- ;ir_make_label cb__Nmain__Nmake_automaton__Aref__TU_Automaton__Aref__TU_string$if2074$body;
+cb__Nmain__Nmake_automaton__Aptr__TU_Automaton__Aptr__TU_string$if2076$body:
+ ;ir_make_label cb__Nmain__Nmake_automaton__Aptr__TU_Automaton__Aptr__TU_string$if2076$body;
 
  mov r10d,1
- mov dword [rbp-164],r10d
- ;ir_load L17 1;
+ mov dword [rbp-148],r10d
+ ;ir_load L16 1;
 
- jmp cb__Nmain__Nmake_automaton__Aref__TU_Automaton__Aref__TU_string$if2074$end
- ;ir_jmp cb__Nmain__Nmake_automaton__Aref__TU_Automaton__Aref__TU_string$if2074$end;
+ jmp cb__Nmain__Nmake_automaton__Aptr__TU_Automaton__Aptr__TU_string$if2076$end
+ ;ir_jmp cb__Nmain__Nmake_automaton__Aptr__TU_Automaton__Aptr__TU_string$if2076$end;
 
-cb__Nmain__Nmake_automaton__Aref__TU_Automaton__Aref__TU_string$if2074$else:
- ;ir_make_label cb__Nmain__Nmake_automaton__Aref__TU_Automaton__Aref__TU_string$if2074$else;
+cb__Nmain__Nmake_automaton__Aptr__TU_Automaton__Aptr__TU_string$if2076$else:
+ ;ir_make_label cb__Nmain__Nmake_automaton__Aptr__TU_Automaton__Aptr__TU_string$if2076$else;
 
  mov r10d,0
- mov dword [rbp-164],r10d
- ;ir_load L17 0;
+ mov dword [rbp-148],r10d
+ ;ir_load L16 0;
 
-cb__Nmain__Nmake_automaton__Aref__TU_Automaton__Aref__TU_string$if2074$end:
- ;ir_make_label cb__Nmain__Nmake_automaton__Aref__TU_Automaton__Aref__TU_string$if2074$end;
+cb__Nmain__Nmake_automaton__Aptr__TU_Automaton__Aptr__TU_string$if2076$end:
+ ;ir_make_label cb__Nmain__Nmake_automaton__Aptr__TU_Automaton__Aptr__TU_string$if2076$end;
 
  lea rax,qword [rbp-40]
  ;ir_load_addr L3;
 
- mov r9d,dword [rbp-164]
- mov r8d,dword [rbp-144]
- mov edx,dword [rbp-160]
+ mov r9d,dword [rbp-148]
+ mov r8d,dword [rbp-128]
+ mov edx,dword [rbp-144]
  mov rcx,rax
- call cb__Nmain__Nset__Aref__TU_Field2D__Aint__Aint__Aint
- ;ir_call cb__Nmain__Nset__Aref__TU_Field2D__Aint__Aint__Aint ST L16 L13 L17;
-
- mov r10d,dword [rbp-160]
- add r10d,1
- mov eax,r10d
- ;ir_add L16 1;
-
- mov dword [rbp-160],eax
- ;ir_load L16 ST;
-
- jmp cb__Nmain__Nmake_automaton__Aref__TU_Automaton__Aref__TU_string$f500$cond
- ;ir_jmp cb__Nmain__Nmake_automaton__Aref__TU_Automaton__Aref__TU_string$f500$cond;
-
-cb__Nmain__Nmake_automaton__Aref__TU_Automaton__Aref__TU_string$f500$end:
- ;ir_make_label cb__Nmain__Nmake_automaton__Aref__TU_Automaton__Aref__TU_string$f500$end;
+ call cb__Nmain__Nset__Aptr__TU_Field2D__Aint__Aint__Aint
+ ;ir_call cb__Nmain__Nset__Aptr__TU_Field2D__Aint__Aint__Aint ST L15 L12 L16;
 
  mov r10d,dword [rbp-144]
  add r10d,1
  mov eax,r10d
- ;ir_add L13 1;
+ ;ir_add L15 1;
 
  mov dword [rbp-144],eax
- ;ir_load L13 ST;
+ ;ir_load L15 ST;
 
- jmp cb__Nmain__Nmake_automaton__Aref__TU_Automaton__Aref__TU_string$f503$cond
- ;ir_jmp cb__Nmain__Nmake_automaton__Aref__TU_Automaton__Aref__TU_string$f503$cond;
+ jmp cb__Nmain__Nmake_automaton__Aptr__TU_Automaton__Aptr__TU_string$f509$cond
+ ;ir_jmp cb__Nmain__Nmake_automaton__Aptr__TU_Automaton__Aptr__TU_string$f509$cond;
 
-cb__Nmain__Nmake_automaton__Aref__TU_Automaton__Aref__TU_string$f503$end:
- ;ir_make_label cb__Nmain__Nmake_automaton__Aref__TU_Automaton__Aref__TU_string$f503$end;
+cb__Nmain__Nmake_automaton__Aptr__TU_Automaton__Aptr__TU_string$f509$end:
+ ;ir_make_label cb__Nmain__Nmake_automaton__Aptr__TU_Automaton__Aptr__TU_string$f509$end;
+
+ mov r10d,dword [rbp-128]
+ add r10d,1
+ mov eax,r10d
+ ;ir_add L12 1;
+
+ mov dword [rbp-128],eax
+ ;ir_load L12 ST;
+
+ jmp cb__Nmain__Nmake_automaton__Aptr__TU_Automaton__Aptr__TU_string$f512$cond
+ ;ir_jmp cb__Nmain__Nmake_automaton__Aptr__TU_Automaton__Aptr__TU_string$f512$cond;
+
+cb__Nmain__Nmake_automaton__Aptr__TU_Automaton__Aptr__TU_string$f512$end:
+ ;ir_make_label cb__Nmain__Nmake_automaton__Aptr__TU_Automaton__Aptr__TU_string$f512$end;
 
  mov rax,qword [rbp+32]
  ;ir_deref A0;
@@ -758,15 +746,15 @@ cb__Nmain__Nmake_automaton__Aref__TU_Automaton__Aref__TU_string$f503$end:
  mov rax,qword [rbp+32]
  ;ir_return A0;
 
-cb__Nmain__Nmake_automaton__Aref__TU_Automaton__Aref__TU_string$end:
- add rsp,208
+cb__Nmain__Nmake_automaton__Aptr__TU_Automaton__Aptr__TU_string$end:
+ add rsp,192
  pop rdi
  pop rbx
  pop rbp
  ret
 
 
-cb__Nmain__Nupdate__Aref__TU_Automaton:
+cb__Nmain__Nupdate__Aptr__TU_Automaton:
  ;func update(&Automaton): {}
  mov qword [rsp+8],rcx
  push rbp
@@ -784,8 +772,8 @@ cb__Nmain__Nupdate__Aref__TU_Automaton:
  ;ir_load_addr [ST . 1];
 
  mov rcx,rax
- call cb__Nmain__Nclear__Aref__TU_Field2D
- ;ir_call cb__Nmain__Nclear__Aref__TU_Field2D ST;
+ call cb__Nmain__Nclear__Aptr__TU_Field2D
+ ;ir_call cb__Nmain__Nclear__Aptr__TU_Field2D ST;
 
  mov r10d,1
  mov dword [rbp-24],r10d
@@ -802,16 +790,16 @@ cb__Nmain__Nupdate__Aref__TU_Automaton:
  mov dword [rbp-32],r10d
  ;ir_load L3 [L1 . 0];
 
-cb__Nmain__Nupdate__Aref__TU_Automaton$f704$cond:
- ;ir_make_label cb__Nmain__Nupdate__Aref__TU_Automaton$f704$cond;
+cb__Nmain__Nupdate__Aptr__TU_Automaton$f714$cond:
+ ;ir_make_label cb__Nmain__Nupdate__Aptr__TU_Automaton$f714$cond;
 
  mov r10d,dword [rbp-32]
  cmp r10d,dword [rbp-20]
- jge cb__Nmain__Nupdate__Aref__TU_Automaton$f704$end
- ;ir_jmp_gte L3 [L1 . 1] cb__Nmain__Nupdate__Aref__TU_Automaton$f704$end;
+ jge cb__Nmain__Nupdate__Aptr__TU_Automaton$f714$end
+ ;ir_jmp_gte L3 [L1 . 1] cb__Nmain__Nupdate__Aptr__TU_Automaton$f714$end;
 
-cb__Nmain__Nupdate__Aref__TU_Automaton$f704$body:
- ;ir_make_label cb__Nmain__Nupdate__Aref__TU_Automaton$f704$body;
+cb__Nmain__Nupdate__Aptr__TU_Automaton$f714$body:
+ ;ir_make_label cb__Nmain__Nupdate__Aptr__TU_Automaton$f714$body;
 
  mov r10d,1
  mov dword [rbp-40],r10d
@@ -828,16 +816,16 @@ cb__Nmain__Nupdate__Aref__TU_Automaton$f704$body:
  mov dword [rbp-48],r10d
  ;ir_load L6 [L4 . 0];
 
-cb__Nmain__Nupdate__Aref__TU_Automaton$f701$cond:
- ;ir_make_label cb__Nmain__Nupdate__Aref__TU_Automaton$f701$cond;
+cb__Nmain__Nupdate__Aptr__TU_Automaton$f711$cond:
+ ;ir_make_label cb__Nmain__Nupdate__Aptr__TU_Automaton$f711$cond;
 
  mov r10d,dword [rbp-48]
  cmp r10d,dword [rbp-36]
- jge cb__Nmain__Nupdate__Aref__TU_Automaton$f701$end
- ;ir_jmp_gte L6 [L4 . 1] cb__Nmain__Nupdate__Aref__TU_Automaton$f701$end;
+ jge cb__Nmain__Nupdate__Aptr__TU_Automaton$f711$end
+ ;ir_jmp_gte L6 [L4 . 1] cb__Nmain__Nupdate__Aptr__TU_Automaton$f711$end;
 
-cb__Nmain__Nupdate__Aref__TU_Automaton$f701$body:
- ;ir_make_label cb__Nmain__Nupdate__Aref__TU_Automaton$f701$body;
+cb__Nmain__Nupdate__Aptr__TU_Automaton$f711$body:
+ ;ir_make_label cb__Nmain__Nupdate__Aptr__TU_Automaton$f711$body;
 
  mov rax,qword [rbp+40]
  ;ir_deref A0;
@@ -1027,8 +1015,8 @@ cb__Nmain__Nupdate__Aref__TU_Automaton$f701$body:
  mov eax,ebx
  ;ir_add ST ST;
 
- mov dword [rbp-56],eax
- ;ir_load L8 ST;
+ mov dword [rbp-52],eax
+ ;ir_load L7 ST;
 
  mov rax,qword [rbp+40]
  ;ir_deref A0;
@@ -1042,80 +1030,80 @@ cb__Nmain__Nupdate__Aref__TU_Automaton$f701$body:
  call cb__Nmain__Nget__Aptr__TU_Field2D__Aint__Aint
  ;ir_call cb__Nmain__Nget__Aptr__TU_Field2D__Aint__Aint ST L6 L3;
 
- mov dword [rbp-60],eax
- ;ir_load L9 ST;
+ mov dword [rbp-56],eax
+ ;ir_load L8 ST;
 
- mov r10d,dword [rbp-60]
+ mov r10d,dword [rbp-56]
  cmp r10d,1
- jne cb__Nmain__Nupdate__Aref__TU_Automaton$if2080$else
- ;ir_jmp_neq L9 1 cb__Nmain__Nupdate__Aref__TU_Automaton$if2080$else;
+ jne cb__Nmain__Nupdate__Aptr__TU_Automaton$if2082$else
+ ;ir_jmp_neq L8 1 cb__Nmain__Nupdate__Aptr__TU_Automaton$if2082$else;
 
-cb__Nmain__Nupdate__Aref__TU_Automaton$if2080$body:
- ;ir_make_label cb__Nmain__Nupdate__Aref__TU_Automaton$if2080$body;
+cb__Nmain__Nupdate__Aptr__TU_Automaton$if2082$body:
+ ;ir_make_label cb__Nmain__Nupdate__Aptr__TU_Automaton$if2082$body;
 
- mov r10d,dword [rbp-56]
+ mov r10d,dword [rbp-52]
  cmp r10d,2
- je cb__Nmain__Nupdate__Aref__TU_Automaton$if2087$body
- ;ir_jmp_eq L8 2 cb__Nmain__Nupdate__Aref__TU_Automaton$if2087$body;
+ je cb__Nmain__Nupdate__Aptr__TU_Automaton$if2089$body
+ ;ir_jmp_eq L7 2 cb__Nmain__Nupdate__Aptr__TU_Automaton$if2089$body;
 
- mov r10d,dword [rbp-56]
+ mov r10d,dword [rbp-52]
  cmp r10d,3
- jne cb__Nmain__Nupdate__Aref__TU_Automaton$if2087$else
- ;ir_jmp_neq L8 3 cb__Nmain__Nupdate__Aref__TU_Automaton$if2087$else;
+ jne cb__Nmain__Nupdate__Aptr__TU_Automaton$if2089$else
+ ;ir_jmp_neq L7 3 cb__Nmain__Nupdate__Aptr__TU_Automaton$if2089$else;
 
-cb__Nmain__Nupdate__Aref__TU_Automaton$if2087$body:
- ;ir_make_label cb__Nmain__Nupdate__Aref__TU_Automaton$if2087$body;
+cb__Nmain__Nupdate__Aptr__TU_Automaton$if2089$body:
+ ;ir_make_label cb__Nmain__Nupdate__Aptr__TU_Automaton$if2089$body;
 
  mov r10b,1
- mov byte [rbp-61],r10b
- ;ir_load L10 1;
+ mov byte [rbp-57],r10b
+ ;ir_load L9 1;
 
- jmp cb__Nmain__Nupdate__Aref__TU_Automaton$if2087$end
- ;ir_jmp cb__Nmain__Nupdate__Aref__TU_Automaton$if2087$end;
+ jmp cb__Nmain__Nupdate__Aptr__TU_Automaton$if2089$end
+ ;ir_jmp cb__Nmain__Nupdate__Aptr__TU_Automaton$if2089$end;
 
-cb__Nmain__Nupdate__Aref__TU_Automaton$if2087$else:
- ;ir_make_label cb__Nmain__Nupdate__Aref__TU_Automaton$if2087$else;
+cb__Nmain__Nupdate__Aptr__TU_Automaton$if2089$else:
+ ;ir_make_label cb__Nmain__Nupdate__Aptr__TU_Automaton$if2089$else;
 
  mov r10b,0
- mov byte [rbp-61],r10b
- ;ir_load L10 0;
+ mov byte [rbp-57],r10b
+ ;ir_load L9 0;
 
-cb__Nmain__Nupdate__Aref__TU_Automaton$if2087$end:
- ;ir_make_label cb__Nmain__Nupdate__Aref__TU_Automaton$if2087$end;
+cb__Nmain__Nupdate__Aptr__TU_Automaton$if2089$end:
+ ;ir_make_label cb__Nmain__Nupdate__Aptr__TU_Automaton$if2089$end;
 
- jmp cb__Nmain__Nupdate__Aref__TU_Automaton$if2080$end
- ;ir_jmp cb__Nmain__Nupdate__Aref__TU_Automaton$if2080$end;
+ jmp cb__Nmain__Nupdate__Aptr__TU_Automaton$if2082$end
+ ;ir_jmp cb__Nmain__Nupdate__Aptr__TU_Automaton$if2082$end;
 
-cb__Nmain__Nupdate__Aref__TU_Automaton$if2080$else:
- ;ir_make_label cb__Nmain__Nupdate__Aref__TU_Automaton$if2080$else;
+cb__Nmain__Nupdate__Aptr__TU_Automaton$if2082$else:
+ ;ir_make_label cb__Nmain__Nupdate__Aptr__TU_Automaton$if2082$else;
 
- mov r10d,dword [rbp-56]
+ mov r10d,dword [rbp-52]
  cmp r10d,3
- jne cb__Nmain__Nupdate__Aref__TU_Automaton$if2094$else
- ;ir_jmp_neq L8 3 cb__Nmain__Nupdate__Aref__TU_Automaton$if2094$else;
+ jne cb__Nmain__Nupdate__Aptr__TU_Automaton$if2096$else
+ ;ir_jmp_neq L7 3 cb__Nmain__Nupdate__Aptr__TU_Automaton$if2096$else;
 
-cb__Nmain__Nupdate__Aref__TU_Automaton$if2094$body:
- ;ir_make_label cb__Nmain__Nupdate__Aref__TU_Automaton$if2094$body;
+cb__Nmain__Nupdate__Aptr__TU_Automaton$if2096$body:
+ ;ir_make_label cb__Nmain__Nupdate__Aptr__TU_Automaton$if2096$body;
 
  mov r10b,1
- mov byte [rbp-61],r10b
- ;ir_load L10 1;
+ mov byte [rbp-57],r10b
+ ;ir_load L9 1;
 
- jmp cb__Nmain__Nupdate__Aref__TU_Automaton$if2094$end
- ;ir_jmp cb__Nmain__Nupdate__Aref__TU_Automaton$if2094$end;
+ jmp cb__Nmain__Nupdate__Aptr__TU_Automaton$if2096$end
+ ;ir_jmp cb__Nmain__Nupdate__Aptr__TU_Automaton$if2096$end;
 
-cb__Nmain__Nupdate__Aref__TU_Automaton$if2094$else:
- ;ir_make_label cb__Nmain__Nupdate__Aref__TU_Automaton$if2094$else;
+cb__Nmain__Nupdate__Aptr__TU_Automaton$if2096$else:
+ ;ir_make_label cb__Nmain__Nupdate__Aptr__TU_Automaton$if2096$else;
 
  mov r10b,0
- mov byte [rbp-61],r10b
- ;ir_load L10 0;
+ mov byte [rbp-57],r10b
+ ;ir_load L9 0;
 
-cb__Nmain__Nupdate__Aref__TU_Automaton$if2094$end:
- ;ir_make_label cb__Nmain__Nupdate__Aref__TU_Automaton$if2094$end;
+cb__Nmain__Nupdate__Aptr__TU_Automaton$if2096$end:
+ ;ir_make_label cb__Nmain__Nupdate__Aptr__TU_Automaton$if2096$end;
 
-cb__Nmain__Nupdate__Aref__TU_Automaton$if2080$end:
- ;ir_make_label cb__Nmain__Nupdate__Aref__TU_Automaton$if2080$end;
+cb__Nmain__Nupdate__Aptr__TU_Automaton$if2082$end:
+ ;ir_make_label cb__Nmain__Nupdate__Aptr__TU_Automaton$if2082$end;
 
  mov rax,qword [rbp+40]
  ;ir_deref A0;
@@ -1123,37 +1111,37 @@ cb__Nmain__Nupdate__Aref__TU_Automaton$if2080$end:
  lea rbx,qword [rax+16]
  ;ir_load_addr [ST . 1];
 
- mov r10b,byte [rbp-61]
+ mov r10b,byte [rbp-57]
  cmp r10b,0
- je cb__Nmain__Nupdate__Aref__TU_Automaton$if2108$else
- ;ir_jmp_eq L10 0 cb__Nmain__Nupdate__Aref__TU_Automaton$if2108$else;
+ je cb__Nmain__Nupdate__Aptr__TU_Automaton$if2110$else
+ ;ir_jmp_eq L9 0 cb__Nmain__Nupdate__Aptr__TU_Automaton$if2110$else;
 
-cb__Nmain__Nupdate__Aref__TU_Automaton$if2108$body:
- ;ir_make_label cb__Nmain__Nupdate__Aref__TU_Automaton$if2108$body;
+cb__Nmain__Nupdate__Aptr__TU_Automaton$if2110$body:
+ ;ir_make_label cb__Nmain__Nupdate__Aptr__TU_Automaton$if2110$body;
 
  mov r10d,1
- mov dword [rbp-52],r10d
- ;ir_load L7 1;
+ mov dword [rbp-64],r10d
+ ;ir_load L10 1;
 
- jmp cb__Nmain__Nupdate__Aref__TU_Automaton$if2108$end
- ;ir_jmp cb__Nmain__Nupdate__Aref__TU_Automaton$if2108$end;
+ jmp cb__Nmain__Nupdate__Aptr__TU_Automaton$if2110$end
+ ;ir_jmp cb__Nmain__Nupdate__Aptr__TU_Automaton$if2110$end;
 
-cb__Nmain__Nupdate__Aref__TU_Automaton$if2108$else:
- ;ir_make_label cb__Nmain__Nupdate__Aref__TU_Automaton$if2108$else;
+cb__Nmain__Nupdate__Aptr__TU_Automaton$if2110$else:
+ ;ir_make_label cb__Nmain__Nupdate__Aptr__TU_Automaton$if2110$else;
 
  mov r10d,0
- mov dword [rbp-52],r10d
- ;ir_load L7 0;
+ mov dword [rbp-64],r10d
+ ;ir_load L10 0;
 
-cb__Nmain__Nupdate__Aref__TU_Automaton$if2108$end:
- ;ir_make_label cb__Nmain__Nupdate__Aref__TU_Automaton$if2108$end;
+cb__Nmain__Nupdate__Aptr__TU_Automaton$if2110$end:
+ ;ir_make_label cb__Nmain__Nupdate__Aptr__TU_Automaton$if2110$end;
 
- mov r9d,dword [rbp-52]
+ mov r9d,dword [rbp-64]
  mov r8d,dword [rbp-32]
  mov edx,dword [rbp-48]
  mov rcx,rbx
- call cb__Nmain__Nset__Aref__TU_Field2D__Aint__Aint__Aint
- ;ir_call cb__Nmain__Nset__Aref__TU_Field2D__Aint__Aint__Aint ST L6 L3 L7;
+ call cb__Nmain__Nset__Aptr__TU_Field2D__Aint__Aint__Aint
+ ;ir_call cb__Nmain__Nset__Aptr__TU_Field2D__Aint__Aint__Aint ST L6 L3 L10;
 
  mov r10d,dword [rbp-48]
  add r10d,1
@@ -1163,11 +1151,11 @@ cb__Nmain__Nupdate__Aref__TU_Automaton$if2108$end:
  mov dword [rbp-48],eax
  ;ir_load L6 ST;
 
- jmp cb__Nmain__Nupdate__Aref__TU_Automaton$f701$cond
- ;ir_jmp cb__Nmain__Nupdate__Aref__TU_Automaton$f701$cond;
+ jmp cb__Nmain__Nupdate__Aptr__TU_Automaton$f711$cond
+ ;ir_jmp cb__Nmain__Nupdate__Aptr__TU_Automaton$f711$cond;
 
-cb__Nmain__Nupdate__Aref__TU_Automaton$f701$end:
- ;ir_make_label cb__Nmain__Nupdate__Aref__TU_Automaton$f701$end;
+cb__Nmain__Nupdate__Aptr__TU_Automaton$f711$end:
+ ;ir_make_label cb__Nmain__Nupdate__Aptr__TU_Automaton$f711$end;
 
  mov r10d,dword [rbp-32]
  add r10d,1
@@ -1177,11 +1165,11 @@ cb__Nmain__Nupdate__Aref__TU_Automaton$f701$end:
  mov dword [rbp-32],eax
  ;ir_load L3 ST;
 
- jmp cb__Nmain__Nupdate__Aref__TU_Automaton$f704$cond
- ;ir_jmp cb__Nmain__Nupdate__Aref__TU_Automaton$f704$cond;
+ jmp cb__Nmain__Nupdate__Aptr__TU_Automaton$f714$cond
+ ;ir_jmp cb__Nmain__Nupdate__Aptr__TU_Automaton$f714$cond;
 
-cb__Nmain__Nupdate__Aref__TU_Automaton$f704$end:
- ;ir_make_label cb__Nmain__Nupdate__Aref__TU_Automaton$f704$end;
+cb__Nmain__Nupdate__Aptr__TU_Automaton$f714$end:
+ ;ir_make_label cb__Nmain__Nupdate__Aptr__TU_Automaton$f714$end;
 
  mov rax,qword [rbp+40]
  ;ir_deref A0;
@@ -1225,7 +1213,7 @@ cb__Nmain__Nupdate__Aref__TU_Automaton$f704$end:
  pop rdi
  ;ir_copy [ST . 1] L0 16;
 
-cb__Nmain__Nupdate__Aref__TU_Automaton$end:
+cb__Nmain__Nupdate__Aptr__TU_Automaton$end:
  add rsp,104
  pop rsi
  pop rdi
@@ -1235,7 +1223,7 @@ cb__Nmain__Nupdate__Aref__TU_Automaton$end:
 
 
 cb__Nmain__Nprint__Aptr__TU_Automaton:
- ;func print(*Automaton): {}
+ ;func print(&Automaton): {}
  mov qword [rsp+8],rcx
  push rbp
  push rbx
@@ -1259,16 +1247,16 @@ cb__Nmain__Nprint__Aptr__TU_Automaton:
  mov dword [rbp-16],r10d
  ;ir_load L2 [L0 . 0];
 
-cb__Nmain__Nprint__Aptr__TU_Automaton$f800$cond:
- ;ir_make_label cb__Nmain__Nprint__Aptr__TU_Automaton$f800$cond;
+cb__Nmain__Nprint__Aptr__TU_Automaton$f811$cond:
+ ;ir_make_label cb__Nmain__Nprint__Aptr__TU_Automaton$f811$cond;
 
  mov r10d,dword [rbp-16]
  cmp r10d,dword [rbp-4]
- jge cb__Nmain__Nprint__Aptr__TU_Automaton$f800$end
- ;ir_jmp_gte L2 [L0 . 1] cb__Nmain__Nprint__Aptr__TU_Automaton$f800$end;
+ jge cb__Nmain__Nprint__Aptr__TU_Automaton$f811$end
+ ;ir_jmp_gte L2 [L0 . 1] cb__Nmain__Nprint__Aptr__TU_Automaton$f811$end;
 
-cb__Nmain__Nprint__Aptr__TU_Automaton$f800$body:
- ;ir_make_label cb__Nmain__Nprint__Aptr__TU_Automaton$f800$body;
+cb__Nmain__Nprint__Aptr__TU_Automaton$f811$body:
+ ;ir_make_label cb__Nmain__Nprint__Aptr__TU_Automaton$f811$body;
 
  lea rax,[$cbstr1]
  ;ir_load_addr STR1;
@@ -1295,16 +1283,16 @@ cb__Nmain__Nprint__Aptr__TU_Automaton$f800$body:
  mov dword [rbp-48],r10d
  ;ir_load L6 [L4 . 0];
 
-cb__Nmain__Nprint__Aptr__TU_Automaton$f790$cond:
- ;ir_make_label cb__Nmain__Nprint__Aptr__TU_Automaton$f790$cond;
+cb__Nmain__Nprint__Aptr__TU_Automaton$f801$cond:
+ ;ir_make_label cb__Nmain__Nprint__Aptr__TU_Automaton$f801$cond;
 
  mov r10d,dword [rbp-48]
  cmp r10d,dword [rbp-36]
- jge cb__Nmain__Nprint__Aptr__TU_Automaton$f790$end
- ;ir_jmp_gte L6 [L4 . 1] cb__Nmain__Nprint__Aptr__TU_Automaton$f790$end;
+ jge cb__Nmain__Nprint__Aptr__TU_Automaton$f801$end
+ ;ir_jmp_gte L6 [L4 . 1] cb__Nmain__Nprint__Aptr__TU_Automaton$f801$end;
 
-cb__Nmain__Nprint__Aptr__TU_Automaton$f790$body:
- ;ir_make_label cb__Nmain__Nprint__Aptr__TU_Automaton$f790$body;
+cb__Nmain__Nprint__Aptr__TU_Automaton$f801$body:
+ ;ir_make_label cb__Nmain__Nprint__Aptr__TU_Automaton$f801$body;
 
  mov rax,qword [rbp+32]
  ;ir_deref A0;
@@ -1329,34 +1317,34 @@ cb__Nmain__Nprint__Aptr__TU_Automaton$f790$body:
 
  mov r10d,dword [rbp-52]
  cmp r10d,1
- jne cb__Nmain__Nprint__Aptr__TU_Automaton$if2126$else
- ;ir_jmp_neq L7 1 cb__Nmain__Nprint__Aptr__TU_Automaton$if2126$else;
+ jne cb__Nmain__Nprint__Aptr__TU_Automaton$if2128$else
+ ;ir_jmp_neq L7 1 cb__Nmain__Nprint__Aptr__TU_Automaton$if2128$else;
 
-cb__Nmain__Nprint__Aptr__TU_Automaton$if2126$body:
- ;ir_make_label cb__Nmain__Nprint__Aptr__TU_Automaton$if2126$body;
+cb__Nmain__Nprint__Aptr__TU_Automaton$if2128$body:
+ ;ir_make_label cb__Nmain__Nprint__Aptr__TU_Automaton$if2128$body;
 
  mov r10b,64
  mov byte [rbp-53],r10b
  ;ir_load L8 #64;
 
- jmp cb__Nmain__Nprint__Aptr__TU_Automaton$if2126$end
- ;ir_jmp cb__Nmain__Nprint__Aptr__TU_Automaton$if2126$end;
+ jmp cb__Nmain__Nprint__Aptr__TU_Automaton$if2128$end
+ ;ir_jmp cb__Nmain__Nprint__Aptr__TU_Automaton$if2128$end;
 
-cb__Nmain__Nprint__Aptr__TU_Automaton$if2126$else:
- ;ir_make_label cb__Nmain__Nprint__Aptr__TU_Automaton$if2126$else;
+cb__Nmain__Nprint__Aptr__TU_Automaton$if2128$else:
+ ;ir_make_label cb__Nmain__Nprint__Aptr__TU_Automaton$if2128$else;
 
  mov r10b,46
  mov byte [rbp-53],r10b
  ;ir_load L8 #46;
 
-cb__Nmain__Nprint__Aptr__TU_Automaton$if2126$end:
- ;ir_make_label cb__Nmain__Nprint__Aptr__TU_Automaton$if2126$end;
+cb__Nmain__Nprint__Aptr__TU_Automaton$if2128$end:
+ ;ir_make_label cb__Nmain__Nprint__Aptr__TU_Automaton$if2128$end;
 
  mov r8b,byte [rbp-53]
  mov rdx,rdi
  mov rcx,rbx
- call cb__Nmain__Nappend__Aref__TU_string__Aptr__TU_string__Achar
- ;ir_call cb__Nmain__Nappend__Aref__TU_string__Aptr__TU_string__Achar ST ST L8;
+ call cb__Nmain__Nappend__Aptr__TU_string__Aptr__TU_string__Achar
+ ;ir_call cb__Nmain__Nappend__Aptr__TU_string__Aptr__TU_string__Achar ST ST L8;
 
  mov r10d,dword [rbp-48]
  add r10d,1
@@ -1366,11 +1354,11 @@ cb__Nmain__Nprint__Aptr__TU_Automaton$if2126$end:
  mov dword [rbp-48],eax
  ;ir_load L6 ST;
 
- jmp cb__Nmain__Nprint__Aptr__TU_Automaton$f790$cond
- ;ir_jmp cb__Nmain__Nprint__Aptr__TU_Automaton$f790$cond;
+ jmp cb__Nmain__Nprint__Aptr__TU_Automaton$f801$cond
+ ;ir_jmp cb__Nmain__Nprint__Aptr__TU_Automaton$f801$cond;
 
-cb__Nmain__Nprint__Aptr__TU_Automaton$f790$end:
- ;ir_make_label cb__Nmain__Nprint__Aptr__TU_Automaton$f790$end;
+cb__Nmain__Nprint__Aptr__TU_Automaton$f801$end:
+ ;ir_make_label cb__Nmain__Nprint__Aptr__TU_Automaton$f801$end;
 
  mov rcx,qword [rbp-32]
  call cb__Nstd__Nio__Nprintln__Aptr__Tchar
@@ -1384,11 +1372,11 @@ cb__Nmain__Nprint__Aptr__TU_Automaton$f790$end:
  mov dword [rbp-16],eax
  ;ir_load L2 ST;
 
- jmp cb__Nmain__Nprint__Aptr__TU_Automaton$f800$cond
- ;ir_jmp cb__Nmain__Nprint__Aptr__TU_Automaton$f800$cond;
+ jmp cb__Nmain__Nprint__Aptr__TU_Automaton$f811$cond
+ ;ir_jmp cb__Nmain__Nprint__Aptr__TU_Automaton$f811$cond;
 
-cb__Nmain__Nprint__Aptr__TU_Automaton$f800$end:
- ;ir_make_label cb__Nmain__Nprint__Aptr__TU_Automaton$f800$end;
+cb__Nmain__Nprint__Aptr__TU_Automaton$f811$end:
+ ;ir_make_label cb__Nmain__Nprint__Aptr__TU_Automaton$f811$end;
 
  lea rax,[$cbstr0]
  ;ir_load_addr STR0;
@@ -1405,7 +1393,7 @@ cb__Nmain__Nprint__Aptr__TU_Automaton$end:
  ret
 
 
-cb__Nmain__Ngun__Aref__TU_Automaton:
+cb__Nmain__Ngun__Aptr__TU_Automaton:
  ;func gun(&Automaton): &Automaton
  mov qword [rsp+8],rcx
  push rbp
@@ -1435,20 +1423,20 @@ cb__Nmain__Ngun__Aref__TU_Automaton:
 
  mov rdx,rax
  mov rcx,qword [rbp+16]
- call cb__Nmain__Nmake_automaton__Aref__TU_Automaton__Aref__TU_string
- ;ir_call cb__Nmain__Nmake_automaton__Aref__TU_Automaton__Aref__TU_string A0 ST;
+ call cb__Nmain__Nmake_automaton__Aptr__TU_Automaton__Aptr__TU_string
+ ;ir_call cb__Nmain__Nmake_automaton__Aptr__TU_Automaton__Aptr__TU_string A0 ST;
 
  mov rax,qword [rbp+16]
  ;ir_return A0;
 
-cb__Nmain__Ngun__Aref__TU_Automaton$end:
+cb__Nmain__Ngun__Aptr__TU_Automaton$end:
  add rsp,48
  pop rbp
  ret
 
 
-cb__Nmain__Nmain__Aref__Tslice__TU_string:
- ;func main([*]string): int
+cb__Nmain__Nmain__Aptr__Tslice__TU_string:
+ ;func main([]string): int
  mov qword [rsp+8],rcx
  push rbp
  mov rbp,rsp
@@ -1459,8 +1447,8 @@ cb__Nmain__Nmain__Aref__Tslice__TU_string:
  ;ir_load_addr L0;
 
  mov rcx,rax
- call cb__Nmain__Ngun__Aref__TU_Automaton
- ;ir_call cb__Nmain__Ngun__Aref__TU_Automaton ST;
+ call cb__Nmain__Ngun__Aptr__TU_Automaton
+ ;ir_call cb__Nmain__Ngun__Aptr__TU_Automaton ST;
 
  mov r10d,0
  mov dword [rbp-40],r10d
@@ -1474,23 +1462,23 @@ cb__Nmain__Nmain__Aref__Tslice__TU_string:
  mov dword [rbp-48],r10d
  ;ir_load L3 [L1 . 0];
 
-cb__Nmain__Nmain__Aref__Tslice__TU_string$f866$cond:
- ;ir_make_label cb__Nmain__Nmain__Aref__Tslice__TU_string$f866$cond;
+cb__Nmain__Nmain__Aptr__Tslice__TU_string$f878$cond:
+ ;ir_make_label cb__Nmain__Nmain__Aptr__Tslice__TU_string$f878$cond;
 
  mov r10d,dword [rbp-48]
  cmp r10d,dword [rbp-36]
- jge cb__Nmain__Nmain__Aref__Tslice__TU_string$f866$end
- ;ir_jmp_gte L3 [L1 . 1] cb__Nmain__Nmain__Aref__Tslice__TU_string$f866$end;
+ jge cb__Nmain__Nmain__Aptr__Tslice__TU_string$f878$end
+ ;ir_jmp_gte L3 [L1 . 1] cb__Nmain__Nmain__Aptr__Tslice__TU_string$f878$end;
 
-cb__Nmain__Nmain__Aref__Tslice__TU_string$f866$body:
- ;ir_make_label cb__Nmain__Nmain__Aref__Tslice__TU_string$f866$body;
+cb__Nmain__Nmain__Aptr__Tslice__TU_string$f878$body:
+ ;ir_make_label cb__Nmain__Nmain__Aptr__Tslice__TU_string$f878$body;
 
  lea rax,qword [rbp-32]
  ;ir_load_addr L0;
 
  mov rcx,rax
- call cb__Nmain__Nupdate__Aref__TU_Automaton
- ;ir_call cb__Nmain__Nupdate__Aref__TU_Automaton ST;
+ call cb__Nmain__Nupdate__Aptr__TU_Automaton
+ ;ir_call cb__Nmain__Nupdate__Aptr__TU_Automaton ST;
 
  lea rax,qword [rbp-32]
  ;ir_load_addr L0;
@@ -1507,23 +1495,23 @@ cb__Nmain__Nmain__Aref__Tslice__TU_string$f866$body:
  mov dword [rbp-48],eax
  ;ir_load L3 ST;
 
- jmp cb__Nmain__Nmain__Aref__Tslice__TU_string$f866$cond
- ;ir_jmp cb__Nmain__Nmain__Aref__Tslice__TU_string$f866$cond;
+ jmp cb__Nmain__Nmain__Aptr__Tslice__TU_string$f878$cond
+ ;ir_jmp cb__Nmain__Nmain__Aptr__Tslice__TU_string$f878$cond;
 
-cb__Nmain__Nmain__Aref__Tslice__TU_string$f866$end:
- ;ir_make_label cb__Nmain__Nmain__Aref__Tslice__TU_string$f866$end;
+cb__Nmain__Nmain__Aptr__Tslice__TU_string$f878$end:
+ ;ir_make_label cb__Nmain__Nmain__Aptr__Tslice__TU_string$f878$end;
 
  mov eax,0
  ;ir_return 0;
 
-cb__Nmain__Nmain__Aref__Tslice__TU_string$end:
+cb__Nmain__Nmain__Aptr__Tslice__TU_string$end:
  add rsp,64
  pop rbp
  ret
 
 
-cb__Nmain__Nmake_automaton__lambda__13880377907378507347__1488__Aref__TU_string:
- ;func make_automaton__lambda__13880377907378507347__1488(string): bool
+cb__Nmain__Nmake_automaton__lambda__13880377907378507347__1504__Aptr__TU_string:
+ ;func make_automaton__lambda__13880377907378507347__1504(string): bool
  push rbp
  mov rbp,rsp
  sub rsp,16
@@ -1534,79 +1522,63 @@ cb__Nmain__Nmake_automaton__lambda__13880377907378507347__1488__Aref__TU_string:
 
  mov r10,qword [rax+8]
  cmp r10,0
- jle cb__Nmain__Nmake_automaton__lambda__13880377907378507347__1488__Aref__TU_string$if2178$else
- ;ir_jmp_lte [ST . 1] 0 cb__Nmain__Nmake_automaton__lambda__13880377907378507347__1488__Aref__TU_string$if2178$else;
+ jle cb__Nmain__Nmake_automaton__lambda__13880377907378507347__1504__Aptr__TU_string$if2180$else
+ ;ir_jmp_lte [ST . 1] 0 cb__Nmain__Nmake_automaton__lambda__13880377907378507347__1504__Aptr__TU_string$if2180$else;
 
-cb__Nmain__Nmake_automaton__lambda__13880377907378507347__1488__Aref__TU_string$if2178$body:
- ;ir_make_label cb__Nmain__Nmake_automaton__lambda__13880377907378507347__1488__Aref__TU_string$if2178$body;
+cb__Nmain__Nmake_automaton__lambda__13880377907378507347__1504__Aptr__TU_string$if2180$body:
+ ;ir_make_label cb__Nmain__Nmake_automaton__lambda__13880377907378507347__1504__Aptr__TU_string$if2180$body;
 
  mov r10b,1
  mov byte [rbp-1],r10b
  ;ir_load L0 1;
 
- jmp cb__Nmain__Nmake_automaton__lambda__13880377907378507347__1488__Aref__TU_string$if2178$end
- ;ir_jmp cb__Nmain__Nmake_automaton__lambda__13880377907378507347__1488__Aref__TU_string$if2178$end;
+ jmp cb__Nmain__Nmake_automaton__lambda__13880377907378507347__1504__Aptr__TU_string$if2180$end
+ ;ir_jmp cb__Nmain__Nmake_automaton__lambda__13880377907378507347__1504__Aptr__TU_string$if2180$end;
 
-cb__Nmain__Nmake_automaton__lambda__13880377907378507347__1488__Aref__TU_string$if2178$else:
- ;ir_make_label cb__Nmain__Nmake_automaton__lambda__13880377907378507347__1488__Aref__TU_string$if2178$else;
+cb__Nmain__Nmake_automaton__lambda__13880377907378507347__1504__Aptr__TU_string$if2180$else:
+ ;ir_make_label cb__Nmain__Nmake_automaton__lambda__13880377907378507347__1504__Aptr__TU_string$if2180$else;
 
  mov r10b,0
  mov byte [rbp-1],r10b
  ;ir_load L0 0;
 
-cb__Nmain__Nmake_automaton__lambda__13880377907378507347__1488__Aref__TU_string$if2178$end:
- ;ir_make_label cb__Nmain__Nmake_automaton__lambda__13880377907378507347__1488__Aref__TU_string$if2178$end;
+cb__Nmain__Nmake_automaton__lambda__13880377907378507347__1504__Aptr__TU_string$if2180$end:
+ ;ir_make_label cb__Nmain__Nmake_automaton__lambda__13880377907378507347__1504__Aptr__TU_string$if2180$end;
 
  mov al,byte [rbp-1]
  ;ir_return L0;
 
-cb__Nmain__Nmake_automaton__lambda__13880377907378507347__1488__Aref__TU_string$end:
+cb__Nmain__Nmake_automaton__lambda__13880377907378507347__1504__Aptr__TU_string$end:
  add rsp,16
  pop rbp
  ret
 
 
-cb__Nmain__Nmake_automaton__lambda__13880377907378507347__1445__Aref__TU_string__Aref__TU_string:
- ;func make_automaton__lambda__13880377907378507347__1445(&string, &string): &string
+cb__Nmain__Nmake_automaton__lambda__13880377907378507347__1461__Aptr__TU_string__Aptr__TU_string:
+ ;func make_automaton__lambda__13880377907378507347__1461(&string, &string): &string
  mov qword [rsp+16],rdx
  mov qword [rsp+8],rcx
  push rbp
  mov rbp,rsp
- sub rsp,32
+ sub rsp,16
  ;prolog end
 
- mov rax,qword [rbp+24]
- ;ir_deref A1;
-
- push rdi
- push rsi
- lea rdi,qword [rbp-16]
- lea rsi,qword [rax]
- mov rcx,16
- rep movsb
- pop rsi
- pop rdi
- ;ir_copy L0 ST 16;
-
- lea rax,qword [rbp-16]
- ;ir_load_addr L0;
-
- mov rdx,rax
+ mov rdx,qword [rbp+24]
  mov rcx,qword [rbp+16]
- call cb__Nmain__Ntrim__Aref__TU_string__Aref__TU_string
- ;ir_call cb__Nmain__Ntrim__Aref__TU_string__Aref__TU_string A0 ST;
+ call cb__Nmain__Ntrim__Aptr__TU_string__Aptr__TU_string
+ ;ir_call cb__Nmain__Ntrim__Aptr__TU_string__Aptr__TU_string A0 A1;
 
  mov rax,qword [rbp+16]
  ;ir_return A0;
 
-cb__Nmain__Nmake_automaton__lambda__13880377907378507347__1445__Aref__TU_string__Aref__TU_string$end:
- add rsp,32
+cb__Nmain__Nmake_automaton__lambda__13880377907378507347__1461__Aptr__TU_string__Aptr__TU_string$end:
+ add rsp,16
  pop rbp
  ret
 
 
-cb__Ninit__Ninit_command_line__Aref__Tmut_slice__TU_string:
- ;func init_command_line(&[&]string): &[&]string
+cb__Ninit__Ninit_command_line__Aptr__Tslice__TU_string:
+ ;func init_command_line(&[]string): &[]string
  mov qword [rsp+8],rcx
  push rbp
  push rbx
@@ -1678,15 +1650,15 @@ cb__Ninit__Ninit_command_line__Aref__Tmut_slice__TU_string:
  mov rax,qword [rbp+24]
  ;ir_return A0;
 
-cb__Ninit__Ninit_command_line__Aref__Tmut_slice__TU_string$end:
+cb__Ninit__Ninit_command_line__Aptr__Tslice__TU_string$end:
  add rsp,72
  pop rbx
  pop rbp
  ret
 
 
-cb__Ninit__Nfree_command_line__Aref__Tmut_slice__TU_string:
- ;func free_command_line([&]string): {}
+cb__Ninit__Nfree_command_line__Aptr__Tslice__TU_string:
+ ;func free_command_line([]string): {}
  mov qword [rsp+8],rcx
  push rbp
  mov rbp,rsp
@@ -1700,7 +1672,7 @@ cb__Ninit__Nfree_command_line__Aref__Tmut_slice__TU_string:
  call cb__Nstd__Nalloc__Nfree__Arawptr
  ;ir_call cb__Nstd__Nalloc__Nfree__Arawptr [ST . 0];
 
-cb__Ninit__Nfree_command_line__Aref__Tmut_slice__TU_string$end:
+cb__Ninit__Nfree_command_line__Aptr__Tslice__TU_string$end:
  add rsp,16
  pop rbp
  ret
@@ -1718,8 +1690,8 @@ carbon_main:
  ;ir_load_addr L0;
 
  mov rcx,rax
- call cb__Ninit__Ninit_command_line__Aref__Tmut_slice__TU_string
- ;ir_call cb__Ninit__Ninit_command_line__Aref__Tmut_slice__TU_string ST;
+ call cb__Ninit__Ninit_command_line__Aptr__Tslice__TU_string
+ ;ir_call cb__Ninit__Ninit_command_line__Aptr__Tslice__TU_string ST;
 
  push rdi
  push rsi
@@ -1735,9 +1707,9 @@ carbon_main:
  ;ir_load_addr L2;
 
  mov rcx,rax
- call cb__Nmain__Nmain__Aref__Tslice__TU_string
+ call cb__Nmain__Nmain__Aptr__Tslice__TU_string
  mov ebx,eax
- ;ir_call cb__Nmain__Nmain__Aref__Tslice__TU_string ST;
+ ;ir_call cb__Nmain__Nmain__Aptr__Tslice__TU_string ST;
 
  push rdi
  push rsi
@@ -1753,8 +1725,8 @@ carbon_main:
  ;ir_load_addr L1;
 
  mov rcx,rax
- call cb__Ninit__Nfree_command_line__Aref__Tmut_slice__TU_string
- ;ir_call cb__Ninit__Nfree_command_line__Aref__Tmut_slice__TU_string ST;
+ call cb__Ninit__Nfree_command_line__Aptr__Tslice__TU_string
+ ;ir_call cb__Ninit__Nfree_command_line__Aptr__Tslice__TU_string ST;
 
  mov eax,ebx
  ;ir_return ST;
@@ -1859,7 +1831,7 @@ cb__Nstd__Nalloc__Nset__Arawptr__Achar__Ausize$end:
 
 
 cb__Nstd__Nio__Nprintln__Aptr__Tchar:
- ;func println(*char): {}
+ ;func println(&char): {}
  mov qword [rsp+8],rcx
  push rbp
  mov rbp,rsp
@@ -1879,7 +1851,7 @@ cb__Nstd__Nio__Nprintln__Aptr__Tchar$end:
 
 
 cb__Nstd__Nrawstring__Ncopy__Aptr__Tchar:
- ;func copy(*char): *char
+ ;func copy(&char): &char
  mov qword [rsp+8],rcx
  push rbp
  mov rbp,rsp
@@ -1904,7 +1876,7 @@ cb__Nstd__Nrawstring__Ncopy__Aptr__Tchar$end:
 
 
 cb__Nstd__Nrawstring__Ncopy__Aptr__Tchar__Ausize:
- ;func copy(*char, usize): *char
+ ;func copy(&char, usize): &char
  mov qword [rsp+16],rdx
  mov qword [rsp+8],rcx
  push rbp
@@ -1951,7 +1923,7 @@ cb__Nstd__Nrawstring__Ncopy__Aptr__Tchar__Ausize$end:
 
 
 cb__Nstd__Nrawstring__Ncopy__Aptr__Tchar__Aptr__Tchar__Ausize:
- ;func copy(*char, *char, usize): {}
+ ;func copy(&char, &char, usize): {}
  mov qword [rsp+24],r8
  mov qword [rsp+16],rdx
  mov qword [rsp+8],rcx
@@ -1973,7 +1945,7 @@ cb__Nstd__Nrawstring__Ncopy__Aptr__Tchar__Aptr__Tchar__Ausize$end:
 
 
 cb__Nstd__Nrawstring__Nset__Aptr__Tchar__Achar__Ausize:
- ;func set(*char, char, usize): {}
+ ;func set(&char, char, usize): {}
  mov qword [rsp+24],r8
  mov byte [rsp+16],dl
  mov qword [rsp+8],rcx
@@ -1995,7 +1967,7 @@ cb__Nstd__Nrawstring__Nset__Aptr__Tchar__Achar__Ausize$end:
 
 
 cb__Nstd__Nrawstring__Nstrlen__Aptr__Tchar:
- ;func strlen(*char): usize
+ ;func strlen(&char): usize
  push rbp
  mov rbp,rsp
  sub rsp,16
@@ -2008,8 +1980,8 @@ cb__Nstd__Nrawstring__Nstrlen__Aptr__Tchar:
  mov qword [rbp-16],rcx
  ;ir_load L1 A0;
 
-cb__Nstd__Nrawstring__Nstrlen__Aptr__Tchar$w1568$cond:
- ;ir_make_label cb__Nstd__Nrawstring__Nstrlen__Aptr__Tchar$w1568$cond;
+cb__Nstd__Nrawstring__Nstrlen__Aptr__Tchar$w1580$cond:
+ ;ir_make_label cb__Nstd__Nrawstring__Nstrlen__Aptr__Tchar$w1580$cond;
 
  mov rax,qword [rbp-16]
  ;ir_deref L1;
@@ -2018,11 +1990,11 @@ cb__Nstd__Nrawstring__Nstrlen__Aptr__Tchar$w1568$cond:
  ;ir_cast ST;
 
  cmp eax,0
- je cb__Nstd__Nrawstring__Nstrlen__Aptr__Tchar$w1568$end
- ;ir_jmp_eq ST 0 cb__Nstd__Nrawstring__Nstrlen__Aptr__Tchar$w1568$end;
+ je cb__Nstd__Nrawstring__Nstrlen__Aptr__Tchar$w1580$end
+ ;ir_jmp_eq ST 0 cb__Nstd__Nrawstring__Nstrlen__Aptr__Tchar$w1580$end;
 
-cb__Nstd__Nrawstring__Nstrlen__Aptr__Tchar$w1568$body:
- ;ir_make_label cb__Nstd__Nrawstring__Nstrlen__Aptr__Tchar$w1568$body;
+cb__Nstd__Nrawstring__Nstrlen__Aptr__Tchar$w1580$body:
+ ;ir_make_label cb__Nstd__Nrawstring__Nstrlen__Aptr__Tchar$w1580$body;
 
  mov r10,qword [rbp-16]
  add r10,1
@@ -2040,11 +2012,11 @@ cb__Nstd__Nrawstring__Nstrlen__Aptr__Tchar$w1568$body:
  mov qword [rbp-8],rax
  ;ir_load L0 ST;
 
- jmp cb__Nstd__Nrawstring__Nstrlen__Aptr__Tchar$w1568$cond
- ;ir_jmp cb__Nstd__Nrawstring__Nstrlen__Aptr__Tchar$w1568$cond;
+ jmp cb__Nstd__Nrawstring__Nstrlen__Aptr__Tchar$w1580$cond
+ ;ir_jmp cb__Nstd__Nrawstring__Nstrlen__Aptr__Tchar$w1580$cond;
 
-cb__Nstd__Nrawstring__Nstrlen__Aptr__Tchar$w1568$end:
- ;ir_make_label cb__Nstd__Nrawstring__Nstrlen__Aptr__Tchar$w1568$end;
+cb__Nstd__Nrawstring__Nstrlen__Aptr__Tchar$w1580$end:
+ ;ir_make_label cb__Nstd__Nrawstring__Nstrlen__Aptr__Tchar$w1580$end;
 
  mov rax,qword [rbp-8]
  ;ir_return L0;
@@ -2056,7 +2028,7 @@ cb__Nstd__Nrawstring__Nstrlen__Aptr__Tchar$end:
 
 
 cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar:
- ;func equals(*char, *char): bool
+ ;func equals(&char, &char): bool
  mov qword [rsp+16],rdx
  mov qword [rsp+8],rcx
  push rbp
@@ -2075,18 +2047,18 @@ cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar:
  ;ir_call cb__Nstd__Nrawstring__Nstrlen__Aptr__Tchar A1;
 
  cmp rbx,rax
- je cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$if1600$else
- ;ir_jmp_eq ST ST cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$if1600$else;
+ je cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$if1612$else
+ ;ir_jmp_eq ST ST cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$if1612$else;
 
-cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$if1600$body:
- ;ir_make_label cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$if1600$body;
+cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$if1612$body:
+ ;ir_make_label cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$if1612$body;
 
  mov al,0
  jmp cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$end
  ;ir_return 0;
 
-cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$if1600$else:
- ;ir_make_label cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$if1600$else;
+cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$if1612$else:
+ ;ir_make_label cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$if1612$else;
 
  mov r10d,0
  mov dword [rbp-16],r10d
@@ -2103,18 +2075,18 @@ cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$if1600$else:
  mov dword [rbp-24],r10d
  ;ir_load L2 [L0 . 0];
 
-cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$f1624$cond:
- ;ir_make_label cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$f1624$cond;
+cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$f1636$cond:
+ ;ir_make_label cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$f1636$cond;
 
  movsxd rax,dword [rbp-24]
  ;ir_cast L2;
 
  cmp rax,qword [rbp-12]
- jge cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$f1624$end
- ;ir_jmp_gte ST [L0 . 1] cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$f1624$end;
+ jge cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$f1636$end
+ ;ir_jmp_gte ST [L0 . 1] cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$f1636$end;
 
-cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$f1624$body:
- ;ir_make_label cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$f1624$body;
+cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$f1636$body:
+ ;ir_make_label cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$f1636$body;
 
  mov rax,qword [rbp+24]
  ;ir_deref A0;
@@ -2132,18 +2104,18 @@ cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$f1624$body:
 
  mov r10b,byte [rbx+0]
  cmp r10b,byte [rax+0]
- je cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$if1621$else
- ;ir_jmp_eq ST ST cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$if1621$else;
+ je cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$if1633$else
+ ;ir_jmp_eq ST ST cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$if1633$else;
 
-cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$if1621$body:
- ;ir_make_label cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$if1621$body;
+cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$if1633$body:
+ ;ir_make_label cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$if1633$body;
 
  mov al,0
  jmp cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$end
  ;ir_return 0;
 
-cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$if1621$else:
- ;ir_make_label cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$if1621$else;
+cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$if1633$else:
+ ;ir_make_label cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$if1633$else;
 
  mov r10d,dword [rbp-24]
  add r10d,1
@@ -2153,11 +2125,11 @@ cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$if1621$else:
  mov dword [rbp-24],eax
  ;ir_load L2 ST;
 
- jmp cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$f1624$cond
- ;ir_jmp cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$f1624$cond;
+ jmp cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$f1636$cond
+ ;ir_jmp cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$f1636$cond;
 
-cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$f1624$end:
- ;ir_make_label cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$f1624$end;
+cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$f1636$end:
+ ;ir_make_label cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$f1636$end;
 
  mov al,1
  ;ir_return 1;

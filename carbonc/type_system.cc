@@ -320,10 +320,6 @@ type_id get_pointer_type_to(type_system& ts, type_id elem_type) {
     return execute_type_constructor(ts, ts.builtin_scope->scope, *ts.ptr_type_constructor, { elem_type });
 }
 
-type_id get_reference_type_to(type_system& ts, type_id elem_type) {
-    return execute_type_constructor(ts, ts.builtin_scope->scope, *ts.ref_type_constructor, { elem_type });
-}
-
 type_id get_optional_type_to(type_system& ts, type_id elem_type) {
     return execute_type_constructor(ts, ts.builtin_scope->scope, *ts.optional_type_constructor, { elem_type });
 }
@@ -338,10 +334,6 @@ type_id get_array_type(type_system& ts, int_type size, type_id elem_type) {
 
 type_id get_slice_type_to(type_system& ts, type_id elem_type) {
     return execute_type_constructor(ts, ts.builtin_scope->scope, *ts.slice_type_constructor, { elem_type });
-}
-
-type_id get_mut_slice_type_to(type_system& ts, type_id elem_type) {
-    return execute_type_constructor(ts, ts.builtin_scope->scope, *ts.mut_slice_type_constructor, { elem_type });
 }
 
 type_id get_func_pointer_type_to(type_system& ts, type_id func_type) {
@@ -371,21 +363,9 @@ bool is_assignable_to(type_system& ts, type_id a, type_id b) {
     if (ta.kind == type_kind::pointer && tb.kind == type_kind::pointer) {
         return is_assignable_to(ts, ta.elem_type, tb.elem_type);
     }
-    if (ta.kind == type_kind::reference && tb.kind == type_kind::pointer) {
-        return is_assignable_to(ts, ta.elem_type, tb.elem_type);
-    }
-    if (ta.kind == type_kind::reference && tb.kind == type_kind::reference) {
-        return is_assignable_to(ts, ta.elem_type, tb.elem_type);
-    }
 
     if (ta.kind == type_kind::slice && tb.kind == type_kind::slice) {
-        if (ta.constructor_type == ts.slice_type_constructor->self->type_def.id) {
-            // immutable slice only convertible to another immutable slice
-            return tb.constructor_type == ta.constructor_type && is_assignable_to(ts, ta.elem_type, tb.elem_type);
-        }
-        else {
-            return is_assignable_to(ts, ta.elem_type, tb.elem_type);
-        }
+        return is_assignable_to(ts, ta.elem_type, tb.elem_type);
     }
 
     if (ta.kind == type_kind::func_pointer && tb.kind == type_kind::func_pointer) {
@@ -493,7 +473,7 @@ arena_ptr<ast_node> generate_init_list_zero_values(type_system& ts, type_id id) 
 bool is_pointer(type_id id) {
     if (!id.valid()) return false;
 
-    return id.get().kind == type_kind::pointer || id.get().kind == type_kind::reference;
+    return id.get().kind == type_kind::pointer;
 }
 
 bool is_aggregate(type_id id) {
@@ -516,7 +496,7 @@ bool is_type_kind(type_id id, type_kind k) {
 }
 
 bool type_allows_no_init(type_system& ts, type_id id) {
-    if (id.get().kind == type_kind::pointer || id.get().kind == type_kind::reference) {
+    if (id.get().kind == type_kind::pointer) {
         if (id != ts.raw_string_type) {
             return false;
         }
@@ -722,12 +702,7 @@ void transform_slice_expr_to_init_expr(type_system& ts, ast_node& node, bool mut
     auto arglist = make_arg_list_node(*ts.ast_arena, node.pos, std::move(args));
     node.children[1] = std::move(arglist);
 
-    if (mut) {
-        node.type_id = get_mut_slice_type_to(ts, elem_type);
-    }
-    else {
-        node.type_id = get_slice_type_to(ts, elem_type);
-    }
+    node.type_id = get_slice_type_to(ts, elem_type);
     node.children[0] = make_type_resolver_node(*ts.ast_arena, node.type_id);
     node.slice.self = &node;
 }
@@ -738,7 +713,7 @@ using cast_check_func = std::function<bool(type_system&, type_def&, type_def&)>;
 
 bool can_pointer_be_cast_from(type_system& ts, type_def& self, type_def& from) {
     if (self.id == ts.raw_ptr_type) {
-        if (from.kind == type_kind::pointer || from.kind == type_kind::reference) {
+        if (from.kind == type_kind::pointer) {
             return true;
         }
         if (from.kind == type_kind::integral) {
@@ -749,22 +724,7 @@ bool can_pointer_be_cast_from(type_system& ts, type_def& self, type_def& from) {
         return true;
     }
 
-    if (from.kind == type_kind::pointer || from.kind == type_kind::reference) {
-        return is_castable_to(ts, from.elem_type, self.elem_type);
-    }
-    return false;
-}
-
-bool can_reference_be_cast_from(type_system& ts, type_def& self, type_def& from) {
-    // TODO: temporary until we have optional type
-    if (from.id == ts.raw_ptr_type) {
-        return true;
-    }
-    else if (from.id == ts.uintptr_type) {
-        return true;
-    }
-
-    if (from.kind == type_kind::pointer || from.kind == type_kind::reference) {
+    if (from.kind == type_kind::pointer) {
         return is_castable_to(ts, from.elem_type, self.elem_type);
     }
     return false;
@@ -787,7 +747,6 @@ bool can_integral_be_cast_from(type_system& ts, type_def& self, type_def& from) 
 
 static std::unordered_map<type_kind, cast_check_func> cast_check_funcs = {
     {type_kind::pointer, can_pointer_be_cast_from},
-    {type_kind::reference, can_reference_be_cast_from},
     {type_kind::integral, can_integral_be_cast_from},
 };
 
@@ -1024,12 +983,6 @@ type_id get_type_expr_node_type(type_system& ts, ast_node& node) {
                 node.type_id = get_pointer_type_to(ts, elem_type);
             }
         }
-        if (node.type_qual == type_qualifier::reference) {
-            auto elem_type = get_type_expr_node_type(ts, *node.children[0]);
-            if (elem_type.valid()) {
-                node.type_id = get_reference_type_to(ts, elem_type);
-            }
-        }
         if (node.type_qual == type_qualifier::optional) {
             auto elem_type = get_type_expr_node_type(ts, *node.children[0]);
             if (elem_type.valid()) {
@@ -1060,7 +1013,7 @@ type_id get_type_expr_node_type(type_system& ts, ast_node& node) {
         visit_children(ts, node);
         auto [args, all_resolved] = nodes_to_type_constructor_args(ts, node.children);
         if (all_resolved) {
-            auto typecons = (token_to_char(node.op) == '&') ? ts.mut_slice_type_constructor : ts.slice_type_constructor;
+            auto typecons = ts.slice_type_constructor;
             node.type_id = execute_type_constructor(ts, ts.builtin_scope->scope, *typecons, args);
             node.type_error = false;
         }
@@ -1250,7 +1203,7 @@ void update_local_variable_type(type_system& ts, ast_node& l, type_id tid) {
 }
 
 void update_local_aggregate_argument(type_system& ts, ast_node& l) {
-    update_local_variable_type(ts, l, get_reference_type_to(ts, l.type_id));
+    update_local_variable_type(ts, l, get_pointer_type_to(ts, l.type_id));
     if (l.type == ast_type::var_decl) {
         l.children[ast_node::child_var_decl_type] = make_type_resolver_node(*ts.ast_arena, l.type_id);
     }
@@ -1283,11 +1236,10 @@ bool match_arg_list(type_system& ts, std::vector<arena_ptr<ast_node>>& func_args
     return true;
 }
 
-std::tuple<bool,bool,bool> match_method_arg_list(type_system& ts, std::vector<arena_ptr<ast_node>>& func_args, std::vector<arena_ptr<ast_node>>& call_args) {
-    if (func_args.size() != call_args.size()) return std::make_tuple(false, false, false);
+std::tuple<bool,bool> match_method_arg_list(type_system& ts, std::vector<arena_ptr<ast_node>>& func_args, std::vector<arena_ptr<ast_node>>& call_args) {
+    if (func_args.size() != call_args.size()) return std::make_tuple(false, false);
 
     bool need_cast_ptr = false;
-    bool need_cast_ref = false;
     for (std::size_t i = 0; i < func_args.size(); i++) {
         auto& farg = func_args[i];
         auto& carg = call_args[i];
@@ -1305,19 +1257,15 @@ std::tuple<bool,bool,bool> match_method_arg_list(type_system& ts, std::vector<ar
                         need_cast_ptr = true;
                         continue;
                     }
-                    if (farg->type_id.get().kind == type_kind::reference && farg->type_id.get().elem_type == carg->type_id) {
-                        need_cast_ref = true;
-                        continue;
-                    }
                 }
 
                 //printf("NOT MATCHING: %s --> %s\n", type_to_string(carg->type_id).c_str(), type_to_string(farg->type_id).c_str());
-                return std::make_tuple(false, false, false);
+                return std::make_tuple(false, false);
             }
         }
     }
 
-    return std::make_tuple(true, need_cast_ptr, need_cast_ref);
+    return std::make_tuple(true, need_cast_ptr);
 }
 
 string_hash mangle_func_name(type_system& ts, const std::vector<std::string>& id_parts, const std::vector<arena_ptr<ast_node>>& args, func_linkage linkage) {
@@ -2261,8 +2209,8 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
                             auto func = bsym->overload_funcs[i];
                             if (node.call.flags & call_flag::is_method_sugar_call) {
                                 // The matching for 'method' call sugar is different in that we allow the receiver to be cast
-                                // to a pointer or reference in case it's a value type
-                                auto [match, need_cast_ptr, need_cast_ref] = match_method_arg_list(ts, func->self->func_args(), node.call_args());
+                                // to a pointer in case it's a value type
+                                auto [match, need_cast_ptr] = match_method_arg_list(ts, func->self->func_args(), node.call_args());
                                 if (match) {
                                     resolved = true;
                                     node.type_id = func->self->type_def.func.ret_type;
@@ -2274,10 +2222,6 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
                                     if (need_cast_ptr) {
                                         arg_list.children[0] = make_address_of_expr(ts, std::move(arg_list.children[0]));
                                         arg_list.children[0]->type_id = get_pointer_type_to(ts, arg_list.children[0]->children[0]->type_id);
-                                    }
-                                    else if (need_cast_ref) {
-                                        arg_list.children[0] = make_address_of_expr(ts, std::move(arg_list.children[0]));
-                                        arg_list.children[0]->type_id = get_reference_type_to(ts, arg_list.children[0]->children[0]->type_id);
                                     }
                                     break;
                                 }
@@ -2361,7 +2305,7 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
                 node.type_error = true;
                 add_type_error(ts, node.pos, "cannot access field of optional type '%s', check in an if statement", type_to_string(ltype).c_str());
             }
-            else if ((ltype.get().kind == type_kind::pointer || ltype.get().kind == type_kind::reference) && is_aggregate(ltype.get().elem_type)) {
+            else if ((ltype.get().kind == type_kind::pointer) && is_aggregate(ltype.get().elem_type)) {
                 is_struct = true;
                 is_pointer = true;
                 stype = ltype.get().elem_type;
@@ -2394,6 +2338,7 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
                 args.push_back(std::move(children[0]));
                 auto arg_list = make_arg_list_node(*ts.ast_arena, {}, std::move(args));
                 node.children.push_back(std::move(arg_list));
+                node.call.flags |= call_flag::is_method_sugar_call;
             }
         }
         break;
@@ -2542,7 +2487,7 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
 
             if (!(node.children[0]->type_id.valid() && is_pointer(node.children[0]->type_id))) {
                 add_type_error(ts, node.children[0]->pos,
-                    "right-side of unary '*' (deref operation) has type '%s', it must be a pointer or reference",
+                    "right-side of unary '*' (deref operation) has type '%s', it must be a pointer",
                     type_to_string(node.children[0]->type_id).c_str());
                 node.type_error = true;
             }
@@ -2558,23 +2503,13 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
             if (!(node.children[0]->type_id.valid())) {
                 node.type_error = true;
             }
-            else if (node.children[0]->type_id.get().kind == type_kind::slice && node.children[0]->slice.self) {
-                node.type_id = get_mut_slice_type_to(ts, node.children[0]->type_id.get().elem_type);
-                node.type = node.children[0]->type;
-
-                auto children = std::move(node.children[0]->children);
-                node.children = std::move(children);
-                node.slice.self = &node;
-
-                node.type_error = false;
-            }
             else if (!node.children[0]->lvalue.self) {
                 add_type_error(ts, node.children[0]->pos,
                     "right-side of unary '&' (addressof operation) must be an lvalue (identifier, index expression)");
                 node.type_error = true;
             }
             else {
-                node.type_id = get_reference_type_to(ts, node.children[0]->type_id);
+                node.type_id = get_pointer_type_to(ts, node.children[0]->type_id);
                 node.type_error = false;
             }
         }
@@ -2931,7 +2866,7 @@ type_system::type_system(memory_arena& arena) {
 
     {
         auto node = make_in_arena<ast_node>(*ast_arena);
-        node->type_def.name = string_hash{ "*" };
+        node->type_def.name = string_hash{ "&" };
         node->type_def.mangled_name = string_hash{ "ptr" };
         node->type_def.kind = type_kind::constructor;
 
@@ -2943,7 +2878,7 @@ type_system::type_system(memory_arena& arena) {
             type_def& tf = node->type_def;
 
             tf.kind = type_kind::pointer;
-            tf.name = string_hash{ "*" + type_arg.get().name.str };
+            tf.name = string_hash{ "&" + type_arg.get().name.str };
             tf.mangled_name = string_hash{ "ptr__T" + type_arg.get().mangled_name.str };
             tf.size = sizeof(void*);
             tf.alignment = alignof(void*);
@@ -2952,33 +2887,6 @@ type_system::type_system(memory_arena& arena) {
         };
 
         ptr_type_constructor = ptr_template;
-        register_type(*this, builtin_scope->scope, *node);
-        builtin_type_nodes.push_back(std::move(node));
-    }
-
-    {
-        auto node = make_in_arena<ast_node>(*ast_arena);
-        node->type_def.name = string_hash{ "&" };
-        node->type_def.mangled_name = string_hash{ "ref" };
-        node->type_def.kind = type_kind::constructor;
-
-        type_constructor* ptr_template = &node->type_def.constructor;
-        ptr_template->self = node.get();
-        ptr_template->func = [this](const std::vector<type_constructor_arg>& arg) {
-            auto type_arg = std::get<type_id>(arg.front());
-            auto node = make_in_arena<ast_node>(*ast_arena);
-            type_def& tf = node->type_def;
-
-            tf.kind = type_kind::reference;
-            tf.name = string_hash{ "&" + type_arg.get().name.str };
-            tf.mangled_name = string_hash{ "ref__T" + type_arg.get().mangled_name.str };
-            tf.size = sizeof(void*);
-            tf.alignment = alignof(void*);
-            tf.elem_type = type_arg;
-            return node;
-        };
-
-        ref_type_constructor = ptr_template;
         register_type(*this, builtin_scope->scope, *node);
         builtin_type_nodes.push_back(std::move(node));
     }
@@ -2999,7 +2907,7 @@ type_system::type_system(memory_arena& arena) {
             tf.kind = type_kind::optional;
             tf.name = string_hash{ "?" + type_arg.get().name.str };
             tf.mangled_name = string_hash{ "optional__T" + type_arg.get().mangled_name.str };
-            if (type_arg.get().kind == type_kind::pointer || type_arg.get().kind == type_kind::reference) {
+            if (type_arg.get().kind == type_kind::pointer) {
                 tf.size = sizeof(void*);
                 tf.alignment = alignof(void*);
             }
@@ -3134,7 +3042,7 @@ type_system::type_system(memory_arena& arena) {
             type_def& tf = node->type_def;
 
             tf.kind = type_kind::slice;
-            tf.name = string_hash{ "[*]" + std::get<type_id>(args[0]).get().name.str };
+            tf.name = string_hash{ "[]" + std::get<type_id>(args[0]).get().name.str };
             tf.mangled_name = build_type_constructor_mangled_name(ctor->type_def.mangled_name.str, args);
             tf.elem_type = std::get<type_id>(args[0]);
 
@@ -3148,38 +3056,6 @@ type_system::type_system(memory_arena& arena) {
         };
 
         slice_type_constructor = slice_template;
-        register_type(*this, builtin_scope->scope, *node);
-        builtin_type_nodes.push_back(std::move(node));
-    }
-
-    {
-        auto node = make_in_arena<ast_node>(*ast_arena);
-        node->type_def.name = string_hash{ "mut_slice" };
-        node->type_def.mangled_name = string_hash{ "mut_slice" };
-        node->type_def.kind = type_kind::constructor;
-
-        type_constructor* mut_slice_template = &node->type_def.constructor;
-        mut_slice_template->self = node.get();
-
-        mut_slice_template->func = [this, ctor = node.get()](const std::vector<type_constructor_arg>& args) {
-            auto node = make_in_arena<ast_node>(*ast_arena);
-            type_def& tf = node->type_def;
-
-            tf.kind = type_kind::slice;
-            tf.name = string_hash{ "[&]" + std::get<type_id>(args[0]).get().name.str };
-            tf.mangled_name = build_type_constructor_mangled_name(ctor->type_def.mangled_name.str, args);
-            tf.elem_type = std::get<type_id>(args[0]);
-
-            auto ptype = get_reference_type_to(*this, tf.elem_type);
-            tf.structure.fields.push_back({ { "data" }, ptype, 0 });
-            tf.structure.fields.push_back({ { "len" }, this->usize_type, 0 });
-
-            compute_struct_size_alignment_offsets(tf);
-
-            return node;
-        };
-
-        mut_slice_type_constructor = mut_slice_template;
         register_type(*this, builtin_scope->scope, *node);
         builtin_type_nodes.push_back(std::move(node));
     }

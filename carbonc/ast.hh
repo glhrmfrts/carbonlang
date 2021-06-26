@@ -223,6 +223,8 @@ arena_ptr<ast_node> make_import_decl_node(memory_arena& arena, const position& p
 
 arena_ptr<ast_node> make_type_decl_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& id, arena_ptr<ast_node>&& contents);
 
+arena_ptr<ast_node> make_type_constructor_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& tpl, arena_ptr<ast_node>&& arg_list, arena_ptr<ast_node>&& contents);
+
 arena_ptr<ast_node> make_var_decl_node(memory_arena& arena, const position& pos, token_type kind, arena_ptr<ast_node>&& id, arena_ptr<ast_node>&& decl_type, arena_ptr<ast_node>&& decl_val);
 
 arena_ptr<ast_node> make_func_decl_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& id, arena_ptr<ast_node>&& arg_list, arena_ptr<ast_node>&& ret_type, arena_ptr<ast_node>&& body, func_linkage linkage);
@@ -255,7 +257,7 @@ arena_ptr<ast_node> make_tuple_type_node(memory_arena& arena, const position& po
 
 arena_ptr<ast_node> make_array_type_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& size_expr, arena_ptr<ast_node>&& item_type);
 
-arena_ptr<ast_node> make_slice_type_node(memory_arena& arena, const position& pos, token_type op, arena_ptr<ast_node>&& item_type);
+arena_ptr<ast_node> make_slice_type_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& item_type);
 
 arena_ptr<ast_node> make_func_pointer_type_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& arg_types, arena_ptr<ast_node>&& ret_type);
 

@@ -1,0 +1,24 @@
+import std::string;
+import std::io;
+
+type Field2D = struct {
+    width: int
+    height: int
+    data: &int
+};
+
+type Automaton = struct {
+    field:      Field2D
+    new_field:  Field2D
+};
+
+func fib(n: int): int {
+    if (n <= 2) { return 1; }
+    return fib(n - 1) + fib(n - 2)
+}
+
+func main(args: []string): int {
+    println("hello")
+    defer println("ended")
+    return fib(39)
+}

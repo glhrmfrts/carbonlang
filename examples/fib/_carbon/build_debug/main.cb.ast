@@ -1,0 +1,26 @@
+code_unit{
+  main.cb
+  decl_list{
+    import_decl{ std::string}
+    import_decl{ std::io}
+    type_decl{Field2D = type_expr{struct_type{decl_list{
+            var_decl{width: type_expr{int}}
+            var_decl{height: type_expr{int}}
+            var_decl{data: type_expr{type_qualifier{pointer, int}}}}}}}
+    type_decl{Automaton = type_expr{struct_type{decl_list{
+            var_decl{field: type_expr{Field2D}}
+            var_decl{new_field: type_expr{Field2D}}}}}}
+    func_decl{fib (var_decl{n: type_expr{int}}): type_expr{int} {
+        stmt_list{
+          if{{n  2} {
+              stmt_list{
+                return{1}}}}}
+        stmt_list{
+          return{{call{fib ({n - 1})} + call{fib ({n - 2})}}}}}}
+    func_decl{main (var_decl{args: }): type_expr{int} {
+        stmt_list{
+          call{println ("hello")}}
+        stmt_list{
+          defer{call{println ("ended")}}}
+        stmt_list{
+          return{call{fib (39)}}}}}}}
