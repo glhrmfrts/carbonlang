@@ -1,0 +1,21 @@
+import std::io
+import std::string
+import std::rawstring
+
+type Array(T) = struct {
+    data: &T
+    len: usize
+    cap: usize
+}
+
+import std::sequenceutils::SequenceUtils(Array(char))
+import std::sequenceutils::SequenceUtils(Array(int))
+
+type SequenceUtils(T) = 
+
+func main(args: []string): int {
+    println(args[0].data)
+    let arr : Array(char) = { "Beautiful", 10, 10 }
+    println(arr.data)
+    return 0
+}

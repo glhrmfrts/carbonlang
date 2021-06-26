@@ -32,6 +32,7 @@ enum class ast_type {
     func_overload_selector_expr,
 
     type_decl,
+    type_constructor_decl,
     var_decl,
     func_decl,
     import_decl,
@@ -223,7 +224,7 @@ arena_ptr<ast_node> make_import_decl_node(memory_arena& arena, const position& p
 
 arena_ptr<ast_node> make_type_decl_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& id, arena_ptr<ast_node>&& contents);
 
-arena_ptr<ast_node> make_type_constructor_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& tpl, arena_ptr<ast_node>&& arg_list, arena_ptr<ast_node>&& contents);
+arena_ptr<ast_node> make_type_constructor_decl_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& tpl, arena_ptr<ast_node>&& arg_list, arena_ptr<ast_node>&& contents);
 
 arena_ptr<ast_node> make_var_decl_node(memory_arena& arena, const position& pos, token_type kind, arena_ptr<ast_node>&& id, arena_ptr<ast_node>&& decl_type, arena_ptr<ast_node>&& decl_val);
 

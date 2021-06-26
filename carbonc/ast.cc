@@ -196,10 +196,10 @@ arena_ptr<ast_node> make_type_decl_node(memory_arena& arena, const position& pos
     return ptr;
 }
 
-arena_ptr<ast_node> make_type_constructor_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& id, arena_ptr<ast_node>&& arg_list, arena_ptr<ast_node>&& contents) {
+arena_ptr<ast_node> make_type_constructor_decl_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& id, arena_ptr<ast_node>&& arg_list, arena_ptr<ast_node>&& contents) {
     auto ptr = make_in_arena<ast_node>(arena);
     ptr->node_id = node_id_gen++;
-    ptr->type = ast_type::type_decl;
+    ptr->type = ast_type::type_constructor_decl;
     ptr->pos = pos;
     ptr->children.push_back(std::move(id));
     ptr->children.push_back(std::move(arg_list));

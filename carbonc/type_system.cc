@@ -197,7 +197,7 @@ type_id find_type_by_value(type_system& ts, scope_def& scope, const type_def& td
     return invalid_type;
 }
 
-type_id execute_type_constructor(type_system& ts, scope_def& scope, type_constructor& tpl, const std::vector<type_constructor_arg>& args) {
+type_id execute_type_constructor(type_system& ts, scope_def& scope, type_constructor& tpl, const std::vector<comptime_value>& args) {
     auto result = tpl.func(args);
 
     auto tid = find_type_by_value(ts, scope, result->type_def);
@@ -209,7 +209,7 @@ type_id execute_type_constructor(type_system& ts, scope_def& scope, type_constru
     return tid;
 }
 
-type_id execute_builtin_type_constructor(type_system& ts, type_constructor& tpl, const std::vector<type_constructor_arg>& args) {
+type_id execute_builtin_type_constructor(type_system& ts, type_constructor& tpl, const std::vector<comptime_value>& args) {
     return execute_type_constructor(ts, ts.builtin_scope->scope, tpl, args);
 }
 
@@ -221,7 +221,7 @@ string_hash build_array_name(int_type size, type_id t) {
     return { result };
 }
 
-string_hash build_tuple_name(const std::vector<type_constructor_arg>& args) {
+string_hash build_tuple_name(const std::vector<comptime_value>& args) {
     std::string result = "{";
     int i = 0;
     for (const auto& arg : args) {
@@ -252,20 +252,20 @@ string_hash build_func_pointer_name(const std::vector<type_id>& arg_types, type_
     return { result };
 }
 
-string_hash build_type_constructor_name(const std::string& name, const std::vector<type_constructor_arg>& args) {
+string_hash build_type_constructor_name(const std::string& name, const std::vector<comptime_value>& args) {
     auto result = name;
-    result.append("[");
+    result.append("(");
     for (const auto& arg : args) {
         if (auto tt = std::get_if<type_id>(&arg); tt) {
             result.append(tt->get().name.str);
             result.append(",");
         }
     }
-    result.replace(result.find_last_of(','), 1, "]");
+    result.replace(result.find_last_of(','), 1, ")");
     return { result };
 }
 
-string_hash build_type_constructor_mangled_name(const std::string& mangled_name, const std::vector<type_constructor_arg>& args) {
+string_hash build_type_constructor_mangled_name(const std::string& mangled_name, const std::vector<comptime_value>& args) {
     auto result = mangled_name;
     for (const auto& arg : args) {
         if (auto tt = std::get_if<type_id>(&arg); tt) {
@@ -280,8 +280,8 @@ string_hash build_type_constructor_mangled_name(const std::string& mangled_name,
     return { result };
 }
 
-std::pair<type_constructor_arg, bool> node_to_type_constructor_arg(type_system& ts, ast_node& node) {
-    type_constructor_arg arg = {};
+std::pair<comptime_value, bool> node_to_comptime_value(type_system& ts, ast_node& node) {
+    comptime_value arg = {};
     switch (node.type) {
     case ast_type::type_expr: {
         resolve_node_type(ts, &node);
@@ -302,12 +302,12 @@ std::pair<type_constructor_arg, bool> node_to_type_constructor_arg(type_system& 
     return std::make_pair(arg, node.type_id.valid());
 }
 
-std::pair<std::vector<type_constructor_arg>, bool> nodes_to_type_constructor_args(type_system& ts, std::vector<arena_ptr<ast_node>>& nodes) {
-    std::vector<type_constructor_arg> args;
+std::pair<std::vector<comptime_value>, bool> nodes_to_comptime_values(type_system& ts, std::vector<arena_ptr<ast_node>>& nodes) {
+    std::vector<comptime_value> args;
     bool all_resolved = true;
 
     for (auto& node : nodes) {
-        auto [arg, resolved] = node_to_type_constructor_arg(ts, *node);
+        auto [arg, resolved] = node_to_comptime_value(ts, *node);
         if (!resolved) {
             all_resolved = false;
         }
@@ -337,7 +337,7 @@ type_id get_slice_type_to(type_system& ts, type_id elem_type) {
 }
 
 type_id get_func_pointer_type_to(type_system& ts, type_id func_type) {
-    std::vector<type_constructor_arg> args;
+    std::vector<comptime_value> args;
     for (auto& arg_type : func_type.get().func.arg_types) {
         args.push_back(arg_type);
     }
@@ -619,11 +619,11 @@ bool check_aggregate_types_match(type_system& ts, const position& pos, type_id s
 
 arena_ptr<ast_node> make_assignment_for_init_list_item(type_system& ts, ast_node& node, ast_node& receiver, arena_ptr<ast_node>&& value, const struct_field& field, int idx) {
     if (is_type_kind(node.type_id, type_kind::structure) || is_type_kind(node.type_id, type_kind::slice)) {
-        auto fieldexpr = make_struct_field_access(*ts.ast_arena, copy_node(ts, receiver), field.names[0]);
+        auto fieldexpr = make_struct_field_access(*ts.ast_arena, copy_node(ts, &receiver), field.names[0]);
         return make_assignment(*ts.ast_arena, std::move(fieldexpr), std::move(value));
     }
     else if (is_type_kind(node.type_id, type_kind::tuple) || is_type_kind(node.type_id, type_kind::array)) {
-        auto indexexpr = make_index_access(*ts.ast_arena, copy_node(ts, receiver), idx);
+        auto indexexpr = make_index_access(*ts.ast_arena, copy_node(ts, &receiver), idx);
         return make_assignment(*ts.ast_arena, std::move(indexexpr), std::move(value));
     }
 }
@@ -685,7 +685,7 @@ void transform_slice_expr_to_init_expr(type_system& ts, ast_node& node, bool mut
     type_id elem_type = node.children[0]->type_id.get().elem_type;
     auto arr = std::move(node.children[0]);
     auto idxpair = std::move(node.children[1]);
-    auto offscopy = copy_node(ts, *idxpair->children[1]->children[0]);
+    auto offscopy = copy_node(ts, idxpair->children[1]->children[0].get());
 
     auto addrexpr = make_address_of_expr(ts,
         make_index_expr_node(*ts.ast_arena, arr->pos, std::move(arr), std::move(idxpair->children[1]->children[0]))
@@ -782,7 +782,7 @@ std::string node_to_string(const ast_node& node) {
     case ast_type::type_qualifier: {
         std::string result;
         if (node.type_qual == type_qualifier::pointer) {
-            result += "* ";
+            result += "&";
         }
         result += node_to_string(*node.children[0]);
         return result;
@@ -973,9 +973,29 @@ std::pair<string_hash, string_hash> separate_module_identifier(const std::vector
 
 type_id get_type_expr_node_type(type_system& ts, ast_node& node) {
     switch (node.type) {
-    case ast_type::identifier:
-        node.type_id = find_type_by_id_hash(ts, separate_module_identifier(node.id_parts));
+    case ast_type::identifier: {
+        node.type_error = true;
+
+        if (build_identifier_value(node.id_parts) == "T") {
+            printf("T\n");
+        }
+
+        auto sym = find_symbol(ts, separate_module_identifier(node.id_parts));
+        if (sym) {
+            if (sym->kind == symbol_kind::type) {
+                node.type_id = type_id{ sym->scope, sym->type_index };
+                node.type_error = false;
+            }
+            else if (sym->kind == symbol_kind::comptime) {
+                auto& value = sym->ctvalue;
+                if (std::holds_alternative<type_id>(value)) {
+                    node.type_id = std::get<type_id>(value);
+                    node.type_error = false;
+                }
+            }
+        }
         break;
+    }
     case ast_type::type_qualifier: {
         if (node.type_qual == type_qualifier::pointer) {
             auto elem_type = get_type_expr_node_type(ts, *node.children[0]);
@@ -999,7 +1019,7 @@ type_id get_type_expr_node_type(type_system& ts, ast_node& node) {
     }
     case ast_type::array_type: {
         visit_children(ts, node);
-        auto [args, all_resolved] = nodes_to_type_constructor_args(ts, node.children);
+        auto [args, all_resolved] = nodes_to_comptime_values(ts, node.children);
         if (all_resolved) {
             node.type_id = execute_type_constructor(ts, ts.builtin_scope->scope, *ts.arr_type_constructor, args);
             node.type_error = false;
@@ -1011,7 +1031,7 @@ type_id get_type_expr_node_type(type_system& ts, ast_node& node) {
     }
     case ast_type::slice_type: {
         visit_children(ts, node);
-        auto [args, all_resolved] = nodes_to_type_constructor_args(ts, node.children);
+        auto [args, all_resolved] = nodes_to_comptime_values(ts, node.children);
         if (all_resolved) {
             auto typecons = ts.slice_type_constructor;
             node.type_id = execute_type_constructor(ts, ts.builtin_scope->scope, *typecons, args);
@@ -1026,7 +1046,7 @@ type_id get_type_expr_node_type(type_system& ts, ast_node& node) {
         visit_children(ts, node);
 
         if (node.children[0]) {
-            auto [args, all_resolved] = nodes_to_type_constructor_args(ts, node.children[0]->children);
+            auto [args, all_resolved] = nodes_to_comptime_values(ts, node.children[0]->children);
             if (all_resolved) {
                 node.type_id = execute_type_constructor(ts, ts.builtin_scope->scope, *ts.tuple_type_constructor, args);
             }
@@ -1062,17 +1082,20 @@ type_id get_type_expr_node_type(type_system& ts, ast_node& node) {
             if (all_resolved && !node.type_id.valid()) {
                 auto& td = node.type_def;
                 td.kind = type_kind::structure;
-                td.name = string_hash{ "anonymous struct" };
-                td.mangled_name = string_hash{ "anonymous$struct" };
                 td.structure.fields = sfields;
                 compute_struct_size_alignment_offsets(td);
 
-                auto fd = find_type_by_value(ts, ts.builtin_scope->scope, td);
-                if (fd.valid()) {
-                    node.type_id = fd;
-                }
-                else {
-                    node.type_id = register_type(ts, ts.builtin_scope->scope, node);
+                // if name is not empty it means this is the result of a type constructor
+                if (td.name.str.empty()) {
+                    td.name = string_hash{ "anonymous struct" };
+                    td.mangled_name = string_hash{ "anonymous$struct" };
+                    auto fd = find_type_by_value(ts, ts.builtin_scope->scope, td);
+                    if (fd.valid()) {
+                        node.type_id = fd;
+                    }
+                    else {
+                        node.type_id = register_type(ts, ts.builtin_scope->scope, node);
+                    }
                 }
                 node.type_error = false;
             }
@@ -1088,8 +1111,8 @@ type_id get_type_expr_node_type(type_system& ts, ast_node& node) {
     case ast_type::func_pointer_type: {
         visit_children(ts, node);
 
-        auto [args, all_resolved] = nodes_to_type_constructor_args(ts, node.func_type_args());
-        auto [retarg, resolved] = node_to_type_constructor_arg(ts, *node.func_type_ret());
+        auto [args, all_resolved] = nodes_to_comptime_values(ts, node.func_type_args());
+        auto [retarg, resolved] = node_to_comptime_value(ts, *node.func_type_ret());
         if (all_resolved && resolved) {
             args.push_back(retarg);
             node.type_id = execute_type_constructor(ts, ts.builtin_scope->scope, *ts.func_pointer_type_constructor, args);
@@ -1115,7 +1138,7 @@ type_id get_type_expr_node_type(type_system& ts, ast_node& node) {
             add_type_error(ts, node.pos, "type '%s' is not a constructor", build_identifier_value(id->id_parts).c_str());
         }
         else {
-            auto [args, all_resolved] = nodes_to_type_constructor_args(ts, node.children[1]->children);
+            auto [args, all_resolved] = nodes_to_comptime_values(ts, node.children[1]->children);
             if (all_resolved) {
                 node.type_id = execute_type_constructor(ts, *ctor.scope, ctor.get().constructor, args);
             }
@@ -1681,15 +1704,15 @@ void register_for_declarations(type_system& ts, ast_node& node) {
             node.forinfo.declare_for_iter = std::move(iterdecl);
             node.forinfo.declare_elem_to_range_start = std::move(elem_decl_node);
             node.forinfo.compare_elem_to_range_end = make_binary_expr_node(*ts.ast_arena, {},
-                token_from_char('<'), copy_node(ts, *elemref), std::move(iterend)
+                token_from_char('<'), copy_node(ts, elemref.get()), std::move(iterend)
             );
 
             // TODO: handle custom step
             auto step = make_int_literal_node(*ts.ast_arena, {}, 1);
             auto elem_plus = make_binary_expr_node(*ts.ast_arena, {},
-                token_from_char('+'), copy_node(ts, *elemref), std::move(step)
+                token_from_char('+'), copy_node(ts, elemref.get()), std::move(step)
             );
-            node.forinfo.increase_elem = make_assignment(*ts.ast_arena, copy_node(ts, *elemref), std::move(elem_plus));
+            node.forinfo.increase_elem = make_assignment(*ts.ast_arena, copy_node(ts, elemref.get()), std::move(elem_plus));
 
             resolve_node_type(ts, node.forinfo.declare_elem_to_range_start.get());
             resolve_node_type(ts, node.forinfo.compare_elem_to_range_end.get());
@@ -1773,7 +1796,7 @@ bool check_reserved_call(type_system& ts, ast_node& node) {
                 }
                 else {
                     if (!node.sizeof_type_expr) {
-                        node.sizeof_type_expr = make_type_expr_node(*ts.ast_arena, node.children[1]->children[0]->pos, copy_node(ts, *node.children[1]->children[0]));
+                        node.sizeof_type_expr = make_type_expr_node(*ts.ast_arena, node.children[1]->children[0]->pos, copy_node(ts, node.children[1]->children[0].get()));
                     }
                     resolve_node_type(ts, node.sizeof_type_expr.get());
                     if (node.sizeof_type_expr->type_id.valid()) {
@@ -1874,6 +1897,51 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
                 complement_error(ts, node.pos, "in type declaration '%s'", node_to_string(node).c_str());
             }
         }
+        break;
+    }
+    case ast_type::type_constructor_decl: {
+        check_for_unresolved = false;
+
+        node.type_def.self = &node;
+        node.type_def.name = string_hash{ build_identifier_value(node.children[0]->id_parts) };
+        node.type_def.mangled_name = string_hash{ "U_" + build_identifier_value(node.children[0]->id_parts) };
+        node.type_def.kind = type_kind::constructor;
+
+        type_constructor* type_ctor = &node.type_def.constructor;
+        type_ctor->self = &node;
+
+        type_ctor->func = [&ts, ctor = &node](const std::vector<comptime_value>& args) -> arena_ptr<ast_node> {
+            // TODO: check number of args match and everything.
+            // TODO: allow type constructor 'body' form, that returns a type at the end but has arbitrary code in it.
+
+            auto& arg_list = copy_node(ts, ctor->children[1].get());
+            auto& content = copy_node(ts, ctor->children[2].get());
+            add_type_scope(ts, *content, *content);
+
+            for (std::size_t i = 0; i < arg_list->children.size(); i++) {
+                auto& ctor_arg_node = *arg_list->children[i];
+                type_id arg_type = ts.type_type;//TODO: get_comptime_arg_type(ctor_arg_node);
+                if (arg_type.get().kind == type_kind::type) {
+                    auto instance_targ = std::get<type_id>(args[i]);
+                    declare_comptime_symbol(ts, string_hash{ build_identifier_value(ctor_arg_node.var_id()->id_parts) }, instance_targ);
+                }
+                else {
+                    assert(!"user type constructor arg type not handled");
+                }
+            }
+
+            resolve_node_type(ts, content.get()); 
+
+            // Copy the type def from the type expr content
+            content->type_def = content->children[0]->type_def;
+            content->type_def.name = build_type_constructor_name(ctor->type_def.name.str, args);
+            content->type_def.mangled_name = build_type_constructor_mangled_name(ctor->type_def.mangled_name.str, args);
+
+            leave_scope_local(ts);
+            return std::move(content);
+        };
+
+        register_user_type(ts, node);
         break;
     }
     case ast_type::type_expr: {
@@ -2453,7 +2521,7 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
         break;
     }
     case ast_type::identifier: {
-        if (ts.pass != type_system_pass::perform_checks && node.type_id != invalid_type) return node.type_id;
+        //if (ts.pass != type_system_pass::perform_checks && node.type_id != invalid_type) return node.type_id;
 
         resolve_identifier(ts, node);
         break;
@@ -2549,7 +2617,7 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
             // ok, but needs to deduce from receiver type
             node.initlist.deduce_to_tuple = true;
             if (node.initlist.deduce_to_tuple && !node.type_id.valid()) {
-                std::vector<type_constructor_arg> elem_types;
+                std::vector<comptime_value> elem_types;
                 bool all_resolved = true;
                 for (auto& child : node.children[1]->children) {
                     resolve_node_type(ts, child.get());
@@ -2872,7 +2940,7 @@ type_system::type_system(memory_arena& arena) {
 
         type_constructor* ptr_template = &node->type_def.constructor;
         ptr_template->self = node.get();
-        ptr_template->func = [this](const std::vector<type_constructor_arg>& arg) {
+        ptr_template->func = [this](const std::vector<comptime_value>& arg) {
             auto type_arg = std::get<type_id>(arg.front());
             auto node = make_in_arena<ast_node>(*ast_arena);
             type_def& tf = node->type_def;
@@ -2899,7 +2967,7 @@ type_system::type_system(memory_arena& arena) {
 
         type_constructor* ptr_template = &node->type_def.constructor;
         ptr_template->self = node.get();
-        ptr_template->func = [this](const std::vector<type_constructor_arg>& arg) {
+        ptr_template->func = [this](const std::vector<comptime_value>& arg) {
             auto type_arg = std::get<type_id>(arg.front());
             auto node = make_in_arena<ast_node>(*ast_arena);
             type_def& tf = node->type_def;
@@ -2928,7 +2996,7 @@ type_system::type_system(memory_arena& arena) {
 
         type_constructor* ptr_template = &node->type_def.constructor;
         ptr_template->self = node.get();
-        ptr_template->func = [this](const std::vector<type_constructor_arg>& arg) {
+        ptr_template->func = [this](const std::vector<comptime_value>& arg) {
             auto type_arg = std::get<type_id>(arg.front());
             auto node = make_in_arena<ast_node>(*ast_arena);
             type_def& tf = node->type_def;
@@ -2956,7 +3024,7 @@ type_system::type_system(memory_arena& arena) {
         type_constructor* tuple_template = &node->type_def.constructor;
         tuple_template->self = node.get();
 
-        tuple_template->func = [this, ctor = node.get()](const std::vector<type_constructor_arg>& args) {
+        tuple_template->func = [this, ctor = node.get()](const std::vector<comptime_value>& args) {
             auto node = make_in_arena<ast_node>(*ast_arena);
             type_def& tf = node->type_def;
 
@@ -3004,7 +3072,7 @@ type_system::type_system(memory_arena& arena) {
         type_constructor* arr_template = &node->type_def.constructor;
         arr_template->self = node.get();
 
-        arr_template->func = [this, ctor = node.get()](const std::vector<type_constructor_arg>& args) {
+        arr_template->func = [this, ctor = node.get()](const std::vector<comptime_value>& args) {
             auto node = make_in_arena<ast_node>(*ast_arena);
             type_def& tf = node->type_def;
 
@@ -3037,7 +3105,7 @@ type_system::type_system(memory_arena& arena) {
         type_constructor* slice_template = &node->type_def.constructor;
         slice_template->self = node.get();
 
-        slice_template->func = [this, ctor = node.get()](const std::vector<type_constructor_arg>& args) {
+        slice_template->func = [this, ctor = node.get()](const std::vector<comptime_value>& args) {
             auto node = make_in_arena<ast_node>(*ast_arena);
             type_def& tf = node->type_def;
 
@@ -3069,7 +3137,7 @@ type_system::type_system(memory_arena& arena) {
         type_constructor* func_pointer_template = &node->type_def.constructor;
         func_pointer_template->self = node.get();
 
-        func_pointer_template->func = [this, ctor = node.get()](const std::vector<type_constructor_arg>& args) {
+        func_pointer_template->func = [this, ctor = node.get()](const std::vector<comptime_value>& args) {
             auto node = make_in_arena<ast_node>(*ast_arena);
             type_def& tf = node->type_def;
 
@@ -3126,6 +3194,7 @@ void type_system::process_code_unit(ast_node& node) {
         parent_tree(node);
 
         add_scope(*this, node, scope_kind::code_unit);
+        node.scope.body_node = &node;
         visit_tree(*this, node);
         leave_scope();
     }

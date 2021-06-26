@@ -49,6 +49,11 @@ void add_block_scope(type_system& ts, ast_node& node, ast_node& body_node) {
     node.scope.body_node = &body_node;
 }
 
+void add_type_scope(type_system& ts, ast_node& node, ast_node& body_node) {
+    add_scope(ts, node, scope_kind::type);
+    node.scope.body_node = &body_node;
+}
+
 // enter existing scope
 void enter_scope_local(type_system& ts, ast_node& node) {
     assert(node.scope.kind != scope_kind::invalid);
@@ -118,6 +123,20 @@ bool declare_type_symbol(type_system& ts, scope_def& scope, const string_hash& h
     info.type_index = scope.type_defs.size();
     scope.symbols[hash] = std::make_unique<symbol_info>(info);
     scope.type_defs.push_back(&node.type_def);
+    return true;
+}
+
+bool declare_comptime_symbol(type_system& ts, const string_hash& hash, const comptime_value& value) {
+    auto it = ts.current_scope->symbols.find(hash);
+    if (it != ts.current_scope->symbols.end()) {
+        return false;
+    }
+
+    symbol_info info;
+    info.kind = symbol_kind::comptime;
+    info.scope = ts.current_scope;
+    info.ctvalue = value;
+    ts.current_scope->symbols[hash] = std::make_unique<symbol_info>(info);
     return true;
 }
 

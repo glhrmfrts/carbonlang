@@ -170,7 +170,7 @@ struct parser_impl {
         auto t = TOK;
         switch (t) {
         case token_type::identifier:
-            return parse_var_decl(token_type::let);
+            return parse_arg_decl(token_type::let);
         case token_type::func:
             return parse_func_decl();
         case token_type::type:
@@ -621,7 +621,7 @@ struct parser_impl {
         arena_ptr<ast_node> arg_list{ nullptr, nullptr };
         if (TOK_CHAR == '(') {
             arg_list = parse_arg_list(')', [this]() -> arena_ptr<ast_node> {
-                return parse_var_decl(token_type::let);
+                return parse_arg_decl(token_type::let);
             });
         }
 
@@ -632,7 +632,7 @@ struct parser_impl {
         }
 
         if (arg_list.get()) {
-            return make_type_constructor_node(*ast_arena, pos, std::move(id), std::move(arg_list), std::move(contents));
+            return make_type_constructor_decl_node(*ast_arena, pos, std::move(id), std::move(arg_list), std::move(contents));
         }
         else {
             return make_type_decl_node(*ast_arena, pos, std::move(id), std::move(contents));
@@ -640,7 +640,7 @@ struct parser_impl {
     }
 
     arena_ptr<ast_node> parse_func_arg_decl() {
-        return parse_var_decl(token_type::let);
+        return parse_arg_decl(token_type::let);
     }
 
     arena_ptr<ast_node> parse_func_decl(bool as_expr = false) {
@@ -690,6 +690,33 @@ struct parser_impl {
             return make_func_expr_node(*ast_arena, pos, std::move(id), std::move(arg_list), std::move(ret_type), std::move(body), func_linkage::local_carbon);
         }
         return make_func_decl_node(*ast_arena, pos, std::move(id), std::move(arg_list), std::move(ret_type), std::move(body), func_linkage::local_carbon);
+    }
+
+    arena_ptr<ast_node> parse_arg_decl(token_type kind) {
+        auto pos = lex->pos();
+
+        if (TOK != token_type::identifier) {
+            throw parse_error(filename, lex->pos(), "expected identifier in variable declaration");
+        }
+        auto id = make_identifier_node(*ast_arena, lex->pos(), { lex->string_value() });
+        lex->next();
+
+        arena_ptr<ast_node> var_type{ nullptr, nullptr };
+        if (TOK_CHAR == ':') {
+            lex->next();
+            var_type = parse_type_expr();
+        }
+
+        arena_ptr<ast_node> value{ nullptr, nullptr };
+        if (TOK_CHAR == '=') {
+            lex->next();
+            value = parse_braceless_tuple_expr();
+        }
+        else if (kind != token_type::var && (ctx() == parse_context::root)) {
+            //throw parse_error(filename, lex->pos(), "expected initial value in let declaration");
+        }
+
+        return make_var_decl_node(*ast_arena, pos, kind, std::move(id), std::move(var_type), std::move(value));
     }
 
     arena_ptr<ast_node> parse_var_decl(token_type kind) {

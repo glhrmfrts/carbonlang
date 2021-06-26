@@ -1,0 +1,23 @@
+code_unit{
+  main.cb
+  decl_list{
+    import_decl{ std::io}
+    import_decl{ std::string}
+    import_decl{ std::rawstring}
+          Array      (var_decl{T})      type_expr{struct_type{decl_list{
+            var_decl{data: type_expr{type_qualifier{pointer, T}}}
+            var_decl{len: type_expr{usize}}
+            var_decl{cap: type_expr{usize}}}}}
+    func_decl{main (var_decl{args: }): type_expr{int} {
+        stmt_list{
+          call{println ({* args}.data[0].data)}}
+        decl_list{
+          var_decl{arr: type_expr{type_expr{Array}(type_expr{char})} = init{
+              {arr.data = "Beautiful"}
+              {arr.len = cast_expr{ 10}}
+              {arr.cap = cast_expr{ 10}}
+              }}}
+        stmt_list{
+          call{println (arr.data)}}
+        stmt_list{
+          return{0}}}}}}

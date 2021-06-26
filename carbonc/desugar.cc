@@ -52,7 +52,7 @@ void check_var_decl_ternary_expr(type_system& ts, ast_node& node) {
 
 void check_temp_bool_op(type_system& ts, ast_node& node) {
     if (is_bool_op(node) && !(node.desugar_flags & desugar_flag::bool_op_desugared)) {
-        auto cpy = copy_node_typed(ts, node);
+        auto cpy = copy_node(ts, &node);
         auto [temp, ref] = make_temp_variable_for_bool_op_resolved(ts, std::move(cpy));
         node.desugar_flags |= desugar_flag::bool_op_desugared;
 
@@ -66,7 +66,7 @@ void check_temp_bool_op(type_system& ts, ast_node& node) {
 
 void check_temp_ternary_expr(type_system& ts, ast_node& node) {
     if (node.type == ast_type::ternary_expr && !(node.desugar_flags & desugar_flag::ternary_desugared)) {
-        auto cpy = copy_node_typed(ts, node);
+        auto cpy = copy_node(ts, &node);
         auto [temp, ref] = make_temp_variable_for_ternary_expr_resolved(ts, std::move(cpy));
 
         node.type = ref->type;
@@ -125,7 +125,7 @@ void check_func_return_aggregate_type(type_system& ts, ast_node& func) {
 }
 
 void transform_aggregate_call_into_pointer_argument_helper(type_system& ts, ast_node& receiver, ast_node* call) {
-    auto ref = copy_node(ts, receiver);
+    auto ref = copy_node(ts, &receiver);
     ref->type_id = call->type_id;
 
     auto addr = make_address_of_expr(ts, std::move(ref));

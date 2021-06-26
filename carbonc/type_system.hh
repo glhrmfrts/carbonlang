@@ -8,15 +8,11 @@
 #include "memory.hh"
 #include "common.hh"
 #include "token.hh"
+#include "type_id.hh"
+#include "comptime.hh"
 #include "carbonc.hh"
 
 namespace carbon {
-
-struct ast_node;
-struct scope_def;
-struct type_def;
-struct local_def;
-struct func_def;
 
 enum class func_linkage {
     local_carbon,
@@ -47,18 +43,6 @@ enum class type_kind {
     constructor,
 };
 
-struct type_id {
-    scope_def* scope = nullptr;
-    int type_index = -1;
-
-    bool operator ==(const type_id& other) const { return scope == other.scope && type_index == other.type_index; }
-    bool operator !=(const type_id& other) const { return !(*this == other); }
-
-    type_def& get() const;
-
-    bool valid() const;
-};
-
 struct type_flags {
     using type = unsigned int;
 
@@ -74,8 +58,7 @@ struct struct_field {
     bool operator ==(const struct_field& other) const { return names == other.names && type == other.type && offset == other.offset; }
 };
 
-using type_constructor_arg = std::variant<type_id, int_type, ast_node*>;
-using type_constructor_func = std::function<arena_ptr<ast_node>(const std::vector<type_constructor_arg>&)>;
+using type_constructor_func = std::function<arena_ptr<ast_node>(const std::vector<comptime_value>&)>;
 
 struct type_constructor {
     ast_node* self;
@@ -155,6 +138,7 @@ enum class symbol_kind {
     top_level_func,
     overloaded_func_base,
     type,
+    comptime,
 };
 
 struct symbol_info {
@@ -169,6 +153,9 @@ struct symbol_info {
     
     // if kind == overloaded_func_base
     std::vector<func_def*> overload_funcs;
+
+    // if kind == comptime
+    comptime_value ctvalue;
 };
 
 struct lvalue {
@@ -229,6 +216,7 @@ enum class scope_kind {
     code_unit,
     func_body,
     block,
+    type,
 };
 
 struct scope_def {
@@ -361,15 +349,15 @@ bool compare_types_exact(const type_def& a, const type_def& b);
 
 type_id find_type_by_value(type_system& ts, scope_def& scope, const type_def& tdef);
 
-type_id execute_type_constructor(type_system& ts, scope_def& scope, type_constructor& tpl, const std::vector<type_constructor_arg>& args);
+type_id execute_type_constructor(type_system& ts, scope_def& scope, type_constructor& tpl, const std::vector<comptime_value>& args);
 
-type_id execute_builtin_type_constructor(type_system& ts, type_constructor& tpl, const std::vector<type_constructor_arg>& args);
+type_id execute_builtin_type_constructor(type_system& ts, type_constructor& tpl, const std::vector<comptime_value>& args);
 
-string_hash build_tuple_name(const std::vector<type_constructor_arg>& args);
+string_hash build_tuple_name(const std::vector<comptime_value>& args);
 
-string_hash build_type_constructor_name(const std::string& name, const std::vector<type_constructor_arg>& args);
+string_hash build_type_constructor_name(const std::string& name, const std::vector<comptime_value>& args);
 
-string_hash build_type_constructor_mangled_name(const std::string& mangled_name, const std::vector<type_constructor_arg>& args);
+string_hash build_type_constructor_mangled_name(const std::string& mangled_name, const std::vector<comptime_value>& args);
 
 type_id get_pointer_type_to(type_system& ts, type_id elem_type);
 

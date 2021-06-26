@@ -57,53 +57,76 @@ arena_ptr<ast_node> copy_node_helper(type_system& ts, ast_node& node) {
         return make_string_literal_node(*ts.ast_arena, node.pos, std::move(str));
     }
     else if (node.type == ast_type::field_expr) {
-        return make_field_expr_node(*ts.ast_arena, node.pos, copy_node(ts, *node.children[0]), copy_node(ts, *node.children[1]));
+        return make_field_expr_node(*ts.ast_arena, node.pos, copy_node(ts, node.children[0].get()), copy_node(ts, node.children[1].get()));
     }
     else if (node.type == ast_type::index_expr) {
-        return make_index_expr_node(*ts.ast_arena, node.pos, copy_node(ts, *node.children[0]), copy_node(ts, *node.children[1]));
+        return make_index_expr_node(*ts.ast_arena, node.pos, copy_node(ts, node.children[0].get()), copy_node(ts, node.children[1].get()));
     }
     else if (node.type == ast_type::unary_expr) {
-        return make_unary_expr_node(*ts.ast_arena, node.pos, node.op, copy_node(ts, *node.children[0]));
+        return make_unary_expr_node(*ts.ast_arena, node.pos, node.op, copy_node(ts, node.children[0].get()));
     }
     else if (node.type == ast_type::binary_expr) {
-        return make_binary_expr_node(*ts.ast_arena, node.pos, node.op, copy_node(ts, *node.children[0]), copy_node(ts, *node.children[1]));
+        return make_binary_expr_node(*ts.ast_arena, node.pos, node.op, copy_node(ts, node.children[0].get()), copy_node(ts, node.children[1].get()));
     }
     else if (node.type == ast_type::ternary_expr) {
-        return make_ternary_expr_node(*ts.ast_arena, node.pos, copy_node(ts, *node.children[0]), copy_node(ts, *node.children[1]), copy_node(ts, *node.children[2]));
+        return make_ternary_expr_node(*ts.ast_arena, node.pos, copy_node(ts, node.children[0].get()), copy_node(ts, node.children[1].get()), copy_node(ts, node.children[2].get()));
     }
     else if (node.type == ast_type::cast_expr) {
-        return make_cast_expr_node(*ts.ast_arena, node.pos, copy_node(ts, *node.children[0]), copy_node(ts, *node.children[1]));
+        return make_cast_expr_node(*ts.ast_arena, node.pos, copy_node(ts, node.children[0].get()), copy_node(ts, node.children[1].get()));
     }
     else if (node.type == ast_type::type_resolver) {
         return make_type_resolver_node(*ts.ast_arena, node.type_id);
     }
+    else if (node.type == ast_type::type_expr) {
+        return make_type_expr_node(*ts.ast_arena, node.pos, copy_node(ts, node.children[0].get()));
+    }
+    else if (node.type == ast_type::type_qualifier) {
+        return make_type_qualifier_node(*ts.ast_arena, node.pos, node.type_qual, copy_node(ts, node.children[0].get()));
+    }
+    else if (node.type == ast_type::struct_type) {
+        return make_struct_type_node(*ts.ast_arena, node.pos, copy_node(ts, node.children[0].get()));
+    }
+    else if (node.type == ast_type::var_decl) {
+        return make_var_decl_node(*ts.ast_arena, node.pos, node.op, copy_node(ts, node.children[0].get()), copy_node(ts, node.children[1].get()), copy_node(ts, node.children[2].get()));
+    }
     else if (node.type == ast_type::call_expr) {
-        return make_call_expr_node(*ts.ast_arena, node.pos, copy_node(ts, *node.children[0]), copy_node(ts, *node.children[1]));
+        return make_call_expr_node(*ts.ast_arena, node.pos, copy_node(ts, node.children[0].get()), copy_node(ts, node.children[1].get()));
     }
     else if (node.type == ast_type::arg_list) {
         std::vector<arena_ptr<ast_node>> args;
         for (auto& arg : node.children) {
-            args.push_back(copy_node(ts, *arg));
+            args.push_back(copy_node(ts, arg.get()));
         }
         return make_arg_list_node(*ts.ast_arena, node.pos, std::move(args));
+    }
+    else if (node.type == ast_type::decl_list) {
+        std::vector<arena_ptr<ast_node>> args;
+        for (auto& arg : node.children) {
+            args.push_back(copy_node(ts, arg.get()));
+        }
+        return make_decl_list_node(*ts.ast_arena, node.pos, std::move(args));
+    }
+    else if (node.type == ast_type::stmt_list) {
+        std::vector<arena_ptr<ast_node>> args;
+        for (auto& arg : node.children) {
+            args.push_back(copy_node(ts, arg.get()));
+        }
+        return make_decl_list_node(*ts.ast_arena, node.pos, std::move(args));
     }
     assert(!"copy_node: node type not handled!");
     return { nullptr, nullptr };
 }
 
-arena_ptr<ast_node> copy_node(type_system& ts, ast_node& node) {
-    auto cpy = copy_node_helper(ts, node);
-    //cpy->type_id = node.type_id;
-    for (auto& child : node.pre_children) {
-        assert(child.get());
-        cpy->pre_children.push_back(copy_node(ts, *child));
+arena_ptr<ast_node> copy_node(type_system& ts, ast_node* node) {
+    if (!node) {
+        return { nullptr, nullptr };
     }
-    return cpy;
-}
-
-arena_ptr<ast_node> copy_node_typed(type_system& ts, ast_node& node) {
-    auto cpy = copy_node(ts, node);
-    cpy->type_id = node.type_id;
+    auto cpy = copy_node_helper(ts, *node);
+    cpy->type_id = node->type_id;
+    for (auto& child : node->pre_children) {
+        assert(child.get());
+        cpy->pre_children.push_back(copy_node(ts, child.get()));
+    }
     return cpy;
 }
 
@@ -124,16 +147,16 @@ std::string generate_temp_name() {
 arena_ptr<ast_node> transform_bool_op_into_if_statement(type_system& ts, arena_ptr<ast_node> bop, ast_node& destvar) {
     auto true_node = make_bool_literal_node(*ts.ast_arena, {}, true);
     auto false_node = make_bool_literal_node(*ts.ast_arena, {}, false);
-    auto assign_true = make_binary_expr_node(*ts.ast_arena, {}, token_from_char('='), copy_node(ts, destvar), std::move(true_node));
-    auto assign_false = make_binary_expr_node(*ts.ast_arena, {}, token_from_char('='), copy_node(ts, destvar), std::move(false_node));
+    auto assign_true = make_binary_expr_node(*ts.ast_arena, {}, token_from_char('='), copy_node(ts, &destvar), std::move(true_node));
+    auto assign_false = make_binary_expr_node(*ts.ast_arena, {}, token_from_char('='), copy_node(ts, &destvar), std::move(false_node));
     return make_if_stmt_node(*ts.ast_arena, bop->pos, std::move(bop), std::move(assign_true), std::move(assign_false));
 }
 
 arena_ptr<ast_node> transform_ternary_expr_into_if_statement(type_system& ts, arena_ptr<ast_node> texpr, ast_node& destvar) {
     auto true_node = std::move(texpr->children[ast_node::child_if_body]);
     auto false_node = std::move(texpr->children[ast_node::child_if_else]);
-    auto assign_true = make_binary_expr_node(*ts.ast_arena, {}, token_from_char('='), copy_node(ts, destvar), std::move(true_node));
-    auto assign_false = make_binary_expr_node(*ts.ast_arena, {}, token_from_char('='), copy_node(ts, destvar), std::move(false_node));
+    auto assign_true = make_binary_expr_node(*ts.ast_arena, {}, token_from_char('='), copy_node(ts, &destvar), std::move(true_node));
+    auto assign_false = make_binary_expr_node(*ts.ast_arena, {}, token_from_char('='), copy_node(ts, &destvar), std::move(false_node));
     return make_if_stmt_node(
         *ts.ast_arena,
         texpr->pos,
