@@ -1332,8 +1332,38 @@ void resolve_func_args_type(type_system& ts, ast_node& node) {
 
 // TODO: deduce type from return statements
 
+type_id deduce_func_return_type(type_system& ts, ast_node& f) {
+    if (f.func.return_statements.empty()) {
+        return ts.void_type;
+    }
+
+    auto funcname = node_to_string(*f.var_id());
+
+    type_id ret_type = invalid_type;
+    for (auto& ret : f.func.return_statements) {
+        if (ret->type_id.valid()) {
+            if (ret_type.valid()) {
+                if (is_assignable_to(ts, ret_type, ret->type_id)) {
+                    ret_type = ret->type_id;
+                }
+                else {
+                    // TODO: assume union type
+                    add_type_error(ts, ret->pos, "incompatible return types for function '%s'", funcname.c_str());
+                    complement_error(ts, ret->pos, "previous return statements had type '%s', but this one has type '%s'",
+                        type_to_string(ret_type).c_str(), type_to_string(ret->type_id).c_str());
+                    return invalid_type;
+                }
+            }
+            else {
+                ret_type = ret->type_id;
+            }
+        }
+    }
+    return ret_type;
+}
+
 type_id resolve_func_type(type_system& ts, ast_node& f) {
-    assert(f.func_ret_type() || !"func not declared yet");
+    assert(f.func.self || !"func not declared yet");
 
     auto funcname = node_to_string(*f.var_id());
 
@@ -1342,33 +1372,39 @@ type_id resolve_func_type(type_system& ts, ast_node& f) {
     f.type_def.alignment = sizeof(void*);
     f.type_def.is_signed = false;
 
-    auto ret_type = resolve_node_type(ts, f.func_ret_type());
-    if (!ret_type.valid()) {
-        f.type_error = true;
-        complement_error(ts, f.pos, "in return type of function '%s'", funcname.c_str());
-    }
-
-    if (ret_type.valid()) {
-        if (f.func.return_statements.empty() && ret_type != ts.void_type && f.func.linkage == func_linkage::local_carbon) {
-            add_type_error(ts, f.func_ret_type()->pos,
-                "function '%s' has return type '%s' but no return statements",
-                funcname.c_str(),
-                type_to_string(ret_type).c_str());
+    type_id ret_type = invalid_type;
+    if (f.func_ret_type()) {
+        ret_type = resolve_node_type(ts, f.func_ret_type());
+        if (!ret_type.valid()) {
+            f.type_error = true;
+            complement_error(ts, f.pos, "in return type of function '%s'", funcname.c_str());
         }
-        for (auto retst : f.func.return_statements) {
-            // TODO: check for needed casts
-            if (!is_convertible_to(ts, retst->type_id, ret_type).first) {
-                add_type_error(ts, retst->pos,
-                    "cannot return type '%s' from function '%s' declared returning type '%s'",
-                    type_to_string(retst->type_id).c_str(),
+
+        if (ret_type.valid()) {
+            if (f.func.return_statements.empty() && ret_type != ts.void_type && f.func.linkage == func_linkage::local_carbon) {
+                add_type_error(ts, f.func_ret_type()->pos,
+                    "function '%s' has return type '%s' but no return statements",
                     funcname.c_str(),
                     type_to_string(ret_type).c_str());
-                break;
             }
-            
-            // TODO: better coercion
-            retst->type_id = ret_type;
+            for (auto retst : f.func.return_statements) {
+                // TODO: check for needed casts
+                if (!is_convertible_to(ts, retst->type_id, ret_type).first) {
+                    add_type_error(ts, retst->pos,
+                        "cannot return type '%s' from function '%s' declared returning type '%s'",
+                        type_to_string(retst->type_id).c_str(),
+                        funcname.c_str(),
+                        type_to_string(ret_type).c_str());
+                    break;
+                }
+
+                // TODO: better coercion
+                retst->type_id = ret_type;
+            }
         }
+    }
+    else {
+        ret_type = deduce_func_return_type(ts, f);
     }
     
     if (!f.type_id.valid() && !f.func.args_unresolved && ret_type.valid()) {
@@ -1435,20 +1471,15 @@ void register_func_declaration_node(type_system& ts, ast_node& node) {
     auto& arg_list = node.children[ast_node::child_func_decl_arg_list]->children;
     auto body = node.children[ast_node::child_func_decl_body].get();
 
-    if (!node.func_ret_type()) {
-        auto id_void = make_tuple_type_node(*ts.ast_arena, node.pos, {nullptr, nullptr});
-        auto ret_type = make_type_expr_node(*ts.ast_arena, node.pos, std::move(id_void));
-        node.children[ast_node::child_func_decl_ret_type] = std::move(ret_type);
-    }
-
     node.func.base_symbol = build_identifier_value(node.var_id()->id_parts);
     auto ovbase = find_symbol_in_current_scope(ts, node.func.base_symbol);
     if (!ovbase) {
         declare_overloaded_func_base_symbol(ts, node.func.base_symbol);
     }
 
-    // try to resolve the return type already
-    resolve_node_type(ts, node.func_ret_type());
+    if (node.func_ret_type()) {
+        resolve_node_type(ts, node.func_ret_type());
+    }
 
     if (body) {
         if (body->type != ast_type::compound_stmt) {
@@ -2361,7 +2392,7 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
             //printf("asdqwe\n");
         }
 
-        if (node.children[0]->type_id.valid() && !node.type_id.valid()) {
+        if (node.children[0]->type_id.valid()) {
             auto ltype = node.children[0]->type_id;
             auto stype = ltype;
             

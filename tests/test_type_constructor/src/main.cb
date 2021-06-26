@@ -8,14 +8,13 @@ type Array(T) = struct {
     cap: usize
 }
 
-import std::sequenceutils::SequenceUtils(Array(char))
-import std::sequenceutils::SequenceUtils(Array(int))
+func add(a: int, b: int) {
+    return a + b
+}
 
-type SequenceUtils(T) = 
-
-func main(args: []string): int {
+func main(args: []string) {
     println(args[0].data)
-    let arr : Array(char) = { "Beautiful", 10, 10 }
+    let arr = Array(char){"beautiful", 10, 10}
     println(arr.data)
-    return 0
+    return add(1, 2)
 }

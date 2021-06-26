@@ -12,10 +12,10 @@ code_unit{
           call{copy (newstr, str, size)}
           {newstr[size] = 0}
           return{newstr}}}}
-    func_decl{copy (var_decl{dest: type_expr{type_qualifier{pointer, char}}}, var_decl{src: type_expr{type_qualifier{pointer, char}}}, var_decl{size: type_expr{usize}}): type_expr{tuple_type{}} {
+    func_decl{copy (var_decl{dest: type_expr{type_qualifier{pointer, char}}}, var_decl{src: type_expr{type_qualifier{pointer, char}}}, var_decl{size: type_expr{usize}}) {
         stmt_list{
           call{alloc::copy (cast_expr{type_expr{rawptr} dest}, cast_expr{type_expr{rawptr} src}, size)}}}}
-    func_decl{set (var_decl{dest: type_expr{type_qualifier{pointer, char}}}, var_decl{value: type_expr{char}}, var_decl{count: type_expr{usize}}): type_expr{tuple_type{}} {
+    func_decl{set (var_decl{dest: type_expr{type_qualifier{pointer, char}}}, var_decl{value: type_expr{char}}, var_decl{count: type_expr{usize}}) {
         stmt_list{
           call{alloc::set (cast_expr{type_expr{rawptr} dest}, value, count)}}}}
     func_decl{strlen (var_decl{str: type_expr{type_qualifier{pointer, char}}}): type_expr{usize} {

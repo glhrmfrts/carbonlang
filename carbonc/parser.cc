@@ -1083,9 +1083,11 @@ struct parser_impl {
     }
 
     arena_ptr<ast_node> transform_to_type_expr(arena_ptr<ast_node>&& expr) {
-        if (expr->type == ast_type::index_expr) {
+        if (expr->type == ast_type::call_expr) {
             std::vector<arena_ptr<ast_node>> args;
-            args.push_back(transform_to_type_expr(std::move(expr->children[1])));
+            for (auto& arg : expr->children[1]->children) {
+                args.push_back(transform_to_type_expr(std::move(arg)));
+            }
 
             auto ctor = make_type_constructor_instance_node(*ast_arena, expr->pos,
                 transform_to_type_expr(std::move(expr->children[0])),

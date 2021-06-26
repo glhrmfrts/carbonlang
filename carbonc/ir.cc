@@ -345,7 +345,7 @@ void generate_ir_func(ast_node& node) {
     auto orig_name = node.type_def.name.str;
 
     func.demangled_name = orig_name;
-    func.ret_type = node.func_ret_type()->type_id;
+    func.ret_type = node.type_def.func.ret_type;
 
     if (!node.scope.body_node) {
         func.name = mangled_name;
