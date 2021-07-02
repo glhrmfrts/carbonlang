@@ -2,6 +2,7 @@ import std::io
 import std::string
 import std::rawstring
 
+/*
 type Array(T) = struct {
     data: &T
     len: usize
@@ -20,12 +21,31 @@ func printsome(c) {
     println(c)
 }
 
+func get_count(a: &Array) {
+    printsome(a.data)
+    return a.len
+}
+*/
+
+type Test = struct { n: int }
+
+func make_array(`T, n: int) {
+    return T{ n }
+}
+
 func main(args: []string) {
     println(args[0].data)
+/*
     let arr = Array(char){"beautiful", 10, 10}
     printsome(arr.data)
     let x = sub(3, 2)
     let y = sub(cast(char)10, cast(char)5)
     let d : int = "asdqwe"
-    return add(1, 2)
+
+    let count = get_count(&arr)
+*/
+
+    let t = make_array(`Test, 3)
+
+    return 1
 }

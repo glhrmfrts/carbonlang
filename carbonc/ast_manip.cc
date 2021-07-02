@@ -74,11 +74,17 @@ arena_ptr<ast_node> copy_node_helper(type_system& ts, ast_node& node) {
     else if (node.type == ast_type::cast_expr) {
         return make_cast_expr_node(*ts.ast_arena, node.pos, copy_node(ts, node.children[0].get()), copy_node(ts, node.children[1].get()));
     }
+    else if (node.type == ast_type::init_expr) {
+        return make_init_expr_node(*ts.ast_arena, node.pos, copy_node(ts, node.children[0].get()), copy_node(ts, node.children[1].get()));
+    }
     else if (node.type == ast_type::type_resolver) {
         return make_type_resolver_node(*ts.ast_arena, node.type_id);
     }
     else if (node.type == ast_type::type_expr) {
         return make_type_expr_node(*ts.ast_arena, node.pos, copy_node(ts, node.children[0].get()));
+    }
+    else if (node.type == ast_type::comptime_expr) {
+        return make_comptime_expr_node(*ts.ast_arena, node.pos, copy_node(ts, node.children[0].get()));
     }
     else if (node.type == ast_type::type_qualifier) {
         return make_type_qualifier_node(*ts.ast_arena, node.pos, node.type_qual, copy_node(ts, node.children[0].get()));

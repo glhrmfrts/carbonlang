@@ -4,42 +4,22 @@ code_unit{
     import_decl{ std::io}
     import_decl{ std::string}
     import_decl{ std::rawstring}
-          Array      (var_decl{T})      type_expr{struct_type{decl_list{
-            var_decl{data: type_expr{type_qualifier{pointer, T}}}
-            var_decl{len: type_expr{usize}}
-            var_decl{cap: type_expr{usize}}}}}
-    func_decl{add (var_decl{a: type_expr{int}}, var_decl{b: type_expr{int}}) {
+    type_decl{Test = type_expr{struct_type{decl_list{
+            var_decl{n: type_expr{int}}}}}}
+    func_decl{make_array (T, var_decl{n: type_expr{int}}) {
         stmt_list{
-          return{{a + b}}}}}
-    func_decl{sub (var_decl{a}, var_decl{b}) {
-        stmt_list{
-          return{{a - b}}}}}
-    func_decl{printsome (var_decl{c}) {
-        stmt_list{
-          call{println (c)}}}}
+          return{init{type=type_expr{T} (n)}}}}}
     func_decl{main (var_decl{args: }) {
         stmt_list{
           call{println ({* args}.data[0].data)}}
         decl_list{
-          var_decl{arr = init{type=type_expr{type_expr{Array}(type_expr{char})} 
-              {arr.data = "beautiful"}
-              {arr.len = cast_expr{ 10}}
-              {arr.cap = cast_expr{ 10}}
-              }}}
+          call{make_array ({& t}, Test, 3)}
+          var_decl{t}}
         stmt_list{
-          call{printsome (arr.data)}}
+          return{1}}}}
+    func_decl{make_array (var_decl{$cb_agg_ret: }, var_decl{n: }):  {
         decl_list{
-          var_decl{x = call{sub (3, 2)}}
-          var_decl{y = call{sub (cast_expr{type_expr{char} 10}, cast_expr{type_expr{char} 5})}}
-          var_decl{d: type_expr{int} = "asdqwe"}}
-        stmt_list{
-          return{call{add (1, 2)}}}}}
-    func_decl{printsome (var_decl{c: }) {
-        decl_list{
-          call{println (c)}}}}
-    func_decl{sub (var_decl{a: }, var_decl{b: }) {
-        decl_list{
-          return{{a - b}}}}}
-    func_decl{sub (var_decl{a: }, var_decl{b: }) {
-        decl_list{
-          return{{a - b}}}}}}}
+          {{* $cb_agg_ret} = init{type=type_expr{T} 
+            {{* $cb_agg_ret}.n = n}
+            }}
+          return{$cb_agg_ret}}}}}}

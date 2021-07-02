@@ -345,6 +345,88 @@ type_id get_func_pointer_type_to(type_system& ts, type_id func_type) {
     return execute_type_constructor(ts, ts.builtin_scope->scope, *ts.func_pointer_type_constructor, args);
 }
 
+enum type_query_path_segment
+{
+    invalid,
+    elem_type,
+};
+
+struct type_query
+{
+    type_id result;
+    std::vector<type_query_path_segment> path;
+    std::vector<type_id> history;
+};
+
+void tquery_for_type_kind(type_query& q, type_id root, type_kind k) {
+    if (!root.valid()) { return; }
+
+    if (root.get().kind == k) {
+        q.result = root;
+        return;
+    }
+    switch (root.get().kind) {
+    case type_kind::pointer:
+    case type_kind::array:
+    case type_kind::slice:
+        q.path.push_back(elem_type);
+        q.history.push_back(root);
+        tquery_for_type_kind(q, root.get().elem_type, k);
+        break;
+    }
+}
+
+void tquery_for_type_id(type_query& q, type_id root, type_id target) {
+    if (!root.valid()) { return; }
+
+    if (root == target) {
+        q.result = root;
+        return;
+    }
+    switch (root.get().kind) {
+    case type_kind::pointer:
+    case type_kind::array:
+    case type_kind::slice:
+        q.path.push_back(elem_type);
+        q.history.push_back(root);
+        tquery_for_type_id(q, root.get().elem_type, target);
+        break;
+    }
+}
+
+void tquery_for_type_with_constructor(type_query& q, type_id root, type_id ctor) {
+    if (!root.valid()) { return; }
+
+    if (root.get().constructor_type == ctor) {
+        q.result = root;
+        return;
+    }
+    switch (root.get().kind) {
+    case type_kind::pointer:
+    case type_kind::array:
+    case type_kind::slice:
+        q.path.push_back(elem_type);
+        q.history.push_back(root);
+        tquery_for_type_with_constructor(q, root.get().elem_type, ctor);
+        break;
+    }
+}
+
+
+bool tquery_path_equal(const type_query& a, const type_query& b) {
+    if (a.path.size() != b.path.size()) return false;
+
+    return a.path == b.path;
+}
+
+bool tquery_equal(const type_query& a, const type_query& b) {
+    if (!(a.result == b.result)) return false;
+    if (a.history.size() != b.history.size()) return false;
+    if (a.path.size() != b.path.size()) return false;
+
+    return a.history == b.history && a.path == b.path;
+}
+
 // is A assignable to B?
 bool is_assignable_to(type_system& ts, type_id a, type_id b) {
     if (a == invalid_type || b == invalid_type) return false;
@@ -1462,12 +1544,25 @@ void declare_func_arguments(type_system& ts, ast_node& func) {
     }
 }
 
-bool is_func_generic(ast_node& func) {
+bool is_func_generic(type_system& ts, ast_node& func) {
     auto& arg_list = func.func_args();
     for (auto& arg : arg_list) {
+        if (arg->type == ast_type::comptime_expr) {
+            return true;
+        }
+
         assert(arg->type == ast_type::var_decl);
 
         if (!arg->var_type()) {
+            return true;
+        }
+        
+        auto tid = resolve_node_type(ts, arg->var_type());
+
+        type_query cq{};
+        tquery_for_type_kind(cq, tid, type_kind::constructor);
+
+        if (cq.result.valid() && cq.result.get().kind == type_kind::constructor) {
             return true;
         }
     }
@@ -1475,10 +1570,6 @@ bool is_func_generic(ast_node& func) {
 }
 
 void register_func_declaration_node(type_system& ts, ast_node& node) {
-    node.scope.self = &node;
-    node.func.self = &node;
-    node.local.self = &node;
-
     auto& id = node.children[ast_node::child_func_decl_id];
     auto& arg_list = node.children[ast_node::child_func_decl_arg_list]->children;
     auto body = node.children[ast_node::child_func_decl_body].get();
@@ -1513,8 +1604,12 @@ void register_func_declaration_node(type_system& ts, ast_node& node) {
         }
     }
 
-    node.func.is_generic = is_func_generic(node);
+    node.func.is_generic = is_func_generic(ts, node);
     if (!node.func.is_generic) {
+        node.scope.self = &node;
+        node.func.self = &node;
+        node.local.self = &node;
+
         if (body) {
             body->parent = &node;
             add_func_scope(ts, node, *body);
@@ -1536,7 +1631,13 @@ void register_func_declaration_node(type_system& ts, ast_node& node) {
     }
     else {
         node.func.is_generic = true;
-        ovbase->generic_funcs.push_back(&node.func);
+        if (!node.func.self) {
+            ovbase->generic_funcs.push_back(&node.func);
+        }
+
+        node.scope.self = &node;
+        node.func.self = &node;
+        node.local.self = &node;
     }
 }
 
@@ -1550,14 +1651,78 @@ arena_ptr<ast_node> generate_func_for_arguments(type_system& ts, ast_node& gnode
 
     auto prev_scope = ts.current_scope;
     ts.current_scope = gnode.func.decl_scope;
-    scope_guard _{ [&]() { ts.current_scope = prev_scope;  } };
+    scope_guard _{ [&]() { ts.current_scope = prev_scope; } };
+
+    add_type_scope(ts, *node, *node);
+    scope_guard __{ [&]() { leave_scope_local(ts); } };
+
+    std::vector<ast_node*> passed_args;
+
+    // Pre-process compile-time arguments
+    {
+        auto& old_arg_list = node->children[ast_node::child_func_decl_arg_list]->children;
+        std::vector<arena_ptr<ast_node>> new_arg_list;
+
+        for (std::size_t i = 0; i < old_arg_list.size(); i++) {
+            auto& argdecl = old_arg_list[i];
+            if (argdecl->type == ast_type::comptime_expr) {
+                if (!(args[i]->type == ast_type::comptime_expr)) {
+                    add_type_error(ts, args[i]->pos, "not a compile-time expression");
+                    complement_error(ts, gnode.pos, "function '%s' expects a compile-time expression for it's #%d argument",
+                        gnode.func.base_symbol.str.c_str(), i + 1);
+                    return { nullptr, nullptr };
+                }
+
+                type_id expected_comp_type = ts.type_type;
+                ast_node* id_node = nullptr;
+                if (argdecl->children[0]->type == ast_type::identifier) {
+                    expected_comp_type = ts.type_type;
+                    id_node = argdecl->children[0].get();
+                }
+
+                if (expected_comp_type == args[i]->type_id && expected_comp_type == ts.type_type) {
+                    declare_comptime_symbol(ts, build_identifier_value(id_node->id_parts), args[i]->children[0]->type_id);
+                }
+            }
+            else {
+                new_arg_list.push_back(std::move(argdecl));
+                passed_args.push_back(args[i].get());
+            }
+        }
+
+        node->children[ast_node::child_func_decl_arg_list]->children = std::move(new_arg_list);
+    }
 
     auto& arg_list = node->children[ast_node::child_func_decl_arg_list]->children;
     for (std::size_t i = 0; i < arg_list.size(); i++) {
         auto& argdecl = arg_list[i];
 
+        if (argdecl->var_type()) {
+            resolve_node_type(ts, argdecl->var_type());
+
+            auto& tid = argdecl->var_type()->type_id;
+
+            type_query cq{};
+            tquery_for_type_kind(cq, tid, type_kind::constructor);
+
+            if (cq.result.valid() && cq.result.get().kind == type_kind::constructor) {
+                type_query aq{};
+                tquery_for_type_with_constructor(aq, passed_args[i]->type_id, cq.result);
+
+                if (!tquery_path_equal(aq, cq)) {
+                    add_type_error(ts, passed_args[i]->pos, "argument type '%s' does not have constructor type '%s'",
+                        type_to_string(passed_args[i]->type_id).c_str(),
+                        type_to_string(cq.result).c_str());
+                    complement_error(ts, gnode.pos, "requested constructor type '%s' in declaration of function '%s'",
+                        type_to_string(cq.result).c_str(),
+                        gnode.func.base_symbol.str.c_str());
+                    return {nullptr, nullptr};
+                }
+            }
+        }
+        
         // TODO: declare comptime symbol if declaration has comptime expression for the type
-        argdecl->children[ast_node::child_var_decl_type] = make_type_resolver_node(*ts.ast_arena, args[i]->type_id);
+        argdecl->children[ast_node::child_var_decl_type] = make_type_resolver_node(*ts.ast_arena, passed_args[i]->type_id);
     }
 
     auto body = node->children[ast_node::child_func_decl_body].get();
@@ -2150,6 +2315,19 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
         if (!node.type_id.valid()) {
             auto str = node_to_string(node);
             unk_type_error(ts, node.type_id, node.pos, "unknown type '%s'", str.c_str());
+        }
+        break;
+    }
+    case ast_type::comptime_expr: {
+        if (ts.pass != type_system_pass::perform_checks && node.type_id != invalid_type) return node.type_id;
+
+        auto tid = get_type_expr_node_type(ts, *node.children[0]);
+        if (tid.valid()) {
+            node.type_id = ts.type_type;
+            node.type_error = false;
+        }
+        else {
+            add_type_error(ts, node.pos, "invalid compile-time expression");
         }
         break;
     }

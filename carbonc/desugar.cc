@@ -220,6 +220,8 @@ void desugar(type_system& ts, ast_node* nodeptr) {
         break;
     }
     case ast_type::call_expr: {
+        if (ts.subpass < 1) { break; }
+
         for (int i = 0; i < node.call_args().size(); i++) {
             check_call_arg_aggregate_type(ts, node, i);
             check_temp_bool_op(ts, *(node.call_args()[i]));
@@ -235,6 +237,8 @@ void desugar(type_system& ts, ast_node* nodeptr) {
         break;
     }
     case ast_type::init_expr: {
+        if (ts.subpass < 1) { break; }
+
         for (auto& as : node.initlist.assignments) {
             visit_tree(ts, *as);
         }
@@ -242,6 +246,8 @@ void desugar(type_system& ts, ast_node* nodeptr) {
         break;
     }
     case ast_type::binary_expr: {
+        if (ts.subpass < 1) { break; }
+
         if (token_to_char(node.op) == '=') {
             check_assignment_bool_op(ts, node);
             check_assignment_ternary_expr(ts, node);
@@ -269,6 +275,7 @@ void desugar(type_system& ts, ast_node* nodeptr) {
         break;
     }
     case ast_type::ternary_expr: {
+        if (ts.subpass < 1) { break; }
         check_temp_ternary_expr(ts, *node.children[1]);
         check_temp_bool_op(ts, *node.children[1]);
         check_temp_ternary_expr(ts, *node.children[2]);
@@ -278,6 +285,7 @@ void desugar(type_system& ts, ast_node* nodeptr) {
         break;
     }
     case ast_type::var_decl: {
+        if (ts.subpass < 1) { break; }
         check_var_decl_bool_op(ts, node);
         check_var_decl_ternary_expr(ts, node);
         visit_pre_children(ts, node);
@@ -286,6 +294,7 @@ void desugar(type_system& ts, ast_node* nodeptr) {
         break;
     }
     case ast_type::return_stmt: {
+        if (ts.subpass < 1) { break; }
         if (node.children[0]) { 
             check_temp_bool_op(ts, *node.children[0]);
             check_temp_ternary_expr(ts, *node.children[0]);
