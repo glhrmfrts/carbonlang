@@ -27,10 +27,39 @@ func get_count(a: &Array) {
 }
 */
 
-type Test = struct { n: int }
+type array(T) = struct {
+    data: &T
+    len: usize
+    cap: usize
+}
 
-func make_array(`T, n: int) {
-    return T{ n }
+func make_array(`T, initial_capacity: usize) {
+    var cap = initial_capacity
+    if (cap == 0) {
+        cap = 1
+    }
+
+    return array(T){
+        cast(&T)alloc::alloc(initial_capacity*sizeof(T)),
+        0,
+        initial_capacity,
+    }
+}
+
+func append(a: &array, elem) {
+    //if (a.len == a.cap) {
+        //a.grow_capacity(a.cap*2)
+    //}
+    a.nth(a.len) = elem
+    a.len = a.len + 1
+}
+
+func nth(a: &array, i: int) {
+    return &(a.data[i])
+}
+
+func dispose(a: &array) {
+    alloc::dealloc(a.data)
 }
 
 func main(args: []string) {
@@ -45,7 +74,9 @@ func main(args: []string) {
     let count = get_count(&arr)
 */
 
-    let t = make_array(`Test, 3)
-
-    return 1
+    let arr = make_array(`int, 10)
+    arr.append(1)
+    arr.append(2)
+    arr.append(3)
+    return arr.len
 }

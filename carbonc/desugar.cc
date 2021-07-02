@@ -1,6 +1,7 @@
 #include "ast_manip.hh"
 #include "scope.hh"
 #include "desugar.hh"
+#include <cassert>
 
 namespace carbon {
 
@@ -125,6 +126,8 @@ void check_func_return_aggregate_type(type_system& ts, ast_node& func) {
 }
 
 void transform_aggregate_call_into_pointer_argument_helper(type_system& ts, ast_node& receiver, ast_node* call) {
+    assert(call->type_id.valid());
+
     auto ref = copy_node(ts, &receiver);
     ref->type_id = call->type_id;
 
@@ -146,6 +149,8 @@ arena_ptr<ast_node> transform_aggregate_call_into_pointer_argument(type_system& 
 
 void check_assignment_aggregate_call(type_system& ts, ast_node& node) {
     if (is_aggregate_type(node.type_id) && node.bin_right() && node.bin_right()->type == ast_type::call_expr) {
+        if (node.var_value()->call.flags & call_flag::is_aggregate_return) { return; }
+
         auto call = transform_aggregate_call_into_pointer_argument(ts, *node.bin_left(), std::move(node.children[1]));
         node.pre_children.push_back(std::move(call));
     }
@@ -153,6 +158,8 @@ void check_assignment_aggregate_call(type_system& ts, ast_node& node) {
 
 void check_var_decl_aggregate_call(type_system& ts, ast_node& node) {
     if (is_aggregate_type(node.type_id) && node.var_value() && node.var_value()->type == ast_type::call_expr) {
+        if (node.var_value()->call.flags & call_flag::is_aggregate_return) { return; }
+
         auto call = transform_aggregate_call_into_pointer_argument(ts, *node.var_id(), std::move(node.children[ast_node::child_var_decl_value]));
         node.pre_children.push_back(std::move(call));
     }
@@ -231,7 +238,7 @@ void desugar(type_system& ts, ast_node* nodeptr) {
         visit_pre_children(ts, node);
         visit_children(ts, node);
 
-        if (ts.subpass == 1) {
+        if (ts.subpass == 2) {
             check_temp_aggregate_call(ts, node);
         }
         break;

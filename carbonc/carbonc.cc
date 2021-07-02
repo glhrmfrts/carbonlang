@@ -182,7 +182,7 @@ int run_project_mode(int argc, const char* argv[]) {
             // TODO: please
             std::cerr << "----------------------------------------------------------------------------------\n";
             std::string src;
-            if (!read_file_text(err.filename, src)) return 1;
+            if (!read_file_text(err.filename, src)) continue;
 
             std::cerr << err.msg << "";
             auto line = get_source_code_near(src, err.pos);
