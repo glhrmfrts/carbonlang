@@ -1,12 +1,15 @@
 global cb__Nmain__Nmain__Aptr__Tslice__TU_string
-global cb__Nmain__Nmake_array__Aptr__TU_Test__Aint
+global cb__Nmain__Nmake_array__int__Aptr__TU_array__Tint__Ausize
+global cb__Nmain__Nappend__Aptr__TU_array__Tint__Aint
+global cb__Nmain__Nnth__Aptr__TU_array__Tint__Ausize
+global cb__Nmain__Ndispose__Aptr__TU_array__Tint
 global cb__Ninit__Ninit_command_line__Aptr__Tslice__TU_string
 global cb__Ninit__Nfree_command_line__Aptr__Tslice__TU_string
 global carbon_main
 global cb__Nstd__Nalloc__Nalloc__Ausize
-global cb__Nstd__Nalloc__Nfree__Arawptr
-global cb__Nstd__Nalloc__Ncopy__Arawptr__Arawptr__Ausize
-global cb__Nstd__Nalloc__Nset__Arawptr__Achar__Ausize
+global cb__Nstd__Nalloc__Nfree__Apointer
+global cb__Nstd__Nalloc__Ncopy__Apointer__Apointer__Ausize
+global cb__Nstd__Nalloc__Nset__Apointer__Achar__Ausize
 global cb__Nstd__Nio__Nprintln__Aptr__Tchar
 extern puts
 extern putc
@@ -33,11 +36,12 @@ cb__Nmain__Nmain__Aptr__Tslice__TU_string:
  ;func main([]string): int
  mov qword [rsp+8],rcx
  push rbp
+ push rbx
  mov rbp,rsp
- sub rsp,32
+ sub rsp,88
  ;prolog end
 
- mov rax,qword [rbp+16]
+ mov rax,qword [rbp+24]
  ;ir_deref A0;
 
  mov rax,qword [rax+0]
@@ -52,25 +56,186 @@ cb__Nmain__Nmain__Aptr__Tslice__TU_string:
  call cb__Nstd__Nio__Nprintln__Aptr__Tchar
  ;ir_call cb__Nstd__Nio__Nprintln__Aptr__Tchar [ST . 0];
 
- lea rax,dword [rbp-4]
+ lea rax,qword [rbp-24]
  ;ir_load_addr L0;
 
- mov edx,3
+ mov edx,10
  mov rcx,rax
- call cb__Nmain__Nmake_array__Aptr__TU_Test__Aint
- ;ir_call cb__Nmain__Nmake_array__Aptr__TU_Test__Aint ST 3;
+ call cb__Nmain__Nmake_array__int__Aptr__TU_array__Tint__Ausize
+ ;ir_call cb__Nmain__Nmake_array__int__Aptr__TU_array__Tint__Ausize ST 10;
 
- mov eax,1
- ;ir_return 1;
+ lea rax,qword [rbp-48]
+ ;ir_load_addr L1;
+
+ mov edx,10
+ mov rcx,rax
+ call cb__Nmain__Nmake_array__int__Aptr__TU_array__Tint__Ausize
+ ;ir_call cb__Nmain__Nmake_array__int__Aptr__TU_array__Tint__Ausize ST 10;
+
+ mov r10,0
+ mov qword [rbp-56],r10
+ ;ir_load L2 0;
+
+ lea rax,qword [rbp-24]
+ ;ir_load_addr L0;
+
+ mov edx,1
+ mov rcx,rax
+ call cb__Nmain__Nappend__Aptr__TU_array__Tint__Aint
+ ;ir_call cb__Nmain__Nappend__Aptr__TU_array__Tint__Aint ST 1;
+
+ lea rax,qword [rbp-24]
+ ;ir_load_addr L0;
+
+ mov edx,2
+ mov rcx,rax
+ call cb__Nmain__Nappend__Aptr__TU_array__Tint__Aint
+ ;ir_call cb__Nmain__Nappend__Aptr__TU_array__Tint__Aint ST 2;
+
+ mov r10,qword [rbp-8]
+ mov ebx,r10d
+ ;ir_cast [L0 . 2];
+
+ lea rax,qword [rbp-48]
+ ;ir_load_addr L1;
+
+ mov rcx,rax
+ call cb__Nmain__Ndispose__Aptr__TU_array__Tint
+ ;ir_call cb__Nmain__Ndispose__Aptr__TU_array__Tint ST;
+
+ lea rax,qword [rbp-24]
+ ;ir_load_addr L0;
+
+ mov rcx,rax
+ call cb__Nmain__Ndispose__Aptr__TU_array__Tint
+ ;ir_call cb__Nmain__Ndispose__Aptr__TU_array__Tint ST;
+
+ mov eax,ebx
+ ;ir_return ST;
 
 cb__Nmain__Nmain__Aptr__Tslice__TU_string$end:
- add rsp,32
+ add rsp,88
+ pop rbx
  pop rbp
  ret
 
 
-cb__Nmain__Nmake_array__Aptr__TU_Test__Aint:
- ;func make_array(&Test, int): &Test
+cb__Nmain__Nmake_array__int__Aptr__TU_array__Tint__Ausize:
+ ;func make_array(&array(int), usize): &array(int)
+ mov qword [rsp+16],rdx
+ mov qword [rsp+8],rcx
+ push rbp
+ push rbx
+ mov rbp,rsp
+ sub rsp,40
+ ;prolog end
+
+ mov r10,qword [rbp+32]
+ mov qword [rbp-8],r10
+ ;ir_load L0 A1;
+
+ mov r10,qword [rbp-8]
+ cmp r10,0
+ jne cb__Nmain__Nmake_array__int__Aptr__TU_array__Tint__Ausize$if240$else
+ ;ir_jmp_neq L0 0 cb__Nmain__Nmake_array__int__Aptr__TU_array__Tint__Ausize$if240$else;
+
+cb__Nmain__Nmake_array__int__Aptr__TU_array__Tint__Ausize$if240$body:
+ ;ir_make_label cb__Nmain__Nmake_array__int__Aptr__TU_array__Tint__Ausize$if240$body;
+
+ mov r10d,1
+ mov qword [rbp-8],r10
+ ;ir_load L0 1;
+
+cb__Nmain__Nmake_array__int__Aptr__TU_array__Tint__Ausize$if240$else:
+ ;ir_make_label cb__Nmain__Nmake_array__int__Aptr__TU_array__Tint__Ausize$if240$else;
+
+ mov rbx,qword [rbp+24]
+ ;ir_deref A0;
+
+ mov r10,4
+ imul r10,qword [rbp-8]
+ mov rax,r10
+ ;ir_mul 4 L0;
+
+ mov rcx,rax
+ call cb__Nstd__Nalloc__Nalloc__Ausize
+ ;ir_call cb__Nstd__Nalloc__Nalloc__Ausize ST;
+
+ mov qword [rbx+0],rax
+ ;ir_load [ST . 0] ST;
+
+ mov rax,qword [rbp+24]
+ ;ir_deref A0;
+
+ mov r10,qword [rbp-8]
+ mov qword [rax+8],r10
+ ;ir_load [ST . 1] L0;
+
+ mov rax,qword [rbp+24]
+ ;ir_deref A0;
+
+ mov r10d,0
+ mov qword [rax+16],r10
+ ;ir_load [ST . 2] 0;
+
+ mov rax,qword [rbp+24]
+ ;ir_return A0;
+
+cb__Nmain__Nmake_array__int__Aptr__TU_array__Tint__Ausize$end:
+ add rsp,40
+ pop rbx
+ pop rbp
+ ret
+
+
+cb__Nmain__Nappend__Aptr__TU_array__Tint__Aint:
+ ;func append(&array(int), int): {}
+ mov dword [rsp+16],edx
+ mov qword [rsp+8],rcx
+ push rbp
+ push rbx
+ mov rbp,rsp
+ sub rsp,24
+ ;prolog end
+
+ mov rax,qword [rbp+24]
+ ;ir_deref A0;
+
+ mov rdx,qword [rax+16]
+ mov rcx,qword [rbp+24]
+ call cb__Nmain__Nnth__Aptr__TU_array__Tint__Ausize
+ ;ir_call cb__Nmain__Nnth__Aptr__TU_array__Tint__Ausize A0 [ST . 2];
+
+ mov rax,rax
+ ;ir_deref ST;
+
+ mov r10d,dword [rbp+32]
+ mov dword [rax],r10d
+ ;ir_load ST A1;
+
+ mov rbx,qword [rbp+24]
+ ;ir_deref A0;
+
+ mov rax,qword [rbp+24]
+ ;ir_deref A0;
+
+ mov r10,qword [rax+16]
+ add r10,1
+ mov rax,r10
+ ;ir_add [ST . 2] 1;
+
+ mov qword [rbx+16],rax
+ ;ir_load [ST . 2] ST;
+
+cb__Nmain__Nappend__Aptr__TU_array__Tint__Aint$end:
+ add rsp,24
+ pop rbx
+ pop rbp
+ ret
+
+
+cb__Nmain__Nnth__Aptr__TU_array__Tint__Ausize:
+ ;func nth(&array(int), usize): &int
  push rbp
  mov rbp,rsp
  ;prolog end
@@ -78,13 +243,40 @@ cb__Nmain__Nmake_array__Aptr__TU_Test__Aint:
  mov rax,rcx
  ;ir_deref A0;
 
- mov dword [rax+0],edx
- ;ir_load [ST . 0] A1;
+ mov rax,qword [rax+0]
+ ;ir_deref [ST . 0];
 
- mov rax,rcx
- ;ir_return A0;
+ mov r10,rdx
+ lea rax,dword [rax+r10*4]
+ ;ir_index ST A1;
 
-cb__Nmain__Nmake_array__Aptr__TU_Test__Aint$end:
+ lea rax,dword [rax+0]
+ ;ir_load_addr ST;
+
+ ;ir_return ST;
+
+cb__Nmain__Nnth__Aptr__TU_array__Tint__Ausize$end:
+ pop rbp
+ ret
+
+
+cb__Nmain__Ndispose__Aptr__TU_array__Tint:
+ ;func dispose(&array(int)): {}
+ mov qword [rsp+8],rcx
+ push rbp
+ mov rbp,rsp
+ sub rsp,16
+ ;prolog end
+
+ mov rax,qword [rbp+16]
+ ;ir_deref A0;
+
+ mov rcx,qword [rax+0]
+ call cb__Nstd__Nalloc__Nfree__Apointer
+ ;ir_call cb__Nstd__Nalloc__Nfree__Apointer [ST . 0];
+
+cb__Nmain__Ndispose__Aptr__TU_array__Tint$end:
+ add rsp,16
  pop rbp
  ret
 
@@ -104,7 +296,7 @@ cb__Ninit__Ninit_command_line__Aptr__Tslice__TU_string:
  mov qword [rbp-8],rax
  ;ir_load L0 ST;
 
- mov ecx,16
+ mov rcx,16
  call cb__Nstd__Nalloc__Nalloc__Ausize
  ;ir_call cb__Nstd__Nalloc__Nalloc__Ausize 16;
 
@@ -181,8 +373,8 @@ cb__Ninit__Nfree_command_line__Aptr__Tslice__TU_string:
  ;ir_deref A0;
 
  mov rcx,qword [rax+0]
- call cb__Nstd__Nalloc__Nfree__Arawptr
- ;ir_call cb__Nstd__Nalloc__Nfree__Arawptr [ST . 0];
+ call cb__Nstd__Nalloc__Nfree__Apointer
+ ;ir_call cb__Nstd__Nalloc__Nfree__Apointer [ST . 0];
 
 cb__Ninit__Nfree_command_line__Aptr__Tslice__TU_string$end:
  add rsp,16
@@ -251,7 +443,7 @@ carbon_main$end:
 
 
 cb__Nstd__Nalloc__Nalloc__Ausize:
- ;func alloc(usize): rawptr
+ ;func alloc(usize): pointer
  mov qword [rsp+8],rcx
  push rbp
  mov rbp,rsp
@@ -275,8 +467,8 @@ cb__Nstd__Nalloc__Nalloc__Ausize$end:
  ret
 
 
-cb__Nstd__Nalloc__Nfree__Arawptr:
- ;func free(rawptr): {}
+cb__Nstd__Nalloc__Nfree__Apointer:
+ ;func free(pointer): {}
  mov qword [rsp+8],rcx
  push rbp
  mov rbp,rsp
@@ -294,14 +486,14 @@ cb__Nstd__Nalloc__Nfree__Arawptr:
 
  ;ir_noop ST;
 
-cb__Nstd__Nalloc__Nfree__Arawptr$end:
+cb__Nstd__Nalloc__Nfree__Apointer$end:
  add rsp,32
  pop rbp
  ret
 
 
-cb__Nstd__Nalloc__Ncopy__Arawptr__Arawptr__Ausize:
- ;func copy(rawptr, rawptr, usize): {}
+cb__Nstd__Nalloc__Ncopy__Apointer__Apointer__Ausize:
+ ;func copy(pointer, pointer, usize): {}
  push rbp
  mov rbp,rsp
  ;prolog end
@@ -317,13 +509,13 @@ rep movsb
 pop rsi
 pop rdi
     
-cb__Nstd__Nalloc__Ncopy__Arawptr__Arawptr__Ausize$end:
+cb__Nstd__Nalloc__Ncopy__Apointer__Apointer__Ausize$end:
  pop rbp
  ret
 
 
-cb__Nstd__Nalloc__Nset__Arawptr__Achar__Ausize:
- ;func set(rawptr, char, usize): {}
+cb__Nstd__Nalloc__Nset__Apointer__Achar__Ausize:
+ ;func set(pointer, char, usize): {}
  push rbp
  mov rbp,rsp
  ;prolog end
@@ -337,7 +529,7 @@ rep stosb
 
 pop rdi
     
-cb__Nstd__Nalloc__Nset__Arawptr__Achar__Ausize$end:
+cb__Nstd__Nalloc__Nset__Apointer__Achar__Ausize$end:
  pop rbp
  ret
 
@@ -447,8 +639,8 @@ cb__Nstd__Nrawstring__Ncopy__Aptr__Tchar__Aptr__Tchar__Ausize:
  mov r8,qword [rbp+32]
  mov rdx,qword [rbp+24]
  mov rcx,qword [rbp+16]
- call cb__Nstd__Nalloc__Ncopy__Arawptr__Arawptr__Ausize
- ;ir_call cb__Nstd__Nalloc__Ncopy__Arawptr__Arawptr__Ausize A0 A1 A2;
+ call cb__Nstd__Nalloc__Ncopy__Apointer__Apointer__Ausize
+ ;ir_call cb__Nstd__Nalloc__Ncopy__Apointer__Apointer__Ausize A0 A1 A2;
 
 cb__Nstd__Nrawstring__Ncopy__Aptr__Tchar__Aptr__Tchar__Ausize$end:
  add rsp,32
@@ -469,8 +661,8 @@ cb__Nstd__Nrawstring__Nset__Aptr__Tchar__Achar__Ausize:
  mov r8,qword [rbp+32]
  mov dl,byte [rbp+24]
  mov rcx,qword [rbp+16]
- call cb__Nstd__Nalloc__Nset__Arawptr__Achar__Ausize
- ;ir_call cb__Nstd__Nalloc__Nset__Arawptr__Achar__Ausize A0 A1 A2;
+ call cb__Nstd__Nalloc__Nset__Apointer__Achar__Ausize
+ ;ir_call cb__Nstd__Nalloc__Nset__Apointer__Achar__Ausize A0 A1 A2;
 
 cb__Nstd__Nrawstring__Nset__Aptr__Tchar__Achar__Ausize$end:
  add rsp,32
@@ -485,15 +677,15 @@ cb__Nstd__Nrawstring__Nstrlen__Aptr__Tchar:
  sub rsp,16
  ;prolog end
 
- mov r10d,0
+ mov r10,0
  mov qword [rbp-8],r10
  ;ir_load L0 0;
 
  mov qword [rbp-16],rcx
  ;ir_load L1 A0;
 
-cb__Nstd__Nrawstring__Nstrlen__Aptr__Tchar$w613$cond:
- ;ir_make_label cb__Nstd__Nrawstring__Nstrlen__Aptr__Tchar$w613$cond;
+cb__Nstd__Nrawstring__Nstrlen__Aptr__Tchar$w843$cond:
+ ;ir_make_label cb__Nstd__Nrawstring__Nstrlen__Aptr__Tchar$w843$cond;
 
  mov rax,qword [rbp-16]
  ;ir_deref L1;
@@ -502,11 +694,11 @@ cb__Nstd__Nrawstring__Nstrlen__Aptr__Tchar$w613$cond:
  ;ir_cast ST;
 
  cmp eax,0
- je cb__Nstd__Nrawstring__Nstrlen__Aptr__Tchar$w613$end
- ;ir_jmp_eq ST 0 cb__Nstd__Nrawstring__Nstrlen__Aptr__Tchar$w613$end;
+ je cb__Nstd__Nrawstring__Nstrlen__Aptr__Tchar$w843$end
+ ;ir_jmp_eq ST 0 cb__Nstd__Nrawstring__Nstrlen__Aptr__Tchar$w843$end;
 
-cb__Nstd__Nrawstring__Nstrlen__Aptr__Tchar$w613$body:
- ;ir_make_label cb__Nstd__Nrawstring__Nstrlen__Aptr__Tchar$w613$body;
+cb__Nstd__Nrawstring__Nstrlen__Aptr__Tchar$w843$body:
+ ;ir_make_label cb__Nstd__Nrawstring__Nstrlen__Aptr__Tchar$w843$body;
 
  mov r10,qword [rbp-16]
  add r10,1
@@ -524,11 +716,11 @@ cb__Nstd__Nrawstring__Nstrlen__Aptr__Tchar$w613$body:
  mov qword [rbp-8],rax
  ;ir_load L0 ST;
 
- jmp cb__Nstd__Nrawstring__Nstrlen__Aptr__Tchar$w613$cond
- ;ir_jmp cb__Nstd__Nrawstring__Nstrlen__Aptr__Tchar$w613$cond;
+ jmp cb__Nstd__Nrawstring__Nstrlen__Aptr__Tchar$w843$cond
+ ;ir_jmp cb__Nstd__Nrawstring__Nstrlen__Aptr__Tchar$w843$cond;
 
-cb__Nstd__Nrawstring__Nstrlen__Aptr__Tchar$w613$end:
- ;ir_make_label cb__Nstd__Nrawstring__Nstrlen__Aptr__Tchar$w613$end;
+cb__Nstd__Nrawstring__Nstrlen__Aptr__Tchar$w843$end:
+ ;ir_make_label cb__Nstd__Nrawstring__Nstrlen__Aptr__Tchar$w843$end;
 
  mov rax,qword [rbp-8]
  ;ir_return L0;
@@ -559,18 +751,18 @@ cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar:
  ;ir_call cb__Nstd__Nrawstring__Nstrlen__Aptr__Tchar A1;
 
  cmp rbx,rax
- je cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$if645$else
- ;ir_jmp_eq ST ST cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$if645$else;
+ je cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$if875$else
+ ;ir_jmp_eq ST ST cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$if875$else;
 
-cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$if645$body:
- ;ir_make_label cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$if645$body;
+cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$if875$body:
+ ;ir_make_label cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$if875$body;
 
  mov al,0
  jmp cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$end
  ;ir_return 0;
 
-cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$if645$else:
- ;ir_make_label cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$if645$else;
+cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$if875$else:
+ ;ir_make_label cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$if875$else;
 
  mov r10d,0
  mov dword [rbp-16],r10d
@@ -587,18 +779,18 @@ cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$if645$else:
  mov dword [rbp-24],r10d
  ;ir_load L2 [L0 . 0];
 
-cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$f669$cond:
- ;ir_make_label cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$f669$cond;
+cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$f899$cond:
+ ;ir_make_label cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$f899$cond;
 
  movsxd rax,dword [rbp-24]
  ;ir_cast L2;
 
  cmp rax,qword [rbp-12]
- jge cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$f669$end
- ;ir_jmp_gte ST [L0 . 1] cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$f669$end;
+ jge cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$f899$end
+ ;ir_jmp_gte ST [L0 . 1] cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$f899$end;
 
-cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$f669$body:
- ;ir_make_label cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$f669$body;
+cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$f899$body:
+ ;ir_make_label cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$f899$body;
 
  mov rax,qword [rbp+24]
  ;ir_deref A0;
@@ -616,18 +808,18 @@ cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$f669$body:
 
  mov r10b,byte [rbx+0]
  cmp r10b,byte [rax+0]
- je cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$if666$else
- ;ir_jmp_eq ST ST cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$if666$else;
+ je cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$if896$else
+ ;ir_jmp_eq ST ST cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$if896$else;
 
-cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$if666$body:
- ;ir_make_label cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$if666$body;
+cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$if896$body:
+ ;ir_make_label cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$if896$body;
 
  mov al,0
  jmp cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$end
  ;ir_return 0;
 
-cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$if666$else:
- ;ir_make_label cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$if666$else;
+cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$if896$else:
+ ;ir_make_label cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$if896$else;
 
  mov r10d,dword [rbp-24]
  add r10d,1
@@ -637,11 +829,11 @@ cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$if666$else:
  mov dword [rbp-24],eax
  ;ir_load L2 ST;
 
- jmp cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$f669$cond
- ;ir_jmp cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$f669$cond;
+ jmp cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$f899$cond
+ ;ir_jmp cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$f899$cond;
 
-cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$f669$end:
- ;ir_make_label cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$f669$end;
+cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$f899$end:
+ ;ir_make_label cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$f899$end;
 
  mov al,1
  ;ir_return 1;

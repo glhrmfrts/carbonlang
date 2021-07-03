@@ -2,13 +2,13 @@ code_unit{
   std/alloc.cb
   decl_list{
     import_decl{ std::os::windows}
-    func_decl{alloc (var_decl{size: type_expr{usize}}): type_expr{rawptr} {
+    func_decl{alloc (var_decl{size: type_expr{usize}}): type_expr{pointer} {
         stmt_list{
           return{call{HeapAlloc (call{GetProcessHeap ()}, 0, size)}}}}}
-    func_decl{free (var_decl{ptr: type_expr{rawptr}}) {
+    func_decl{free (var_decl{ptr: type_expr{pointer}}) {
         stmt_list{
           call{HeapFree (call{GetProcessHeap ()}, 0, ptr)}}}}
-    func_decl{copy (var_decl{dest: type_expr{rawptr}}, var_decl{src: type_expr{rawptr}}, var_decl{size: type_expr{usize}}) {
+    func_decl{copy (var_decl{dest: type_expr{pointer}}, var_decl{src: type_expr{pointer}}, var_decl{size: type_expr{usize}}) {
         decl_list{
           asm{push rdi
 push rsi
@@ -21,7 +21,7 @@ rep movsb
 pop rsi
 pop rdi
     }}}}
-    func_decl{set (var_decl{dest: type_expr{rawptr}}, var_decl{value: type_expr{char}}, var_decl{count: type_expr{usize}}) {
+    func_decl{set (var_decl{dest: type_expr{pointer}}, var_decl{value: type_expr{char}}, var_decl{count: type_expr{usize}}) {
         decl_list{
           asm{push rdi
 

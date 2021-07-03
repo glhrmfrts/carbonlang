@@ -6,12 +6,12 @@ func HeapAlloc(
   hHeap:   int,
   dwFlags: int,
   dwBytes: usize
-): rawptr;
+): pointer;
 
 func HeapFree(
   hHeap:   int,
   dwFlags: int,
-  lpMem:   rawptr
+  lpMem:   pointer
 ): bool;
 
 func GetProcessHeap(): int;

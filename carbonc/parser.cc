@@ -950,6 +950,10 @@ struct parser_impl {
             scope_guard _{ [this]() { lex->next(); } };
             return make_string_literal_node(*ast_arena, lex->pos(), lex->string_value());
         }
+        case token_type::nullpointer: {
+            scope_guard _{ [this]() { lex->next(); } };
+            return make_nullpointer_node(*ast_arena, lex->pos());
+        }
         case token_type::identifier: {
             auto id = parse_qualified_identifier();
             if (TOK_CHAR == '\\') {

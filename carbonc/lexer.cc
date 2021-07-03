@@ -229,9 +229,9 @@ struct lexer_impl {
                 return token_type::typealias;
             }
             break;
-        case 10:
-            if (!std::strcmp("nullrawptr", l.string)) {
-                return token_type::nullrawptr;
+        case 11:
+            if (!std::strcmp("nullpointer", l.string)) {
+                return token_type::nullpointer;
             }
             break;
         }

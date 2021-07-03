@@ -2,4 +2,4 @@ code_unit{
   std/libc/string.cb
   decl_list{
     linkage_specifier{ extern(C) decl_list{
-        func_decl{strlen (var_decl{s: type_expr{rawstring}}): type_expr{usize} }}}}}
+        func_decl{strlen (var_decl{s: type_expr{type_qualifier{pointer, char}}}): type_expr{usize} }}}}}

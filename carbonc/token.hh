@@ -45,7 +45,7 @@ enum class token_type : unsigned int {
     coloncolon,
     dotdot,
     nil,
-    nullrawptr,
+    nullpointer,
     defer,
     arrow_right, // ->
     double_arrow_right, // =>
@@ -58,6 +58,9 @@ struct position {
     int line_number;
     int col_offs;
 };
+
+constexpr char DEREF_OP = '*';
+constexpr char ADDR_OP = '&';
 
 bool is_unary_op(token_type t);
 

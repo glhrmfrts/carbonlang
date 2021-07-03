@@ -1,36 +1,12 @@
 import std::io
 import std::string
 import std::rawstring
-
-/*
-type Array(T) = struct {
-    data: &T
-    len: usize
-    cap: usize
-}
-
-func add(a: int, b: int) {
-    return a + b
-}
-
-func sub(a, b) {
-    return a - b
-}
-
-func printsome(c) {
-    println(c)
-}
-
-func get_count(a: &Array) {
-    printsome(a.data)
-    return a.len
-}
-*/
+import std::alloc as alloc
 
 type array(T) = struct {
     data: &T
-    len: usize
     cap: usize
+    len: usize
 }
 
 func make_array(`T, initial_capacity: usize) {
@@ -40,9 +16,9 @@ func make_array(`T, initial_capacity: usize) {
     }
 
     return array(T){
-        cast(&T)alloc::alloc(initial_capacity*sizeof(T)),
-        0,
-        initial_capacity,
+        cast(&T) alloc::alloc(sizeof(T)*cap),
+        cap,
+        0
     }
 }
 
@@ -50,33 +26,31 @@ func append(a: &array, elem) {
     //if (a.len == a.cap) {
         //a.grow_capacity(a.cap*2)
     //}
-    a.nth(a.len) = elem
+    *a.nth(a.len) = elem
     a.len = a.len + 1
 }
 
-func nth(a: &array, i: int) {
-    return &(a.data[i])
+func nth(a: &array, i) {
+    return &a.data[i]
 }
 
 func dispose(a: &array) {
-    alloc::dealloc(a.data)
+    alloc::free(cast(pointer) a.data)
 }
 
 func main(args: []string) {
     println(args[0].data)
-/*
-    let arr = Array(char){"beautiful", 10, 10}
-    printsome(arr.data)
-    let x = sub(3, 2)
-    let y = sub(cast(char)10, cast(char)5)
-    let d : int = "asdqwe"
-
-    let count = get_count(&arr)
-*/
 
     let arr = make_array(`int, 10)
+    defer arr.dispose
+
+    let arr2 = make_array(`int, 10)
+    defer arr2.dispose
+
+    let ptr = nullpointer
+
     arr.append(1)
     arr.append(2)
-    arr.append(3)
-    return arr.len
+
+    return cast(int) arr.len
 }

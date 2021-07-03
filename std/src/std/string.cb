@@ -1,1 +1,47 @@
-type string = []char;
+type string = struct {
+    data: []char
+}
+
+func to_string(value: int, base: int) {
+    // check that the base if valid
+    if (base < 2 || base > 36) { return string{"",0} }
+
+    var tmp_value : int
+    var run_yet = false
+    var offs = 0
+
+    let result = string{make_slice(`char, 25), 24}
+    result.data[24] = '\0'
+
+    let tpl_str = "zyxwvutsrqponmlkjihgfedcba9876543210123456789abcdefghijklmnopqrstuvwxyz"
+
+    while (value || !run_yet) {
+        if (offs >= 24) {
+            break
+        }
+
+        tmp_value = value
+        value /= base
+
+        result.data[offs] = tpl_str[35 + (tmp_value - value * base)]
+        offs += 1
+
+        run_yet = true
+    }
+
+/*
+    // Apply negative sign
+    if (tmp_value < 0) *ptr++ = '-';
+    *ptr-- = '\0';
+    while(ptr1 < ptr) {
+        tmp_char = *ptr;
+        *ptr--= *ptr1;
+        *ptr1++ = tmp_char;
+    }
+*/
+    return result
+}
+
+func to_string(i: int) {
+    return to_string(i, 10)
+}

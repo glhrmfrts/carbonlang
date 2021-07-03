@@ -1,43 +1,43 @@
-import std::alloc as alloc;
+import std::alloc as alloc
 
 func copy(str: &char): &char {
-    return copy(str, str.strlen);
+    return copy(str, str.strlen)
 }
 
 func copy(str: &char, size: usize): &char {
-    let newstr = cast(&char) alloc::alloc(size+1);
-    copy(newstr, str, size);
-    newstr[size] = 0;
-    return newstr;
+    let newstr = cast(&char) alloc::alloc(size+1)
+    copy(newstr, str, size)
+    newstr[size] = 0
+    return newstr
 }
 
 func copy(dest: &char, src: &char, size: usize) {
-    alloc::copy(cast(rawptr) dest, cast(rawptr) src, size);
+    alloc::copy(cast(pointer) dest, cast(pointer) src, size)
 }
 
 func set(dest: &char, value: char, count: usize) {
-    alloc::set(cast(rawptr) dest, value, count);
+    alloc::set(cast(pointer) dest, value, count)
 }
 
 func strlen(str: &char): usize {
-    var c : usize;
-    var p = str;
+    var c : usize
+    var p = str
     while (*p != 0) {
         //let ip = cast[uintptr] p;
-        p = p + 1;//cast[&char] (ip + 1);
-        c = c + 1;
+        p = p + 1//cast[&char] (ip + 1);
+        c = c + 1
     }
-    return c;
+    return c
 }
 
 func equals(a: &char, b: &char): bool {
-    if (a.strlen != b.strlen) { return false; }
+    if (a.strlen != b.strlen) { return false }
 
     for (i in 0, a.strlen) {
         if (a[i] != b[i]) {
-            return false;
+            return false
         }
     }
 
-    return true;
+    return true
 }

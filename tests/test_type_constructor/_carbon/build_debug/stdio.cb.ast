@@ -3,4 +3,4 @@ code_unit{
   decl_list{
     linkage_specifier{ extern(C) decl_list{
         func_decl{puts (var_decl{c: type_expr{rawstring}}): type_expr{int} }
-        func_decl{putc (var_decl{c: type_expr{char}}, var_decl{stream: type_expr{rawptr}}): type_expr{int} }}}}}
+        func_decl{putc (var_decl{c: type_expr{char}}, var_decl{stream: type_expr{pointer}}): type_expr{int} }}}}}

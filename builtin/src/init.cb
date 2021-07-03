@@ -15,7 +15,7 @@ func init_command_line(): []string {
 }
 
 func free_command_line(args: []string) {
-    alloc::free(cast(rawptr) args.data)
+    alloc::free(cast(pointer) args.data)
 }
 
 extern(C) func carbon_main(): int {

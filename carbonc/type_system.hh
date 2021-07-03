@@ -170,6 +170,7 @@ struct call_flag {
     static constexpr type none = 0;
     static constexpr type is_method_sugar_call = 1;
     static constexpr type is_aggregate_return = 4;
+    static constexpr type separated_args = 8;
 };
 
 struct call_info {
@@ -179,6 +180,7 @@ struct call_info {
     std::vector<type_id> arg_types;
     string_hash mangled_name;
     type_id func_type_id{};
+    std::vector<comptime_value> comptime_args{};
 };
 
 struct func_overload_info {
@@ -248,6 +250,7 @@ struct func_def {
     bool is_generic = false;
     scope_def* decl_scope;
     string_hash base_symbol;
+    std::vector<comptime_value> comptime_args{};
 };
 
 struct field_access {

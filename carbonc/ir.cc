@@ -450,8 +450,9 @@ std::vector<ast_node*> collect_defer_statements_for_return() {
     std::vector<ast_node*> result;
     auto scope = ts->current_scope;
     while (scope) {
-        for (auto d : scope->self->ir.scope_defer_statements) {
-            result.push_back(d);
+        for (std::size_t i = scope->self->ir.scope_defer_statements.size(); i > 0; i--) {
+            auto dstmt = scope->self->ir.scope_defer_statements[i - 1];
+            result.push_back(dstmt);
         }
 
         if (scope->kind == scope_kind::func_body) { break; }
@@ -834,6 +835,7 @@ void generate_ir_node(ast_node& node) {
         break;
     case ast_type::int_literal:
     case ast_type::bool_literal:
+    case ast_type::nullpointer:
         generate_ir_int_literal(node);
         break;
     case ast_type::char_literal:
@@ -989,6 +991,7 @@ bool instr_pushes_to_stack(const ir_instr& instr) {
     case ir_deref:
     case ir_index:
     case ir_load_addr:
+    case ir_cast:
         return true;
     case ir_call:
         return instr.result_type != ts->void_type;
