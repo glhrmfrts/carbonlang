@@ -20,6 +20,10 @@ enum class token_type : unsigned int {
     lteq,
     shl,
     shr,
+    band,
+    bor,
+    bxor,
+    bnot,
     let,
     var,
     func,
@@ -50,6 +54,10 @@ enum class token_type : unsigned int {
     arrow_right, // ->
     double_arrow_right, // =>
     struct_,
+    plus_assign,
+    minus_assign,
+    mul_assign,
+    div_assign,
 };
 
 struct position {

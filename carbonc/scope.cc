@@ -77,6 +77,23 @@ scope_def* find_nearest_scope_local(type_system& ts, scope_kind kind) {
     return nullptr;
 }
 
+bool declare_global_symbol(type_system& ts, const string_hash& hash, ast_node& ld) {
+    auto it = ts.current_scope->symbols.find(hash);
+    if (it != ts.current_scope->symbols.end()) {
+        return false;
+    }
+
+    symbol_info info;
+    info.kind = symbol_kind::global;
+    info.scope = ts.current_scope;
+    info.local_index = ts.current_scope->local_defs.size();
+
+    ld.local.name = hash;
+    ts.current_scope->local_defs.push_back(&ld.local);
+    ts.current_scope->symbols[hash] = std::make_unique<symbol_info>(info);
+    return true;
+}
+
 bool declare_local_symbol(type_system& ts, const string_hash& hash, ast_node& ld) {
     auto it = ts.current_scope->symbols.find(hash);
     if (it != ts.current_scope->symbols.end()) {
@@ -87,6 +104,8 @@ bool declare_local_symbol(type_system& ts, const string_hash& hash, ast_node& ld
     info.kind = symbol_kind::local;
     info.scope = ts.current_scope;
     info.local_index = ts.current_scope->local_defs.size();
+
+    ld.local.name = hash;
     ts.current_scope->local_defs.push_back(&ld.local);
     ts.current_scope->symbols[hash] = std::make_unique<symbol_info>(info);
     return true;

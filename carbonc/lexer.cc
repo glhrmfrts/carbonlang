@@ -24,6 +24,10 @@ static std::unordered_map<int, token_type> stb_to_token = {
     {CLEX_oror, token_type::oror},
     {CLEX_arrow, token_type::arrow_right},
     {CLEX_eqarrow, token_type::double_arrow_right},
+    {CLEX_diveq, token_type::div_assign},
+    {CLEX_pluseq, token_type::plus_assign},
+    {CLEX_minuseq, token_type::minus_assign},
+    {CLEX_muleq, token_type::mul_assign},
 };
 
 struct lexer_impl {

@@ -1275,7 +1275,7 @@ type_id get_type_expr_node_type(type_system& ts, ast_node& node) {
 
 type_id resolve_identifier(type_system& ts, ast_node& node) {
     auto sym = find_symbol(ts, separate_module_identifier(node.id_parts));
-    if (sym && sym->kind == symbol_kind::local) {
+    if (sym && (sym->kind == symbol_kind::local || sym->kind == symbol_kind::global)) {
         auto local = get_symbol_local(*sym);
         bool was_unresolved = !node.type_id.valid();
 
@@ -1451,6 +1451,16 @@ bool match_arg_list(type_system& ts, std::vector<arena_ptr<ast_node>>& func_args
     perform_casts(ts, call_args, info);
 
     return true;
+}
+
+string_hash mangle_global_name(type_system& ts, const std::vector<std::string>& mod_parts, const string_hash& name) {
+    std::string result;
+    for (const auto& part : mod_parts) {
+        result.append(part);
+        result.append("__");
+    }
+    result.append(name.str);
+    return string_hash{ result };
 }
 
 string_hash mangle_func_name(type_system& ts, const std::vector<std::string>& id_parts, const std::vector<comptime_value>& comptime_args,
@@ -1856,11 +1866,15 @@ arena_ptr<ast_node> generate_func_for_call(type_system& ts, ast_node& gnode, ast
 }
 
 void resolve_and_declare_local_variable(type_system& ts, const string_hash& id, ast_node& node) {
-    bool was_unresolved = !node.type_id.valid();
-
     resolve_local_variable_type(ts, node);
 
-    declare_local_symbol(ts, id, node);
+    if (ts.current_scope->kind == scope_kind::code_unit) {
+        declare_global_symbol(ts, id, node);
+    }
+    else {
+        declare_local_symbol(ts, id, node);
+    }
+
     node.local.self = &node;
 
     if (node.type_id.valid() && node.type_id.get().size == 0) {
@@ -2025,6 +2039,35 @@ void resolve_assignment_type(type_system& ts, ast_node& node) {
 
     node.type_error = false;
     node.type_id = node.children[0]->type_id;
+}
+
+bool is_assignment_sugar_op(token_type op) {
+    return op == token_type::plus_assign || op == token_type::minus_assign || op == token_type::mul_assign || op == token_type::div_assign;
+}
+
+token_type get_desugared_assignment_op(token_type op) {
+    switch (op) {
+    case token_type::plus_assign:
+        return token_from_char('+');
+    case token_type::minus_assign:
+        return token_from_char('-');
+    case token_type::mul_assign:
+        return token_from_char('*');
+    case token_type::div_assign:
+        return token_from_char('/');
+    default:
+        assert(!"unhandled get_desugared_assignment_op");
+    }
+}
+
+void desugar_assignment(type_system& ts, ast_node& node) {
+    // e.g. a /= 4 ---> a = a / 4
+    auto new_rhs = make_binary_expr_node(
+        *ts.ast_arena, node.children[0]->pos, get_desugared_assignment_op(node.op),
+        copy_node(ts, node.children[0].get()), std::move(node.children[1]));
+
+    node.op = token_from_char('=');
+    node.children[1] = std::move(new_rhs);
 }
 
 void register_for_declarations(type_system& ts, ast_node& node) {
@@ -2977,6 +3020,10 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
         break;
     }
     case ast_type::binary_expr: {
+        if (is_assignment_sugar_op(node.op)) {
+            desugar_assignment(ts, node);
+        }
+
         visit_children(ts, node);
 
         if (token_to_char(node.op) == '=') {
@@ -3206,6 +3253,15 @@ void remangle_names(type_system& ts, ast_node* nodeptr) {
     case ast_type::init_expr: {
         for (auto& as : node.initlist.assignments) {
             visit_tree(ts, *as);
+        }
+        break;
+    }
+    case ast_type::code_unit: {
+        for (auto& pair : node.scope.symbols) {
+            if (pair.second->kind == symbol_kind::global) {
+                auto local = get_symbol_local(*pair.second);
+                local->mangled_name = mangle_global_name(ts, node.scope.self_module_parts, local->name);
+            }
         }
         break;
     }

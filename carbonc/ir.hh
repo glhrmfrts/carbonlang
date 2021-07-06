@@ -46,6 +46,11 @@ struct ir_stack {
     type_id type;
 };
 
+struct ir_global {
+    std::string name;
+    type_id type;
+};
+
 struct ir_local {
     int index;
     type_id type;
@@ -81,20 +86,26 @@ struct ir_label {
 
 struct ir_field;
 
-using ir_ref = std::variant<ir_local, ir_arg, ir_stack, std::shared_ptr<ir_field>>;
+using ir_ref = std::variant<ir_global, ir_local, ir_arg, ir_stack, std::shared_ptr<ir_field>>;
 
 struct ir_field {
     ir_ref ref;
     int field_index;
 };
 
-using ir_operand = std::variant<std::string, ir_field, ir_label, ir_funclabel, ir_local, ir_arg, ir_stack, ir_string, ir_int, ir_float, char>;
+using ir_operand = std::variant<std::string, ir_field, ir_label, ir_funclabel, ir_global, ir_local, ir_arg, ir_stack, ir_string, ir_int, ir_float, char>;
 
 struct ir_instr {
     ir_op op;
     type_id result_type;
     std::vector<ir_operand> operands;
     int index;
+};
+
+struct ir_global_data {
+    std::string name;
+    type_id type;
+    std::optional<ir_operand> value;
 };
 
 struct ir_func {
@@ -125,6 +136,7 @@ struct ir_node_data {
 
 struct ir_program {
     std::vector<std::string> strings;
+    std::vector<ir_global_data> globals;
     std::vector<ir_func> funcs;
 };
 

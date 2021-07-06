@@ -45,8 +45,20 @@ cb__Nmain__Nmain__Aptr__Tslice__TU_string:
  mov dword [rbp-4],eax
  ;ir_load L0 ST;
 
- mov eax,dword [rbp-4]
- ;ir_return L0;
+ mov r10d,5
+ mov dword [rbp-8],r10d
+ ;ir_load L1 5;
+
+ mov r10d,dword [rbp-8]
+ imul r10d,10
+ mov eax,r10d
+ ;ir_mul L1 10;
+
+ mov dword [rbp-8],eax
+ ;ir_load L1 ST;
+
+ mov eax,dword [rbp-8]
+ ;ir_return L1;
 
 cb__Nmain__Nmain__Aptr__Tslice__TU_string$end:
  add rsp,32
@@ -477,8 +489,8 @@ cb__Nstd__Nrawstring__Nstrlen__Aptr__Tchar:
  mov qword [rbp-16],rcx
  ;ir_load L1 A0;
 
-cb__Nstd__Nrawstring__Nstrlen__Aptr__Tchar$w592$cond:
- ;ir_make_label cb__Nstd__Nrawstring__Nstrlen__Aptr__Tchar$w592$cond;
+cb__Nstd__Nrawstring__Nstrlen__Aptr__Tchar$w601$cond:
+ ;ir_make_label cb__Nstd__Nrawstring__Nstrlen__Aptr__Tchar$w601$cond;
 
  mov rax,qword [rbp-16]
  ;ir_deref L1;
@@ -487,11 +499,11 @@ cb__Nstd__Nrawstring__Nstrlen__Aptr__Tchar$w592$cond:
  ;ir_cast ST;
 
  cmp eax,0
- je cb__Nstd__Nrawstring__Nstrlen__Aptr__Tchar$w592$end
- ;ir_jmp_eq ST 0 cb__Nstd__Nrawstring__Nstrlen__Aptr__Tchar$w592$end;
+ je cb__Nstd__Nrawstring__Nstrlen__Aptr__Tchar$w601$end
+ ;ir_jmp_eq ST 0 cb__Nstd__Nrawstring__Nstrlen__Aptr__Tchar$w601$end;
 
-cb__Nstd__Nrawstring__Nstrlen__Aptr__Tchar$w592$body:
- ;ir_make_label cb__Nstd__Nrawstring__Nstrlen__Aptr__Tchar$w592$body;
+cb__Nstd__Nrawstring__Nstrlen__Aptr__Tchar$w601$body:
+ ;ir_make_label cb__Nstd__Nrawstring__Nstrlen__Aptr__Tchar$w601$body;
 
  mov r10,qword [rbp-16]
  add r10,1
@@ -509,11 +521,11 @@ cb__Nstd__Nrawstring__Nstrlen__Aptr__Tchar$w592$body:
  mov qword [rbp-8],rax
  ;ir_load L0 ST;
 
- jmp cb__Nstd__Nrawstring__Nstrlen__Aptr__Tchar$w592$cond
- ;ir_jmp cb__Nstd__Nrawstring__Nstrlen__Aptr__Tchar$w592$cond;
+ jmp cb__Nstd__Nrawstring__Nstrlen__Aptr__Tchar$w601$cond
+ ;ir_jmp cb__Nstd__Nrawstring__Nstrlen__Aptr__Tchar$w601$cond;
 
-cb__Nstd__Nrawstring__Nstrlen__Aptr__Tchar$w592$end:
- ;ir_make_label cb__Nstd__Nrawstring__Nstrlen__Aptr__Tchar$w592$end;
+cb__Nstd__Nrawstring__Nstrlen__Aptr__Tchar$w601$end:
+ ;ir_make_label cb__Nstd__Nrawstring__Nstrlen__Aptr__Tchar$w601$end;
 
  mov rax,qword [rbp-8]
  ;ir_return L0;
@@ -544,18 +556,18 @@ cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar:
  ;ir_call cb__Nstd__Nrawstring__Nstrlen__Aptr__Tchar A1;
 
  cmp rbx,rax
- je cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$if624$else
- ;ir_jmp_eq ST ST cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$if624$else;
+ je cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$if633$else
+ ;ir_jmp_eq ST ST cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$if633$else;
 
-cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$if624$body:
- ;ir_make_label cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$if624$body;
+cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$if633$body:
+ ;ir_make_label cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$if633$body;
 
  mov al,0
  jmp cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$end
  ;ir_return 0;
 
-cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$if624$else:
- ;ir_make_label cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$if624$else;
+cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$if633$else:
+ ;ir_make_label cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$if633$else;
 
  mov r10d,0
  mov dword [rbp-16],r10d
@@ -572,18 +584,18 @@ cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$if624$else:
  mov dword [rbp-24],r10d
  ;ir_load L2 [L0 . 0];
 
-cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$f648$cond:
- ;ir_make_label cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$f648$cond;
+cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$f657$cond:
+ ;ir_make_label cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$f657$cond;
 
  movsxd rax,dword [rbp-24]
  ;ir_cast L2;
 
  cmp rax,qword [rbp-12]
- jge cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$f648$end
- ;ir_jmp_gte ST [L0 . 1] cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$f648$end;
+ jge cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$f657$end
+ ;ir_jmp_gte ST [L0 . 1] cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$f657$end;
 
-cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$f648$body:
- ;ir_make_label cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$f648$body;
+cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$f657$body:
+ ;ir_make_label cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$f657$body;
 
  mov rax,qword [rbp+24]
  ;ir_deref A0;
@@ -601,18 +613,18 @@ cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$f648$body:
 
  mov r10b,byte [rbx+0]
  cmp r10b,byte [rax+0]
- je cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$if645$else
- ;ir_jmp_eq ST ST cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$if645$else;
+ je cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$if654$else
+ ;ir_jmp_eq ST ST cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$if654$else;
 
-cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$if645$body:
- ;ir_make_label cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$if645$body;
+cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$if654$body:
+ ;ir_make_label cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$if654$body;
 
  mov al,0
  jmp cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$end
  ;ir_return 0;
 
-cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$if645$else:
- ;ir_make_label cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$if645$else;
+cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$if654$else:
+ ;ir_make_label cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$if654$else;
 
  mov r10d,dword [rbp-24]
  add r10d,1
@@ -622,11 +634,11 @@ cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$if645$else:
  mov dword [rbp-24],eax
  ;ir_load L2 ST;
 
- jmp cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$f648$cond
- ;ir_jmp cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$f648$cond;
+ jmp cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$f657$cond
+ ;ir_jmp cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$f657$cond;
 
-cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$f648$end:
- ;ir_make_label cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$f648$end;
+cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$f657$end:
+ ;ir_make_label cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$f657$end;
 
  mov al,1
  ;ir_return 1;

@@ -694,6 +694,16 @@ void generate_ir_var(ast_node& node) {
     if (node.var_value()) {
         generate_ir_node(*node.var_value());
 
+        // Check if global
+        if (ts->current_scope->kind == scope_kind::code_unit && !node.local.mangled_name.str.empty()) {
+            if (is_primary_expr(*node.var_value()) && node.var_value()->type != ast_type::identifier) {
+                // TODO: what if it's an identifier ?
+                prog->globals.push_back(ir_global_data{ node.local.mangled_name.str, node.type_id, pop() });
+                return;
+            }
+            assert(!"generate_ir_var: non primary global");
+        }
+
         // Check noop conditions.
         if (node.var_value()->type == ast_type::init_expr) {
             // Already handled in init list assignments
@@ -731,6 +741,9 @@ void generate_ir_identifier(ast_node& node) {
     auto local = node.lvalue.symbol->scope->local_defs[node.lvalue.symbol->local_index];
     if (local->flags & local_flag::is_argument) {
         push(ir_arg{ local->ir_index, node.type_id });
+    }
+    else if (node.lvalue.symbol->kind == symbol_kind::global) {
+        push(ir_global{ local->mangled_name.str, node.type_id });
     }
     else {
         push(ir_local{ local->ir_index, node.type_id });

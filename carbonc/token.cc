@@ -16,6 +16,10 @@ static std::unordered_map<token_type, token_properties> token_props = {
     {token_from_char('!'), { UNARY_OP, 0 }},
 
     {token_from_char('='), { BINARY_OP, 400 }},
+    {token_type::plus_assign, { BINARY_OP, 400 }},
+    {token_type::minus_assign, { BINARY_OP, 400 }},
+    {token_type::mul_assign, { BINARY_OP, 400 }},
+    {token_type::div_assign, { BINARY_OP, 400 }},
 
     {token_type::oror, { BINARY_OP, 490 }},
     {token_type::andand, { BINARY_OP, 500 }},

@@ -404,6 +404,18 @@ struct emitter {
         emitln("0");
     }
 
+    void add_global_int16(std::string_view label, int16_t v) {
+        emitln(" dw %x", (int32_t)v);
+    }
+
+    void add_global_int32(std::string_view label, int32_t v) {
+        emitln(" dd %x", (int32_t)v);
+    }
+
+    void add_global_int64(std::string_view label, int64_t v) {
+        emitln(" dq %llx", v);
+    }
+
     void begin_code_segment() {
         out_file << "section .code\n";
     }

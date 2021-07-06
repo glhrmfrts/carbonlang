@@ -121,19 +121,21 @@ struct local_flag {
 
 struct local_def {
     std::vector<ast_node*> refs;
-    ast_node* self = nullptr;
-    //ast_node* id_node = nullptr;
-    //ast_node* type_node = nullptr;
-    //ast_node* value_node = nullptr;
+    string_hash name;
+    string_hash mangled_name;
 
+    ast_node* self = nullptr;
     local_flag::type flags = local_flag::none;
+
     int arg_index = 0; // if is_argument
     ast_node* arg_func_node = nullptr; // if is_argument
+
     std::int32_t frame_offset = 0;
     int ir_index = 0;
 };
 
 enum class symbol_kind {
+    global,
     local,
     top_level_func,
     overloaded_func_base,

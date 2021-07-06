@@ -19,6 +19,8 @@ void leave_scope_local(type_system& ts);
 
 scope_def* find_nearest_scope_local(type_system& ts, scope_kind kind);
 
+bool declare_global_symbol(type_system& ts, const string_hash& hash, ast_node& ld);
+
 bool declare_local_symbol(type_system& ts, const string_hash& hash, ast_node& ld);
 
 bool declare_top_level_func_symbol(type_system& ts, const string_hash& hash, ast_node& ld);
