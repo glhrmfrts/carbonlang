@@ -1,7 +1,6 @@
-type string = struct {
-    data: []char
-}
+type string = []char
 
+/*
 func to_string(value: int, base: int) {
     // check that the base if valid
     if (base < 2 || base > 36) { return string{"",0} }
@@ -29,7 +28,6 @@ func to_string(value: int, base: int) {
         run_yet = true
     }
 
-/*
     // Apply negative sign
     if (tmp_value < 0) *ptr++ = '-';
     *ptr-- = '\0';
@@ -38,10 +36,10 @@ func to_string(value: int, base: int) {
         *ptr--= *ptr1;
         *ptr1++ = tmp_char;
     }
-*/
     return result
 }
 
 func to_string(i: int) {
     return to_string(i, 10)
 }
+*/

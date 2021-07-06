@@ -1,0 +1,10 @@
+import std::string
+
+func test_div(a, b) {
+    return a / b
+}
+
+func main(args: []string) {
+    let a = test_div(10, 5)
+    return a
+}

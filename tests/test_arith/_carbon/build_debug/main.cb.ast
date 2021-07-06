@@ -1,0 +1,15 @@
+code_unit{
+  main.cb
+  decl_list{
+    import_decl{ std::string}
+    func_decl{test_div (var_decl{a}, var_decl{b}) {
+        stmt_list{
+          return{{a / b}}}}}
+    func_decl{main (var_decl{args: }) {
+        decl_list{
+          var_decl{a = call{test_div (10, 5)}}}
+        stmt_list{
+          return{a}}}}
+    func_decl{test_div (var_decl{a: }, var_decl{b: }) {
+        stmt_list{
+          return{{a / b}}}}}}}

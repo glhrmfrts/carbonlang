@@ -4,7 +4,6 @@
 #include <variant>
 #include "codegen.hh"
 #include "codegen_x64.hh"
-#include "emitter_x64_windows.hh"
 #include "common.hh"
 #include "type_system.hh"
 #include <stack>
@@ -37,6 +36,279 @@ struct func_data {
 
 constexpr gen_register reg_result = rax;
 constexpr gen_register reg_intermediate = r10;
+
+static const char* register_names[] = {
+    "invalid",
+    "rax",
+    "rbx",
+    "rcx",
+    "rdx",
+    "rdi",
+    "rsi",
+    "rbp",
+    "rsp",
+    "r8",
+    "r9",
+    "r10",
+    "r11",
+    "r12",
+    "r13",
+    "r14",
+    "r15",
+    "eax",
+    "ebx",
+    "ecx",
+    "edx",
+    "edi",
+    "esi",
+    "ebp",
+    "esp",
+    "r8d",
+    "r9d",
+    "r10d",
+    "r11d",
+    "r12d",
+    "r13d",
+    "r14d",
+    "r15d",
+    "ax",
+    "bx",
+    "cx",
+    "dx",
+    "di",
+    "si",
+    "bp",
+    "sp",
+    "r8",
+    "r9w",
+    "r10w",
+    "r11w",
+    "r12w",
+    "r13w",
+    "r14w",
+    "r15w",
+    "al",
+    "bl",
+    "cl",
+    "dl",
+    "dil",
+    "sil",
+    "bpl",
+    "spl",
+    "r8b",
+    "r9b",
+    "r10b",
+    "r11b",
+    "r12b",
+    "r13b",
+    "r14b",
+    "r15b",
+};
+
+static std::unordered_map<std::size_t, const char*> ptrsizes = {
+    {1, "byte"},
+    {2, "word"},
+    {4, "dword"},
+    {8, "qword"},
+};
+
+static const std::vector<gen_register> register_args = {
+    rcx, rdx, r8, r9,
+};
+
+static const std::vector<gen_register> register_temp = {
+    rbx, rdi, rsi, r12, r13, r14, r15,
+};
+
+template <class... Ts> struct overload : Ts... { using Ts::operator()...; };
+template <class... Ts> overload(Ts...)->overload<Ts...>;
+
+std::string tostr(const gen_destination& d) {
+    return std::visit(overload{
+        [](gen_register r) -> std::string {
+            return register_names[r];
+        },
+        [](gen_data_offset r) -> std::string {
+            std::string result = "OFFSET:";
+            result.append(r.label);
+            return result;
+        },
+        [](gen_offset r) -> std::string {
+            std::string result = "[";
+            for (const auto& it : r.expr) {
+                if (auto reg = std::get_if<gen_register>(&it); reg) {
+                    result.append(std::string{ register_names[*reg] });
+                }
+                if (auto ch = std::get_if<char>(&it); ch) {
+                    result.append(ch, 1);
+                }
+                if (auto off = std::get_if<int_type>(&it); off) {
+                    result.append(std::to_string(*off));
+                }
+                if (auto d = std::get_if<gen_data_offset>(&it); d) {
+                    result.append("OFFSET:");
+                    result.append(d->label);
+                }
+            }
+            return result + "]";
+        }
+    }, d);
+}
+
+std::string tostr(const gen_operand& d) {
+    return std::visit(overload{
+        [](gen_register r) -> std::string {
+            return register_names[r];
+        },
+        [](gen_data_offset r) -> std::string {
+            std::string result = "OFFSET:";
+            result.append(r.label);
+            return result;
+        },
+        [](gen_offset r) -> std::string {
+            std::string result = "[";
+            for (const auto& it : r.expr) {
+                if (auto reg = std::get_if<gen_register>(&it); reg) {
+                    result.append(std::string{ register_names[*reg] });
+                }
+                if (auto ch = std::get_if<char>(&it); ch) {
+                    result.append(ch, 1);
+                }
+                if (auto off = std::get_if<int_type>(&it); off) {
+                    result.append(std::to_string(*off));
+                }
+                if (auto d = std::get_if<gen_data_offset>(&it); d) {
+                    result.append("OFFSET:");
+                    result.append(d->label);
+                }
+            }
+            return result + "]";
+        },
+        [](int_type v) -> std::string {
+            return std::to_string(v);
+        },
+        [](char c) -> std::string {
+            return std::to_string(c);
+        }
+    }, d);
+}
+
+std::string tostr_sized(const gen_destination& d) {
+    return std::visit(overload{
+        [](gen_register r) -> std::string {
+            return register_names[r];
+        },
+        [](gen_data_offset r) -> std::string {
+            std::string result = "[";
+            result.append(r.label);
+            result.append("]");
+            return result;
+        },
+        [](gen_offset r) -> std::string {
+            // guard for struct types
+            std::size_t sz = std::min(r.op_size, std::size_t{8});
+            std::string result = std::string{ptrsizes[sz]} + " [";
+            for (const auto& it : r.expr) {
+                if (auto reg = std::get_if<gen_register>(&it); reg) {
+                    result.append(std::string{ register_names[*reg] });
+                }
+                if (auto ch = std::get_if<char>(&it); ch) {
+                    result.append(ch, 1);
+                }
+                if (auto off = std::get_if<int_type>(&it); off) {
+                    result.append(std::to_string(*off));
+                }
+                if (auto d = std::get_if<gen_data_offset>(&it); d) {
+                    result.append("OFFSET:");
+                    result.append(d->label);
+                }
+            }
+            return result + "]";
+        }
+    }, d);
+}
+
+std::string tostr_sized(const gen_operand& d) {
+    return std::visit(overload{
+        [](gen_register r) -> std::string {
+            return register_names[r];
+        },
+        [](gen_data_offset r) -> std::string {
+            std::string result = "[";
+            result.append(r.label);
+            result.append("]");
+            return result;
+        },
+        [](gen_offset r) -> std::string {
+            std::size_t sz = std::min(r.op_size, std::size_t{8});
+            std::string result = std::string{ptrsizes[sz]} + " [";
+            for (const auto& it : r.expr) {
+                if (auto reg = std::get_if<gen_register>(&it); reg) {
+                    result.append(std::string{ register_names[*reg] });
+                }
+                if (auto ch = std::get_if<char>(&it); ch) {
+                    result.append(ch, 1);
+                }
+                if (auto off = std::get_if<int_type>(&it); off) {
+                    result.append(std::to_string(*off));
+                }
+                if (auto d = std::get_if<gen_data_offset>(&it); d) {
+                    result.append("OFFSET:");
+                    result.append(d->label);
+                }
+            }
+            return result + "]";
+        },
+        [](int_type  v) -> std::string {
+            return std::to_string(v);
+        },
+        [](char c) -> std::string {
+            return std::to_string(c);
+        }
+    }, d);
+}
+
+std::size_t get_size(const gen_destination& v) {
+    return std::visit(overload{
+        [](gen_register r) -> std::size_t {
+            if (r >= al) return 1;
+            if (r >= ax) return 2;
+            if (r >= eax) return 4;
+            if (r >= rax) return 8;
+            return 0;
+        },
+        [](gen_data_offset r) -> std::size_t {
+            return sizeof(void*);
+        },
+        [](gen_offset r) -> std::size_t {
+            return r.op_size;
+        }
+    }, v);
+}
+
+std::size_t get_size(const gen_operand& v) {
+    return std::visit(overload{
+        [](gen_register r) -> std::size_t {
+            if (r >= al) return 1;
+            if (r >= ax) return 2;
+            if (r >= eax) return 4;
+            if (r >= rax) return 8;
+            return 0;
+        },
+        [](gen_data_offset r) -> std::size_t {
+            return sizeof(void*);
+        },
+        [](gen_offset r) -> std::size_t {
+            return r.op_size;
+        },
+        [](int_type v) -> std::size_t {
+            return 4;
+        },
+        [](char v) -> std::size_t {
+            return 1;
+        }
+        }, v);
+}
 
 gen_destination adjust_for_type(gen_destination dest, type_id tid) {
     auto tdef = tid.scope->type_defs[tid.type_index];
@@ -100,13 +372,172 @@ template <typename T> bool is_lit(const T& op) {
     return std::holds_alternative<int_type>(op) || std::holds_alternative<char>(op);
 }
 
+struct emitter {
+    std::string current_func;
+    std::ofstream out_file;
+
+    explicit emitter(std::string_view filename) {
+        out_file = std::ofstream{ std::string{filename} };
+    }
+
+    void add_global_func_decl(const char* name) {
+        out_file << "global " << name << "\n";
+    }
+
+    void add_extern_func_decl(const char* name) {
+        out_file << "extern " << name << "\n";
+    }
+
+    void end() {
+        //out_file << "END\n";
+    }
+
+    void begin_data_segment() {
+        out_file << "section .data\n";
+    }
+
+    void add_string_data(std::string_view label, std::string_view data) {
+        emit("%s: db ", label.data());
+        for (char c : data) {
+            emit("%d,", (int)c);
+        }
+        emitln("0");
+    }
+
+    void begin_code_segment() {
+        out_file << "section .code\n";
+    }
+
+    void begin_func(const char* func_name) {
+        current_func = func_name;
+        out_file << func_name << ":\n";
+    }
+
+    void end_func() {
+
+    }
+
+    void ret() {
+        out_file << " ret\n";
+    }
+
+    void call(const char* func_name) {
+        emitln(" call %s", func_name);
+    }
+
+    void calldest(gen_destination dest) {
+        emitln(" call %s", tostr_sized(dest).c_str());
+    }
+
+    void push(gen_operand reg) {
+        emitln(" push %s", tostr_sized(reg).c_str());
+    }
+
+    void pop(gen_operand reg) {
+        emitln(" pop %s", tostr_sized(reg).c_str());
+    }
+
+    void lea(gen_destination reg, gen_destination src) {
+        emitln(" lea %s,%s", tostr_sized(reg).c_str(), tostr_sized(src).c_str());
+    }
+
+    void mov(gen_destination reg, gen_operand src) {
+        emitln(" mov %s,%s", tostr_sized(reg).c_str(), tostr_sized(src).c_str());
+    }
+
+    void movsx(gen_destination reg, gen_operand src) {
+        std::size_t as = get_size(reg);
+        std::size_t bs = get_size(src);
+
+        // TODO: handle more sizes
+        if ((as == 2 && bs == 1) || (as == 4 && bs == 1) || (as == 4 && bs == 2) || (as == 8 && bs == 1) || (as == 8 && bs == 2)) {
+            emitln(" movsx %s,%s", tostr_sized(reg).c_str(), tostr_sized(src).c_str());
+        }
+        else if (as == 8 && bs == 4) {
+            emitln(" movsxd %s,%s", tostr_sized(reg).c_str(), tostr_sized(src).c_str());
+        }
+        else {
+            mov(reg, src);
+        }
+    }
+
+    void movzx(gen_destination reg, gen_operand src) {
+        emitln(" movzx %s,%s", tostr_sized(reg).c_str(), tostr_sized(src).c_str());
+    }
+
+    void add(gen_destination a, gen_operand b) {
+        emitln(" add %s,%s", tostr_sized(a).c_str(), tostr_sized(b).c_str());
+    }
+
+    void sub(gen_destination a, gen_operand b) {
+        emitln(" sub %s,%s", tostr_sized(a).c_str(), tostr_sized(b).c_str());
+    }
+
+    void imul(gen_destination a, gen_operand b) {
+        emitln(" imul %s,%s", tostr_sized(a).c_str(), tostr_sized(b).c_str());
+    }
+
+    void idiv(gen_destination b) {
+        emitln(" idiv %s", tostr_sized(b).c_str());
+    }
+
+    void cdq(type_id t) {
+        switch (t.get().size)
+        {
+        case 2:
+            emitln(" cwd");
+            break;
+        case 4:
+            emitln(" cdq");
+            break;
+        case 8:
+            emitln(" cqo");
+            break;
+        default:
+            break;
+        }
+    }
+
+    void xor(gen_destination a, gen_operand b) {
+        emitln(" xor %s,%s", tostr_sized(a).c_str(), tostr_sized(b).c_str());
+    }
+
+    void jmp(const char* label) {
+        emitln(" jmp %s", label);
+    }
+
+    void cmp(gen_operand a, gen_operand b) {
+        emitln(" cmp %s,%s", tostr_sized(a).c_str(), tostr_sized(b).c_str());
+    }
+
+    void label(const char* label) {
+        emitln("%s:", label);
+    }
+
+    void emit(const char* fmt, ...) {
+        static char buffer[1024];
+        std::va_list args;
+        va_start(args, fmt);
+        std::vsnprintf(buffer, sizeof(buffer), fmt, args);
+        va_end(args);
+        out_file << buffer;
+    }
+
+    void emitln(const char* fmt, ...) {
+        static char buffer[1024];
+        std::va_list args;
+        va_start(args, fmt);
+        std::vsnprintf(buffer, sizeof(buffer), fmt, args);
+        va_end(args);
+        out_file << buffer << "\n";
+    }
+};
+
 struct generator {
     using finalizer_func = std::function<void(const gen_destination&, const gen_operand&)>;
 
     std::string_view filename;
     std::unique_ptr<emitter> em;
-    std::vector<gen_register> arg_registers;
-    std::vector<gen_register> temp_registers;
     std::vector<func_data> funcdata;
     std::stack<gen_operand> opstack;
     std::int32_t current_temp_regs_offset = 0;
@@ -123,8 +554,6 @@ struct generator {
         this->em = std::move(em);
         this->ts = ts;
         this->filename = fn;
-        arg_registers = em->get_argument_registers();
-        temp_registers = em->get_temp_registers();
     }
 
     // Section: helpers
@@ -163,6 +592,12 @@ struct generator {
             else if (inst.op == ir_copy) {
                 // ir_copy uses rcx as well
                 calls_ever_made = true;
+            }
+            else if (inst.op == ir_div) {
+                // ir_div uses rdx
+                if (func.args.size() >= 2) {
+                    calls_ever_made = true;
+                }
             }
         }
         return std::make_pair(sz, calls_ever_made);
@@ -219,11 +654,11 @@ struct generator {
     }
 
     std::optional<gen_register> use_temp_register() {
-        if (used_temp_registers >= temp_registers.size()) {
+        if (used_temp_registers >= register_temp.size()) {
             return {};
         }
         
-        auto next_reg = temp_registers[used_temp_registers];
+        auto next_reg = register_temp[used_temp_registers];
         used_temp_registers++;
         fndata->used_temp_registers.insert(next_reg);
         return next_reg;
@@ -367,20 +802,20 @@ struct generator {
 
         if (!func.args.empty()) {
             if (calls_ever_made) {
-                std::size_t max_reg_args = std::min(arg_registers.size(), func.args.size());
+                std::size_t max_reg_args = std::min(register_args.size(), func.args.size());
                 for (std::size_t i = max_reg_args; i > 0; i--) {
                     auto& arg = func.args[i - 1];
                     auto frame_offset = fdata.arg_data[i - 1].frame_offset;
 
-                    auto src = adjust_for_type(gen_register{ arg_registers[i - 1] }, arg.type);
+                    auto src = adjust_for_type(gen_register{ register_args[i - 1] }, arg.type);
                     auto dest = adjust_for_type(gen_offset{ 0, {rsp, '+', int_type(frame_offset)} }, arg.type);
                     em->mov(dest, toop(src));
                 }
             }
             else {
-                std::size_t max_reg_args = std::min(arg_registers.size(), func.args.size());
+                std::size_t max_reg_args = std::min(register_args.size(), func.args.size());
                 for (std::size_t i = 0; i < max_reg_args; i++) {
-                    fndata->arg_data[i].reg = arg_registers[i];
+                    fndata->arg_data[i].reg = register_args[i];
                 }
             }
 
@@ -471,8 +906,8 @@ struct generator {
             bool is_fptr = !std::holds_alternative<ir_label>(instr.operands[0]);
 
             std::size_t num_args = instr.operands.size() - 1;
-            if (num_args > arg_registers.size()) {
-                for (std::size_t i = num_args; i > arg_registers.size(); i--) {
+            if (num_args > register_args.size()) {
+                for (std::size_t i = num_args; i > register_args.size(); i--) {
                     int_type offs = (i - 1) * 8;
                     auto [op, optype] = transform_ir_operand(instr.operands[i]);
                     auto dest = gen_offset{ optype.get().size, { rsp, '+', offs } };
@@ -480,10 +915,10 @@ struct generator {
                 }
             }
 
-            std::size_t max_reg_args = std::min(arg_registers.size(), num_args);
+            std::size_t max_reg_args = std::min(register_args.size(), num_args);
             for (std::size_t i = max_reg_args; i > 0; i--) {
                 auto [op, optype] = transform_ir_operand(instr.operands[i]);
-                auto dest = adjust_for_type(arg_registers[i - 1], optype);
+                auto dest = adjust_for_type(register_args[i - 1], optype);
                 move(dest, optype, op, optype);
             }
 
@@ -646,17 +1081,31 @@ struct generator {
         }
         case ir_add:
         case ir_sub:
-        case ir_mul: {
+        case ir_mul:
+        case ir_div: {
             auto [b, btype] = transform_ir_operand(instr.operands[1]);
             auto [a, atype] = transform_ir_operand(instr.operands[0]);
             auto dest = adjust_for_type(instr_dest_to_gen_dest(idata.dest), instr.result_type);
 
-            if (!is_reg(a)) {
-                move(adjust_for_type(reg_intermediate, instr.result_type), instr.result_type, a, atype);
-                a = toop(adjust_for_type(reg_intermediate, instr.result_type));
-            }
+            if (instr.op == ir_div) {
+                move(adjust_for_type(rax, atype), atype, a, atype);
+                em->cdq(atype);
 
-            emit_binary_math_op(instr.op, todest(a), b);
+                if (is_lit(b) || (btype.get().size != atype.get().size)) {
+                    move(adjust_for_type(reg_intermediate, atype), atype, b, btype);
+                    b = toop(adjust_for_type(reg_intermediate, atype));
+                }
+                em->idiv(todest(b));
+
+                a = toop(adjust_for_type(rax, atype));
+            } else {
+                if (!is_reg(a)) {
+                    move(adjust_for_type(reg_intermediate, instr.result_type), instr.result_type, a, atype);
+                    a = toop(adjust_for_type(reg_intermediate, instr.result_type));
+                }
+
+                emit_binary_math_op(instr.op, todest(a), b);
+            }
 
             if (!(dest == todest(a))) {
                 move(dest, instr.result_type, a, atype);
