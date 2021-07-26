@@ -4,6 +4,6 @@ func exit(status: int): {};
 func free(ptr: pointer): int;
 func malloc(size: usize): pointer;
 func rand(): int;
-func system(c: &char): int;
+func system(c: *char): int;
 
 }

@@ -1,5 +1,5 @@
 extern(C) {
 
-func strlen(s: &char): usize;
+func strlen(s: *char): usize;
 
 }

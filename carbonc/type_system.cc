@@ -336,8 +336,8 @@ type_id get_optional_type_to(type_system& ts, type_id elem_type) {
     return execute_type_constructor(ts, ts.builtin_scope->scope, *ts.optional_type_constructor, { elem_type });
 }
 
-type_id get_new_type_to(type_system& ts, type_id elem_type) {
-    return execute_type_constructor(ts, ts.builtin_scope->scope, *ts.new_type_constructor, { elem_type });
+type_id get_auto_type_to(type_system& ts, type_id elem_type) {
+    return execute_type_constructor(ts, ts.builtin_scope->scope, *ts.auto_type_constructor, { elem_type });
 }
 
 type_id get_array_type(type_system& ts, int_type size, type_id elem_type) {
@@ -532,7 +532,7 @@ void try_coerce_to(type_system& ts, ast_node& from, type_id to) {
 }
 
 std::vector<struct_field>& get_type_fields(type_id id) {
-    if (id.get().kind == type_kind::new_) {
+    if (id.get().kind == type_kind::auto_) {
         return get_type_fields(id.get().elem_type);
     }
     return id.get().structure.fields;
@@ -573,7 +573,7 @@ bool is_pointer(type_id id) {
 bool is_aggregate(type_id id) {
     if (!id.valid()) return false;
 
-    if (id.get().kind == type_kind::new_) {
+    if (id.get().kind == type_kind::auto_) {
         return is_aggregate(id.get().elem_type);
     }
     return id.get().kind == type_kind::structure ||
@@ -583,7 +583,7 @@ bool is_aggregate(type_id id) {
 }
 
 bool is_type_kind(type_id id, type_kind k) {
-    if (id.get().kind == type_kind::new_) {
+    if (id.get().kind == type_kind::auto_) {
         return is_type_kind(id.get().elem_type, k);
     }
     return id.get().kind == k;
@@ -1126,12 +1126,6 @@ type_id get_type_expr_node_type(type_system& ts, ast_node& node) {
             auto elem_type = get_type_expr_node_type(ts, *node.children[0]);
             if (elem_type.valid()) {
                 node.type_id = get_optional_type_to(ts, elem_type);
-            }
-        }
-        if (node.type_qual == type_qualifier::new_) {
-            auto elem_type = get_type_expr_node_type(ts, *node.children[0]);
-            if (elem_type.valid()) {
-                node.type_id = get_new_type_to(ts, elem_type);
             }
         }
         break;
@@ -2866,7 +2860,7 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
                 is_pointer = true;
                 stype = ltype.get().elem_type;
             }
-            else if ((ltype.get().kind == type_kind::new_) && is_aggregate(ltype.get().elem_type)) {
+            else if ((ltype.get().kind == type_kind::auto_) && is_aggregate(ltype.get().elem_type)) {
                 is_struct = true;
                 stype = ltype.get().elem_type;
             }
@@ -3443,7 +3437,7 @@ type_system::type_system(memory_arena& arena) {
 
     {
         auto node = make_in_arena<ast_node>(*ast_arena);
-        node->type_def.name = string_hash{ "&" };
+        node->type_def.name = string_hash{ "*" };
         node->type_def.mangled_name = string_hash{ "ptr" };
         node->type_def.kind = type_kind::constructor;
 
@@ -3455,7 +3449,7 @@ type_system::type_system(memory_arena& arena) {
             type_def& tf = node->type_def;
 
             tf.kind = type_kind::pointer;
-            tf.name = string_hash{ "&" + type_arg.get().name.str };
+            tf.name = string_hash{ "*" + type_arg.get().name.str };
             tf.mangled_name = string_hash{ "ptr__T" + type_arg.get().mangled_name.str };
             tf.size = sizeof(void*);
             tf.alignment = alignof(void*);
@@ -3499,8 +3493,8 @@ type_system::type_system(memory_arena& arena) {
 
     {
         auto node = make_in_arena<ast_node>(*ast_arena);
-        node->type_def.name = string_hash{ "@" };
-        node->type_def.mangled_name = string_hash{ "new" };
+        node->type_def.name = string_hash{ "auto" };
+        node->type_def.mangled_name = string_hash{ "auto" };
         node->type_def.kind = type_kind::constructor;
 
         type_constructor* ptr_template = &node->type_def.constructor;
@@ -3510,16 +3504,16 @@ type_system::type_system(memory_arena& arena) {
             auto node = make_in_arena<ast_node>(*ast_arena);
             type_def& tf = node->type_def;
 
-            tf.kind = type_kind::new_;
-            tf.name = string_hash{ "@" + type_arg.get().name.str };
-            tf.mangled_name = string_hash{ "new__T" + type_arg.get().mangled_name.str };
+            tf.kind = type_kind::auto_;
+            tf.name = string_hash{ "auto " + type_arg.get().name.str };
+            tf.mangled_name = string_hash{ "auto__T" + type_arg.get().mangled_name.str };
             tf.size = type_arg.get().size;
             tf.alignment = type_arg.get().alignment;
             tf.elem_type = type_arg;
             return node;
         };
 
-        new_type_constructor = ptr_template;
+        auto_type_constructor = ptr_template;
         register_type(*this, builtin_scope->scope, *node);
         builtin_type_nodes.push_back(std::move(node));
     }

@@ -1,15 +1,17 @@
 import std::string
 
-var _glob = 10
+var g_glob = 25
 
 func test_div(a, b) {
     return a / b
 }
 
 func main(args: []string) {
-    let a = test_div(10, 5)
+    auto a = test_div(10, 5)
 
-    var j = _glob
+    g_glob = 40
+
+    var j = g_glob
 
     return j
 }

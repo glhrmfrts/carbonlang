@@ -3,5 +3,5 @@ type configuration_group = struct {
 };
 
 type configuration = struct {
-    first_group: &configuration_group
+    first_group: *configuration_group
 };

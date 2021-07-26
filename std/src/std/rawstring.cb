@@ -1,36 +1,36 @@
 import std::alloc as alloc
 
-func copy(str: &char): &char {
+func copy(str: *char): *char {
     return copy(str, str.strlen)
 }
 
-func copy(str: &char, size: usize): &char {
-    let newstr = cast(&char) alloc::alloc(size+1)
+func copy(str: *char, size: usize): *char {
+    let newstr = cast(*char) alloc::alloc(size+1)
     copy(newstr, str, size)
     newstr[size] = 0
     return newstr
 }
 
-func copy(dest: &char, src: &char, size: usize) {
+func copy(dest: *char, src: *char, size: usize) {
     alloc::copy(cast(pointer) dest, cast(pointer) src, size)
 }
 
-func set(dest: &char, value: char, count: usize) {
+func set(dest: *char, value: char, count: usize) {
     alloc::set(cast(pointer) dest, value, count)
 }
 
-func strlen(str: &char): usize {
+func strlen(str: *char): usize {
     var c : usize
     var p = str
     while (*p != 0) {
         //let ip = cast[uintptr] p;
-        p = p + 1//cast[&char] (ip + 1);
+        p = p + 1//cast[*char] (ip + 1);
         c = c + 1
     }
     return c
 }
 
-func equals(a: &char, b: &char): bool {
+func equals(a: *char, b: *char): bool {
     if (a.strlen != b.strlen) { return false }
 
     for (i in 0, a.strlen) {

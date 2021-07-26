@@ -405,15 +405,15 @@ struct emitter {
     }
 
     void add_global_int16(std::string_view label, int16_t v) {
-        emitln(" dw %x", (int32_t)v);
+        emitln("%s: dw 0x%x", label.data(), (int32_t)v);
     }
 
     void add_global_int32(std::string_view label, int32_t v) {
-        emitln(" dd %x", (int32_t)v);
+        emitln("%s: dd 0x%x", label.data(), (int32_t)v);
     }
 
     void add_global_int64(std::string_view label, int64_t v) {
-        emitln(" dq %llx", v);
+        emitln("%s: dq 0x%llx", label.data(), v);
     }
 
     void begin_code_segment() {
@@ -761,6 +761,10 @@ struct generator {
         }
         em->begin_data_segment();
 
+        for (const auto& g : prog.globals) {
+            generate_global_var(g);
+        }
+
         int si = 0;
         for (const auto& str : prog.strings) {
             em->add_string_data(get_string_label(si), str);
@@ -779,6 +783,28 @@ struct generator {
     }
 
     // Section: code generators
+
+    void generate_global_var(const ir_global_data& gd) {
+        if (gd.type.get().kind == type_kind::integral) {
+            int_type value = 0;
+            if (gd.value && std::holds_alternative<ir_int>(*gd.value)) {
+                auto& integer = std::get<ir_int>(*gd.value);
+                value = integer.val;
+            }
+            if (gd.type.get().size == 2) {
+                em->add_global_int16(gd.name, (int16_t)value);
+            }
+            if (gd.type.get().size == 4) {
+                em->add_global_int32(gd.name, (int32_t)value);
+            }
+            if (gd.type.get().size == 8) {
+                em->add_global_int64(gd.name, (int64_t)value);
+            }
+        }
+        else {
+            assert(!"generate_global_var: type not handled");
+        }
+    }
 
     void generate_func_code(ir_func& func) {
         auto& fdata = funcdata[func.index];
@@ -1246,6 +1272,9 @@ struct generator {
                 toop(get_local_destination(arg->index, arg->type)),
                 arg->type
             );
+        }
+        else if (auto arg = std::get_if<ir_global>(&opr); arg) {
+            return std::make_pair(gen_data_offset{ arg->name }, arg->type);
         }
         else if (auto arg = std::get_if<ir_stack>(&opr); arg) {
             auto cgop = pop();

@@ -30,22 +30,22 @@ func append(a: &array, elem) {
     a.len = a.len + 1
 }
 
-func nth(a: &array, i) {
+func nth(a: *array, i) {
     return &a.data[i]
 }
 
-func dispose(a: &array) {
+func cleanup(a: *array) {
     alloc::free(cast(pointer) a.data)
+}
+
+func auto_cleanup(a: *array) {
+    a.cleanup()
 }
 
 func main(args: []string) {
     println(args[0].data)
 
-    let arr = make_array(`int, 10)
-    defer arr.dispose
-
-    let arr2 = make_array(`int, 10)
-    defer arr2.dispose
+    auto let arr = make_array(`int, 10)
 
     let ptr = nullpointer
 

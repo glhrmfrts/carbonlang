@@ -55,7 +55,7 @@ struct parser_impl {
         else if (TOK_CHAR == '[') {
             result = parse_array_type_expr();
         }
-        else if (TOK_CHAR == '&') {
+        else if (TOK_CHAR == '*') {
             lex->next();
 
             auto to_type = parse_type_expr(false, true); // no wrap
@@ -69,14 +69,6 @@ struct parser_impl {
             auto to_type = parse_type_expr(false, true); // no wrap
             if (to_type) {
                 result = make_type_qualifier_node(*ast_arena, pos, type_qualifier::optional, std::move(to_type));
-            }
-        }
-        else if (TOK_CHAR == '@') {
-            lex->next();
-
-            auto to_type = parse_type_expr(false, true); // no wrap
-            if (to_type) {
-                result = make_type_qualifier_node(*ast_arena, pos, type_qualifier::new_, std::move(to_type));
             }
         }
         else if (TOK == token_type::identifier) {
@@ -170,6 +162,7 @@ struct parser_impl {
         auto t = TOK;
         switch (t) {
         case token_type::identifier:
+        case token_type::auto_:
             return parse_arg_decl(token_type::let);
         case token_type::func:
             return parse_func_decl();
@@ -496,6 +489,8 @@ struct parser_impl {
         switch (t) {
         case token_type::var:
         case token_type::let:
+        case token_type::auto_:
+        case token_type::pure:
             return parse_var_decl(t);
         case token_type::func:
             return parse_func_decl();
@@ -698,6 +693,8 @@ struct parser_impl {
     arena_ptr<ast_node> parse_arg_decl(token_type kind) {
         auto pos = lex->pos();
 
+        auto modifiers = parse_var_modifiers();
+
         if (TOK != token_type::identifier) {
             throw parse_error(filename, lex->pos(), "expected identifier in argument declaration");
         }
@@ -719,13 +716,19 @@ struct parser_impl {
             //throw parse_error(filename, lex->pos(), "expected initial value in let declaration");
         }
 
-        return make_var_decl_node(*ast_arena, pos, kind, std::move(id), std::move(var_type), std::move(value));
+        return make_var_decl_node(*ast_arena, pos, kind, std::move(id), std::move(var_type), std::move(value), modifiers);
     }
 
     arena_ptr<ast_node> parse_var_decl(token_type kind) {
         auto pos = lex->pos();
-        if ((ctx() == parse_context::root)) {
-            lex->next(); // eat the 'var' or 'let'
+
+        auto modifiers = parse_var_modifiers();
+        auto declkind = TOK;
+        if (TOK == token_type::var || TOK == token_type::let) {
+            lex->next();
+        }
+        else {
+            declkind = token_type::let;
         }
 
         if (TOK != token_type::identifier) {
@@ -748,7 +751,16 @@ struct parser_impl {
             //throw parse_error(filename, lex->pos(), "expected initial value in let declaration");
         }
 
-        return make_var_decl_node(*ast_arena, pos, kind, std::move(id), std::move(var_type), std::move(value));
+        return make_var_decl_node(*ast_arena, pos, kind, std::move(id), std::move(var_type), std::move(value), modifiers);
+    }
+
+    std::vector<token_type> parse_var_modifiers() {
+        std::vector<token_type> mods;
+        while (TOK == token_type::auto_ || TOK == token_type::pure) {
+            mods.push_back(TOK);
+            lex->next();
+        }
+        return mods;
     }
 
     // Section: expressions
@@ -1030,7 +1042,7 @@ struct parser_impl {
                     }
 
                     // TODO: specialized node type needed?
-                    return make_var_decl_node(*ast_arena, pos, token_type::let, std::move(id), { nullptr, nullptr }, std::move(value));
+                    return make_var_decl_node(*ast_arena, pos, token_type::let, std::move(id), { nullptr, nullptr }, std::move(value), {});
                 }
                 else {
                     return parse_expr();

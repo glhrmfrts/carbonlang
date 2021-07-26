@@ -18,6 +18,6 @@ func GetProcessHeap(): int;
 
 // Command-line related functions
 
-func GetCommandLineA(): &char;
+func GetCommandLineA(): *char;
 
 }

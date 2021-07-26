@@ -1,7 +1,14 @@
 import std::os::windows;
 
+context _allocator_key: *Allocator
+
 func alloc(size: usize): pointer {
-    return HeapAlloc(GetProcessHeap(), 0, size);
+    let allocator = context_get(_allocator_key)
+
+    with_context(_allocator, my_allocator) {
+        join()
+    }
+    return allocator.alloc(allocator, size)
 }
 
 func free(ptr: pointer) {

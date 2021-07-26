@@ -2,14 +2,17 @@ code_unit{
   main.cb
   decl_list{
     import_decl{ std::string}
-    var_decl{_glob = 10}
+    var_decl{g_glob = 25}
     func_decl{test_div (var_decl{a}, var_decl{b}) {
         stmt_list{
           return{{a / b}}}}}
     func_decl{main (var_decl{args: }) {
         decl_list{
-          var_decl{a = call{test_div (10, 5)}}
-          var_decl{j = _glob}}
+          var_decl{a = call{test_div (10, 5)}}}
+        stmt_list{
+          {g_glob = 40}}
+        decl_list{
+          var_decl{j = g_glob}}
         stmt_list{
           return{j}}}}
     func_decl{test_div (var_decl{a: }, var_decl{b: }) {

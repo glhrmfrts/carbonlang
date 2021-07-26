@@ -132,6 +132,7 @@ struct ast_node {
     arena_ptr<ast_node> sizeof_type_expr{nullptr, nullptr};
     ast_node* parent = nullptr;
     desugar_flag::type desugar_flags = 0;
+    std::vector<token_type> var_modifiers;
 
     // data filled by the type system
     scope_def scope;
@@ -232,7 +233,7 @@ arena_ptr<ast_node> make_type_decl_node(memory_arena& arena, const position& pos
 
 arena_ptr<ast_node> make_type_constructor_decl_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& tpl, arena_ptr<ast_node>&& arg_list, arena_ptr<ast_node>&& contents);
 
-arena_ptr<ast_node> make_var_decl_node(memory_arena& arena, const position& pos, token_type kind, arena_ptr<ast_node>&& id, arena_ptr<ast_node>&& decl_type, arena_ptr<ast_node>&& decl_val);
+arena_ptr<ast_node> make_var_decl_node(memory_arena& arena, const position& pos, token_type kind, arena_ptr<ast_node>&& id, arena_ptr<ast_node>&& decl_type, arena_ptr<ast_node>&& decl_val, const std::vector<token_type>& mods);
 
 arena_ptr<ast_node> make_func_decl_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& id, arena_ptr<ast_node>&& arg_list, arena_ptr<ast_node>&& ret_type, arena_ptr<ast_node>&& body, func_linkage linkage);
 

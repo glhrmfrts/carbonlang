@@ -21,14 +21,13 @@ enum class func_linkage {
 };
 
 enum class type_qualifier {
-    new_,
     optional,
     pointer,
 };
 
 enum class type_kind {
     void_,
-    new_,
+    auto_,
     pointer,
     optional,
     integral,
@@ -324,7 +323,7 @@ struct type_system {
 
     type_constructor* ptr_type_constructor;
     type_constructor* optional_type_constructor;
-    type_constructor* new_type_constructor;
+    type_constructor* auto_type_constructor;
     type_constructor* tuple_type_constructor;
     type_constructor* arr_type_constructor;
     type_constructor* slice_type_constructor;
