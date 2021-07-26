@@ -68,7 +68,7 @@ struct position {
     int col_offs;
 };
 
-constexpr char DEREF_OP = '*';
+constexpr char DEREF_OP = '@';
 constexpr char ADDR_OP = '&';
 
 bool is_unary_op(token_type t);

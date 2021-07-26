@@ -71,6 +71,14 @@ struct parser_impl {
                 result = make_type_qualifier_node(*ast_arena, pos, type_qualifier::optional, std::move(to_type));
             }
         }
+        else if (TOK == token_type::pure) {
+            lex->next();
+
+            auto to_type = parse_type_expr(false, true); // no wrap
+            if (to_type) {
+                result = make_type_qualifier_node(*ast_arena, pos, type_qualifier::pure, std::move(to_type));
+            }
+        }
         else if (TOK == token_type::identifier) {
             result = make_identifier_node(*ast_arena, lex->pos(), { lex->string_value() });
 

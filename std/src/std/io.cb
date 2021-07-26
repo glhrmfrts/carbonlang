@@ -1,5 +1,5 @@
 import std::libc::stdio;
 
-func println(c: *char): {} {
+func println(c: *pure uint8): {} {
     puts(c);
 }

@@ -1,121 +1,28 @@
 import std::io
 import std::string
 import std::rawstring
-import std::alloc as alloc
+import std::alloc
 import std::os::windows
 
 private {
 
 func init_command_line(): []string {
     let cmdline = GetCommandLineA()
-    let data = cast(*string) alloc::alloc(sizeof(string))
-    let result = []string{ data, 1 }
+    let result = make_slice(`string, 1)
     result[0] = string{ cmdline, cmdline.strlen }
     return result
 }
 
 func free_command_line(args: []string) {
-    alloc::free(cast(pointer) args.data)
+    free(cast(pointer) args.data)
 }
 
 extern(C) func carbon_main(): int {
     let args = init_command_line()
     defer args.free_command_line
 
-    static if (custom_base_allocator) {
-        let default_allocator = make_base_allocator()
-    } else {
-        let default_allocator = make_default_allocator()
-    }
-
-    let ctx = make_context(&default_allocator)
-    ctx.set(alloc::key_allocator, cast(opaque) &default_allocator)
-    
-    static if (build_type == _debug) {
-        import std::backtrace
-        ctx.set(key_backtrace, cast(opaque) make_backtrace_state())
-    }
-
     import main
-    return context_call(&ctx, main(args))
+    return main(args)
 }
-
-carbonc --embed-std --carbon-path /code/pl/carbon -Obuild_type=_debug -Otarget_type=_static
-
-carbonc --embed-std -Obuild_type=_debug
-
-import nested std::common
-import        std::build_framework
-
-func run_some_preprocessing(args: []string) {
-
-}
-
-func make_quoreone_package() {
-    return make_package(
-        _name = "quoreone",
-        _target_type = _shared_library,
-        _depends_on = {"carbon/cb-json:0.3.5"},
-        _include_directories = "c-projects/include",
-        _link_directories = "c-projects/build/lib",
-        _link_libraries = "gattlib wiringPi curl expat m",
-        _source_dir = "src",
-        _source_filter = {"src/quoreone/*.cb"},
-    )
-}
-
-func make_uploader_package() {
-    return make_package(
-        _name = "quoreone-uploader",
-        _target_type = _executable,
-        _depends_on = {"quoreone"},
-        _source_dir = "src",
-        _source_filter = {"src/quoreone_uploader/*.cb"},
-    )
-}
-
-func make_connector_package() {
-    return make_package(
-        _name = "quoreone-connector",
-        _target_type = _executable,
-        _depends_on = {"quoreone"},
-        _source_dir = "src",
-        _source_filter = {"src/quoreone_connector/*.cb"},
-    )
-}
-
-func build_c(mgr: *build_manager, args: []string) {
-    force {
-        cmd("cd c-projects && mkdir -p build && cd build")
-        cmd("cmake ..")
-        cmd("make -j4")
-        cmd("cd ../..")
-    }
-}
-
-func main(args: []string) {
-    auto let manager = make_build_manager()
-    manager.set_build_type(_debug)
-    manager.add_package_repository(make_github_package_repository())
-    manager.add_package(make_quoreone_package())
-    manager.add_package(make_uploader_package())
-    manager.add_package(make_connector_package())
-    manager.add_task("build_c", build_c)
-    manager.set_task_dependencies("build", []string{"build_c"})
-    manager.set_publish_output_location("../my_repo")
-    return manager.execute(args)
-}
-
-
-carbonc bootstrap
-
-./carbon build_c
-./carbon build
-./carbon run
-./carbon deps
-./carbon clean
-./carbon format
-./carbon help
-./carbon publish
 
 }

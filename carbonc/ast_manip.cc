@@ -96,6 +96,9 @@ arena_ptr<ast_node> copy_node_helper(type_system& ts, ast_node& node) {
     else if (node.type == ast_type::struct_type) {
         return make_struct_type_node(*ts.ast_arena, node.pos, copy_node(ts, node.children[0].get()));
     }
+    else if (node.type == ast_type::slice_type) {
+        return make_slice_type_node(*ts.ast_arena, node.pos, copy_node(ts, node.children[0].get()));
+    }
     else if (node.type == ast_type::type_constructor_instance) {
         return make_type_constructor_instance_node(*ts.ast_arena, node.pos,
             copy_node(ts, node.children[0].get()),

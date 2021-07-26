@@ -1,14 +1,19 @@
 import std::os::windows;
 
-context _allocator_key: *Allocator
-
 func alloc(size: usize): pointer {
-    let allocator = context_get(_allocator_key)
+    return HeapAlloc(GetProcessHeap(), 0, size);
+}
 
-    with_context(_allocator, my_allocator) {
-        join()
-    }
-    return allocator.alloc(allocator, size)
+func allocn(`T, n: usize): *T {
+    let size = n*sizeof(T)
+    let result = alloc(size)
+    set(result, 0, size)
+    return cast(*T) result
+}
+
+func make_slice(`T, n: usize): []T {
+    let data = alloc(`T, n)
+    return []T{ data, n }
 }
 
 func free(ptr: pointer) {

@@ -171,6 +171,9 @@ struct lexer_impl {
             if (!std::strcmp("auto", l.string)) {
                 return token_type::auto_;
             }
+            if (!std::strcmp("pure", l.string)) {
+                return token_type::pure;
+            }
             if (!std::strcmp("func", l.string)) {
                 return token_type::func;
             }

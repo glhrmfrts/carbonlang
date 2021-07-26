@@ -14,6 +14,7 @@ struct token_properties {
 
 static std::unordered_map<token_type, token_properties> token_props = {
     {token_from_char('!'), { UNARY_OP, 0 }},
+    {token_from_char('@'), { UNARY_OP, 0 }},
 
     {token_from_char('='), { BINARY_OP, 400 }},
     {token_type::plus_assign, { BINARY_OP, 400 }},
@@ -44,7 +45,7 @@ static std::unordered_map<token_type, token_properties> token_props = {
     {token_from_char('+'), { BINARY_OP, 1000 }},
     {token_from_char('-'), { BINARY_OP | UNARY_OP, 1000 }},
 
-    {token_from_char('*'), { BINARY_OP | UNARY_OP, 1100 }},
+    {token_from_char('*'), { BINARY_OP, 1100 }},
     {token_from_char('/'), { BINARY_OP, 1100 }},
     {token_from_char('%'), { BINARY_OP, 1100 }},
 };
@@ -96,7 +97,11 @@ token_type token_from_char(char c) {
 }
 
 char token_to_char(token_type t) {
-    return (char)static_cast<unsigned int>(t);
+    auto it = static_cast<unsigned int>(t);
+    if (it >= 256) {
+        return 0;
+    }
+    return (char)it;
 }
 
 }

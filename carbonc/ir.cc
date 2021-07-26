@@ -666,7 +666,7 @@ void generate_ir_deref_expr(ast_node& node) {
 
 void generate_ir_addr_expr(ast_node& node) {
     // check if it's a transformed aggregate argument pointer
-    bool noop = node.children[0]->type == ast_type::unary_expr && node.children[0]->op == token_from_char('*');
+    bool noop = node.children[0]->type == ast_type::unary_expr && node.children[0]->op == token_from_char(DEREF_OP);
     noop = noop || (node.children[0]->slice.self != nullptr);
     if (noop) {
         generate_ir_node(*node.children[0]->children[0]);
@@ -679,10 +679,10 @@ void generate_ir_addr_expr(ast_node& node) {
 }
 
 void generate_ir_unary_expr(ast_node& node) {
-    if (token_to_char(node.op) == '*') {
+    if (token_to_char(node.op) == DEREF_OP) {
         generate_ir_deref_expr(node);
     }
-    else if (token_to_char(node.op) == '&') {
+    else if (token_to_char(node.op) == ADDR_OP) {
         generate_ir_addr_expr(node);
     }
     else if (token_to_char(node.op) == '!') {

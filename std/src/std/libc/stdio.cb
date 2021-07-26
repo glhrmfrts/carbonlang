@@ -1,6 +1,6 @@
 extern(C) {
 
-func puts(c: rawstring): int;
+func puts(c: *pure uint8): int;
 func putc(c: char, stream: pointer): int;
 //func printf(s: raw_string, i: int);
 

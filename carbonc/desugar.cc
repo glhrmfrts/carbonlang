@@ -33,8 +33,7 @@ void check_var_decl_bool_op(type_system& ts, ast_node& node) {
         node.var_value()->desugar_flags |= desugar_flag::bool_op_desugared;
 
         auto idref = make_identifier_node(*ts.ast_arena, {}, node.var_id()->id_parts);
-        auto temp = make_temp_variable_for_bool_op_resolved(ts, std::move(node.children[ast_node::child_var_decl_value]), std::move(idref));
-
+        auto temp = make_temp_variable_for_bool_op_resolved(ts, std::move(node.children[ast_node::child_var_decl_value]), std::move(idref));        
         node.pre_children.push_back(std::move(temp));
     }
 }

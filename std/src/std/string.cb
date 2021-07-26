@@ -1,4 +1,5 @@
 import std::alloc
+import std::rawstring
 
 type string = struct {
     auto data: *pure uint8
@@ -6,52 +7,46 @@ type string = struct {
     is_lit:    bool
 }
 
-static if (custom_string_allocator) {
-    private extern func string_alloc(size: usize)
-    private extern func string_free(ptr: pointer)
-} else if (custom_allocator) {
-    private extern func alloc(size: usize)
-    private extern func free(ptr: pointer)
-} else {
-    import std::alloc_raw_default
+func auto_cleanup(s: *string) {
+    if (!s.is_lit) {
+        free(cast(pointer) s.data)
+    }
 }
 
-func make_string(data: pure [...]uint8) {
-    return string{data, sizeof(data), true}
+func copy_cstring(cstr: *pure uint8, len: usize) {
+    let data = allocn(`uint8, len + 1)
+    copy(cast(pointer) data, cast(pointer) cstr, len)
+    data[len] = '\0'
+    return data
 }
 
 func make_string(data: *pure uint8) {
-    return string{data, strlen(data), false}
+    let len = data.strlen
+    let cpy = copy_cstring(data, len)
+    return string{cpy, len, false}
 }
 
 func make_string(data: *pure uint8, len: usize) {
-    return string{data, len, false}
+    let cpy = copy_cstring(data, len)
+    return string{cpy, len, false}
 }
 
 func concat(a: *pure string, b: *pure string) {
     let newlen = a.len + b.len
-    let data = alloc(`uint8, newlen)
-    copy(cast(pointer)data, cast(pointer)a.data, a.len)
-    copy(cast(pointer)(data + a.len), b.data, b.len)
+    let data = allocn(`uint8, newlen)
+    copy(cast(pointer) data, cast(pointer) a.data, a.len)
+    copy(cast(pointer) (data + a.len), cast(pointer) b.data, b.len)
     data[newlen] = '\0'
     let result = string{data, newlen}
     return result
 }
 
 func find(str: *pure string, sub: *pure string) {
-    let offs = strstr(str.data, sub.data)
-    if (offs == nullpointer) {
-        return -1
-    }
-    return cast(usize)(offs - str.data)
+    return -1
 }
 
 func find(str: *pure string, offs: usize, sub: *pure string) {
-    let offs = strstr(str.data + offs, sub.data)
-    if (offs == nullpointer) {
-        return -1
-    }
-    return cast(usize)(offs - str.data)
+    return -1
 }
 
 func find_last(str: *pure string, sub: *pure string) {
@@ -66,7 +61,7 @@ func find_last(str: *pure string, sub: *pure string) {
 
 func substr(str: *pure string, begin: usize, end: usize) {
     if (end <= begin) {
-        return string{"",0}
+        return make_string("")
     }
     if (end > str.len) {
         end = str.len
@@ -74,26 +69,21 @@ func substr(str: *pure string, begin: usize, end: usize) {
 
     let len = end - begin
     if (len == 0) {
-        return string{"",0}
+        return make_string("")
     }
 
     return make_string(str.data + begin, len)
 }
 
-test func test_substr() {
-    
-}
-
-/*
 func to_string(value: int, base: int) {
     // check that the base if valid
-    if (base < 2 || base > 36) { return string{"",0} }
+    if (base < 2 || base > 36) { return make_string("") }
 
     var tmp_value : int
     var run_yet = false
     var offs = 0
 
-    let result = string{make_slice(`char, 25), 24}
+    let result = string{allocn(`uint8, 25), 24}
     result.data[24] = '\0'
 
     let tpl_str = "zyxwvutsrqponmlkjihgfedcba9876543210123456789abcdefghijklmnopqrstuvwxyz"
@@ -113,12 +103,24 @@ func to_string(value: int, base: int) {
     }
 
     // Apply negative sign
-    if (tmp_value < 0) *ptr++ = '-';
-    *ptr-- = '\0';
-    while(ptr1 < ptr) {
-        tmp_char = *ptr;
-        *ptr--= *ptr1;
-        *ptr1++ = tmp_char;
+    if (tmp_value < 0) {
+        @ptr = '-'
+        ptr += 1
+    }
+
+    @ptr = '\0'
+    ptr -= 1
+
+    var tmp_char : uint8
+    while (ptr1 < ptr) {
+        tmp_char = @ptr
+
+        @ptr = @ptr1
+        ptr += 1
+        ptr1 += 1
+
+        @ptr1 = tmp_char
+        ptr1 += 1
     }
     return result
 }
@@ -126,4 +128,3 @@ func to_string(value: int, base: int) {
 func to_string(i: int) {
     return to_string(i, 10)
 }
-*/

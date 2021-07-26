@@ -340,6 +340,10 @@ type_id get_auto_type_to(type_system& ts, type_id elem_type) {
     return execute_type_constructor(ts, ts.builtin_scope->scope, *ts.auto_type_constructor, { elem_type });
 }
 
+type_id get_pure_type_to(type_system& ts, type_id elem_type) {
+    return execute_type_constructor(ts, ts.builtin_scope->scope, *ts.pure_type_constructor, { elem_type });
+}
+
 type_id get_array_type(type_system& ts, int_type size, type_id elem_type) {
     return execute_type_constructor(ts, ts.builtin_scope->scope, *ts.arr_type_constructor, { size, elem_type });
 }
@@ -467,6 +471,10 @@ bool is_assignable_to(type_system& ts, type_id a, type_id b) {
         return true;
     }
 
+    if (tb.kind == ta.kind && (tb.flags & type_flags::is_pure)) {
+        return true;
+    }
+
     return false;
 }
 
@@ -532,7 +540,7 @@ void try_coerce_to(type_system& ts, ast_node& from, type_id to) {
 }
 
 std::vector<struct_field>& get_type_fields(type_id id) {
-    if (id.get().kind == type_kind::auto_) {
+    if (id.get().flags & (type_flags::is_auto | type_flags::is_pure)) {
         return get_type_fields(id.get().elem_type);
     }
     return id.get().structure.fields;
@@ -573,19 +581,23 @@ bool is_pointer(type_id id) {
 bool is_aggregate(type_id id) {
     if (!id.valid()) return false;
 
-    if (id.get().kind == type_kind::auto_) {
-        return is_aggregate(id.get().elem_type);
-    }
     return id.get().kind == type_kind::structure ||
            id.get().kind == type_kind::tuple ||
            id.get().kind == type_kind::array ||
            id.get().kind == type_kind::slice;
 }
 
+bool is_aggregate_root(type_id id) {
+    if (!id.valid()) return false;
+    if (id.get().flags) return false;
+
+    return id.get().kind == type_kind::structure ||
+        id.get().kind == type_kind::tuple ||
+        id.get().kind == type_kind::array ||
+        id.get().kind == type_kind::slice;
+}
+
 bool is_type_kind(type_id id, type_kind k) {
-    if (id.get().kind == type_kind::auto_) {
-        return is_type_kind(id.get().elem_type, k);
-    }
     return id.get().kind == k;
 }
 
@@ -1122,10 +1134,16 @@ type_id get_type_expr_node_type(type_system& ts, ast_node& node) {
                 node.type_id = get_pointer_type_to(ts, elem_type);
             }
         }
-        if (node.type_qual == type_qualifier::optional) {
+        else if (node.type_qual == type_qualifier::optional) {
             auto elem_type = get_type_expr_node_type(ts, *node.children[0]);
             if (elem_type.valid()) {
                 node.type_id = get_optional_type_to(ts, elem_type);
+            }
+        }
+        else if (node.type_qual == type_qualifier::pure) {
+            auto elem_type = get_type_expr_node_type(ts, *node.children[0]);
+            if (elem_type.valid()) {
+                node.type_id = get_pure_type_to(ts, elem_type);
             }
         }
         break;
@@ -2849,24 +2867,29 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
             
             bool is_pointer = false;
             bool is_optional = false;
-            bool is_struct = false;
+            bool is_struct = is_aggregate_root(stype);
 
-            if (ltype.get().kind == type_kind::optional) {
-                node.type_error = true;
-                add_type_error(ts, node.pos, "cannot access field of optional type '%s', check in an if statement", type_to_string(ltype).c_str());
+            enum { LIMIT = 32 };
+            int si = 0;
+            while (stype.valid() && !is_aggregate_root(stype) && (si++) < LIMIT) {
+                if (stype.get().kind == type_kind::optional) {
+                    node.type_error = true;
+                    add_type_error(ts, node.pos, "cannot access field of optional type '%s', check in an if statement", type_to_string(ltype).c_str());
+                }
+                else if ((stype.get().kind == type_kind::pointer) && is_aggregate(stype.get().elem_type)) {
+                    is_struct = true;
+                    is_pointer = true;
+                    stype = stype.get().elem_type;
+                }
+                else if ((stype.get().flags & (type_flags::is_auto | type_flags::is_pure)) && is_aggregate(stype.get().elem_type)) {
+                    stype = stype.get().elem_type;
+                    is_struct = true;
+                }
+                else if (is_aggregate(stype)) {
+                    is_struct = true;
+                }
             }
-            else if ((ltype.get().kind == type_kind::pointer) && is_aggregate(ltype.get().elem_type)) {
-                is_struct = true;
-                is_pointer = true;
-                stype = ltype.get().elem_type;
-            }
-            else if ((ltype.get().kind == type_kind::auto_) && is_aggregate(ltype.get().elem_type)) {
-                is_struct = true;
-                stype = ltype.get().elem_type;
-            }
-            else if (is_aggregate(ltype)) {
-                is_struct = true;
-            }
+            assert(stype.valid());
 
             int field_index = aggregate_find_field(stype, fieldid);
             if (is_struct && field_index != -1) {
@@ -3041,13 +3064,13 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
         visit_children(ts, node);
         node.type_error = node.children[0]->type_error;
 
-        if (token_to_char(node.op) == '*') {
+        if (token_to_char(node.op) == DEREF_OP) {
             // deref expression
 
             if (!(node.children[0]->type_id.valid() && is_pointer(node.children[0]->type_id))) {
                 add_type_error(ts, node.children[0]->pos,
-                    "right-side of unary '*' (deref operation) has type '%s', it must be a pointer",
-                    type_to_string(node.children[0]->type_id).c_str());
+                    "right-side of unary '%c' (deref operation) has type '%s', it must be a pointer",
+                    DEREF_OP, type_to_string(node.children[0]->type_id).c_str());
                 node.type_error = true;
             }
             else {
@@ -3056,7 +3079,7 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
                 node.type_error = false;
             }
         }
-        else if (token_to_char(node.op) == '&') {
+        else if (token_to_char(node.op) == ADDR_OP) {
             // addressof expression
 
             if (!(node.children[0]->type_id.valid())) {
@@ -3064,7 +3087,8 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
             }
             else if (!node.children[0]->lvalue.self) {
                 add_type_error(ts, node.children[0]->pos,
-                    "right-side of unary '&' (addressof operation) must be an lvalue (identifier, index expression)");
+                    "right-side of unary '%c' (addressof operation) must be an lvalue (identifier, index expression)",
+                    ADDR_OP);
                 node.type_error = true;
             }
             else {
@@ -3493,6 +3517,34 @@ type_system::type_system(memory_arena& arena) {
 
     {
         auto node = make_in_arena<ast_node>(*ast_arena);
+        node->type_def.name = string_hash{ "pure" };
+        node->type_def.mangled_name = string_hash{ "pure" };
+        node->type_def.kind = type_kind::constructor;
+
+        type_constructor* ptr_template = &node->type_def.constructor;
+        ptr_template->self = node.get();
+        ptr_template->func = [this](const std::vector<comptime_value>& arg) {
+            auto type_arg = std::get<type_id>(arg.front());
+            auto node = make_in_arena<ast_node>(*ast_arena);
+            type_def& tf = node->type_def;
+
+            tf.kind = type_arg.get().kind;
+            tf.name = string_hash{ "pure " + type_arg.get().name.str };
+            tf.mangled_name = string_hash{ "pure__T" + type_arg.get().mangled_name.str };
+            tf.size = type_arg.get().size;
+            tf.alignment = type_arg.get().alignment;
+            tf.elem_type = type_arg;
+            tf.flags |= type_flags::is_pure;
+            return node;
+        };
+
+        pure_type_constructor = ptr_template;
+        register_type(*this, builtin_scope->scope, *node);
+        builtin_type_nodes.push_back(std::move(node));
+    }
+
+    {
+        auto node = make_in_arena<ast_node>(*ast_arena);
         node->type_def.name = string_hash{ "auto" };
         node->type_def.mangled_name = string_hash{ "auto" };
         node->type_def.kind = type_kind::constructor;
@@ -3504,12 +3556,13 @@ type_system::type_system(memory_arena& arena) {
             auto node = make_in_arena<ast_node>(*ast_arena);
             type_def& tf = node->type_def;
 
-            tf.kind = type_kind::auto_;
+            tf.kind = type_arg.get().kind;
             tf.name = string_hash{ "auto " + type_arg.get().name.str };
             tf.mangled_name = string_hash{ "auto__T" + type_arg.get().mangled_name.str };
             tf.size = type_arg.get().size;
             tf.alignment = type_arg.get().alignment;
             tf.elem_type = type_arg;
+            tf.flags |= type_flags::is_auto;
             return node;
         };
 
