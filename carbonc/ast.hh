@@ -295,4 +295,13 @@ std::string visibility_name(token_type op);
 
 std::string func_linkage_name(func_linkage l);
 
+inline static bool has_var_modifier(ast_node& node, token_type mod) {
+    for (const auto nm : node.var_modifiers) {
+        if (nm == mod) {
+            return true;
+        }
+    }
+    return false;
+}
+
 }

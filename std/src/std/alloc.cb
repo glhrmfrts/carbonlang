@@ -1,7 +1,7 @@
-import std::os::windows;
+import std::os::windows
 
 func alloc(size: usize): pointer {
-    return HeapAlloc(GetProcessHeap(), 0, size);
+    return HeapAlloc(GetProcessHeap(), 0, size)
 }
 
 func allocn(`T, n: usize): *T {
@@ -12,12 +12,13 @@ func allocn(`T, n: usize): *T {
 }
 
 func make_slice(`T, n: usize): []T {
-    let data = alloc(`T, n)
+    // FIXME: let data = alloc(`T, n)
+    let data = allocn(`T, n)
     return []T{ data, n }
 }
 
 func free(ptr: pointer) {
-    HeapFree(GetProcessHeap(), 0, ptr);
+    HeapFree(GetProcessHeap(), 0, ptr)
 }
 
 /// Copies [size] bytes from [src] to [dest].
@@ -37,7 +38,7 @@ pop rdi
 }
 
 /// Stores [count] amount of [value] in [dest].
-func set(dest: pointer, value: char, count: usize) {
+func set(dest: pointer, value: uint8, count: usize) {
     asm%{
 push rdi
 

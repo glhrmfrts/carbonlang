@@ -1,5 +1,4 @@
 import std::alloc
-import std::rawstring
 
 type string = struct {
     auto data: *pure uint8
@@ -7,6 +6,7 @@ type string = struct {
     is_lit:    bool
 }
 
+/*
 func auto_cleanup(s: *string) {
     if (!s.is_lit) {
         free(cast(pointer) s.data)
@@ -31,7 +31,7 @@ func make_string(data: *pure uint8, len: usize) {
     return string{cpy, len, false}
 }
 
-func concat(a: *pure string, b: *pure string) {
+func concat(a: pure string, b: pure string) {
     let newlen = a.len + b.len
     let data = allocn(`uint8, newlen)
     copy(cast(pointer) data, cast(pointer) a.data, a.len)
@@ -41,57 +41,42 @@ func concat(a: *pure string, b: *pure string) {
     return result
 }
 
-func find(str: *pure string, sub: *pure string) {
+func find(str: pure string, sub: pure string) {
     return -1
 }
 
-func find(str: *pure string, offs: usize, sub: *pure string) {
+func find(str: pure string, offs: usize, sub: pure string) {
     return -1
 }
 
-func find_last(str: *pure string, sub: *pure string) {
-    var last = find(str, sub)
-    var cur = last
+func find_last(str: pure string, sub: pure string) {
+    let last = find(str, sub)
+    let cur = last
     while (cur != -1) {
         last = cur
         cur = find(str, cur + 1, sub)
     }
     return last
 }
-
-func substr(str: *pure string, begin: usize, end: usize) {
-    if (end <= begin) {
-        return make_string("")
-    }
-    if (end > str.len) {
-        end = str.len
-    }
-
-    let len = end - begin
-    if (len == 0) {
-        return make_string("")
-    }
-
-    return make_string(str.data + begin, len)
-}
+*/
 
 func to_string(value: int, base: int) {
     // check that the base if valid
-    if (base < 2 || base > 36) { return make_string("") }
+    if (base < 2 || base > 36) { return "" }
 
-    var tmp_value : int
-    var run_yet = false
-    var offs = 0
+    let tmp_value : int
+    let run_yet = false
+    let offs = 0
 
-    let result = string{allocn(`uint8, 25), 24}
+    let result = string{ allocn(`uint8, 25), 24, false }
     result.data[24] = '\0'
 
     let tpl_str = "zyxwvutsrqponmlkjihgfedcba9876543210123456789abcdefghijklmnopqrstuvwxyz"
 
     while (value || !run_yet) {
-        if (offs >= 24) {
-            break
-        }
+        /*if (offs >= 24) {
+            //break
+        }*/
 
         tmp_value = value
         value /= base
@@ -102,6 +87,9 @@ func to_string(value: int, base: int) {
         run_yet = true
     }
 
+    let ptr = result.data
+    let ptr1 = result.data
+
     // Apply negative sign
     if (tmp_value < 0) {
         @ptr = '-'
@@ -111,7 +99,7 @@ func to_string(value: int, base: int) {
     @ptr = '\0'
     ptr -= 1
 
-    var tmp_char : uint8
+    let tmp_char : uint8
     while (ptr1 < ptr) {
         tmp_char = @ptr
 
@@ -122,7 +110,7 @@ func to_string(value: int, base: int) {
         @ptr1 = tmp_char
         ptr1 += 1
     }
-    return result
+    return ""
 }
 
 func to_string(i: int) {

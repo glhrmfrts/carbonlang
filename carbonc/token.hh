@@ -24,7 +24,6 @@ enum class token_type : unsigned int {
     bor,
     bxor,
     bnot,
-    var,
     let,
     auto_,
     func,

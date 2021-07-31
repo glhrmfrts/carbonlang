@@ -101,7 +101,7 @@ void check_func_return_aggregate_type(type_system& ts, ast_node& func) {
         auto new_ret_type = get_pointer_type_to(ts, func.type_def.func.ret_type);
         func.children[ast_node::child_func_decl_ret_type] = make_type_resolver_node(*ts.ast_arena, new_ret_type);
 
-        auto arg_decl = make_var_decl_of_type(ts, token_type::var, "$cb_agg_ret", new_ret_type);
+        auto arg_decl = make_var_decl_of_type(ts, token_type::let, "$cb_agg_ret", new_ret_type);
 
         args.insert(args.begin(), std::move(arg_decl));
         declare_func_arguments(ts, func);
@@ -167,7 +167,7 @@ void check_var_decl_aggregate_call(type_system& ts, ast_node& node) {
 void check_temp_aggregate_call(type_system& ts, ast_node& node) {
     if (is_aggregate_type(node.type_id) && !(node.call.flags & call_flag::is_aggregate_return)) {
         auto tempname = generate_temp_name();
-        auto temp = make_var_decl_of_type(ts, token_type::var, tempname, node.type_id);
+        auto temp = make_var_decl_of_type(ts, token_type::let, tempname, node.type_id); // TODO: auto
         resolve_node_type_post(ts, temp.get());
 
         auto ref = make_identifier_node(*ts.ast_arena, node.pos, { tempname });

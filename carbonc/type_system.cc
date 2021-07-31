@@ -14,9 +14,6 @@
 
 namespace carbon {
 
-constexpr int MIN_PASS_FOR_METHOD_CALL_SUGAR = 10;
-constexpr int MIN_PASS_FOR_FIELD_CALL_SUGAR = 12;
-
 static const type_id invalid_type{};
 
 type_id get_type_expr_node_type(type_system& ts, ast_node& node);
@@ -1108,7 +1105,7 @@ type_id get_type_expr_node_type(type_system& ts, ast_node& node) {
         node.type_error = true;
 
         if (build_identifier_value(node.id_parts) == "T") {
-            printf("T\n");
+            //printf("T\n");
         }
 
         auto sym = find_symbol(ts, separate_module_identifier(node.id_parts));
@@ -1960,8 +1957,8 @@ void resolve_assignment_type(type_system& ts, ast_node& node) {
     // Check if we can re-assign the variable
     if (node.children[0]->type == ast_type::identifier) {
         auto local = get_symbol_local(*node.children[0]->lvalue.symbol);
-        if (local && local->self->op == token_type::let && !(local->flags & local_flag::is_temp)) {
-            add_type_error(ts, node.children[0]->pos, "cannot re-assign a 'let' value, use 'var' instead");
+        if (local && has_var_modifier(*local->self, token_type::const_)) {
+            add_type_error(ts, node.children[0]->pos, "cannot re-assign a 'const' variable");
             node.type_error = true;
             return;
         }
@@ -2413,6 +2410,32 @@ template <typename F> void for_each_child_recur(ast_node& node, ast_type type, F
     }
 }
 
+void process_thread_first_expr(type_system& ts, ast_node& node) {
+    if (node.children[1]->type != ast_type::call_expr) {
+        add_type_error(ts, node.children[1]->pos, "'->' operator expects a call expression in the right-side");
+        return;
+    }
+
+    auto receiver = std::move(node.children[0]);
+    auto call_expr = std::move(node.children[1]);
+
+    node.children.clear();
+
+    auto new_args = std::vector<arena_ptr<ast_node>>{};
+    new_args.push_back(std::move(receiver));
+    for (auto& arg : call_expr->call_args()) {
+        new_args.push_back(std::move(arg));
+    }
+
+    call_expr->children[ast_node::child_call_expr_arg_list]->children = std::move(new_args);
+
+    node.children.push_back(std::move(call_expr->children[0]));
+    node.children.push_back(std::move(call_expr->children[1]));
+
+    node.type = ast_type::call_expr;
+    node.call.flags |= call_flag::is_method_sugar_call;
+}
+
 type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
     if (!nodeptr) return invalid_type;
 
@@ -2835,20 +2858,6 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
             node.call.func_type_id = node.call_func()->type_id;
             node.type_error = false;
         }
-        else if (node.call_func()->type == ast_type::field_expr) {
-            if (ts.pass == type_system_pass::resolve_all && ts.subpass > MIN_PASS_FOR_METHOD_CALL_SUGAR) { // TODO: tune this number
-                auto field_expr = std::move(node.children[0]);
-                auto field_receiver = std::move(field_expr->children[0]);
-                auto field_id = std::move(field_expr->children[1]);
-
-                // Insert the 'receiver' into the beginning of the argument list
-                node.children[1]->children.insert(node.children[1]->children.begin(), std::move(field_receiver));
-
-                // The new callee is the 'field'
-                node.children[0] = std::move(field_id);
-                node.call.flags |= call_flag::is_method_sugar_call;
-            }
-        }
 
         //report_type_error(node.type_id, node.pos, "cannot resolve type of function call %s", node_to_string(node));
         break;
@@ -2898,20 +2907,14 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
                 node.field.is_optional = is_optional;
                 node.field.field_index = field_index;
                 node.type_id = stype.get().structure.fields[field_index].type;
+            } 
+            else if (!is_struct) {
+                add_type_error(ts, node.children[1]->pos, "trying to access field '%s' of non-aggregate type '%s'",
+                    fieldid.c_str(), type_to_string(ltype).c_str());
             }
-            else if (ts.pass == type_system_pass::resolve_all && ts.subpass > MIN_PASS_FOR_FIELD_CALL_SUGAR) {
-                // TODO: handle call sugar
-                auto children = std::move(node.children);
-
-                node.type = ast_type::call_expr;
-                node.children.clear();
-                node.children.push_back(std::move(children[1]));
-
-                std::vector<arena_ptr<ast_node>> args;
-                args.push_back(std::move(children[0]));
-                auto arg_list = make_arg_list_node(*ts.ast_arena, {}, std::move(args));
-                node.children.push_back(std::move(arg_list));
-                node.call.flags |= call_flag::is_method_sugar_call;
+            else {
+                add_type_error(ts, node.children[1]->pos, "type '%s' has no field '%s'",
+                    type_to_string(stype).c_str(), fieldid.c_str());
             }
         }
         break;
@@ -3037,6 +3040,11 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
         break;
     }
     case ast_type::binary_expr: {
+        if (node.op == token_type::arrow_right) {
+            process_thread_first_expr(ts, node);
+            break;
+        }
+
         if (is_assignment_sugar_op(node.op)) {
             desugar_assignment(ts, node);
         }
@@ -3281,6 +3289,8 @@ void remangle_names(type_system& ts, ast_node* nodeptr) {
                 local->mangled_name = mangle_global_name(ts, node.scope.self_module_parts, local->name);
             }
         }
+        visit_pre_children(ts, node);
+        visit_children(ts, node);
         break;
     }
     default: {

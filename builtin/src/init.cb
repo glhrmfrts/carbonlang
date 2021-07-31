@@ -9,7 +9,7 @@ private {
 func init_command_line(): []string {
     let cmdline = GetCommandLineA()
     let result = make_slice(`string, 1)
-    result[0] = string{ cmdline, cmdline.strlen }
+    result[0] = string{ cmdline, cmdline->strlen() }
     return result
 }
 
@@ -19,7 +19,7 @@ func free_command_line(args: []string) {
 
 extern(C) func carbon_main(): int {
     let args = init_command_line()
-    defer args.free_command_line
+    defer args->free_command_line()
 
     import main
     return main(args)

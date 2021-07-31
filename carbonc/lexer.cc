@@ -154,9 +154,6 @@ struct lexer_impl {
             if (!std::strcmp("let", l.string)) {
                 return token_type::let;
             }
-            if (!std::strcmp("var", l.string)) {
-                return token_type::var;
-            }
             if (!std::strcmp("asm", l.string)) {
                 return token_type::asm_;
             }

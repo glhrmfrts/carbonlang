@@ -495,7 +495,7 @@ struct parser_impl {
     arena_ptr<ast_node> parse_decl() {
         auto t = TOK;
         switch (t) {
-        case token_type::var:
+        case token_type::const_:
         case token_type::let:
         case token_type::auto_:
         case token_type::pure:
@@ -720,9 +720,6 @@ struct parser_impl {
             lex->next();
             value = parse_braceless_tuple_expr();
         }
-        else if (kind != token_type::var && (ctx() == parse_context::root)) {
-            //throw parse_error(filename, lex->pos(), "expected initial value in let declaration");
-        }
 
         return make_var_decl_node(*ast_arena, pos, kind, std::move(id), std::move(var_type), std::move(value), modifiers);
     }
@@ -732,11 +729,11 @@ struct parser_impl {
 
         auto modifiers = parse_var_modifiers();
         auto declkind = TOK;
-        if (TOK == token_type::var || TOK == token_type::let) {
+        if (TOK == token_type::let) {
             lex->next();
         }
         else {
-            declkind = token_type::let;
+            throw parse_error(filename, lex->pos(), "expected 'let' in variable declaration");
         }
 
         if (TOK != token_type::identifier) {
@@ -755,8 +752,6 @@ struct parser_impl {
         if (TOK_CHAR == '=') {
             lex->next();
             value = parse_braceless_tuple_expr();
-        } else if (kind != token_type::var && (ctx() == parse_context::root)) {
-            //throw parse_error(filename, lex->pos(), "expected initial value in let declaration");
         }
 
         return make_var_decl_node(*ast_arena, pos, kind, std::move(id), std::move(var_type), std::move(value), modifiers);

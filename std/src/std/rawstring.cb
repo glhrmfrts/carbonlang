@@ -1,7 +1,7 @@
 import std::alloc as alloc
 
 func copy(str: *pure uint8) {
-    return copy(str, str.strlen)
+    return copy(str, str->strlen())
 }
 
 func copy(str: *pure uint8, size: usize) {
@@ -20,8 +20,8 @@ func set(dest: *pure uint8, value: pure uint8, count: usize) {
 }
 
 func strlen(str: *pure uint8) {
-    var c : usize
-    var p = str
+    let c : usize
+    let p = str
     while (@p != 0) {
         //let ip = cast[uintptr] p;
         p = p + 1//cast[*char] (ip + 1);
@@ -31,9 +31,9 @@ func strlen(str: *pure uint8) {
 }
 
 func equals(a: *pure uint8, b: *pure uint8) {
-    if (a.strlen != b.strlen) { return false }
+    if (a->strlen() != b->strlen()) { return false }
 
-    for (i in 0, a.strlen) {
+    for (i in 0, a->strlen()) {
         if (a[i] != b[i]) {
             return false
         }

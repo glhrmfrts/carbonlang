@@ -48,6 +48,8 @@ static std::unordered_map<token_type, token_properties> token_props = {
     {token_from_char('*'), { BINARY_OP, 1100 }},
     {token_from_char('/'), { BINARY_OP, 1100 }},
     {token_from_char('%'), { BINARY_OP, 1100 }},
+
+    {token_type::arrow_right, { BINARY_OP, 1200 }},
 };
 
 bool is_unary_op(token_type t) {
