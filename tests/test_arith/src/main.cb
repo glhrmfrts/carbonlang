@@ -10,11 +10,14 @@ func test_div(a, b) {
 func main(args: []string) {
     let a = test_div(10, 5)
 
-    g_glob = 40
+    g_glob = 9543
 
     let j = g_glob
 
-    println(to_string(j))
+    println(j)
+    println(j == 9543)
+    println(j == 95434)
+    println("hello world")
 
     return j
 }

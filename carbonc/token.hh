@@ -51,6 +51,8 @@ enum class token_type : unsigned int {
     nil,
     nullpointer,
     defer,
+    continue_,
+    break_,
     arrow_right, // ->
     double_arrow_right, // =>
     struct_,

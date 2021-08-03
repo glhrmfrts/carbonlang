@@ -203,6 +203,9 @@ struct lexer_impl {
             if (!std::strcmp("defer", l.string)) {
                 return token_type::defer;
             }
+            if (!std::strcmp("break", l.string)) {
+                return token_type::break_;
+            }
             break;
         case 6:
             if (!std::strcmp("return", l.string)) {
@@ -229,6 +232,9 @@ struct lexer_impl {
         case 8:
             if (!std::strcmp("internal", l.string)) {
                 return token_type::internal_;
+            }
+            if (!std::strcmp("continue", l.string)) {
+                return token_type::continue_;
             }
             break;
         case 9:

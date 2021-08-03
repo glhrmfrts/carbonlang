@@ -480,6 +480,11 @@ std::pair<bool, bool> is_convertible_to(type_system& ts, type_id a, type_id b) {
     if (a == invalid_type || b == invalid_type) return std::make_pair(false, false);
     if (is_assignable_to(ts, a, b)) return std::make_pair(true, false);
 
+    // any implicit conversions involving booleans are prohibited
+    if (a == ts.bool_type || b == ts.bool_type) {
+        return std::make_pair(false, false);
+    }
+
     auto& ta = get_type(ts, a);
     auto& tb = get_type(ts, b);
 
@@ -553,7 +558,7 @@ arena_ptr<ast_node> get_zero_value_node_for_type(type_system& ts, type_id id) {
     else if (id.get().kind == type_kind::optional)  {
         return make_nil_literal_node(*ts.ast_arena, {});
     }
-    else if (id == ts.raw_string_type) {
+    else if (id.get().kind == type_kind::pointer && id.get().elem_type.get().kind == type_kind::integral && id.get().elem_type.get().size == 1) {
         return make_string_literal_node(*ts.ast_arena, {}, "");
     }
     return { nullptr, nullptr };
@@ -600,9 +605,10 @@ bool is_type_kind(type_id id, type_kind k) {
 
 bool type_allows_no_init(type_system& ts, type_id id) {
     if (id.get().kind == type_kind::pointer) {
-        if (id != ts.raw_string_type) {
-            return false;
+        if (id.get().elem_type.get().kind == type_kind::integral && id.get().elem_type.get().size == 1) {
+            return true;
         }
+        return false;
     }
     return true;
 }
@@ -994,7 +1000,7 @@ type_id get_value_node_type(type_system& ts, ast_node& node) {
         return to_type_id(*sym);
     }
     case ast_type::string_literal: {
-        auto& sym = ts.builtin_scope->scope.symbols[string_hash{ "rawstring" }];
+        auto& sym = ts.builtin_scope->scope.symbols[string_hash{ "$rawstring" }];
         return to_type_id(*sym);
     }
     case ast_type::nullpointer: {
@@ -1442,10 +1448,19 @@ void perform_casts(type_system& ts, std::vector<arena_ptr<ast_node>>& call_args,
     }
 }
 
-bool match_arg_list(type_system& ts, std::vector<arena_ptr<ast_node>>& func_args,
-    std::vector<arena_ptr<ast_node>>& call_args) {
+bool match_arg_list(type_system& ts, std::vector<arena_ptr<ast_node>>& func_args, std::vector<arena_ptr<ast_node>>& call_args,
+    const std::vector<comptime_value>& func_comptime_args, const std::vector<comptime_value>& call_comptime_args) {
 
     if (func_args.size() != call_args.size()) return false;
+    if (func_comptime_args.size() != call_comptime_args.size()) return false;
+
+    for (std::size_t i = 0; i < func_comptime_args.size(); i++) {
+        auto& farg = func_comptime_args[i];
+        auto& carg = call_comptime_args[i];
+        if (!(farg == carg)) {
+            return false;
+        }
+    }
 
     call_match_info info{};
     for (std::size_t i = 0; i < func_args.size(); i++) {
@@ -1483,7 +1498,7 @@ string_hash mangle_func_name(type_system& ts, const std::vector<std::string>& id
             name.append(part);
         }
         for (auto& arg : comptime_args) {
-            name.append("__");
+            name.append("__C");
             name.append(comptime_value_to_string(arg));
         }
         for (auto& arg : args) {
@@ -2294,9 +2309,9 @@ void resolve_call_funcdef(type_system& ts, ast_node& node) {
             node.call.func_type_id = local->self->type_id;
             node.call.funcdef = &local->self->func;
             node.type_error = false;
-            if (local->flags & local_flag::is_aggregate_argument) {
-                node.type_id = node.type_id.get().elem_type;
-            }
+            //if (local->flags & local_flag::is_aggregate_argument) {
+              //  node.type_id = node.type_id.get().elem_type;
+            //}
             break;
         }
     }
@@ -2305,13 +2320,16 @@ void resolve_call_funcdef(type_system& ts, ast_node& node) {
         node.type_error = true;
 
         auto funcname = node_to_string(*node.call_func());
+        if (funcname == "allocn") {
+            printf("asdqwe\n");
+        }
         auto bsym = find_symbol(ts, pair);
         if (bsym && bsym->kind == symbol_kind::overloaded_func_base) {
             // try to match the arguments performing implicit conversions using the function non-generic overloads
             bool resolved = false;
             for (std::size_t i = 0; i < bsym->overload_funcs.size(); i++) {
                 auto func = bsym->overload_funcs[i];
-                if (match_arg_list(ts, func->self->func_args(), node.call_args())) {
+                if (match_arg_list(ts, func->self->func_args(), node.call_args(), func->comptime_args, node.call.comptime_args)) {
                     resolved = true;
                     node.type_id = func->self->type_def.func.ret_type;
                     node.call.func_type_id = func->self->type_id;
@@ -2435,6 +2453,8 @@ void process_thread_first_expr(type_system& ts, ast_node& node) {
     node.type = ast_type::call_expr;
     node.call.flags |= call_flag::is_method_sugar_call;
 }
+
+static bool g_inside_loop;
 
 type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
     if (!nodeptr) return invalid_type;
@@ -2596,6 +2616,15 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
         }
         break;
     }
+    case ast_type::continue_stmt:
+    case ast_type::break_stmt: {
+        check_for_unresolved = false;
+        if (!g_inside_loop) {
+            const char* stmt = (node.type == ast_type::continue_stmt) ? "continue" : "break";
+            add_type_error(ts, node.pos, "'%s' statement can only be used inside a loop statement (e.g. while, for)", stmt);
+        }
+        break;
+    }
     case ast_type::for_stmt: {
         check_for_unresolved = false;
         visit_tree(ts, *node.children[1]);
@@ -2609,13 +2638,24 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
 
         register_for_declarations(ts, node);
 
+        bool prevloop = g_inside_loop;
+        g_inside_loop = true;
+
         visit_tree(ts, *node.children[2]);
         leave_scope_local(ts);
+
+        g_inside_loop = prevloop;
         break;
     }
     case ast_type::if_stmt:
     case ast_type::while_stmt: {
         check_for_unresolved = false;
+
+        bool prevloop = g_inside_loop;
+        if (node.type == ast_type::while_stmt) {
+            g_inside_loop = true;
+        }
+
         if (node.scope.kind == scope_kind::invalid) {
             add_block_scope(ts, node, node);
         }
@@ -2623,6 +2663,8 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
             enter_scope_local(ts, node);
         }
         visit_children(ts, node);
+
+        g_inside_loop = prevloop;
 
         const char* stmt = (node.type == ast_type::if_stmt) ? "if" : "while";
         if (!node.children[0]->type_id.valid() || node.children[0]->type_error) {
@@ -2781,7 +2823,7 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
                 bool resolved = false;
                 for (std::size_t i = 0; i < bsym->overload_funcs.size(); i++) {
                     auto func = bsym->overload_funcs[i];
-                    if (match_arg_list(ts, func->self->func_args(), node.func_overload_args())) {
+                    if (match_arg_list(ts, func->self->func_args(), node.func_overload_args(), func->comptime_args, node.call.comptime_args)) {
                         resolved = true;
                         node.type_id = func->self->type_def.func.ret_type;
                         node.call.func_type_id = func->self->type_id;
@@ -3454,6 +3496,7 @@ type_system::type_system(memory_arena& arena) {
     register_integral_type<std::uint32_t>(*this, "uint32");
     register_integral_type<std::uint64_t>(*this, "uint64");
     usize_type = register_integral_type<std::size_t>(*this, "usize");
+    isize_type = register_integral_type<std::int64_t>(*this, "isize");
     bool_type = register_integral_type<bool>(*this, "bool");
 
     register_integral_type<std::int8_t>(*this, "int8");
@@ -3748,7 +3791,7 @@ type_system::type_system(memory_arena& arena) {
         raw_ptr_type = register_builtin_type(*this, std::move(node));
     }
 
-    raw_string_type = register_pointer_type(*this, "rawstring", "char");
+    raw_string_type = register_pointer_type(*this, "$rawstring", "uint8");
 }
 
 void type_system::process_code_unit(ast_node& node) {

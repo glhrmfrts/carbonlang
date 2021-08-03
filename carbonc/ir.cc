@@ -40,6 +40,12 @@ static type_system* ts;
 static std::stack<ir_operand> operand_stack;
 static std::unordered_map<std::string, int> string_map;
 
+struct control_labels {
+    std::string continue_label;
+    std::string break_label;
+};
+static std::stack<control_labels> ctrl_labels;
+
 void generate_ir_defer_stmt(ast_node& node);
 
 void generate_ir_node(ast_node& node);
@@ -56,6 +62,14 @@ ir_operand pop() {
     auto res = operand_stack.top();
     operand_stack.pop();
     return res;
+}
+
+void push_control_labels(const control_labels& lb) {
+    ctrl_labels.push(lb);
+}
+
+void pop_control_labels() {
+    ctrl_labels.pop();
 }
 
 template <typename... Args> void emit(ir_op op, Args&&... args) {
@@ -400,6 +414,8 @@ void generate_for_stmt(ast_node& node) {
     emit(ir_make_label, ir_label{ node.ir.while_cond_label });
     generate_ir_node(*node.forinfo.compare_elem_to_range_end);
 
+    push_control_labels({ node.ir.while_cond_label, node.ir.if_end_label });
+
     // evaluate the body
     emit(ir_make_label, ir_label{ node.ir.if_body_label });
     generate_ir_node(*node.children[2]);
@@ -412,11 +428,15 @@ void generate_for_stmt(ast_node& node) {
 
     // end
     emit(ir_make_label, ir_label{ node.ir.if_end_label });
+
+    pop_control_labels();
 }
 
 void generate_while_stmt(ast_node& node) {
     emit(ir_make_label, ir_label{ node.ir.while_cond_label });
     generate_ir_node(*node.children[0]);
+
+    push_control_labels({ node.ir.while_cond_label, node.ir.if_end_label });
 
     emit(ir_make_label, ir_label{ node.ir.if_body_label });
     generate_ir_node(*node.children[1]);
@@ -424,6 +444,8 @@ void generate_while_stmt(ast_node& node) {
     emit(ir_jmp, ir_label{ node.ir.while_cond_label });
 
     emit(ir_make_label, ir_label{ node.ir.if_end_label });
+
+    pop_control_labels();
 }
 
 void generate_if_stmt(ast_node& node) {
@@ -444,6 +466,16 @@ void generate_if_stmt(ast_node& node) {
     else {
         emit(ir_make_label, ir_label{ node.ir.if_else_label });
     }
+}
+
+void generate_ir_continue_stmt(ast_node& node) {
+    assert(!ctrl_labels.empty());
+    emit(ir_jmp, ir_label{ ctrl_labels.top().continue_label });
+}
+
+void generate_ir_break_stmt(ast_node& node) {
+    assert(!ctrl_labels.empty());
+    emit(ir_jmp, ir_label{ ctrl_labels.top().break_label });
 }
 
 std::vector<ast_node*> collect_defer_statements_for_return() {
@@ -490,7 +522,7 @@ void generate_ir_asm_stmt(ast_node& node) {
 void generate_ir_field_expr(ast_node& node) {
     assert(node.field.self);
 
-    generate_ir_node(*node.children[0]);
+    generate_ir_node(*node.field_struct());
     auto a = pop();
     
     if (is_pointer_type(node.field_struct()->type_id)) {
@@ -545,9 +577,9 @@ void generate_ir_call_expr(ast_node& node) {
     }
 
     bool pushes = node.type_id != ts->void_type;
-    if (node.call.flags & call_flag::is_aggregate_return) {
-        pushes = false;
-    }
+    //if (node.call.flags & call_flag::is_aggregate_return) {
+      //  pushes = false;
+    //}
 
     if (pushes) {
         emitops(ir_call, node.type_id, args);
@@ -800,6 +832,12 @@ void generate_ir_node(ast_node& node) {
         ts->enter_scope(node);
         generate_if_stmt(node);
         ts->leave_scope();
+        break;
+    case ast_type::continue_stmt:
+        generate_ir_continue_stmt(node);
+        break;
+    case ast_type::break_stmt:
+        generate_ir_break_stmt(node);
         break;
     case ast_type::compound_stmt:
         ts->enter_scope(node);

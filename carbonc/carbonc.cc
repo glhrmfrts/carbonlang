@@ -35,7 +35,7 @@ void compile_file(type_system& ts, ast_node& target, const std::string& filename
     if (!read_file_text(filename, src)) return;
 
     auto timebegin = std::chrono::system_clock::now();
-    std::cout << "carbonc - compiling file: " << filename << "\n";
+    //std::cout << "carbonc - compiling file: " << filename << "\n";
 
     parser p{ *ts.ast_arena, src, filename, modname };
     arena_ptr<ast_node> ast{ nullptr, nullptr };
@@ -179,10 +179,15 @@ int run_project_mode(int argc, const char* argv[]) {
         for (const auto& err : ts.errors) {
             if (errcount >= maxerrs) break;
 
+            errcount++;
+
             // TODO: please
             std::cerr << "----------------------------------------------------------------------------------\n";
             std::string src;
-            if (!read_file_text(err.filename, src)) continue;
+            if (!read_file_text(err.filename, src)) {
+                std::cerr << err.msg << "";
+                continue;
+            }
 
             std::cerr << err.msg << "";
             auto line = get_source_code_near(src, err.pos);
@@ -193,7 +198,6 @@ int run_project_mode(int argc, const char* argv[]) {
                 std::cerr << " ";
             }
             std::cerr << "^\n";
-            errcount++;
         }
 
         if (ts.errors.size() > errcount) {

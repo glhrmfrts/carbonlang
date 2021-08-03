@@ -357,6 +357,22 @@ arena_ptr<ast_node> make_defer_stmt_node(memory_arena& arena, const position& po
     return ptr;
 }
 
+arena_ptr<ast_node> make_continue_stmt_node(memory_arena& arena, const position& pos) {
+    auto ptr = make_in_arena<ast_node>(arena);
+    ptr->node_id = node_id_gen++;
+    ptr->type = ast_type::continue_stmt;
+    ptr->pos = pos;
+    return ptr;
+}
+
+arena_ptr<ast_node> make_break_stmt_node(memory_arena& arena, const position& pos) {
+    auto ptr = make_in_arena<ast_node>(arena);
+    ptr->node_id = node_id_gen++;
+    ptr->type = ast_type::break_stmt;
+    ptr->pos = pos;
+    return ptr;
+}
+
 arena_ptr<ast_node> make_type_expr_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& expr) {
     auto ptr = make_in_arena<ast_node>(arena);
     ptr->node_id = node_id_gen++;

@@ -1,5 +1,6 @@
-import std::libc::stdio;
+import std::libc::stdio
+import std::string
 
-func println(c: *pure uint8): {} {
-    puts(c);
+func println(value) {
+    puts(to_string(value).data)
 }

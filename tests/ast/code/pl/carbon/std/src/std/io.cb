@@ -2,6 +2,7 @@ code_unit{
   std/io.cb
   decl_list{
     import_decl{ std::libc::stdio}
-    func_decl{println (var_decl{c: type_expr{type_qualifier{pointer, type_qualifier{ uint8}}}}): type_expr{tuple_type{}} {
+    import_decl{ std::string}
+    func_decl{println (var_decl{value}) {
         stmt_list{
-          call{puts (c)}}}}}}
+          call{puts (call{to_string (value)}.data)}}}}}}

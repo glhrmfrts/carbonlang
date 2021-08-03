@@ -1,16 +1,37 @@
-string #0: "";
-string #1: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
+string #0: "hello world";
+string #1: "";
 string #2: "zyxwvutsrqponmlkjihgfedcba9876543210123456789abcdefghijklmnopqrstuvwxyz";
+string #3: "true";
+string #4: "false";
 func cb__Nmain__Nmain__Aptr__Tslice__TU_string -> int
     arg #0 args: ptr__Tslice__TU_string;
     local #0 a: int;
     local #1 j: int;
+    local #2 $cbT0: bool;
+    local #3 $cbT1: bool;
     ir_call cb__Nmain__Ntest_div__Aint__Aint 10 5;
     ir_load L0 ST;
-    ir_load  40;
+    ir_load  9543;
     ir_load L1 ;
-    ir_call cb__Nstd__Nstring__Nto_string__Aint L1;
-    ir_call cb__Nstd__Nio__Nprintln__Aptr__Tpure__Tuint8 ST;
+    ir_call cb__Nstd__Nio__Nprintln__Aint L1;
+    ir_jmp_neq L1 9543 cb__Nmain__Nmain__Aptr__Tslice__TU_string$if1491$else;
+    ir_make_label cb__Nmain__Nmain__Aptr__Tslice__TU_string$if1491$body;
+    ir_load L2 1;
+    ir_jmp cb__Nmain__Nmain__Aptr__Tslice__TU_string$if1491$end;
+    ir_make_label cb__Nmain__Nmain__Aptr__Tslice__TU_string$if1491$else;
+    ir_load L2 0;
+    ir_make_label cb__Nmain__Nmain__Aptr__Tslice__TU_string$if1491$end;
+    ir_call cb__Nstd__Nio__Nprintln__Abool L2;
+    ir_jmp_neq L1 95434 cb__Nmain__Nmain__Aptr__Tslice__TU_string$if1507$else;
+    ir_make_label cb__Nmain__Nmain__Aptr__Tslice__TU_string$if1507$body;
+    ir_load L3 1;
+    ir_jmp cb__Nmain__Nmain__Aptr__Tslice__TU_string$if1507$end;
+    ir_make_label cb__Nmain__Nmain__Aptr__Tslice__TU_string$if1507$else;
+    ir_load L3 0;
+    ir_make_label cb__Nmain__Nmain__Aptr__Tslice__TU_string$if1507$end;
+    ir_call cb__Nstd__Nio__Nprintln__Abool L3;
+    ir_load_addr STR0;
+    ir_call cb__Nstd__Nio__Nprintln__A$rawstring ST;
     ir_return L1;
 endf
 
@@ -28,7 +49,7 @@ func cb__Ninit__Ninit_command_line__Aptr__Tslice__TU_string -> ptr__Tslice__TU_s
     ir_call GetCommandLineA;
     ir_load L0 ST;
     ir_load_addr L1;
-    ir_call cb__Nstd__Nalloc__Nmake_slice__string__Aptr__Tslice__TU_string__Ausize ST 1;
+    ir_call cb__Nstd__Nalloc__Nmake_slice__Cstring__Aptr__Tslice__TU_string__Ausize ST 1;
     ir_deref [L1 . 0];
     ir_index ST 0;
     ir_load [ST . 0] L0;
@@ -52,8 +73,8 @@ endf
 
 func carbon_main -> int
     local #0 args: slice__TU_string;
-    local #1 $cbT0: slice__TU_string;
-    local #2 $cbT1: slice__TU_string;
+    local #1 $cbT2: slice__TU_string;
+    local #2 $cbT3: slice__TU_string;
     ir_load_addr L0;
     ir_call cb__Ninit__Ninit_command_line__Aptr__Tslice__TU_string ST;
     ir_copy L2 L0 16;
@@ -111,7 +132,19 @@ pop rdi
     ;
 endf
 
-func cb__Nstd__Nalloc__Nallocn__string__Ausize -> ptr__TU_string
+func cb__Nstd__Nalloc__Nallocn__Cuint8__Ausize -> ptr__Tuint8
+    arg #0 n: usize;
+    local #0 size: usize;
+    local #1 result: pointer;
+    ir_mul A0 1;
+    ir_load L0 ST;
+    ir_call cb__Nstd__Nalloc__Nalloc__Ausize L0;
+    ir_load L1 ST;
+    ir_call cb__Nstd__Nalloc__Nset__Apointer__Auint8__Ausize L1 0 L0;
+    ir_return L1;
+endf
+
+func cb__Nstd__Nalloc__Nallocn__Cstring__Ausize -> ptr__TU_string
     arg #0 n: usize;
     local #0 size: usize;
     local #1 result: pointer;
@@ -123,11 +156,11 @@ func cb__Nstd__Nalloc__Nallocn__string__Ausize -> ptr__TU_string
     ir_return L1;
 endf
 
-func cb__Nstd__Nalloc__Nmake_slice__string__Aptr__Tslice__TU_string__Ausize -> ptr__Tslice__TU_string
+func cb__Nstd__Nalloc__Nmake_slice__Cstring__Aptr__Tslice__TU_string__Ausize -> ptr__Tslice__TU_string
     arg #0 $cb_agg_ret: ptr__Tslice__TU_string;
     arg #1 n: usize;
     local #0 data: ptr__TU_string;
-    ir_call cb__Nstd__Nalloc__Nallocn__string__Ausize A1;
+    ir_call cb__Nstd__Nalloc__Nallocn__Cstring__Ausize A1;
     ir_load L0 ST;
     ir_deref A0;
     ir_load [ST . 0] L0;
@@ -136,9 +169,33 @@ func cb__Nstd__Nalloc__Nmake_slice__string__Aptr__Tslice__TU_string__Ausize -> p
     ir_return A0;
 endf
 
-func cb__Nstd__Nio__Nprintln__Aptr__Tpure__Tuint8 -> void
-    arg #0 c: ptr__Tpure__Tuint8;
-    ir_call puts A0;
+func cb__Nstd__Nio__Nprintln__Aint -> void
+    arg #0 value: int;
+    local #0 $cbT4: U_string;
+    ir_load_addr L0;
+    ir_call cb__Nstd__Nstring__Nto_string__Aptr__TU_string__Aint ST A0;
+    ir_deref ST;
+    ir_call puts [ST . 0];
+    ir_noop ST;
+endf
+
+func cb__Nstd__Nio__Nprintln__Abool -> void
+    arg #0 value: bool;
+    local #0 $cbT5: U_string;
+    ir_load_addr L0;
+    ir_call cb__Nstd__Nstring__Nto_string__Aptr__TU_string__Abool ST A0;
+    ir_deref ST;
+    ir_call puts [ST . 0];
+    ir_noop ST;
+endf
+
+func cb__Nstd__Nio__Nprintln__A$rawstring -> void
+    arg #0 value: $rawstring;
+    local #0 $cbT6: U_string;
+    ir_load_addr L0;
+    ir_call cb__Nstd__Nstring__Nto_string__Aptr__TU_string__Aptr__Tpure__Tuint8 ST A0;
+    ir_deref ST;
+    ir_call puts [ST . 0];
     ir_noop ST;
 endf
 
@@ -219,17 +276,17 @@ func cb__Nstd__Nrawstring__Nstrlen__Aptr__Tpure__Tuint8 -> usize
     local #1 p: ptr__Tpure__Tuint8;
     ir_load L0 0;
     ir_load L1 A0;
-    ir_make_label cb__Nstd__Nrawstring__Nstrlen__Aptr__Tpure__Tuint8$w678$cond;
+    ir_make_label cb__Nstd__Nrawstring__Nstrlen__Aptr__Tpure__Tuint8$w694$cond;
     ir_deref L1;
     ir_cast ST;
-    ir_jmp_eq ST 0 cb__Nstd__Nrawstring__Nstrlen__Aptr__Tpure__Tuint8$w678$end;
-    ir_make_label cb__Nstd__Nrawstring__Nstrlen__Aptr__Tpure__Tuint8$w678$body;
+    ir_jmp_eq ST 0 cb__Nstd__Nrawstring__Nstrlen__Aptr__Tpure__Tuint8$w694$end;
+    ir_make_label cb__Nstd__Nrawstring__Nstrlen__Aptr__Tpure__Tuint8$w694$body;
     ir_add L1 1;
     ir_load L1 ST;
     ir_add L0 1;
     ir_load L0 ST;
-    ir_jmp cb__Nstd__Nrawstring__Nstrlen__Aptr__Tpure__Tuint8$w678$cond;
-    ir_make_label cb__Nstd__Nrawstring__Nstrlen__Aptr__Tpure__Tuint8$w678$end;
+    ir_jmp cb__Nstd__Nrawstring__Nstrlen__Aptr__Tpure__Tuint8$w694$cond;
+    ir_make_label cb__Nstd__Nrawstring__Nstrlen__Aptr__Tpure__Tuint8$w694$end;
     ir_return L0;
 endf
 
@@ -241,123 +298,172 @@ func cb__Nstd__Nrawstring__Nequals__Aptr__Tpure__Tuint8__Aptr__Tpure__Tuint8 -> 
     local #2 i: int;
     ir_call cb__Nstd__Nrawstring__Nstrlen__Aptr__Tpure__Tuint8 A0;
     ir_call cb__Nstd__Nrawstring__Nstrlen__Aptr__Tpure__Tuint8 A1;
-    ir_jmp_eq ST ST cb__Nstd__Nrawstring__Nequals__Aptr__Tpure__Tuint8__Aptr__Tpure__Tuint8$if714$else;
-    ir_make_label cb__Nstd__Nrawstring__Nequals__Aptr__Tpure__Tuint8__Aptr__Tpure__Tuint8$if714$body;
+    ir_jmp_eq ST ST cb__Nstd__Nrawstring__Nequals__Aptr__Tpure__Tuint8__Aptr__Tpure__Tuint8$if730$else;
+    ir_make_label cb__Nstd__Nrawstring__Nequals__Aptr__Tpure__Tuint8__Aptr__Tpure__Tuint8$if730$body;
     ir_return 0;
-    ir_make_label cb__Nstd__Nrawstring__Nequals__Aptr__Tpure__Tuint8__Aptr__Tpure__Tuint8$if714$else;
+    ir_make_label cb__Nstd__Nrawstring__Nequals__Aptr__Tpure__Tuint8__Aptr__Tpure__Tuint8$if730$else;
     ir_load [L0 . 0] 0;
     ir_call cb__Nstd__Nrawstring__Nstrlen__Aptr__Tpure__Tuint8 A0;
     ir_load [L0 . 1] ST;
     ir_load L2 [L0 . 0];
-    ir_make_label cb__Nstd__Nrawstring__Nequals__Aptr__Tpure__Tuint8__Aptr__Tpure__Tuint8$f740$cond;
+    ir_make_label cb__Nstd__Nrawstring__Nequals__Aptr__Tpure__Tuint8__Aptr__Tpure__Tuint8$f756$cond;
     ir_cast L2;
-    ir_jmp_gte ST [L0 . 1] cb__Nstd__Nrawstring__Nequals__Aptr__Tpure__Tuint8__Aptr__Tpure__Tuint8$f740$end;
-    ir_make_label cb__Nstd__Nrawstring__Nequals__Aptr__Tpure__Tuint8__Aptr__Tpure__Tuint8$f740$body;
+    ir_jmp_gte ST [L0 . 1] cb__Nstd__Nrawstring__Nequals__Aptr__Tpure__Tuint8__Aptr__Tpure__Tuint8$f756$end;
+    ir_make_label cb__Nstd__Nrawstring__Nequals__Aptr__Tpure__Tuint8__Aptr__Tpure__Tuint8$f756$body;
     ir_deref A0;
     ir_index ST L2;
     ir_deref A1;
     ir_index ST L2;
-    ir_jmp_eq ST ST cb__Nstd__Nrawstring__Nequals__Aptr__Tpure__Tuint8__Aptr__Tpure__Tuint8$if737$else;
-    ir_make_label cb__Nstd__Nrawstring__Nequals__Aptr__Tpure__Tuint8__Aptr__Tpure__Tuint8$if737$body;
+    ir_jmp_eq ST ST cb__Nstd__Nrawstring__Nequals__Aptr__Tpure__Tuint8__Aptr__Tpure__Tuint8$if753$else;
+    ir_make_label cb__Nstd__Nrawstring__Nequals__Aptr__Tpure__Tuint8__Aptr__Tpure__Tuint8$if753$body;
     ir_return 0;
-    ir_make_label cb__Nstd__Nrawstring__Nequals__Aptr__Tpure__Tuint8__Aptr__Tpure__Tuint8$if737$else;
+    ir_make_label cb__Nstd__Nrawstring__Nequals__Aptr__Tpure__Tuint8__Aptr__Tpure__Tuint8$if753$else;
     ir_add L2 1;
     ir_load L2 ST;
-    ir_jmp cb__Nstd__Nrawstring__Nequals__Aptr__Tpure__Tuint8__Aptr__Tpure__Tuint8$f740$cond;
-    ir_make_label cb__Nstd__Nrawstring__Nequals__Aptr__Tpure__Tuint8__Aptr__Tpure__Tuint8$f740$end;
+    ir_jmp cb__Nstd__Nrawstring__Nequals__Aptr__Tpure__Tuint8__Aptr__Tpure__Tuint8$f756$cond;
+    ir_make_label cb__Nstd__Nrawstring__Nequals__Aptr__Tpure__Tuint8__Aptr__Tpure__Tuint8$f756$end;
     ir_return 1;
 endf
 
-func cb__Nstd__Nstring__Nto_string__Aint__Aint -> rawstring
-    arg #0 value: int;
-    arg #1 base: int;
+func cb__Nstd__Nstring__Nto_string__Aptr__TU_string__Aint__Aint -> ptr__TU_string
+    arg #0 $cb_agg_ret: ptr__TU_string;
+    arg #1 value: int;
+    arg #2 base: int;
     local #0 tmp_value: int;
-    local #1 run_yet: bool;
-    local #2 offs: int;
-    local #3 result: U_string;
-    local #4 tpl_str: rawstring;
-    local #5 ptr: ptr__Tpure__Tuint8;
-    local #6 ptr1: ptr__Tpure__Tuint8;
-    local #7 tmp_char: uint8;
-    ir_jmp_lt A1 2 cb__Nstd__Nstring__Nto_string__Aint__Aint$if796$body;
-    ir_jmp_lte A1 36 cb__Nstd__Nstring__Nto_string__Aint__Aint$if796$else;
-    ir_make_label cb__Nstd__Nstring__Nto_string__Aint__Aint$if796$body;
-    ir_load_addr STR0;
-    ir_return ST;
-    ir_make_label cb__Nstd__Nstring__Nto_string__Aint__Aint$if796$else;
+    local #1 offs: int;
+    local #2 result: U_string;
+    local #3 tpl_str: $rawstring;
+    local #4 ptr: ptr__Tpure__Tuint8;
+    local #5 ptr1: ptr__Tpure__Tuint8;
+    local #6 tmp_char: uint8;
+    ir_jmp_lt A2 2 cb__Nstd__Nstring__Nto_string__Aptr__TU_string__Aint__Aint$if820$body;
+    ir_jmp_lte A2 36 cb__Nstd__Nstring__Nto_string__Aptr__TU_string__Aint__Aint$if820$else;
+    ir_make_label cb__Nstd__Nstring__Nto_string__Aptr__TU_string__Aint__Aint$if820$body;
+    ir_deref A0;
+    ir_load_addr STR1;
+    ir_load [ST . 0] ST;
+    ir_deref A0;
+    ir_load [ST . 1] 0;
+    ir_deref A0;
+    ir_load [ST . 2] 1;
+    ir_return A0;
+    ir_make_label cb__Nstd__Nstring__Nto_string__Aptr__TU_string__Aint__Aint$if820$else;
     ir_load L0 0;
     ir_load L1 0;
-    ir_load L2 0;
-    ir_load_addr STR1;
-    ir_load [L3 . 0] ST;
-    ir_load [L3 . 1] 24;
-    ir_load [L3 . 2] 0;
-    ir_deref [L3 . 0];
+    ir_call cb__Nstd__Nalloc__Nallocn__Cuint8__Ausize 25;
+    ir_load [L2 . 0] ST;
+    ir_load [L2 . 1] 24;
+    ir_load [L2 . 2] 0;
+    ir_deref [L2 . 0];
     ir_index ST 24;
     ir_load ST #0;
     ir_load_addr STR2;
-    ir_load L4 ST;
-    ir_make_label cb__Nstd__Nstring__Nto_string__Aint__Aint$w867$cond;
-    ir_cast 0;
-    ir_jmp_neq A0 ST cb__Nstd__Nstring__Nto_string__Aint__Aint$w867$body;
-    ir_jmp_neq L1 0 cb__Nstd__Nstring__Nto_string__Aint__Aint$w867$end;
-    ir_make_label cb__Nstd__Nstring__Nto_string__Aint__Aint$w867$body;
-    ir_load L0 A0;
-    ir_div A0 A1;
-    ir_load A0 ST;
-    ir_deref [L3 . 0];
-    ir_index ST L2;
-    ir_deref L4;
-    ir_mul A0 A1;
+    ir_load L3 ST;
+    ir_make_label cb__Nstd__Nstring__Nto_string__Aptr__TU_string__Aint__Aint$w897$cond;
+    ir_jmp_eq A1 0 cb__Nstd__Nstring__Nto_string__Aptr__TU_string__Aint__Aint$w897$end;
+    ir_make_label cb__Nstd__Nstring__Nto_string__Aptr__TU_string__Aint__Aint$w897$body;
+    ir_jmp_lt L1 24 cb__Nstd__Nstring__Nto_string__Aptr__TU_string__Aint__Aint$if866$else;
+    ir_make_label cb__Nstd__Nstring__Nto_string__Aptr__TU_string__Aint__Aint$if866$body;
+    ir_jmp cb__Nstd__Nstring__Nto_string__Aptr__TU_string__Aint__Aint$w897$end;
+    ir_make_label cb__Nstd__Nstring__Nto_string__Aptr__TU_string__Aint__Aint$if866$else;
+    ir_load L0 A1;
+    ir_div A1 A2;
+    ir_load A1 ST;
+    ir_deref [L2 . 0];
+    ir_index ST L1;
+    ir_deref L3;
+    ir_mul A1 A2;
     ir_sub L0 ST;
     ir_add 35 ST;
     ir_index ST ST;
     ir_load ST ST;
-    ir_add L2 1;
-    ir_load L2 ST;
-    ir_load L1 1;
-    ir_jmp cb__Nstd__Nstring__Nto_string__Aint__Aint$w867$cond;
-    ir_make_label cb__Nstd__Nstring__Nto_string__Aint__Aint$w867$end;
-    ir_load L5 [L3 . 0];
-    ir_load L6 [L3 . 0];
-    ir_jmp_gte L0 0 cb__Nstd__Nstring__Nto_string__Aint__Aint$if893$else;
-    ir_make_label cb__Nstd__Nstring__Nto_string__Aint__Aint$if893$body;
-    ir_deref L5;
+    ir_add L1 1;
+    ir_load L1 ST;
+    ir_jmp cb__Nstd__Nstring__Nto_string__Aptr__TU_string__Aint__Aint$w897$cond;
+    ir_make_label cb__Nstd__Nstring__Nto_string__Aptr__TU_string__Aint__Aint$w897$end;
+    ir_deref [L2 . 0];
+    ir_index ST L1;
+    ir_load_addr ST;
+    ir_load L4 ST;
+    ir_load L5 [L2 . 0];
+    ir_jmp_gte L0 0 cb__Nstd__Nstring__Nto_string__Aptr__TU_string__Aint__Aint$if926$else;
+    ir_make_label cb__Nstd__Nstring__Nto_string__Aptr__TU_string__Aint__Aint$if926$body;
+    ir_deref L4;
     ir_load ST #45;
-    ir_add L5 1;
-    ir_load L5 ST;
-    ir_make_label cb__Nstd__Nstring__Nto_string__Aint__Aint$if893$else;
-    ir_deref L5;
+    ir_add L4 1;
+    ir_load L4 ST;
+    ir_make_label cb__Nstd__Nstring__Nto_string__Aptr__TU_string__Aint__Aint$if926$else;
+    ir_deref L4;
     ir_load ST #0;
-    ir_sub L5 1;
-    ir_load L5 ST;
-    ir_load L7 0;
-    ir_make_label cb__Nstd__Nstring__Nto_string__Aint__Aint$w941$cond;
-    ir_jmp_gte L6 L5 cb__Nstd__Nstring__Nto_string__Aint__Aint$w941$end;
-    ir_make_label cb__Nstd__Nstring__Nto_string__Aint__Aint$w941$body;
+    ir_sub L4 1;
+    ir_load L4 ST;
+    ir_load L6 0;
+    ir_make_label cb__Nstd__Nstring__Nto_string__Aptr__TU_string__Aint__Aint$w970$cond;
+    ir_jmp_gte L5 L4 cb__Nstd__Nstring__Nto_string__Aptr__TU_string__Aint__Aint$w970$end;
+    ir_make_label cb__Nstd__Nstring__Nto_string__Aptr__TU_string__Aint__Aint$w970$body;
+    ir_deref L4;
+    ir_load L6 ST;
+    ir_deref L4;
     ir_deref L5;
-    ir_load L7 ST;
-    ir_deref L5;
-    ir_deref L6;
     ir_load ST ST;
+    ir_sub L4 1;
+    ir_load L4 ST;
+    ir_deref L5;
+    ir_load ST L6;
     ir_add L5 1;
     ir_load L5 ST;
-    ir_add L6 1;
-    ir_load L6 ST;
-    ir_deref L6;
-    ir_load ST L7;
-    ir_add L6 1;
-    ir_load L6 ST;
-    ir_jmp cb__Nstd__Nstring__Nto_string__Aint__Aint$w941$cond;
-    ir_make_label cb__Nstd__Nstring__Nto_string__Aint__Aint$w941$end;
-    ir_load_addr STR0;
-    ir_return ST;
+    ir_jmp cb__Nstd__Nstring__Nto_string__Aptr__TU_string__Aint__Aint$w970$cond;
+    ir_make_label cb__Nstd__Nstring__Nto_string__Aptr__TU_string__Aint__Aint$w970$end;
+    ir_deref A0;
+    ir_copy ST L2 24;
+    ir_return A0;
 endf
 
-func cb__Nstd__Nstring__Nto_string__Aint -> rawstring
-    arg #0 i: int;
-    ir_call cb__Nstd__Nstring__Nto_string__Aint__Aint A0 10;
-    ir_return ST;
+func cb__Nstd__Nstring__Nto_string__Aptr__TU_string__Aint -> ptr__TU_string
+    arg #0 $cb_agg_ret: ptr__TU_string;
+    arg #1 i: int;
+    ir_call cb__Nstd__Nstring__Nto_string__Aptr__TU_string__Aint__Aint A0 A1 10;
+    ir_return A0;
+    ir_noop ST;
+endf
+
+func cb__Nstd__Nstring__Nto_string__Aptr__TU_string__Aptr__Tpure__Tuint8 -> ptr__TU_string
+    arg #0 $cb_agg_ret: ptr__TU_string;
+    arg #1 c: ptr__Tpure__Tuint8;
+    ir_deref A0;
+    ir_load [ST . 0] A1;
+    ir_deref A0;
+    ir_call cb__Nstd__Nrawstring__Nstrlen__Aptr__Tpure__Tuint8 A1;
+    ir_load [ST . 1] ST;
+    ir_deref A0;
+    ir_load [ST . 2] 1;
+    ir_return A0;
+endf
+
+func cb__Nstd__Nstring__Nto_string__Aptr__TU_string__Abool -> ptr__TU_string
+    arg #0 $cb_agg_ret: ptr__TU_string;
+    arg #1 b: bool;
+    ir_jmp_eq A1 0 cb__Nstd__Nstring__Nto_string__Aptr__TU_string__Abool$if1042$else;
+    ir_make_label cb__Nstd__Nstring__Nto_string__Aptr__TU_string__Abool$if1042$body;
+    ir_deref A0;
+    ir_load_addr STR3;
+    ir_load [ST . 0] ST;
+    ir_deref A0;
+    ir_load [ST . 1] 4;
+    ir_deref A0;
+    ir_load [ST . 2] 1;
+    ir_return A0;
+    ir_jmp cb__Nstd__Nstring__Nto_string__Aptr__TU_string__Abool$if1042$end;
+    ir_make_label cb__Nstd__Nstring__Nto_string__Aptr__TU_string__Abool$if1042$else;
+    ir_deref A0;
+    ir_load_addr STR4;
+    ir_load [ST . 0] ST;
+    ir_deref A0;
+    ir_load [ST . 1] 5;
+    ir_deref A0;
+    ir_load [ST . 2] 1;
+    ir_return A0;
+    ir_make_label cb__Nstd__Nstring__Nto_string__Aptr__TU_string__Abool$if1042$end;
 endf
 
 func cb__Nstd__Ntests1__Nok -> void

@@ -50,6 +50,8 @@ enum class ast_type {
     while_stmt,
     for_stmt,
     defer_stmt,
+    continue_stmt,
+    break_stmt,
 
     type_expr,
     struct_type,
@@ -256,6 +258,10 @@ arena_ptr<ast_node> make_for_stmt_node(memory_arena& arena, const position& pos,
 arena_ptr<ast_node> make_if_stmt_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& cond, arena_ptr<ast_node>&& body, arena_ptr<ast_node>&& elsebody);
 
 arena_ptr<ast_node> make_defer_stmt_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& body);
+
+arena_ptr<ast_node> make_continue_stmt_node(memory_arena& arena, const position& pos);
+
+arena_ptr<ast_node> make_break_stmt_node(memory_arena& arena, const position& pos);
 
 arena_ptr<ast_node> make_type_expr_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& expr);
 

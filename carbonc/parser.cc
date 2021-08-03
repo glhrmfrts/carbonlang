@@ -268,6 +268,10 @@ struct parser_impl {
             return parse_for_stmt();
         case token_type::while_:
             return parse_while_stmt();
+        case token_type::continue_:
+            return parse_continue_stmt();
+        case token_type::break_:
+            return parse_break_stmt();
         case token_type::if_:
             return parse_if_stmt();
         case token_type::return_:
@@ -279,6 +283,18 @@ struct parser_impl {
         }
 
         return parse_expr();
+    }
+
+    arena_ptr<ast_node> parse_break_stmt() {
+        auto pos = lex->pos();
+        scope_guard _{ [this]() { lex->next(); } };
+        return make_break_stmt_node(*ast_arena, pos);
+    }
+
+    arena_ptr<ast_node> parse_continue_stmt() {
+        auto pos = lex->pos();
+        scope_guard _{ [this]() { lex->next(); } };
+        return make_continue_stmt_node(*ast_arena, pos);
     }
 
     arena_ptr<ast_node> parse_compound_stmt() {

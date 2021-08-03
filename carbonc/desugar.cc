@@ -7,6 +7,8 @@ namespace carbon {
 
 static const type_id invalid_type{};
 
+void check_assignment_aggregate_call(type_system& ts, ast_node& node);
+
 // Section: temp for bool ops
 
 void check_assignment_bool_op(type_system& ts, ast_node& node) {
@@ -111,12 +113,21 @@ void check_func_return_aggregate_type(type_system& ts, ast_node& func) {
             auto agg_ret_id = make_identifier_node(*ts.ast_arena, ret->pos, { "$cb_agg_ret" });
             auto agg_ret_deref = make_deref_expr(ts, std::move(agg_ret_id));
             auto agg_assign = make_assignment(*ts.ast_arena, std::move(agg_ret_deref), std::move(ret->children[0]));
-            resolve_node_type_post(ts, agg_assign.get());
+            resolve_node_type_post(ts, agg_assign->bin_left());
+
+            check_assignment_aggregate_call(ts, *agg_assign);
+            if (!agg_assign->bin_right()) {
+                // if this happens then an aggregate is being made directly to $cb_agg_ret
+                ret->pre_children = std::move(agg_assign->pre_children);
+                ret->temps.push_back(std::move(agg_assign));
+            }
+            else {
+                resolve_node_type_post(ts, agg_assign.get());
+                ret->pre_children.push_back(std::move(agg_assign));
+            }
 
             ret->children[0] = make_identifier_node(*ts.ast_arena, ret->pos, { "$cb_agg_ret" });
             resolve_node_type_post(ts, ret);
-
-            ret->pre_children.push_back(std::move(agg_assign));
         }
 
         clear_func_resolved_state(func);
@@ -147,8 +158,8 @@ arena_ptr<ast_node> transform_aggregate_call_into_pointer_argument(type_system& 
 }
 
 void check_assignment_aggregate_call(type_system& ts, ast_node& node) {
-    if (is_aggregate_type(node.type_id) && node.bin_right() && node.bin_right()->type == ast_type::call_expr) {
-        if (node.var_value()->call.flags & call_flag::is_aggregate_return) { return; }
+    if (node.bin_right() && is_aggregate_type(node.bin_right()->type_id) && node.bin_right()->type == ast_type::call_expr) {
+        if (node.bin_right()->call.flags & call_flag::is_aggregate_return) { return; }
 
         auto call = transform_aggregate_call_into_pointer_argument(ts, *node.bin_left(), std::move(node.children[1]));
         node.pre_children.push_back(std::move(call));
@@ -165,7 +176,7 @@ void check_var_decl_aggregate_call(type_system& ts, ast_node& node) {
 }
 
 void check_temp_aggregate_call(type_system& ts, ast_node& node) {
-    if (is_aggregate_type(node.type_id) && !(node.call.flags & call_flag::is_aggregate_return)) {
+    if (node.type == ast_type::call_expr && is_aggregate_type(node.type_id) && !(node.call.flags & call_flag::is_aggregate_return)) {
         auto tempname = generate_temp_name();
         auto temp = make_var_decl_of_type(ts, token_type::let, tempname, node.type_id); // TODO: auto
         resolve_node_type_post(ts, temp.get());
@@ -249,6 +260,12 @@ void desugar(type_system& ts, ast_node* nodeptr) {
             visit_tree(ts, *as);
         }
         visit_pre_children(ts, node);
+        break;
+    }
+    case ast_type::field_expr: {
+        if (ts.subpass < 1) { break; }
+
+        check_temp_aggregate_call(ts, *node.field_struct());
         break;
     }
     case ast_type::binary_expr: {

@@ -1,10 +1,7 @@
 import std::alloc
+import std::rawstring
 
-type string = struct {
-    auto data: *pure uint8
-    len:       usize
-    is_lit:    bool
-}
+type string = []uint8
 
 /*
 func auto_cleanup(s: *string) {
@@ -13,7 +10,7 @@ func auto_cleanup(s: *string) {
     }
 }
 
-func copy_cstring(cstr: *pure uint8, len: usize) {
+func copy_cstring(cstr: *pure uint8, len: isize) {
     let data = allocn(`uint8, len + 1)
     copy(cast(pointer) data, cast(pointer) cstr, len)
     data[len] = '\0'
@@ -60,35 +57,44 @@ func find_last(str: pure string, sub: pure string) {
 }
 */
 
-func to_string(value: int, base: int) {
+`const let max_integer_string_len = 24
+`const let max_float_string_len = 29
+
+type Result(T) = enum {
+    type Ok = struct { value: T }
+    type Error = struct {
+        message: []pure uint8
+        code: uintptr
+        userdata: pointer
+    }
+}
+
+func to_string(value: int, base: int, storage: *[max_integer_string_len]uint8): []uint8 {
     // check that the base if valid
-    if (base < 2 || base > 36) { return "" }
+    if (base < 2 || base > 36) { return []uint8{"", 0} }
 
     let tmp_value : int
-    let run_yet = false
-    let offs = 0
+    let offs : int
 
-    let result = string{ allocn(`uint8, 25), 24, false }
-    result.data[24] = '\0'
+    let result = []uint8{ cast(*uint8) storage, max_integer_string_len }
+    result[max_integer_string_len] = '\0'
 
     let tpl_str = "zyxwvutsrqponmlkjihgfedcba9876543210123456789abcdefghijklmnopqrstuvwxyz"
 
-    while (value || !run_yet) {
-        /*if (offs >= 24) {
-            //break
-        }*/
-
+    while (value != 0) {
+        if (offs >= max_integer_string_len) {
+            break
+        }
+        
         tmp_value = value
         value /= base
 
-        result.data[offs] = tpl_str[35 + (tmp_value - value * base)]
+        result[offs] = tpl_str[35 + (tmp_value - value * base)]
         offs += 1
-
-        run_yet = true
     }
 
-    let ptr = result.data
-    let ptr1 = result.data
+    let ptr = &result[offs]
+    let ptr1 = &result[0]
 
     // Apply negative sign
     if (tmp_value < 0) {
@@ -104,15 +110,26 @@ func to_string(value: int, base: int) {
         tmp_char = @ptr
 
         @ptr = @ptr1
-        ptr += 1
-        ptr1 += 1
+        ptr -= 1
 
         @ptr1 = tmp_char
         ptr1 += 1
     }
-    return ""
+    return []uint8{ result.data, offs }
 }
 
-func to_string(i: int) {
-    return to_string(i, 10)
+func to_string(i: int, storage: *[max_integer_string_len]uint8): []uint8 {
+    return to_string(i, 10, storage)
+}
+
+func to_string(c: *pure uint8) {
+    return []pure uint8{c, c->strlen()}
+}
+
+func to_string(b: bool) {
+    if (b) {
+        return "true"->slice()
+    } else {
+        return "false"->slice()
+    }
 }
