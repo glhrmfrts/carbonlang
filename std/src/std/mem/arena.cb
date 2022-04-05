@@ -1,0 +1,70 @@
+import std::runtime::memory
+import std::mem
+
+type arena_block = struct {
+    mem: memory
+    filled: usize
+    prev: *arena_block
+}
+
+type arena = struct {
+    first_block: *arena_block
+    alignment: usize
+    block_size: usize
+}
+
+func align(number: usize, alignment: usize) {
+    // #TODO implement
+    return number
+}
+
+func fits_in_block(b: &arena_block, size: usize) {
+    return b.filled + size <= b.mem.len
+}
+
+func allocate_in_block(b: &arena_block, size: usize) {
+    let result = b.mem.ptr + b.filled
+    b.filled += size
+    return memory{cast(rawptr) result, size}
+}
+
+func make_arena_allocator(block_size: usize): arena {
+    let a : arena
+    a.alignment = sizeof(rawptr)
+    a.block_size = align(block_size, a.alignment)
+    a.first_block = nullptr
+    return a
+}
+
+func free(a: &arena): {} {
+    let pblock = a.first_block
+    while (pblock != nullptr) {
+        let block = nullcast(pblock)
+        let prev = block.prev
+        free(&block.mem)
+        pblock = prev
+    }
+}
+
+func alloc(a: &arena, user_size: usize): memory {
+    let size = align(user_size, a.alignment)
+    let pblock = a.first_block
+    while (pblock != nullptr) {
+        let block = nullcast(pblock)
+        if (fits_in_block(block, size)) {
+            return allocate_in_block(block, size)
+        }
+    }
+
+    let new_block_memory = alloc(sizeof(arena_block) + a.block_size)
+    let new_block = nullcast(cast(*arena_block) new_block_memory.ptr)
+    new_block.mem = memory{
+        new_block_memory.ptr + sizeof(arena_block),
+        new_block_memory.len - sizeof(arena_block)
+    }
+    new_block.filled = 0
+    new_block.prev = a.first_block
+
+    a.first_block = new_block
+    return allocate_in_block(new_block, size)
+}

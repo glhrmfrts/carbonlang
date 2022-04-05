@@ -1,28 +1,27 @@
-import std::io
+/*import std::io
 import std::string
 import std::rawstring
-import std::alloc
+import std::mem
 import std::os::windows
 
 private {
 
-func init_command_line(): []string {
-    let cmdline = GetCommandLineA()
-    let result = make_slice(`string, 1)
-    result[0] = string{ cmdline, cmdline->strlen() }
-    return result
-}
-
-func free_command_line(args: []string) {
-    free(cast(pointer) args.data)
-}
-
 extern(C) func carbon_main(): int {
-    let args = init_command_line()
-    defer args->free_command_line()
+    let cmd_line_args_buf = [1]string{ string{"", 0} }
+
+    let cmdline = nullcast(GetCommandLineA())
+
+    // TODO: lengthof
+    let args = []string{ &cmd_line_args_buf[0], 1 }
+    args[0] = string{ cmdline, cmdline->strlen() }
 
     import main
     return main(args)
 }
 
+}
+*/
+
+extern(C) func carbon_main(): int {
+    return 0
 }

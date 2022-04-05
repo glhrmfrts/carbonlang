@@ -21,15 +21,15 @@ enum class func_linkage {
 };
 
 enum class type_qualifier {
-    optional,
-    pointer,
+    ptr,
+    nullableptr,
     pure,
 };
 
 enum class type_kind {
     void_,
-    pointer,
-    optional,
+    ptr,
+    nullableptr,
     integral,
     real,
     array,
@@ -95,6 +95,7 @@ struct type_def {
     std::size_t size = 0;
     std::size_t alignment = 0;
     bool is_signed = false;
+    bool is_opaque = false;
 
     numeric_type numeric;
     array_type array;
@@ -325,8 +326,7 @@ struct type_system {
     type_id raw_string_type{}; // only used internally
 
     type_constructor* ptr_type_constructor;
-    type_constructor* optional_type_constructor;
-    type_constructor* auto_type_constructor;
+    type_constructor* nullableptr_type_constructor;
     type_constructor* pure_type_constructor;
     type_constructor* tuple_type_constructor;
     type_constructor* arr_type_constructor;
@@ -370,11 +370,9 @@ string_hash build_type_constructor_name(const std::string& name, const std::vect
 
 string_hash build_type_constructor_mangled_name(const std::string& mangled_name, const std::vector<comptime_value>& args);
 
-type_id get_pointer_type_to(type_system& ts, type_id elem_type);
+type_id get_ptr_type_to(type_system& ts, type_id elem_type);
 
-type_id get_optional_type_to(type_system& ts, type_id elem_type);
-
-type_id get_new_type_to(type_system& ts, type_id elem_type);
+type_id get_nullableptr_type_to(type_system& ts, type_id elem_type);
 
 
 void resolve_func_args_type(type_system& ts, ast_node& node);

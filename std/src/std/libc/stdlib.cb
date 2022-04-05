@@ -1,8 +1,8 @@
 extern(C) {
 
 func exit(status: int): {};
-func free(ptr: pointer): int;
-func malloc(size: usize): pointer;
+func free(ptr: rawptr): int;
+func malloc(size: usize): rawptr;
 func rand(): int;
 func system(c: *char): int;
 

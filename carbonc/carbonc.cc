@@ -42,6 +42,9 @@ void compile_file(type_system& ts, ast_node& target, const std::string& filename
 
     try {
         ast = p.parse_code_unit();
+        if (!ast) {
+            throw parse_error("Sorry what", {});
+        }
     }
     catch (const parse_error& e) {
         std::cerr << "carbonc - parse error: " << e.what() << "\n";
@@ -236,6 +239,7 @@ int run_project_mode(int argc, const char* argv[]) {
         auto exe_file = run_linker(p, obj_file);
         auto out_file = std::string{ "_carbon/out_debug/" } + basename(exe_file);
         MoveFileExA(exe_file.c_str(), out_file.c_str(), MOVEFILE_REPLACE_EXISTING);
+
         const char* outpath = find_arg("-o", argc, argv);
         if (outpath) {
             CopyFileA(out_file.c_str(), outpath, false);

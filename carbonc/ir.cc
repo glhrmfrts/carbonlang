@@ -769,6 +769,23 @@ void generate_ir_cast_expr(ast_node& node) {
     }
 }
 
+void generate_ir_nullcast_expr(ast_node& node) {
+    generate_ir_node(*node.children[1]->children[0]);
+
+#if 0
+    auto a = pop();
+
+    push(ir_int{ 0, ts->uintptr_type });
+    auto b = pop();
+
+    emit(ir_jmp_neq, a, b, ir_label{ node.ir.if_body_label });
+
+    // TODO: here goes panic code
+
+    emit(ir_make_label, ir_label{ node.ir.if_body_label });
+#endif
+}
+
 void generate_ir_identifier(ast_node& node) {
     auto local = node.lvalue.symbol->scope->local_defs[node.lvalue.symbol->local_index];
     if (local->flags & local_flag::is_argument) {
@@ -790,6 +807,10 @@ void generate_ir_string_literal(ast_node& node) {
 
 void generate_ir_int_literal(ast_node& node) {
     push(ir_int{ node.int_value, node.type_id });
+}
+
+void generate_ir_nullptr_literal(ast_node& node) {
+    push(ir_int{ 0, ts->uintptr_type });
 }
 
 void generate_ir_char_literal(ast_node& node) {
@@ -884,10 +905,13 @@ void generate_ir_node(ast_node& node) {
     case ast_type::cast_expr:
         generate_ir_cast_expr(node);
         break;
+    case ast_type::nullcast_expr:
+        generate_ir_nullcast_expr(node);
+        break;
     case ast_type::int_literal:
     case ast_type::bool_literal:
-    case ast_type::nullpointer:
-        generate_ir_int_literal(node);
+    case ast_type::nullptr_:
+        generate_ir_nullptr_literal(node);
         break;
     case ast_type::char_literal:
         generate_ir_char_literal(node);

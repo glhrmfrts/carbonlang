@@ -8,4 +8,7 @@ code_unit{
           call{puts ({@ str}.data)}}}}
     func_decl{println (var_decl{value}) {
         stmt_list{
-          call{puts (call{to_string (value)}.data)}}}}}}
+          call{puts (call{to_string (value)}.data)}}}}
+    func_decl{println (var_decl{value: }) {
+        stmt_list{
+          call{puts (call{to_string ({& $cbT0}, value)}.data)}}}}}}

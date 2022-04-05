@@ -37,7 +37,7 @@ struct parser_impl {
         if (decls) {
             return make_code_unit_node(*ast_arena, pos, modname, std::move(decls));
         }
-        return arena_ptr<ast_node>{nullptr, nullptr};
+        throw parse_error(pos.filename, pos, "Empty code unit");
     }
 
     // Section: types
@@ -55,20 +55,20 @@ struct parser_impl {
         else if (TOK_CHAR == '[') {
             result = parse_array_type_expr();
         }
+        else if (TOK_CHAR == '&') {
+            lex->next();
+
+            auto to_type = parse_type_expr(false, true); // no wrap
+            if (to_type) {
+                result = make_type_qualifier_node(*ast_arena, pos, type_qualifier::ptr, std::move(to_type));
+            }
+        }
         else if (TOK_CHAR == '*') {
             lex->next();
 
             auto to_type = parse_type_expr(false, true); // no wrap
             if (to_type) {
-                result = make_type_qualifier_node(*ast_arena, pos, type_qualifier::pointer, std::move(to_type));
-            }
-        }
-        else if (TOK_CHAR == '?') {
-            lex->next();
-
-            auto to_type = parse_type_expr(false, true); // no wrap
-            if (to_type) {
-                result = make_type_qualifier_node(*ast_arena, pos, type_qualifier::optional, std::move(to_type));
+                result = make_type_qualifier_node(*ast_arena, pos, type_qualifier::nullableptr, std::move(to_type));
             }
         }
         else if (TOK == token_type::pure) {
@@ -649,6 +649,9 @@ struct parser_impl {
             lex->next();
             contents = parse_type_expr();
         }
+        else {
+            throw parse_error(filename, lex->pos(), "expected '=' in type declaration");
+        }
 
         if (arg_list.get()) {
             return make_type_constructor_decl_node(*ast_arena, pos, std::move(id), std::move(arg_list), std::move(contents));
@@ -954,10 +957,6 @@ struct parser_impl {
 
     arena_ptr<ast_node> parse_primary_expr() {
         switch (lex->current()) {
-        case token_type::nil: {
-            scope_guard _{[this]() { lex->next(); }};
-            return make_nil_literal_node(*ast_arena, lex->pos());
-        }
         case token_type::bool_literal_true:
         case token_type::bool_literal_false: {
             scope_guard _{[this]() { lex->next(); }};
@@ -981,7 +980,7 @@ struct parser_impl {
             scope_guard _{ [this]() { lex->next(); } };
             return make_string_literal_node(*ast_arena, lex->pos(), lex->string_value());
         }
-        case token_type::nullpointer: {
+        case token_type::nullptr_: {
             scope_guard _{ [this]() { lex->next(); } };
             return make_nullpointer_node(*ast_arena, lex->pos());
         }

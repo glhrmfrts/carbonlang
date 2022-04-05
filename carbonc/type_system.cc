@@ -160,7 +160,7 @@ type_id register_pointer_type(type_system& ts, const std::string& name, const st
     }
 
     auto tid = type_id{ it->second->scope, it->second->type_index };
-    auto pointertid = get_pointer_type_to(ts, tid);
+    auto pointertid = get_ptr_type_to(ts, tid);
 
     return register_alias_to_type_name(ts, name, pointertid.get().name.str);
 }
@@ -325,16 +325,12 @@ std::pair<std::vector<comptime_value>, bool> nodes_to_comptime_values(type_syste
     return std::make_pair(args, all_resolved);
 }
 
-type_id get_pointer_type_to(type_system& ts, type_id elem_type) {
+type_id get_ptr_type_to(type_system& ts, type_id elem_type) {
     return execute_type_constructor(ts, ts.builtin_scope->scope, *ts.ptr_type_constructor, { elem_type });
 }
 
-type_id get_optional_type_to(type_system& ts, type_id elem_type) {
-    return execute_type_constructor(ts, ts.builtin_scope->scope, *ts.optional_type_constructor, { elem_type });
-}
-
-type_id get_auto_type_to(type_system& ts, type_id elem_type) {
-    return execute_type_constructor(ts, ts.builtin_scope->scope, *ts.auto_type_constructor, { elem_type });
+type_id get_nullableptr_type_to(type_system& ts, type_id elem_type) {
+    return execute_type_constructor(ts, ts.builtin_scope->scope, *ts.nullableptr_type_constructor, { elem_type });
 }
 
 type_id get_pure_type_to(type_system& ts, type_id elem_type) {
@@ -379,7 +375,7 @@ void tquery_for_type_kind(type_query& q, type_id root, type_kind k) {
         return;
     }
     switch (root.get().kind) {
-    case type_kind::pointer:
+    case type_kind::ptr:
     case type_kind::array:
     case type_kind::slice:
         q.path.push_back(elem_type);
@@ -397,7 +393,7 @@ void tquery_for_type_id(type_query& q, type_id root, type_id target) {
         return;
     }
     switch (root.get().kind) {
-    case type_kind::pointer:
+    case type_kind::ptr:
     case type_kind::array:
     case type_kind::slice:
         q.path.push_back(elem_type);
@@ -415,7 +411,7 @@ void tquery_for_type_with_constructor(type_query& q, type_id root, type_id ctor)
         return;
     }
     switch (root.get().kind) {
-    case type_kind::pointer:
+    case type_kind::ptr:
     case type_kind::array:
     case type_kind::slice:
         q.path.push_back(elem_type);
@@ -455,7 +451,19 @@ bool is_assignable_to(type_system& ts, type_id a, type_id b) {
         return true;
     }
 
-    if (ta.kind == type_kind::pointer && tb.kind == type_kind::pointer) {
+    if (ta.kind == type_kind::nullableptr && tb.kind == type_kind::nullableptr) {
+        if (ta.id == ts.raw_ptr_type) {
+            return true;
+        }
+
+        return is_assignable_to(ts, ta.elem_type, tb.elem_type);
+    }
+
+    if (ta.kind == type_kind::ptr && tb.kind == type_kind::ptr) {
+        return is_assignable_to(ts, ta.elem_type, tb.elem_type);
+    }
+
+    if (ta.kind == type_kind::ptr && tb.kind == type_kind::nullableptr) {
         return is_assignable_to(ts, ta.elem_type, tb.elem_type);
     }
 
@@ -555,10 +563,10 @@ arena_ptr<ast_node> get_zero_value_node_for_type(type_system& ts, type_id id) {
     else if (id.get().kind == type_kind::real) {
         return make_float_literal_node(*ts.ast_arena, {}, 0.0);
     }
-    else if (id.get().kind == type_kind::optional)  {
-        return make_nil_literal_node(*ts.ast_arena, {});
+    else if (id.get().kind == type_kind::nullableptr)  {
+        return make_nullpointer_node(*ts.ast_arena, {});
     }
-    else if (id.get().kind == type_kind::pointer && id.get().elem_type.get().kind == type_kind::integral && id.get().elem_type.get().size == 1) {
+    else if (id.get().kind == type_kind::ptr && id.get().elem_type.get().kind == type_kind::integral && id.get().elem_type.get().size == 1) {
         return make_string_literal_node(*ts.ast_arena, {}, "");
     }
     return { nullptr, nullptr };
@@ -577,7 +585,7 @@ arena_ptr<ast_node> generate_init_list_zero_values(type_system& ts, type_id id) 
 bool is_pointer(type_id id) {
     if (!id.valid()) return false;
 
-    return id.get().kind == type_kind::pointer;
+    return id.get().kind == type_kind::ptr;
 }
 
 bool is_aggregate(type_id id) {
@@ -604,7 +612,7 @@ bool is_type_kind(type_id id, type_kind k) {
 }
 
 bool type_allows_no_init(type_system& ts, type_id id) {
-    if (id.get().kind == type_kind::pointer) {
+    if (id.get().kind == type_kind::ptr) {
         if (id.get().elem_type.get().kind == type_kind::integral && id.get().elem_type.get().size == 1) {
             return true;
         }
@@ -831,7 +839,23 @@ using cast_check_func = std::function<bool(type_system&, type_def&, type_def&)>;
 
 bool can_pointer_be_cast_from(type_system& ts, type_def& self, type_def& from) {
     if (self.id == ts.raw_ptr_type) {
-        if (from.kind == type_kind::pointer) {
+        if (from.kind == type_kind::ptr || from.kind == type_kind::nullableptr) {
+            return true;
+        }
+        if (from.kind == type_kind::integral) {
+            return from.id == ts.uintptr_type;
+        }
+    }
+
+    if (from.kind == type_kind::ptr) {
+        return is_castable_to(ts, from.elem_type, self.elem_type);
+    }
+    return false;
+}
+
+bool can_nullableptr_be_cast_from(type_system& ts, type_def& self, type_def& from) {
+    if (self.id == ts.raw_ptr_type) {
+        if (from.kind == type_kind::ptr || from.kind == type_kind::nullableptr) {
             return true;
         }
         if (from.kind == type_kind::integral) {
@@ -842,7 +866,7 @@ bool can_pointer_be_cast_from(type_system& ts, type_def& self, type_def& from) {
         return true;
     }
 
-    if (from.kind == type_kind::pointer) {
+    if (from.kind == type_kind::ptr) {
         return is_castable_to(ts, from.elem_type, self.elem_type);
     }
     return false;
@@ -850,7 +874,7 @@ bool can_pointer_be_cast_from(type_system& ts, type_def& self, type_def& from) {
 
 bool can_integral_be_cast_from(type_system& ts, type_def& self, type_def& from) {
     if (self.id == ts.uintptr_type) {
-        if (from.kind == type_kind::pointer) {
+        if (from.kind == type_kind::ptr) {
             return from.id == ts.raw_ptr_type;
         }
         return false;
@@ -864,7 +888,8 @@ bool can_integral_be_cast_from(type_system& ts, type_def& self, type_def& from) 
 }
 
 static std::unordered_map<type_kind, cast_check_func> cast_check_funcs = {
-    {type_kind::pointer, can_pointer_be_cast_from},
+    {type_kind::ptr, can_pointer_be_cast_from},
+    {type_kind::nullableptr, can_nullableptr_be_cast_from},
     {type_kind::integral, can_integral_be_cast_from},
 };
 
@@ -907,7 +932,7 @@ std::string node_to_string(const ast_node& node) {
         return node_to_string(*node.children[0]);
     case ast_type::type_qualifier: {
         std::string result;
-        if (node.type_qual == type_qualifier::pointer) {
+        if (node.type_qual == type_qualifier::ptr) {
             result += "&";
         }
         result += node_to_string(*node.children[0]);
@@ -1003,8 +1028,8 @@ type_id get_value_node_type(type_system& ts, ast_node& node) {
         auto& sym = ts.builtin_scope->scope.symbols[string_hash{ "$rawstring" }];
         return to_type_id(*sym);
     }
-    case ast_type::nullpointer: {
-        auto& sym = ts.builtin_scope->scope.symbols[string_hash{ "pointer" }];
+    case ast_type::nullptr_: {
+        auto& sym = ts.builtin_scope->scope.symbols[string_hash{ "rawptr" }];
         return to_type_id(*sym);
     }
     case ast_type::cast_expr: {
@@ -1131,16 +1156,16 @@ type_id get_type_expr_node_type(type_system& ts, ast_node& node) {
         break;
     }
     case ast_type::type_qualifier: {
-        if (node.type_qual == type_qualifier::pointer) {
+        if (node.type_qual == type_qualifier::ptr) {
             auto elem_type = get_type_expr_node_type(ts, *node.children[0]);
             if (elem_type.valid()) {
-                node.type_id = get_pointer_type_to(ts, elem_type);
+                node.type_id = get_ptr_type_to(ts, elem_type);
             }
         }
-        else if (node.type_qual == type_qualifier::optional) {
+        else if (node.type_qual == type_qualifier::nullableptr) {
             auto elem_type = get_type_expr_node_type(ts, *node.children[0]);
             if (elem_type.valid()) {
-                node.type_id = get_optional_type_to(ts, elem_type);
+                node.type_id = get_nullableptr_type_to(ts, elem_type);
             }
         }
         else if (node.type_qual == type_qualifier::pure) {
@@ -1356,7 +1381,7 @@ void update_local_variable_type(type_system& ts, ast_node& l, type_id tid) {
 }
 
 void update_local_aggregate_argument(type_system& ts, ast_node& l) {
-    update_local_variable_type(ts, l, get_pointer_type_to(ts, l.type_id));
+    update_local_variable_type(ts, l, get_ptr_type_to(ts, l.type_id));
     if (l.type == ast_type::var_decl) {
         l.children[ast_node::child_var_decl_type] = make_type_resolver_node(*ts.ast_arena, l.type_id);
     }
@@ -1392,7 +1417,7 @@ bool check_convertible_and_cast_call_args(type_system& ts, ast_node& node, type_
 
         auto [convertible, ncast] = is_convertible_to(ts, node.type_id, target);
         if (!convertible) {
-            if (target.get().kind == type_kind::pointer && target.get().elem_type == node.type_id) {
+            if (target.get().kind == type_kind::ptr && target.get().elem_type == node.type_id) {
                 info.cast_needed_idxs.push_back(std::make_tuple(toptr_cast, target, idx));
                 return true;
             }
@@ -1417,8 +1442,8 @@ bool check_convertible_and_cast_call_args_constructor(type_system& ts, ast_node&
 
         auto [convertible, ncast] = is_convertible_to(ts, node.type_id, target);
         if (!convertible) {
-            if (target.get().kind == type_kind::pointer && target.get().elem_type == node.type_id.get().constructor_type) {
-                info.cast_needed_idxs.push_back(std::make_tuple(toptr_cast, get_pointer_type_to(ts, node.type_id), idx));
+            if (target.get().kind == type_kind::ptr && target.get().elem_type == node.type_id.get().constructor_type) {
+                info.cast_needed_idxs.push_back(std::make_tuple(toptr_cast, get_ptr_type_to(ts, node.type_id), idx));
                 return true;
             }
 
@@ -1442,7 +1467,7 @@ void perform_casts(type_system& ts, std::vector<arena_ptr<ast_node>>& call_args,
             break;
         case toptr_cast:
             call_args[std::get<2>(c)] = make_address_of_expr(ts, std::move(call_args[std::get<2>(c)]));
-            call_args[std::get<2>(c)]->type_id = get_pointer_type_to(ts, call_args[std::get<2>(c)]->children[0]->type_id);
+            call_args[std::get<2>(c)]->type_id = get_ptr_type_to(ts, call_args[std::get<2>(c)]->children[0]->type_id);
             break;
         }
     }
@@ -1980,14 +2005,14 @@ void resolve_assignment_type(type_system& ts, ast_node& node) {
     }
     /*
     else if (node.children[0]->type == ast_type::unary_expr && node.children[0]->op == token_from_char('*')) {
-        if (node.children[0]->type_id.get().kind == type_kind::pointer) {
+        if (node.children[0]->type_id.get().kind == type_kind::ptr) {
             add_type_error(ts, node.pos, "cannot dereference and assign to the pointer type '%s', did you mean to use a reference instead?",
                 type_to_string(node.children[0]->type_id).c_str());
             node.type_error = true;
             return;
         }
     }
-    else if (node.children[0]->type == ast_type::field_expr && node.children[0]->children[0]->type_id.get().kind == type_kind::pointer) {
+    else if (node.children[0]->type == ast_type::field_expr && node.children[0]->children[0]->type_id.get().kind == type_kind::ptr) {
         add_type_error(ts, node.pos, "cannot assign to field of pointer type '%s', did you mean to use a reference instead?",
             type_to_string(node.children[0]->children[0]->type_id).c_str());
         node.type_error = true;
@@ -2003,7 +2028,7 @@ void resolve_assignment_type(type_system& ts, ast_node& node) {
             return;
         }
     }
-    else if (node.children[0]->type == ast_type::index_expr && node.children[0]->children[0]->type_id.get().kind == type_kind::pointer) {
+    else if (node.children[0]->type == ast_type::index_expr && node.children[0]->children[0]->type_id.get().kind == type_kind::ptr) {
         add_type_error(ts, node.pos, "cannot assign to index of pointer type '%s', did you mean to use a reference instead?",
             type_to_string(node.children[0]->children[0]->type_id).c_str());
         node.type_error = true;
@@ -2244,6 +2269,15 @@ bool check_reserved_call(type_system& ts, ast_node& node) {
             }
             return true;
         }
+        else if (node.children[0]->id_parts.front() == "nullcast") {
+            resolve_node_type(ts, node.children[1]->children[0].get());
+            if (node.children[1]->children[0]->type_id.valid()) {
+                node.type = ast_type::nullcast_expr;
+                node.type_id = get_ptr_type_to(ts, node.children[1]->children[0]->type_id.get().elem_type);
+                node.type_error = false;
+            }
+            return true;
+        }
     }
     return false;
 }
@@ -2321,7 +2355,7 @@ void resolve_call_funcdef(type_system& ts, ast_node& node) {
 
         auto funcname = node_to_string(*node.call_func());
         if (funcname == "allocn") {
-            printf("asdqwe\n");
+            //printf("asdqwe\n");
         }
         auto bsym = find_symbol(ts, pair);
         if (bsym && bsym->kind == symbol_kind::overloaded_func_base) {
@@ -2485,17 +2519,25 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
     }
     case ast_type::type_decl: {
         check_for_unresolved = false;
+
+        node.type_def.self = &node;
+        node.type_def.name = string_hash{ build_identifier_value(node.children[0]->id_parts) };
+        node.type_def.mangled_name = string_hash{ "U_" + build_identifier_value(node.children[0]->id_parts) };
+        node.type_def.size = 0;
+        node.type_def.is_opaque = true;
+        type_id new_type_id = register_user_type(ts, node);
+
         visit_tree(ts, *node.children[1]);
         if (node.children[1]) {
             auto type = node.children[1]->type_id;
             if (type.valid()) {
-                if (!node.type_def.self) {
-                    node.type_def = type.get();
-                    node.type_def.name = string_hash{ build_identifier_value(node.children[0]->id_parts) };
-                    node.type_def.mangled_name = string_hash{ "U_" + build_identifier_value(node.children[0]->id_parts) };
-                    node.type_def.self = &node;
-                    register_user_type(ts, node);
-                }
+                node.type_def = type.get();
+                node.type_def.id = new_type_id;
+                node.type_def.self = &node;
+                node.type_def.is_opaque = false;
+                node.type_def.name = string_hash{ build_identifier_value(node.children[0]->id_parts) };
+                node.type_def.mangled_name = string_hash{ "U_" + build_identifier_value(node.children[0]->id_parts) };
+                //register_user_type(ts, node);
             }
             else {
                 complement_error(ts, node.pos, "in type declaration '%s'", node_to_string(node).c_str());
@@ -2923,11 +2965,11 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
             enum { LIMIT = 32 };
             int si = 0;
             while (stype.valid() && !is_aggregate_root(stype) && (si++) < LIMIT) {
-                if (stype.get().kind == type_kind::optional) {
+                if (stype.get().kind == type_kind::nullableptr) {
                     node.type_error = true;
                     add_type_error(ts, node.pos, "cannot access field of optional type '%s', check in an if statement", type_to_string(ltype).c_str());
                 }
-                else if ((stype.get().kind == type_kind::pointer) && is_aggregate(stype.get().elem_type)) {
+                else if ((stype.get().kind == type_kind::ptr) && is_aggregate(stype.get().elem_type)) {
                     is_struct = true;
                     is_pointer = true;
                     stype = stype.get().elem_type;
@@ -3142,7 +3184,7 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
                 node.type_error = true;
             }
             else {
-                node.type_id = get_pointer_type_to(ts, node.children[0]->type_id);
+                node.type_id = get_ptr_type_to(ts, node.children[0]->type_id);
                 node.type_error = false;
             }
         }
@@ -3237,12 +3279,15 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
             //node.children[1]->type_id = node.type_id;
         }
         break;
+    case ast_type::nullcast_expr:
+        visit_children(ts, *node.children[1]);
+        break;
     case ast_type::bool_literal:
     case ast_type::int_literal:
     case ast_type::float_literal:
     case ast_type::char_literal:
     case ast_type::string_literal:
-    case ast_type::nullpointer:
+    case ast_type::nullptr_:
         node.type_id = get_value_node_type(ts, node);
         break;
     default: {
@@ -3514,7 +3559,7 @@ type_system::type_system(memory_arena& arena) {
 
     {
         auto node = make_in_arena<ast_node>(*ast_arena);
-        node->type_def.name = string_hash{ "*" };
+        node->type_def.name = string_hash{ "&" };
         node->type_def.mangled_name = string_hash{ "ptr" };
         node->type_def.kind = type_kind::constructor;
 
@@ -3525,8 +3570,8 @@ type_system::type_system(memory_arena& arena) {
             auto node = make_in_arena<ast_node>(*ast_arena);
             type_def& tf = node->type_def;
 
-            tf.kind = type_kind::pointer;
-            tf.name = string_hash{ "*" + type_arg.get().name.str };
+            tf.kind = type_kind::ptr;
+            tf.name = string_hash{ "&" + type_arg.get().name.str };
             tf.mangled_name = string_hash{ "ptr__T" + type_arg.get().mangled_name.str };
             tf.size = sizeof(void*);
             tf.alignment = alignof(void*);
@@ -3541,8 +3586,8 @@ type_system::type_system(memory_arena& arena) {
 
     {
         auto node = make_in_arena<ast_node>(*ast_arena);
-        node->type_def.name = string_hash{ "?" };
-        node->type_def.mangled_name = string_hash{ "optional" };
+        node->type_def.name = string_hash{ "*" };
+        node->type_def.mangled_name = string_hash{ "nullableptr" };
         node->type_def.kind = type_kind::constructor;
 
         type_constructor* ptr_template = &node->type_def.constructor;
@@ -3552,18 +3597,16 @@ type_system::type_system(memory_arena& arena) {
             auto node = make_in_arena<ast_node>(*ast_arena);
             type_def& tf = node->type_def;
 
-            tf.kind = type_kind::optional;
-            tf.name = string_hash{ "?" + type_arg.get().name.str };
-            tf.mangled_name = string_hash{ "optional__T" + type_arg.get().mangled_name.str };
-            if (type_arg.get().kind == type_kind::pointer) {
-                tf.size = sizeof(void*);
-                tf.alignment = alignof(void*);
-            }
+            tf.kind = type_kind::nullableptr;
+            tf.name = string_hash{ "*" + type_arg.get().name.str };
+            tf.mangled_name = string_hash{ "nullableptr__T" + type_arg.get().mangled_name.str };
+            tf.size = sizeof(void*);
+            tf.alignment = alignof(void*);
             tf.elem_type = type_arg;
             return node;
         };
 
-        optional_type_constructor = ptr_template;
+        nullableptr_type_constructor = ptr_template;
         register_type(*this, builtin_scope->scope, *node);
         builtin_type_nodes.push_back(std::move(node));
     }
@@ -3592,34 +3635,6 @@ type_system::type_system(memory_arena& arena) {
         };
 
         pure_type_constructor = ptr_template;
-        register_type(*this, builtin_scope->scope, *node);
-        builtin_type_nodes.push_back(std::move(node));
-    }
-
-    {
-        auto node = make_in_arena<ast_node>(*ast_arena);
-        node->type_def.name = string_hash{ "auto" };
-        node->type_def.mangled_name = string_hash{ "auto" };
-        node->type_def.kind = type_kind::constructor;
-
-        type_constructor* ptr_template = &node->type_def.constructor;
-        ptr_template->self = node.get();
-        ptr_template->func = [this](const std::vector<comptime_value>& arg) {
-            auto type_arg = std::get<type_id>(arg.front());
-            auto node = make_in_arena<ast_node>(*ast_arena);
-            type_def& tf = node->type_def;
-
-            tf.kind = type_arg.get().kind;
-            tf.name = string_hash{ "auto " + type_arg.get().name.str };
-            tf.mangled_name = string_hash{ "auto__T" + type_arg.get().mangled_name.str };
-            tf.size = type_arg.get().size;
-            tf.alignment = type_arg.get().alignment;
-            tf.elem_type = type_arg;
-            tf.flags |= type_flags::is_auto;
-            return node;
-        };
-
-        auto_type_constructor = ptr_template;
         register_type(*this, builtin_scope->scope, *node);
         builtin_type_nodes.push_back(std::move(node));
     }
@@ -3723,7 +3738,7 @@ type_system::type_system(memory_arena& arena) {
             tf.mangled_name = build_type_constructor_mangled_name(ctor->type_def.mangled_name.str, args);
             tf.elem_type = std::get<type_id>(args[0]);
 
-            auto ptype = get_pointer_type_to(*this, tf.elem_type);
+            auto ptype = get_ptr_type_to(*this, tf.elem_type);
             tf.structure.fields.push_back({ { "data" }, ptype, 0 });
             tf.structure.fields.push_back({ { "len" }, this->usize_type, 0 });
 
@@ -3782,9 +3797,9 @@ type_system::type_system(memory_arena& arena) {
         auto node = make_in_arena<ast_node>(*ast_arena);
 
         type_def& tf = node->type_def;
-        tf.kind = type_kind::pointer;
-        tf.name = string_hash{ "pointer" };
-        tf.mangled_name = string_hash{ "pointer" };
+        tf.kind = type_kind::nullableptr;
+        tf.name = string_hash{ "rawptr" };
+        tf.mangled_name = string_hash{ "rawptr" };
         tf.size = sizeof(void*);
         tf.alignment = alignof(void*);
         tf.elem_type = void_type;

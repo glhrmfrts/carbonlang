@@ -1,25 +1,28 @@
-import std::alloc as alloc
+import std::mem as mem
+import std::runtime::memory
 
-func copy(str: *pure uint8) {
+func copy(str: &pure uint8) {
     return copy(str, str->strlen())
 }
 
-func copy(str: *pure uint8, size: usize) {
-    let newstr = cast(*uint8) alloc::alloc(size+1)
+//conditional runtime_included
+func copy(str: &pure uint8, size: usize) {
+    let m = alloc(size+1)
+    let newstr = nullcast(cast(*uint8) m.ptr)
     copy(newstr, str, size)
     newstr[size] = '\0'
     return newstr
 }
 
-func copy(dest: *pure uint8, src: *pure uint8, size: usize) {
-    alloc::copy(cast(pointer) dest, cast(pointer) src, size)
+func copy(dest: &pure uint8, src: &pure uint8, size: usize) {
+    mem::copy(cast(rawptr) dest, cast(rawptr) src, size)
 }
 
-func set(dest: *pure uint8, value: pure uint8, count: usize) {
-    alloc::set(cast(pointer) dest, value, count)
+func set(dest: &pure uint8, value: pure uint8, count: usize) {
+    mem::set(cast(rawptr) dest, value, count)
 }
 
-func strlen(str: *pure uint8) {
+func strlen(str: &pure uint8) {
     let c : usize
     let p = str
     while (@p != 0) {
@@ -30,7 +33,7 @@ func strlen(str: *pure uint8) {
     return c
 }
 
-func equals(a: *pure uint8, b: *pure uint8) {
+func equals(a: &pure uint8, b: &pure uint8) {
     if (a->strlen() != b->strlen()) { return false }
 
     for (i in 0, a->strlen()) {

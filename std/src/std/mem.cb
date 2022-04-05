@@ -1,0 +1,34 @@
+type memory = struct {
+    ptr: rawptr
+    len: usize
+}
+
+/// Copies [size] bytes from [src] to [dest].
+func copy(dest: rawptr, src: rawptr, size: usize) {
+    asm%{
+push rdi
+push rsi
+
+mov rdi,rcx
+mov rsi,rdx
+mov rcx,r8
+rep movsb
+
+pop rsi
+pop rdi
+    }%asm;
+}
+
+/// Stores [count] amount of [value] in [dest].
+func set(dest: rawptr, value: uint8, count: usize) {
+    asm%{
+push rdi
+
+mov rdi,rcx
+mov rax,rdx
+mov rcx,r8
+rep stosb
+
+pop rdi
+    }%asm;
+}

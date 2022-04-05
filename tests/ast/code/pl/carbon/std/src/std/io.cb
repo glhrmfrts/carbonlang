@@ -3,6 +3,9 @@ code_unit{
   decl_list{
     import_decl{ std::libc::stdio}
     import_decl{ std::string}
+    func_decl{println (var_decl{str: type_expr{string}}) {
+        stmt_list{
+          call{puts (str.data)}}}}
     func_decl{println (var_decl{value}) {
         stmt_list{
           call{puts (call{to_string (value)}.data)}}}}}}

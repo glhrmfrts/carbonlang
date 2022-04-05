@@ -1,3 +1,4 @@
+import std::io
 import std::string
 
 type FooBar = struct {
@@ -6,10 +7,7 @@ type FooBar = struct {
 }
 
 func main(args: []string) {
-    let v = FooBar {foo=1, bar=3}
-
-    println(v.foo)
-    println(v.bar)
+    println("Hello World Again")
 
     return 0
 }

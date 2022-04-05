@@ -41,7 +41,7 @@ arena_ptr<ast_node> copy_node_helper(type_system& ts, ast_node& node) {
     if (node.type == ast_type::identifier) {
         return make_identifier_node(*ts.ast_arena, node.pos, node.id_parts);
     }
-    else if (node.type == ast_type::nullpointer) {
+    else if (node.type == ast_type::nullptr_) {
         return make_nullpointer_node(*ts.ast_arena, node.pos);
     }
     else if (node.type == ast_type::bool_literal) {

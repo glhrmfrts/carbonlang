@@ -2,87 +2,46 @@ import std::alloc as alloc
 import std::io
 import std::string
 import std::rawstring
-//import std::seqs // map, filter, split, trim
-
-// TODO:
-//  - parse unified function call with arguments
-//  - support non-closure lambdas
-//  - support user-defined long strings
-//  - time, seq and strings modules
-
-type string = struct {
-    auto data: *uint8
-    len: usize
-}
-
-type dict(K, V) struct {
-    type key    K
-    type value  V
-
-    auto entries: *dict_entry(K, V)
-    len: usize
-    cap: usize
-}
-
-func set(d: *dict, k: elemtype(d)::key, v: elemtype(d)::value) {
-    
-}
-
-func make_array(
-    _element_type        `T,
-    _initial_capacity    cap: int,
-    _fill_pointer        fp: int,
-    _initial_value       val: T
-)
-=> Array(T)
-{
-    auto data = alloc(dict_entry(`K, `V), new_capacity)
-    copy(`dict_entry(K, V), data, d.entries, d.len)
-    d.entries = data
-}
-
-func main(args: []string) {
-    auto arr = make_array(
-        _element_type=`int,
-        _initial_capacity=10
-    )
-
-    auto users = make_dict(`string, `User , _hash_func=custom_hash)
-    users.set("john", make_user())
-
-    if (auto j = users.get("john"); j) {
-        println(j)
-    }
-
-    auto old_value = users.remove("john")
-    auto old_value = users.remove("john")
-    auto old_value = users.remove("joasdas")
-
-    if (users.has_key("john")) {
-
-    }
-}
-
-func acquire_ownership(str: string) {
-    // string will be freed in this scope
-}
+import std::collection_algorithms
 
 type Field2D = struct {
-    auto data: *int
-    width: int
-    height: int
-}
-
-type Field2D = struct {
-    auto data: *int
+    data: &int
     width: int
     height: int
 }
 
 type Automaton = struct {
-    auto field:      Field2D
-    auto new_field:  Field2D
-    auto f:          Field2D
+    field:      Field2D
+    new_field:  Field2D
+}
+
+T            => abstract T
+pure T       => abstract T
+& T          => abstract T
+& pure T     => abstract T
+* T          => abstract T
+* pure T     => abstract T
+
+// Returns an empty instance of the collection of type T
+generic func empty(`T)
+
+// Returns a duplicate instance of the collection x of type T
+generic func duplicate(`T, x: abstract T): abstract T
+
+// Returns a new (or the same) instance of the collection x with the element it appended to the end of it
+generic func append(`T, `It, x: abstract T, it: It): abstract T
+
+func filter(xs, fn) {
+    let new_xs = empty(`typeof(xs))
+    for (x in xs) {
+        if (fn(x)) {
+            new_xs = append(new_xs, x)
+        }
+    }
+}
+
+generic func duplicate(`String, str: &pure String) {
+
 }
 
 func split(str: &string, delim: char): []string {
@@ -112,7 +71,8 @@ func append(str: &string, c: char): string {
 
 func make_field(sx: int, sy: int): Field2D {
     return Field2D{
-        sx, sy, make_auto(cast(*int) alloc::alloc(sizeof(int)*sx*sy))
+        .data = mem::alloc_zero(sizeof(int)*sx*sy),
+        {.width, .height} = {sx, sy}
     }
 }
 
@@ -120,19 +80,19 @@ func set(f: &Field2D, x: int, y: int, val: int) {
     f.data[y * f.width + x] = val
 }
 
-func get(f: &Field2D, x: int, y: int): int {
+func get(f: &pure Field2D, x: int, y: int): int {
     return f.data[y * f.width + x]
 }
 
 func clear(f: &Field2D) {
-    alloc::set(cast(rawptr) f.data, 0, f.width*f.height*sizeof(int))
+    mem::set(cast(pointer) f.data, 0, f.width*f.height*sizeof(int))
 }
 
 func make_automaton(ftext: string): Automaton {
-    auto f = ftext.split('\n').map(func(it: string) = it.trim).filter(func(it: string) = it.len > 0)
+    let f = ftext -> split('\n') -> map(lambda %1->trim) -> filter(lambda %1->len)
 
-    auto height = cast(int) f.len
-    var width  = 0
+    let height = cast(int) f.len
+    let width  = 0
 
     for (y in 0,f.len) {
         if (width < f[y].len) {
@@ -140,48 +100,46 @@ func make_automaton(ftext: string): Automaton {
         }
     }
 
-    auto field    = make_field(width, height)
-    auto newfield = make_field(width, height)
+    let field    = make_field(width, height)
+    let newfield = make_field(width, height)
 
     for (y in 0, field.height) {
         for (x in 0, field.width) {
-            auto val = x < f[y].len && f[y][x] == '#' then 1 else 0
-            field.set(x, y, val)
+            field.set(x, y, (x < f[y].len && f[y][x] == '#' then 1 else 0))
         }
     }
 
-    auto a = Automaton{}
+    let a = Automaton{}
     a.field = field
     a.new_field = newfield
     return a
-
-    return Automaton{field, newfield}
 }
 
 func update(a: &Automaton) {
-    a.new_field.clear()
+    a.new_field->clear()
+
     for (y in 1,a.field.height) {
         for (x in 1,a.field.width) {
-            auto moore_sum = (
-                0 + a.field.get(x-1, y-1) + a.field.get(x,y+1) + a.field.get(x+1, y-1) +
-                a.field.get(x-1, y) + 0 + a.field.get(x+1, y) + a.field.get(x-1, y+1) +
-                a.field.get(x,y+1) + a.field.get(x+1, y+1)
+            let moore_sum = (
+                0 + a.field->get(x-1, y-1) + a.field->get(x,y+1) + a.field->get(x+1, y-1) +
+                a.field->get(x-1, y) + 0 + a.field->get(x+1, y) + a.field->get(x-1, y+1) +
+                a.field->get(x,y+1) + a.field->get(x+1, y+1)
             )
-            auto cell = a.field.get(x, y)
-            auto alive = cell == 1 then (moore_sum == 2 || moore_sum == 3) else moore_sum == 3
-            a.new_field.set(x, y, alive then 1 else 0)
+            let cell = a.field->get(x, y)
+            let alive = cell == 1 then (moore_sum == 2 || moore_sum == 3) else moore_sum == 3
+            a.new_field->set(x, y, alive then 1 else 0)
         }
     }
-    auto tmp = a.field
+    let tmp = a.field
     a.field = a.new_field
     a.new_field = tmp
 }
 
 func print(a: &Automaton) {
     for (y in 1,a.field.height) {
-        auto var s = "    "
+        let s = "    "
         for (x in 1,a.field.width) {
-            auto cell = a.field.get(x,y)
+            let cell = a.field.get(x,y)
             s = s.append(cell == 1 then '@' else '.')
         }
         println(s.data)
@@ -190,7 +148,7 @@ func print(a: &Automaton) {
 }
 
 func gun(): Automaton {
-    auto gunfield = "*******************************************
+    let gunfield = "*******************************************
 *                                         *
 *  A shooting gun:                        *
 *                          #              *
@@ -222,18 +180,18 @@ func gun(): Automaton {
 *                                         *
 *                                         *
 *******************************************"
-    return make_automaton(string{ gunfield, gunfield.strlen })
+    return make_automaton(gunfield)
 }
 
 func main(args: []string): int {
-    auto a = gun()
+    let a = gun()
 
     for (i in 0,50) {
-        //import std::time
+        import std::threading, std::time
 
         a.update()
         a.print()
-        //sleep_ms(100)
+        sleep(100->milliseconds())
     }
     return 0
 }

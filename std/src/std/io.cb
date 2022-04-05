@@ -1,6 +1,10 @@
 import std::libc::stdio
 import std::string
 
+func println(str: string) {
+    puts(str.data)
+}
+
 func println(value) {
     puts(to_string(value).data)
 }

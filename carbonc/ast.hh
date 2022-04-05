@@ -13,8 +13,7 @@ namespace carbon {
 
 enum class ast_type {
     invalid,
-    nullpointer,
-    nil_literal,
+    nullptr_,
     bool_literal,
     float_literal,
     int_literal,
@@ -27,6 +26,7 @@ enum class ast_type {
     index_expr,
     init_expr,
     cast_expr,
+    nullcast_expr,
     field_expr,
     ternary_expr,
     func_expr,
@@ -192,8 +192,6 @@ struct ast_node {
 };
 
 arena_ptr<ast_node> make_nullpointer_node(memory_arena& arena, const position& pos);
-
-arena_ptr<ast_node> make_nil_literal_node(memory_arena& arena, const position& pos);
 
 arena_ptr<ast_node> make_bool_literal_node(memory_arena& arena, const position& pos, bool value);
 

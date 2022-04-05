@@ -1,15 +1,13 @@
 code_unit{
   main.cb
   decl_list{
+    import_decl{ std::io}
     import_decl{ std::string}
     type_decl{FooBar = type_expr{struct_type{decl_list{
             var_decl{foo: type_expr{int}}
             var_decl{bar: type_expr{int}}}}}}
     func_decl{main (var_decl{args: }) {
-        decl_list{
-          var_decl{v: type_expr{FooBar} = init{
-              {v.foo = 0}
-              {v.bar = 0}
-              }}}
+        stmt_list{
+          call{println ("Hello World Again")}}
         stmt_list{
           return{0}}}}}}

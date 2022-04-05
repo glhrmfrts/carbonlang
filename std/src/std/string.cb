@@ -1,88 +1,21 @@
-import std::alloc
+import std::mem
 import std::rawstring
 
-type string = []uint8
+type string = []pure uint8
 
-/*
-func auto_cleanup(s: *string) {
-    if (!s.is_lit) {
-        free(cast(pointer) s.data)
-    }
-}
+let MAX_INTEGER_STRING_LEN = 24
 
-func copy_cstring(cstr: *pure uint8, len: isize) {
-    let data = allocn(`uint8, len + 1)
-    copy(cast(pointer) data, cast(pointer) cstr, len)
-    data[len] = '\0'
-    return data
-}
-
-func make_string(data: *pure uint8) {
-    let len = data.strlen
-    let cpy = copy_cstring(data, len)
-    return string{cpy, len, false}
-}
-
-func make_string(data: *pure uint8, len: usize) {
-    let cpy = copy_cstring(data, len)
-    return string{cpy, len, false}
-}
-
-func concat(a: pure string, b: pure string) {
-    let newlen = a.len + b.len
-    let data = allocn(`uint8, newlen)
-    copy(cast(pointer) data, cast(pointer) a.data, a.len)
-    copy(cast(pointer) (data + a.len), cast(pointer) b.data, b.len)
-    data[newlen] = '\0'
-    let result = string{data, newlen}
-    return result
-}
-
-func find(str: pure string, sub: pure string) {
-    return -1
-}
-
-func find(str: pure string, offs: usize, sub: pure string) {
-    return -1
-}
-
-func find_last(str: pure string, sub: pure string) {
-    let last = find(str, sub)
-    let cur = last
-    while (cur != -1) {
-        last = cur
-        cur = find(str, cur + 1, sub)
-    }
-    return last
-}
-*/
-
-`const let max_integer_string_len = 24
-`const let max_float_string_len = 29
-
-type Result(T) = enum {
-    type Ok = struct { value: T }
-    type Error = struct {
-        message: []pure uint8
-        code: uintptr
-        userdata: pointer
-    }
-}
-
-func to_string(value: int, base: int, storage: *[max_integer_string_len]uint8): []uint8 {
+func int_to_string(value: int, base: int, result: []uint8) {
     // check that the base if valid
-    if (base < 2 || base > 36) { return []uint8{"", 0} }
-
-    let tmp_value : int
-    let offs : int
-
-    let result = []uint8{ cast(*uint8) storage, max_integer_string_len }
-    result[max_integer_string_len] = '\0'
+    if (base < 2 || base > 36) { return 0 }
 
     let tpl_str = "zyxwvutsrqponmlkjihgfedcba9876543210123456789abcdefghijklmnopqrstuvwxyz"
 
+    let tmp_value : int
+    let offs : int
     while (value != 0) {
-        if (offs >= max_integer_string_len) {
+        if (offs >= result.len) {
+            offs -= 1
             break
         }
         
@@ -93,8 +26,8 @@ func to_string(value: int, base: int, storage: *[max_integer_string_len]uint8): 
         offs += 1
     }
 
-    let ptr = &result[offs]
-    let ptr1 = &result[0]
+    let ptr:  &uint8 = &result[offs]
+    let ptr1: &uint8 = &result[0]
 
     // Apply negative sign
     if (tmp_value < 0) {
@@ -115,21 +48,27 @@ func to_string(value: int, base: int, storage: *[max_integer_string_len]uint8): 
         @ptr1 = tmp_char
         ptr1 += 1
     }
-    return []uint8{ result.data, offs }
+
+    return offs
 }
 
-func to_string(i: int, storage: *[max_integer_string_len]uint8): []uint8 {
-    return to_string(i, 10, storage)
+func to_string(i: int, dest: []uint8) {
+    let n = int_to_string(i, 10, dest)
+    return string{ dest.data, n }
 }
 
-func to_string(c: *pure uint8) {
-    return []pure uint8{c, c->strlen()}
+func to_string(c: &pure uint8) {
+    return string{ c, c->strlen() }
+}
+
+func to_string(buf: []uint8) {
+    return string{ buf.data, buf.len }
 }
 
 func to_string(b: bool) {
     if (b) {
-        return "true"->slice()
+        return "true"->to_string()
     } else {
-        return "false"->slice()
+        return "false"->to_string()
     }
 }

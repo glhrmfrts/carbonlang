@@ -1,0 +1,13 @@
+code_unit{
+  std/runtime/memory.cb
+  decl_list{
+    import_decl{ std::runtime::windows}
+    import_decl{ std::mem}
+    func_decl{alloc (var_decl{size: type_expr{usize}}): type_expr{memory} {
+        stmt_list{
+          return{init{type=type_expr{memory} (call{HeapAlloc (call{GetProcessHeap ()}, 0, size)}, size)}}}}}
+    func_decl{free (var_decl{m: type_expr{type_qualifier{optional, memory}}}): type_expr{tuple_type{}} {
+        stmt_list{
+          call{HeapFree (call{GetProcessHeap ()}, 0, m.ptr)}}
+        stmt_list{
+          {m.ptr = }}}}}}

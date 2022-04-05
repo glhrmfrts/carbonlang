@@ -165,9 +165,6 @@ struct lexer_impl {
             }
             break;
         case 4:
-            if (!std::strcmp("auto", l.string)) {
-                return token_type::auto_;
-            }
             if (!std::strcmp("pure", l.string)) {
                 return token_type::pure;
             }
@@ -193,9 +190,6 @@ struct lexer_impl {
         case 5:
             if (!std::strcmp("false", l.string)) {
                 return token_type::bool_literal_false;
-            }
-            if (!std::strcmp("const", l.string)) {
-                return token_type::const_;
             }
             if (!std::strcmp("while", l.string)) {
                 return token_type::while_;
@@ -228,6 +222,9 @@ struct lexer_impl {
             if (!std::strcmp("private", l.string)) {
                 return token_type::private_;
             }
+            if (!std::strcmp("nullptr", l.string)) {
+                return token_type::nullptr_;
+            }
             break;
         case 8:
             if (!std::strcmp("internal", l.string)) {
@@ -235,16 +232,6 @@ struct lexer_impl {
             }
             if (!std::strcmp("continue", l.string)) {
                 return token_type::continue_;
-            }
-            break;
-        case 9:
-            if (!std::strcmp("typealias", l.string)) {
-                return token_type::typealias;
-            }
-            break;
-        case 11:
-            if (!std::strcmp("nullpointer", l.string)) {
-                return token_type::nullpointer;
             }
             break;
         }

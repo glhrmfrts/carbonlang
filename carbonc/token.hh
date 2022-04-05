@@ -49,7 +49,7 @@ enum class token_type : unsigned int {
     coloncolon,
     dotdot,
     nil,
-    nullpointer,
+    nullptr_,
     defer,
     continue_,
     break_,

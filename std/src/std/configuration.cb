@@ -1,7 +1,0 @@
-type configuration_group = struct {
-    name: []char
-};
-
-type configuration = struct {
-    first_group: *configuration_group
-};

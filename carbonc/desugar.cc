@@ -100,7 +100,7 @@ void check_func_return_aggregate_type(type_system& ts, ast_node& func) {
     if (is_aggregate_type(func.type_def.func.ret_type)) {
         auto& args = func.func_args();
 
-        auto new_ret_type = get_pointer_type_to(ts, func.type_def.func.ret_type);
+        auto new_ret_type = get_ptr_type_to(ts, func.type_def.func.ret_type);
         func.children[ast_node::child_func_decl_ret_type] = make_type_resolver_node(*ts.ast_arena, new_ret_type);
 
         auto arg_decl = make_var_decl_of_type(ts, token_type::let, "$cb_agg_ret", new_ret_type);
@@ -142,7 +142,7 @@ void transform_aggregate_call_into_pointer_argument_helper(type_system& ts, ast_
     ref->type_id = call->type_id;
 
     auto addr = make_address_of_expr(ts, std::move(ref));
-    addr->type_id = get_pointer_type_to(ts, call->type_id);
+    addr->type_id = get_ptr_type_to(ts, call->type_id);
 
     call->call_args().insert(call->call_args().begin(), std::move(addr));
 
