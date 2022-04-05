@@ -1,7 +1,15 @@
-import std::io;
-import std::string;
+import std::string
 
-func main(args: [*]String): int {
-    println(args.data[0].data);
-    return 0;
+type FooBar = struct {
+    foo: int
+    bar: int
+}
+
+func main(args: []string) {
+    let v = FooBar {foo=1, bar=3}
+
+    println(v.foo)
+    println(v.bar)
+
+    return 0
 }

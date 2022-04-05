@@ -1,0 +1,6 @@
+code_unit{
+  init.cb
+  decl_list{
+    linkage_specifier{ extern(C) func_decl{carbon_main (): type_expr{int} {
+          stmt_list{
+            return{0}}}}}}}

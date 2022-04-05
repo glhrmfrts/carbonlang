@@ -1,0 +1,6 @@
+code_unit{
+  std/libc/stdio.cb
+  decl_list{
+    linkage_specifier{ extern(C) decl_list{
+        func_decl{puts (var_decl{c: type_expr{type_qualifier{optional, type_qualifier{ uint8}}}}): type_expr{int} }
+        func_decl{putc (var_decl{c: type_expr{char}}, var_decl{stream: type_expr{rawptr}}): type_expr{int} }}}}}

@@ -1,0 +1,43 @@
+code_unit{
+  std/mem.cb
+  decl_list{
+    import_decl{ std::os::windows}
+    type_decl{memory = type_expr{struct_type{decl_list{
+            var_decl{ptr: type_expr{rawptr}}
+            var_decl{len: type_expr{usize}}}}}}
+    func_decl{alloc (var_decl{$cb_agg_ret: }, var_decl{size: type_expr{usize}}):  {
+        stmt_list{
+          {{@ $cb_agg_ret} = init{type=type_expr{memory} 
+            {{@ $cb_agg_ret}.ptr = call{HeapAlloc (call{GetProcessHeap ()}, 0, size)}}
+            {{@ $cb_agg_ret}.len = size}
+            }}
+          return{$cb_agg_ret}}}}
+    func_decl{free (var_decl{m: type_expr{type_qualifier{optional, memory}}}): type_expr{tuple_type{}} {
+        stmt_list{
+          call{HeapFree (call{GetProcessHeap ()}, 0, m.ptr)}}
+        stmt_list{
+          {m.ptr = }}}}
+    func_decl{copy (var_decl{dest: type_expr{rawptr}}, var_decl{src: type_expr{rawptr}}, var_decl{size: type_expr{usize}}) {
+        decl_list{
+          asm{push rdi
+push rsi
+
+mov rdi,rcx
+mov rsi,rdx
+mov rcx,r8
+rep movsb
+
+pop rsi
+pop rdi
+    }}}}
+    func_decl{set (var_decl{dest: type_expr{rawptr}}, var_decl{value: type_expr{uint8}}, var_decl{count: type_expr{usize}}) {
+        decl_list{
+          asm{push rdi
+
+mov rdi,rcx
+mov rax,rdx
+mov rcx,r8
+rep stosb
+
+pop rdi
+    }}}}}}

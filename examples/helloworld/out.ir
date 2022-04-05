@@ -1,108 +1,23 @@
-func cb__Nmain__Nmain__Aref__Tslice__TU_String -> int
-    arg #0 args: ref__Tslice__TU_String;
-    ir_deref A0;
-    ir_deref ST;
-    ir_deref [ST . 0];
-    ir_index ST 0;
-    ir_call cb__Nstd__Nio__Nprintln__Aptr__Tchar [ST . 0];
+string #0: "zyxwvutsrqponmlkjihgfedcba9876543210123456789abcdefghijklmnopqrstuvwxyz";
+string #1: "true";
+string #2: "false";
+func cb__Nmain__Nmain__Aptr__Tslice__TU_string -> int
+    arg #0 args: ptr__Tslice__TU_string;
+    local #0 v: U_FooBar;
+    ir_load [L0 . 0] 0;
+    ir_load [L0 . 1] 0;
     ir_return 0;
 endf
 
-func cb__Ninit__Ninit_command_line__Aref__Tmut_slice__TU_String -> ref__Tmut_slice__TU_String
-    arg #0 $cb_agg_ret: ref__Tmut_slice__TU_String;
-    local #0 cmdline: ref__Tchar;
-    local #1 data: ref__TU_String;
-    local #2 result: mut_slice__TU_String;
-    ir_call GetCommandLineA;
-    ir_load L0 ST;
-    ir_call cb__Nstd__Nalloc__Nalloc__Ausize 16;
-    ir_load L1 ST;
-    ir_load [L2 . 0] L1;
-    ir_load [L2 . 1] 1;
-    ir_deref [L2 . 0];
-    ir_index ST 0;
-    ir_load [ST . 0] L0;
-    ir_deref [L2 . 0];
-    ir_index ST 0;
-    ir_call cb__Nstd__Nrawstring__Nstrlen__Aptr__Tchar L0;
-    ir_load [ST . 1] ST;
-    ir_deref A0;
-    ir_copy ST L2 16;
-    ir_return A0;
-endf
-
-func cb__Ninit__Nfree_command_line__Aref__Tmut_slice__TU_String -> void
-    arg #0 args: ref__Tmut_slice__TU_String;
-    ir_deref A0;
-    ir_deref ST;
-    ir_call cb__Nstd__Nalloc__Nfree__Araw_ptr [ST . 0];
-endf
-
 func carbon_main -> int
-    local #0 args: mut_slice__TU_String;
-    local #1 result: int;
-    local #2 $cbT0: mut_slice__TU_String;
-    local #3 $cbT1: mut_slice__TU_String;
-    ir_load_addr L0;
-    ir_call cb__Ninit__Ninit_command_line__Aref__Tmut_slice__TU_String ST;
-    ir_copy L3 L0 16;
-    ir_load_addr L3;
-    ir_call cb__Nmain__Nmain__Aref__Tslice__TU_String ST;
-    ir_load L1 ST;
-    ir_copy L2 L0 16;
-    ir_load_addr L2;
-    ir_call cb__Ninit__Nfree_command_line__Aref__Tmut_slice__TU_String ST;
-    ir_return L1;
+    ir_return 0;
 endf
 
-func cb__Nstd__Nalloc__Nalloc__Ausize -> raw_ptr
-    arg #0 size: usize;
-    ir_call GetProcessHeap;
-    ir_call HeapAlloc ST 0 A0;
-    ir_return ST;
-endf
-
-func cb__Nstd__Nalloc__Nfree__Araw_ptr -> void
-    arg #0 ptr: raw_ptr;
-    ir_call GetProcessHeap;
-    ir_call HeapFree ST 0 A0;
-endf
-
-func cb__Nstd__Nalloc__Ncopy__Araw_ptr__Araw_ptr__Ausize -> void
-    arg #0 dest: raw_ptr;
-    arg #1 src: raw_ptr;
-    arg #2 size: usize;
-    ir_asm push rdi
-push rsi
-
-mov rdi,rcx
-mov rsi,rdx
-mov rcx,r8
-rep movsb
-
-pop rsi
-pop rdi
-    ;
-endf
-
-func cb__Nstd__Nalloc__Nset__Araw_ptr__Achar__Ausize -> void
-    arg #0 dest: raw_ptr;
-    arg #1 value: char;
-    arg #2 count: usize;
-    ir_asm push rdi
-
-mov rdi,rcx
-mov rax,rdx
-mov rcx,r8
-rep stosb
-
-pop rdi
-    ;
-endf
-
-func cb__Nstd__Nio__Nprintln__Aptr__Tchar -> void
-    arg #0 c: ptr__Tchar;
-    ir_call puts A0;
+func cb__Nstd__Nio__Nprintln__Aptr__TU_string -> void
+    arg #0 str: ptr__TU_string;
+    ir_deref A0;
+    ir_call puts [ST . 0];
+    ir_noop ST;
 endf
 
 func puts -> int
@@ -117,7 +32,7 @@ endf
 func free -> int
 endf
 
-func malloc -> raw_ptr
+func malloc -> rawptr
 endf
 
 func rand -> int
@@ -129,7 +44,191 @@ endf
 func strlen -> usize
 endf
 
-func HeapAlloc -> raw_ptr
+func cb__Nstd__Nmem__Narena__Nalign__Ausize__Ausize -> usize
+    arg #0 number: usize;
+    arg #1 alignment: usize;
+    ir_return A0;
+endf
+
+func cb__Nstd__Nmem__Narena__Nfits_in_block__Aptr__TU_arena_block__Ausize -> bool
+    arg #0 b: ptr__TU_arena_block;
+    arg #1 size: usize;
+    local #0 $cbT0: bool;
+    ir_deref A0;
+    ir_add [ST . 1] A1;
+    ir_deref A0;
+    ir_jmp_gt ST [ . 1] cb__Nstd__Nmem__Narena__Nfits_in_block__Aptr__TU_arena_block__Ausize$if1516$else;
+    ir_make_label cb__Nstd__Nmem__Narena__Nfits_in_block__Aptr__TU_arena_block__Ausize$if1516$body;
+    ir_load L0 0;
+    ir_jmp cb__Nstd__Nmem__Narena__Nfits_in_block__Aptr__TU_arena_block__Ausize$if1516$end;
+    ir_make_label cb__Nstd__Nmem__Narena__Nfits_in_block__Aptr__TU_arena_block__Ausize$if1516$else;
+    ir_load L0 0;
+    ir_make_label cb__Nstd__Nmem__Narena__Nfits_in_block__Aptr__TU_arena_block__Ausize$if1516$end;
+    ir_return L0;
+endf
+
+func cb__Nstd__Nmem__Narena__Nallocate_in_block__Aptr__TU_memory__Aptr__TU_arena_block__Ausize -> ptr__TU_memory
+    arg #0 $cb_agg_ret: ptr__TU_memory;
+    arg #1 b: ptr__TU_arena_block;
+    arg #2 size: usize;
+    local #0 result: rawptr;
+    ir_deref A1;
+    ir_deref A1;
+    ir_add [ . 0] [ST . 1];
+    ir_load L0 ST;
+    ir_deref A1;
+    ir_deref A1;
+    ir_add [ST . 1] A2;
+    ir_load [ST . 1] ST;
+    ir_deref A0;
+    ir_load [ST . 0] L0;
+    ir_deref A0;
+    ir_load [ST . 1] A2;
+    ir_return A0;
+endf
+
+func cb__Nstd__Nmem__Narena__Nmake_arena_allocator__Aptr__TU_arena__Ausize -> ptr__TU_arena
+    arg #0 $cb_agg_ret: ptr__TU_arena;
+    arg #1 block_size: usize;
+    local #0 a: U_arena;
+    ir_load [L0 . 0] 0;
+    ir_load [L0 . 1] 0;
+    ir_load [L0 . 2] 0;
+    ir_load [L0 . 1] 0;
+    ir_call cb__Nstd__Nmem__Narena__Nalign__Ausize__Ausize A1 [L0 . 1];
+    ir_load [L0 . 2] ST;
+    ir_load [L0 . 0] 0;
+    ir_deref A0;
+    ir_copy ST L0 24;
+    ir_return A0;
+endf
+
+func cb__Nstd__Nmem__Narena__Nfree__Aptr__TU_arena -> void
+    arg #0 a: ptr__TU_arena;
+    local #0 pblock: nullableptr__TU_arena_block;
+    local #1 block: ptr__TU_arena_block;
+    local #2 prev: nullableptr__TU_arena_block;
+    ir_deref A0;
+    ir_load L0 [ST . 0];
+    ir_make_label cb__Nstd__Nmem__Narena__Nfree__Aptr__TU_arena$w396$cond;
+    ir_jmp_eq L0 0 cb__Nstd__Nmem__Narena__Nfree__Aptr__TU_arena$w396$end;
+    ir_make_label cb__Nstd__Nmem__Narena__Nfree__Aptr__TU_arena$w396$body;
+    ir_load L1 L0;
+    ir_deref L1;
+    ir_load L2 [ST . 2];
+    ir_deref L1;
+    ir_load_addr [ST . 0];
+    ir_call cb__Nstd__Nmem__Nfree__Aptr__TU_memory ST;
+    ir_load L0 L2;
+    ir_jmp cb__Nstd__Nmem__Narena__Nfree__Aptr__TU_arena$w396$cond;
+    ir_make_label cb__Nstd__Nmem__Narena__Nfree__Aptr__TU_arena$w396$end;
+endf
+
+func cb__Nstd__Nmem__Narena__Nalloc__Aptr__TU_memory__Aptr__TU_arena__Ausize -> ptr__TU_memory
+    arg #0 $cb_agg_ret: ptr__TU_memory;
+    arg #1 a: ptr__TU_arena;
+    arg #2 user_size: usize;
+    local #0 size: usize;
+    local #1 pblock: nullableptr__TU_arena_block;
+    local #2 new_block_memory: U_memory;
+    local #3 new_block: ptr__TU_arena_block;
+    local #4 block: ptr__TU_arena_block;
+    ir_deref A1;
+    ir_call cb__Nstd__Nmem__Narena__Nalign__Ausize__Ausize A2 [ST . 1];
+    ir_load L0 ST;
+    ir_deref A1;
+    ir_load L1 [ST . 0];
+    ir_make_label cb__Nstd__Nmem__Narena__Nalloc__Aptr__TU_memory__Aptr__TU_arena__Ausize$w454$cond;
+    ir_jmp_eq L1 0 cb__Nstd__Nmem__Narena__Nalloc__Aptr__TU_memory__Aptr__TU_arena__Ausize$w454$end;
+    ir_make_label cb__Nstd__Nmem__Narena__Nalloc__Aptr__TU_memory__Aptr__TU_arena__Ausize$w454$body;
+    ir_load L4 L1;
+    ir_call cb__Nstd__Nmem__Narena__Nfits_in_block__Aptr__TU_arena_block__Ausize L4 L0;
+    ir_jmp_eq ST 0 cb__Nstd__Nmem__Narena__Nalloc__Aptr__TU_memory__Aptr__TU_arena__Ausize$if451$else;
+    ir_make_label cb__Nstd__Nmem__Narena__Nalloc__Aptr__TU_memory__Aptr__TU_arena__Ausize$if451$body;
+    ir_call cb__Nstd__Nmem__Narena__Nallocate_in_block__Aptr__TU_memory__Aptr__TU_arena_block__Ausize A0 L4 L0;
+    ir_return A0;
+    ir_noop ST;
+    ir_make_label cb__Nstd__Nmem__Narena__Nalloc__Aptr__TU_memory__Aptr__TU_arena__Ausize$if451$else;
+    ir_jmp cb__Nstd__Nmem__Narena__Nalloc__Aptr__TU_memory__Aptr__TU_arena__Ausize$w454$cond;
+    ir_make_label cb__Nstd__Nmem__Narena__Nalloc__Aptr__TU_memory__Aptr__TU_arena__Ausize$w454$end;
+    ir_load_addr L2;
+    ir_deref A1;
+    ir_add 0 [ST . 2];
+    ir_call cb__Nstd__Nmem__Nalloc__Aptr__TU_memory__Ausize ST ST;
+    ir_load L3 [L2 . 0];
+    ir_deref L3;
+    ir_add [L2 . 0] 0;
+    ir_load [ . 0] ST;
+    ir_deref L3;
+    ir_sub [L2 . 1] 0;
+    ir_load [ . 1] ST;
+    ir_deref L3;
+    ir_load [ST . 1] 0;
+    ir_deref L3;
+    ir_deref A1;
+    ir_load [ST . 2] [ST . 0];
+    ir_deref A1;
+    ir_load [ST . 0] L3;
+    ir_call cb__Nstd__Nmem__Narena__Nallocate_in_block__Aptr__TU_memory__Aptr__TU_arena_block__Ausize A0 L3 L0;
+    ir_return A0;
+    ir_noop ST;
+endf
+
+func cb__Nstd__Nmem__Nalloc__Aptr__TU_memory__Ausize -> ptr__TU_memory
+    arg #0 $cb_agg_ret: ptr__TU_memory;
+    arg #1 size: usize;
+    ir_deref A0;
+    ir_call GetProcessHeap;
+    ir_call HeapAlloc ST 0 A1;
+    ir_load [ST . 0] ST;
+    ir_deref A0;
+    ir_load [ST . 1] A1;
+    ir_return A0;
+endf
+
+func cb__Nstd__Nmem__Nfree__Aptr__TU_memory -> void
+    arg #0 m: ptr__TU_memory;
+    ir_call GetProcessHeap;
+    ir_deref A0;
+    ir_call HeapFree ST 0 [ST . 0];
+    ir_noop ST;
+    ir_deref A0;
+    ir_load [ST . 0] 0;
+endf
+
+func cb__Nstd__Nmem__Ncopy__Arawptr__Arawptr__Ausize -> void
+    arg #0 dest: rawptr;
+    arg #1 src: rawptr;
+    arg #2 size: usize;
+    ir_asm push rdi
+push rsi
+
+mov rdi,rcx
+mov rsi,rdx
+mov rcx,r8
+rep movsb
+
+pop rsi
+pop rdi
+    ;
+endf
+
+func cb__Nstd__Nmem__Nset__Arawptr__Auint8__Ausize -> void
+    arg #0 dest: rawptr;
+    arg #1 value: uint8;
+    arg #2 count: usize;
+    ir_asm push rdi
+
+mov rdi,rcx
+mov rax,rdx
+mov rcx,r8
+rep stosb
+
+pop rdi
+    ;
+endf
+
+func HeapAlloc -> rawptr
 endf
 
 func HeapFree -> bool
@@ -138,99 +237,246 @@ endf
 func GetProcessHeap -> int
 endf
 
-func GetCommandLineA -> ref__Tchar
+func GetCommandLineA -> nullableptr__Tpure__Tuint8
 endf
 
-func cb__Nstd__Nrawstring__Ncopy__Aptr__Tchar -> ptr__Tchar
-    arg #0 str: ptr__Tchar;
-    ir_call cb__Nstd__Nrawstring__Nstrlen__Aptr__Tchar A0;
-    ir_call cb__Nstd__Nrawstring__Ncopy__Aptr__Tchar__Ausize A0 ST;
+func cb__Nstd__Nrawstring__Ncopy__Aptr__Tpure__Tuint8 -> ptr__Tuint8
+    arg #0 str: ptr__Tpure__Tuint8;
+    ir_call cb__Nstd__Nrawstring__Nstrlen__Aptr__Tpure__Tuint8 A0;
+    ir_call cb__Nstd__Nrawstring__Ncopy__Aptr__Tpure__Tuint8__Ausize A0 ST;
     ir_return ST;
 endf
 
-func cb__Nstd__Nrawstring__Ncopy__Aptr__Tchar__Ausize -> ptr__Tchar
-    arg #0 str: ptr__Tchar;
+func cb__Nstd__Nrawstring__Ncopy__Aptr__Tpure__Tuint8__Ausize -> ptr__Tuint8
+    arg #0 str: ptr__Tpure__Tuint8;
     arg #1 size: usize;
-    local #0 newstr: ptr__Tchar;
-    ir_add A1 1;
-    ir_call cb__Nstd__Nalloc__Nalloc__Ausize ST;
-    ir_load L0 ST;
-    ir_call cb__Nstd__Nrawstring__Ncopy__Aptr__Tchar__Aptr__Tchar__Ausize L0 A0 A1;
-    ir_deref L0;
+    local #0 m: U_memory;
+    local #1 newstr: ptr__Tuint8;
+    ir_load_addr L0;
+    ir_add A1 0;
+    ir_call cb__Nstd__Nmem__Nalloc__Aptr__TU_memory__Ausize ST ST;
+    ir_load L1 [L0 . 0];
+    ir_call cb__Nstd__Nrawstring__Ncopy__Aptr__Tpure__Tuint8__Aptr__Tpure__Tuint8__Ausize L1 A0 A1;
+    ir_deref L1;
     ir_index ST A1;
-    ir_load ST 0;
-    ir_return L0;
+    ir_load ST #0;
+    ir_return L1;
 endf
 
-func cb__Nstd__Nrawstring__Ncopy__Aptr__Tchar__Aptr__Tchar__Ausize -> void
-    arg #0 dest: ptr__Tchar;
-    arg #1 src: ptr__Tchar;
+func cb__Nstd__Nrawstring__Ncopy__Aptr__Tpure__Tuint8__Aptr__Tpure__Tuint8__Ausize -> void
+    arg #0 dest: ptr__Tpure__Tuint8;
+    arg #1 src: ptr__Tpure__Tuint8;
     arg #2 size: usize;
-    ir_call cb__Nstd__Nalloc__Ncopy__Araw_ptr__Araw_ptr__Ausize A0 A1 A2;
+    ir_call cb__Nstd__Nmem__Ncopy__Arawptr__Arawptr__Ausize A0 A1 A2;
 endf
 
-func cb__Nstd__Nrawstring__Nset__Aptr__Tchar__Achar__Ausize -> void
-    arg #0 dest: ptr__Tchar;
-    arg #1 value: char;
+func cb__Nstd__Nrawstring__Nset__Aptr__Tpure__Tuint8__Apure__Tuint8__Ausize -> void
+    arg #0 dest: ptr__Tpure__Tuint8;
+    arg #1 value: pure__Tuint8;
     arg #2 count: usize;
-    ir_call cb__Nstd__Nalloc__Nset__Araw_ptr__Achar__Ausize A0 A1 A2;
+    ir_call cb__Nstd__Nmem__Nset__Arawptr__Auint8__Ausize A0 A1 A2;
 endf
 
-func cb__Nstd__Nrawstring__Nstrlen__Aptr__Tchar -> usize
-    arg #0 str: ptr__Tchar;
+func cb__Nstd__Nrawstring__Nstrlen__Aptr__Tpure__Tuint8 -> usize
+    arg #0 str: ptr__Tpure__Tuint8;
     local #0 c: usize;
-    local #1 p: ptr__Tchar;
+    local #1 p: ptr__Tpure__Tuint8;
     ir_load L0 0;
     ir_load L1 A0;
-    ir_make_label cb__Nstd__Nrawstring__Nstrlen__Aptr__Tchar$w570$cond;
+    ir_make_label cb__Nstd__Nrawstring__Nstrlen__Aptr__Tpure__Tuint8$w899$cond;
     ir_deref L1;
     ir_cast ST;
-    ir_jmp_eq ST 0 cb__Nstd__Nrawstring__Nstrlen__Aptr__Tchar$w570$end;
-    ir_make_label cb__Nstd__Nrawstring__Nstrlen__Aptr__Tchar$w570$body;
-    ir_add L1 1;
+    ir_jmp_eq ST 0 cb__Nstd__Nrawstring__Nstrlen__Aptr__Tpure__Tuint8$w899$end;
+    ir_make_label cb__Nstd__Nrawstring__Nstrlen__Aptr__Tpure__Tuint8$w899$body;
+    ir_add L1 0;
     ir_load L1 ST;
-    ir_add L0 1;
+    ir_add L0 0;
     ir_load L0 ST;
-    ir_jmp cb__Nstd__Nrawstring__Nstrlen__Aptr__Tchar$w570$cond;
-    ir_make_label cb__Nstd__Nrawstring__Nstrlen__Aptr__Tchar$w570$end;
+    ir_jmp cb__Nstd__Nrawstring__Nstrlen__Aptr__Tpure__Tuint8$w899$cond;
+    ir_make_label cb__Nstd__Nrawstring__Nstrlen__Aptr__Tpure__Tuint8$w899$end;
     ir_return L0;
 endf
 
-func cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar -> bool
-    arg #0 a: ptr__Tchar;
-    arg #1 b: ptr__Tchar;
+func cb__Nstd__Nrawstring__Nequals__Aptr__Tpure__Tuint8__Aptr__Tpure__Tuint8 -> bool
+    arg #0 a: ptr__Tpure__Tuint8;
+    arg #1 b: ptr__Tpure__Tuint8;
     local #0 $foriter: tuple__Tint__Tusize;
     local #1 i: int;
     local #2 i: int;
-    ir_call cb__Nstd__Nrawstring__Nstrlen__Aptr__Tchar A0;
-    ir_call cb__Nstd__Nrawstring__Nstrlen__Aptr__Tchar A1;
-    ir_jmp_eq ST ST cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$if602$else;
-    ir_make_label cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$if602$body;
+    ir_call cb__Nstd__Nrawstring__Nstrlen__Aptr__Tpure__Tuint8 A0;
+    ir_call cb__Nstd__Nrawstring__Nstrlen__Aptr__Tpure__Tuint8 A1;
+    ir_jmp_eq ST ST cb__Nstd__Nrawstring__Nequals__Aptr__Tpure__Tuint8__Aptr__Tpure__Tuint8$if935$else;
+    ir_make_label cb__Nstd__Nrawstring__Nequals__Aptr__Tpure__Tuint8__Aptr__Tpure__Tuint8$if935$body;
     ir_return 0;
-    ir_make_label cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$if602$else;
+    ir_make_label cb__Nstd__Nrawstring__Nequals__Aptr__Tpure__Tuint8__Aptr__Tpure__Tuint8$if935$else;
     ir_load [L0 . 0] 0;
-    ir_call cb__Nstd__Nrawstring__Nstrlen__Aptr__Tchar A0;
+    ir_call cb__Nstd__Nrawstring__Nstrlen__Aptr__Tpure__Tuint8 A0;
     ir_load [L0 . 1] ST;
     ir_load L2 [L0 . 0];
-    ir_make_label cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$f626$cond;
+    ir_make_label cb__Nstd__Nrawstring__Nequals__Aptr__Tpure__Tuint8__Aptr__Tpure__Tuint8$f961$cond;
     ir_cast L2;
-    ir_jmp_gte ST [L0 . 1] cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$f626$end;
-    ir_make_label cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$f626$body;
+    ir_jmp_gte ST [L0 . 1] cb__Nstd__Nrawstring__Nequals__Aptr__Tpure__Tuint8__Aptr__Tpure__Tuint8$f961$end;
+    ir_make_label cb__Nstd__Nrawstring__Nequals__Aptr__Tpure__Tuint8__Aptr__Tpure__Tuint8$f961$body;
     ir_deref A0;
     ir_index ST L2;
     ir_deref A1;
     ir_index ST L2;
-    ir_jmp_eq ST ST cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$if623$else;
-    ir_make_label cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$if623$body;
+    ir_jmp_eq ST ST cb__Nstd__Nrawstring__Nequals__Aptr__Tpure__Tuint8__Aptr__Tpure__Tuint8$if958$else;
+    ir_make_label cb__Nstd__Nrawstring__Nequals__Aptr__Tpure__Tuint8__Aptr__Tpure__Tuint8$if958$body;
     ir_return 0;
-    ir_make_label cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$if623$else;
-    ir_add L2 1;
+    ir_make_label cb__Nstd__Nrawstring__Nequals__Aptr__Tpure__Tuint8__Aptr__Tpure__Tuint8$if958$else;
+    ir_add L2 0;
     ir_load L2 ST;
-    ir_jmp cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$f626$cond;
-    ir_make_label cb__Nstd__Nrawstring__Nequals__Aptr__Tchar__Aptr__Tchar$f626$end;
-    ir_return 1;
+    ir_jmp cb__Nstd__Nrawstring__Nequals__Aptr__Tpure__Tuint8__Aptr__Tpure__Tuint8$f961$cond;
+    ir_make_label cb__Nstd__Nrawstring__Nequals__Aptr__Tpure__Tuint8__Aptr__Tpure__Tuint8$f961$end;
+    ir_return 0;
 endf
 
-func cb__Nstd__Ntests1__Nok -> void
+func cb__Nstd__Nstring__Nint_to_string__Aint__Aint__Aptr__Tslice__Tuint8 -> int
+    arg #0 value: int;
+    arg #1 base: int;
+    arg #2 result: ptr__Tslice__Tuint8;
+    local #0 tpl_str: $rawstring;
+    local #1 tmp_value: int;
+    local #2 offs: int;
+    local #3 ptr: ptr__Tuint8;
+    local #4 ptr1: ptr__Tuint8;
+    local #5 tmp_char: uint8;
+    ir_jmp_lt A1 0 cb__Nstd__Nstring__Nint_to_string__Aint__Aint__Aptr__Tslice__Tuint8$if1016$body;
+    ir_jmp_lte A1 0 cb__Nstd__Nstring__Nint_to_string__Aint__Aint__Aptr__Tslice__Tuint8$if1016$else;
+    ir_make_label cb__Nstd__Nstring__Nint_to_string__Aint__Aint__Aptr__Tslice__Tuint8$if1016$body;
+    ir_return 0;
+    ir_make_label cb__Nstd__Nstring__Nint_to_string__Aint__Aint__Aptr__Tslice__Tuint8$if1016$else;
+    ir_load_addr STR0;
+    ir_load L0 ST;
+    ir_load L1 0;
+    ir_load L2 0;
+    ir_make_label cb__Nstd__Nstring__Nint_to_string__Aint__Aint__Aptr__Tslice__Tuint8$w1074$cond;
+    ir_jmp_eq A0 0 cb__Nstd__Nstring__Nint_to_string__Aint__Aint__Aptr__Tslice__Tuint8$w1074$end;
+    ir_make_label cb__Nstd__Nstring__Nint_to_string__Aint__Aint__Aptr__Tslice__Tuint8$w1074$body;
+    ir_cast L2;
+    ir_deref A2;
+    ir_jmp_lt ST [ST . 1] cb__Nstd__Nstring__Nint_to_string__Aint__Aint__Aptr__Tslice__Tuint8$if1045$else;
+    ir_make_label cb__Nstd__Nstring__Nint_to_string__Aint__Aint__Aptr__Tslice__Tuint8$if1045$body;
+    ir_sub L2 0;
+    ir_load L2 ST;
+    ir_jmp cb__Nstd__Nstring__Nint_to_string__Aint__Aint__Aptr__Tslice__Tuint8$w1074$end;
+    ir_make_label cb__Nstd__Nstring__Nint_to_string__Aint__Aint__Aptr__Tslice__Tuint8$if1045$else;
+    ir_load L1 A0;
+    ir_div A0 A1;
+    ir_load A0 ST;
+    ir_deref A2;
+    ir_deref [ST . 0];
+    ir_index ST L2;
+    ir_deref L0;
+    ir_mul A0 A1;
+    ir_sub L1 ST;
+    ir_add 0 ST;
+    ir_index ST ST;
+    ir_load ST ST;
+    ir_add L2 0;
+    ir_load L2 ST;
+    ir_jmp cb__Nstd__Nstring__Nint_to_string__Aint__Aint__Aptr__Tslice__Tuint8$w1074$cond;
+    ir_make_label cb__Nstd__Nstring__Nint_to_string__Aint__Aint__Aptr__Tslice__Tuint8$w1074$end;
+    ir_deref A2;
+    ir_deref [ST . 0];
+    ir_index ST L2;
+    ir_load_addr ST;
+    ir_load L3 ST;
+    ir_deref A2;
+    ir_deref [ST . 0];
+    ir_index ST 0;
+    ir_load_addr ST;
+    ir_load L4 ST;
+    ir_jmp_gte L1 0 cb__Nstd__Nstring__Nint_to_string__Aint__Aint__Aptr__Tslice__Tuint8$if1108$else;
+    ir_make_label cb__Nstd__Nstring__Nint_to_string__Aint__Aint__Aptr__Tslice__Tuint8$if1108$body;
+    ir_deref L3;
+    ir_load ST #45;
+    ir_add L3 0;
+    ir_load L3 ST;
+    ir_make_label cb__Nstd__Nstring__Nint_to_string__Aint__Aint__Aptr__Tslice__Tuint8$if1108$else;
+    ir_deref L3;
+    ir_load ST #0;
+    ir_sub L3 0;
+    ir_load L3 ST;
+    ir_load L5 0;
+    ir_make_label cb__Nstd__Nstring__Nint_to_string__Aint__Aint__Aptr__Tslice__Tuint8$w1152$cond;
+    ir_jmp_gte L4 L3 cb__Nstd__Nstring__Nint_to_string__Aint__Aint__Aptr__Tslice__Tuint8$w1152$end;
+    ir_make_label cb__Nstd__Nstring__Nint_to_string__Aint__Aint__Aptr__Tslice__Tuint8$w1152$body;
+    ir_deref L3;
+    ir_load L5 ST;
+    ir_deref L3;
+    ir_deref L4;
+    ir_load ST ST;
+    ir_sub L3 0;
+    ir_load L3 ST;
+    ir_deref L4;
+    ir_load ST L5;
+    ir_add L4 0;
+    ir_load L4 ST;
+    ir_jmp cb__Nstd__Nstring__Nint_to_string__Aint__Aint__Aptr__Tslice__Tuint8$w1152$cond;
+    ir_make_label cb__Nstd__Nstring__Nint_to_string__Aint__Aint__Aptr__Tslice__Tuint8$w1152$end;
+    ir_return L2;
+endf
+
+func cb__Nstd__Nstring__Nto_string__Aptr__TU_string__Aint__Aptr__Tslice__Tuint8 -> ptr__TU_string
+    arg #0 $cb_agg_ret: ptr__TU_string;
+    arg #1 i: int;
+    arg #2 dest: ptr__Tslice__Tuint8;
+    local #0 n: int;
+    local #1 $cbT1: slice__Tuint8;
+    ir_deref A2;
+    ir_copy L1 ST 16;
+    ir_load_addr L1;
+    ir_call cb__Nstd__Nstring__Nint_to_string__Aint__Aint__Aptr__Tslice__Tuint8 A1 0 ST;
+    ir_load L0 ST;
+    ir_deref A0;
+    ir_deref A2;
+    ir_load [ST . 0] [ST . 0];
+    ir_deref A0;
+    ir_cast L0;
+    ir_load [ST . 1] ST;
+    ir_return A0;
+endf
+
+func cb__Nstd__Nstring__Nto_string__Aptr__TU_string__Aptr__Tpure__Tuint8 -> ptr__TU_string
+    arg #0 $cb_agg_ret: ptr__TU_string;
+    arg #1 c: ptr__Tpure__Tuint8;
+    ir_deref A0;
+    ir_load [ST . 0] A1;
+    ir_deref A0;
+    ir_call cb__Nstd__Nrawstring__Nstrlen__Aptr__Tpure__Tuint8 A1;
+    ir_load [ST . 1] ST;
+    ir_return A0;
+endf
+
+func cb__Nstd__Nstring__Nto_string__Aptr__TU_string__Aptr__Tslice__Tuint8 -> ptr__TU_string
+    arg #0 $cb_agg_ret: ptr__TU_string;
+    arg #1 buf: ptr__Tslice__Tuint8;
+    ir_deref A0;
+    ir_deref A1;
+    ir_load [ST . 0] [ST . 0];
+    ir_deref A0;
+    ir_deref A1;
+    ir_load [ST . 1] [ST . 1];
+    ir_return A0;
+endf
+
+func cb__Nstd__Nstring__Nto_string__Aptr__TU_string__Abool -> ptr__TU_string
+    arg #0 $cb_agg_ret: ptr__TU_string;
+    arg #1 b: bool;
+    ir_jmp_eq A1 0 cb__Nstd__Nstring__Nto_string__Aptr__TU_string__Abool$if1259$else;
+    ir_make_label cb__Nstd__Nstring__Nto_string__Aptr__TU_string__Abool$if1259$body;
+    ir_load_addr STR1;
+    ir_call cb__Nstd__Nstring__Nto_string__Aptr__TU_string__Aptr__Tpure__Tuint8 A0 ST;
+    ir_return A0;
+    ir_noop ST;
+    ir_jmp cb__Nstd__Nstring__Nto_string__Aptr__TU_string__Abool$if1259$end;
+    ir_make_label cb__Nstd__Nstring__Nto_string__Aptr__TU_string__Abool$if1259$else;
+    ir_load_addr STR2;
+    ir_call cb__Nstd__Nstring__Nto_string__Aptr__TU_string__Aptr__Tpure__Tuint8 A0 ST;
+    ir_return A0;
+    ir_noop ST;
+    ir_make_label cb__Nstd__Nstring__Nto_string__Aptr__TU_string__Abool$if1259$end;
 endf
 
