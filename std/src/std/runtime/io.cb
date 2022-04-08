@@ -1,0 +1,12 @@
+import std::runtime::windows;
+
+func write(handle: int, ptr: &pure uint8, len: usize) {
+    let written : int;
+    WriteFile(handle, ptr, len, &written, nullptr);
+    return written;
+}
+
+func write(data: []pure uint8) {
+    let stdout = GetStdHandle(-11);
+    return write(stdout, data.ptr, data.len);
+}

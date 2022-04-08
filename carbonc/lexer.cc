@@ -233,6 +233,10 @@ struct lexer_impl {
             if (!std::strcmp("continue", l.string)) {
                 return token_type::continue_;
             }
+        case 9:
+            if (!std::strcmp("typealias", l.string)) {
+                return token_type::typealias;
+            }
             break;
         }
         return token_type::identifier;

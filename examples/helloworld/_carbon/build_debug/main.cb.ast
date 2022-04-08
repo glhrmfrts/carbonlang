@@ -3,11 +3,94 @@ code_unit{
   decl_list{
     import_decl{ std::io}
     import_decl{ std::string}
-    type_decl{FooBar = type_expr{struct_type{decl_list{
-            var_decl{foo: type_expr{int}}
-            var_decl{bar: type_expr{int}}}}}}
+    import_decl{ std::mem}
+    import_decl{ std::runtime::memory rtm}
+    import_decl{ std::runtime::io rio}
+    func_decl{whatever (var_decl{a: type_expr{int}}) {
+        stmt_list{
+          return{{a + 2}}}}}
     func_decl{main (var_decl{args: }) {
         stmt_list{
-          call{println ("Hello World Again")}}
+          var_decl{$cbT0 = {@ args}.ptr[0]}
+          call{println ({& $cbT0})}}
+        decl_list{
+          var_decl{$cbT1 = init{type=type_expr{array_type{size=32 type_expr{uint8}}} 
+              {$cbT1[0] = 0}
+              {$cbT1[1] = 0}
+              {$cbT1[2] = 0}
+              {$cbT1[3] = 0}
+              {$cbT1[4] = 0}
+              {$cbT1[5] = 0}
+              {$cbT1[6] = 0}
+              {$cbT1[7] = 0}
+              {$cbT1[8] = 0}
+              {$cbT1[9] = 0}
+              {$cbT1[10] = 0}
+              {$cbT1[11] = 0}
+              {$cbT1[12] = 0}
+              {$cbT1[13] = 0}
+              {$cbT1[14] = 0}
+              {$cbT1[15] = 0}
+              {$cbT1[16] = 0}
+              {$cbT1[17] = 0}
+              {$cbT1[18] = 0}
+              {$cbT1[19] = 0}
+              {$cbT1[20] = 0}
+              {$cbT1[21] = 0}
+              {$cbT1[22] = 0}
+              {$cbT1[23] = 0}
+              {$cbT1[24] = 0}
+              {$cbT1[25] = 0}
+              {$cbT1[26] = 0}
+              {$cbT1[27] = 0}
+              {$cbT1[28] = 0}
+              {$cbT1[29] = 0}
+              {$cbT1[30] = 0}
+              {$cbT1[31] = 0}
+              }}
+          call{as_memory ({& m}, {& $cbT1})}
+          var_decl{m}
+          var_decl{$cbT2 = m}
+          call{as_string ({& dest}, {& $cbT2})}
+          var_decl{dest}}
+        stmt_list{
+          call{to_string (36345, {& dest})}}
+        stmt_list{
+          var_decl{$cbT3 = dest}
+          call{println ({& $cbT3})}}
+        stmt_list{
+          call{to_string (cast_expr{type_expr{int} dest.len}, {& dest})}}
+        stmt_list{
+          var_decl{$cbT4 = dest}
+          call{println ({& $cbT4})}}
+        stmt_list{
+          call{to_string (cast_expr{type_expr{int} dest.cap}, {& dest})}}
+        stmt_list{
+          var_decl{$cbT5 = dest}
+          call{println ({& $cbT5})}}
+        stmt_list{
+          var_decl{$cbT6 = init{type=type_expr{} 
+              {$cbT6.ptr = "Hello"}
+              {$cbT6.len = cast_expr{ 5}}
+              }}
+          call{append ({& $cbT6}, {& dest})}}
+        stmt_list{
+          var_decl{$cbT7 = dest}
+          call{println ({& $cbT7})}}
+        stmt_list{
+          call{to_string (cast_expr{type_expr{int} dest.len}, {& dest})}}
+        stmt_list{
+          var_decl{$cbT8 = dest}
+          call{println ({& $cbT8})}}
+        stmt_list{
+          call{to_string (true, {& dest})}}
+        stmt_list{
+          var_decl{$cbT9 = dest}
+          call{println ({& $cbT9})}}
+        stmt_list{
+          call{to_string (false, {& dest})}}
+        stmt_list{
+          var_decl{$cbT10 = dest}
+          call{println ({& $cbT10})}}
         stmt_list{
           return{0}}}}}}

@@ -3,6 +3,10 @@ type memory = struct {
     len: usize
 }
 
+func as_memory(a) {
+    return memory{ cast(rawptr)&a[0], sizeof(a) }
+}
+
 /// Copies [size] bytes from [src] to [dest].
 func copy(dest: rawptr, src: rawptr, size: usize) {
     asm%{
@@ -31,4 +35,8 @@ rep stosb
 
 pop rdi
     }%asm;
+}
+
+func set(dest: &memory, value: uint8) {
+    set(dest.ptr, value, dest.len)
 }

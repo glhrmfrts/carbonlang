@@ -4,6 +4,9 @@ code_unit{
     type_decl{memory = type_expr{struct_type{decl_list{
             var_decl{ptr: type_expr{rawptr}}
             var_decl{len: type_expr{usize}}}}}}
+    func_decl{as_memory (var_decl{a}) {
+        stmt_list{
+          return{init{type=type_expr{memory} (cast_expr{type_expr{rawptr} {& a[0]}}, call{sizeof (a)})}}}}}
     func_decl{copy (var_decl{dest: type_expr{rawptr}}, var_decl{src: type_expr{rawptr}}, var_decl{size: type_expr{usize}}) {
         decl_list{
           asm{push rdi
@@ -27,4 +30,14 @@ mov rcx,r8
 rep stosb
 
 pop rdi
-    }}}}}}
+    }}}}
+    func_decl{set (var_decl{dest: type_expr{type_qualifier{optional, memory}}}, var_decl{value: type_expr{uint8}}) {
+        stmt_list{
+          call{set (dest.ptr, value, dest.len)}}}}
+    func_decl{as_memory (var_decl{$cb_agg_ret: }, var_decl{a: }):  {
+        stmt_list{
+          {{@ $cb_agg_ret} = init{type=type_expr{memory} 
+            {{@ $cb_agg_ret}.ptr = cast_expr{type_expr{rawptr} {& {@ a}[0]}}}
+            {{@ $cb_agg_ret}.len = 32}
+            }}
+          return{$cb_agg_ret}}}}}}

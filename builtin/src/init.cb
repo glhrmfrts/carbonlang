@@ -1,27 +1,22 @@
-/*import std::io
+import std::io
 import std::string
 import std::rawstring
 import std::mem
-import std::os::windows
+import std::runtime::windows
 
 private {
 
 extern(C) func carbon_main(): int {
-    let cmd_line_args_buf = [1]string{ string{"", 0} }
+    let cmd_line_args_buf = [1][]pure uint8{ "" }
 
     let cmdline = nullcast(GetCommandLineA())
 
     // TODO: lengthof
-    let args = []string{ &cmd_line_args_buf[0], 1 }
-    args[0] = string{ cmdline, cmdline->strlen() }
+    let args = [][]pure uint8{ &cmd_line_args_buf[0], 1 }
+    args[0] = []pure uint8{ nullcast(cast(*uint8)(cast(rawptr)(cmdline))), cmdline->length() }
 
     import main
     return main(args)
 }
 
-}
-*/
-
-extern(C) func carbon_main(): int {
-    return 0
 }

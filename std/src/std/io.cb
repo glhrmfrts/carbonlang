@@ -1,10 +1,20 @@
-import std::libc::stdio
+import std::runtime::io as rtio
 import std::string
 
-func println(str: string) {
-    puts(str.data)
+func print(str: string) {
+    rtio::write(str->as_slice());
 }
 
-func println(value) {
-    puts(to_string(value).data)
+func print(str: []pure uint8) {
+    rtio::write(str);
+}
+
+func println(str: string) {
+    rtio::write(str->as_slice());
+    rtio::write("\n");
+}
+
+func println(str: []pure uint8) {
+    rtio::write(str);
+    rtio::write("\n");
 }

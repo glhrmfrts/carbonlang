@@ -1,14 +1,15 @@
 code_unit{
-  std/io.cb
+  std/runtime/io.cb
   decl_list{
-    import_decl{ std::libc::stdio}
-    import_decl{ std::string}
-    func_decl{println (var_decl{str: }) {
+    import_decl{ std::runtime::windows}
+    func_decl{write (var_decl{handle: type_expr{int}}, var_decl{ptr: type_expr{type_qualifier{optional, type_qualifier{ uint8}}}}, var_decl{len: type_expr{usize}}) {
+        decl_list{
+          var_decl{written: type_expr{int} = 0}}
         stmt_list{
-          call{puts ({@ str}.data)}}}}
-    func_decl{println (var_decl{value}) {
+          call{WriteFile (handle, ptr, len, {& written}, )}
+          return{written}}}}
+    func_decl{write (var_decl{data: }) {
+        decl_list{
+          var_decl{stdout = call{GetStdHandle ({- 11})}}}
         stmt_list{
-          call{puts (call{to_string (value)}.data)}}}}
-    func_decl{println (var_decl{value: }) {
-        stmt_list{
-          call{puts (call{to_string ({& $cbT0}, value)}.data)}}}}}}
+          return{call{write (stdout, {@ data}.ptr, {@ data}.len)}}}}}}}

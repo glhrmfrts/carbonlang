@@ -1,13 +1,13 @@
 import std::mem as mem
-import std::runtime::memory
+import std::runtime::memory as rtm
 
 func copy(str: &pure uint8) {
-    return copy(str, str->strlen())
+    return copy(str, str->length())
 }
 
 //conditional runtime_included
 func copy(str: &pure uint8, size: usize) {
-    let m = alloc(size+1)
+    let m = rtm::alloc(size+1)
     let newstr = nullcast(cast(*uint8) m.ptr)
     copy(newstr, str, size)
     newstr[size] = '\0'
@@ -22,7 +22,7 @@ func set(dest: &pure uint8, value: pure uint8, count: usize) {
     mem::set(cast(rawptr) dest, value, count)
 }
 
-func strlen(str: &pure uint8) {
+func length(str: &pure uint8) {
     let c : usize
     let p = str
     while (@p != 0) {
@@ -34,9 +34,9 @@ func strlen(str: &pure uint8) {
 }
 
 func equals(a: &pure uint8, b: &pure uint8) {
-    if (a->strlen() != b->strlen()) { return false }
+    if (a->length() != b->length()) { return false }
 
-    for (i in 0, a->strlen()) {
+    for (i in 0, a->length()) {
         if (a[i] != b[i]) {
             return false
         }

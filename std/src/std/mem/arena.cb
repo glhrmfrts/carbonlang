@@ -1,4 +1,4 @@
-import std::runtime::memory
+import std::runtime::memory as rtm
 import std::mem
 
 type arena_block = struct {
@@ -41,7 +41,7 @@ func free(a: &arena): {} {
     while (pblock != nullptr) {
         let block = nullcast(pblock)
         let prev = block.prev
-        free(&block.mem)
+        rtm::free(&block.mem)
         pblock = prev
     }
 }
@@ -56,7 +56,7 @@ func alloc(a: &arena, user_size: usize): memory {
         }
     }
 
-    let new_block_memory = alloc(sizeof(arena_block) + a.block_size)
+    let new_block_memory = rtm::alloc(sizeof(arena_block) + a.block_size)
     let new_block = nullcast(cast(*arena_block) new_block_memory.ptr)
     new_block.mem = memory{
         new_block_memory.ptr + sizeof(arena_block),

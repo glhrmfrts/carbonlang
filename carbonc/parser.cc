@@ -176,6 +176,8 @@ struct parser_impl {
             return parse_func_decl();
         case token_type::type:
             return parse_type_decl();
+        case token_type::typealias:
+            return parse_type_decl(true);
         case token_type::import_:
             return parse_import_decl();
         case token_type::public_:
@@ -627,7 +629,7 @@ struct parser_impl {
         return make_import_decl_node(*ast_arena, pos, std::move(id), std::move(alias));
     }
 
-    arena_ptr<ast_node> parse_type_decl() {
+    arena_ptr<ast_node> parse_type_decl(bool is_alias = false) {
         auto pos = lex->pos();
         lex->next(); // eat the 'type'
 
@@ -657,7 +659,7 @@ struct parser_impl {
             return make_type_constructor_decl_node(*ast_arena, pos, std::move(id), std::move(arg_list), std::move(contents));
         }
         else {
-            return make_type_decl_node(*ast_arena, pos, std::move(id), std::move(contents));
+            return make_type_decl_node(*ast_arena, pos, std::move(id), std::move(contents), is_alias);
         }
     }
 
@@ -956,6 +958,7 @@ struct parser_impl {
     }
 
     arena_ptr<ast_node> parse_primary_expr() {
+        auto pos = lex->pos();
         switch (lex->current()) {
         case token_type::bool_literal_true:
         case token_type::bool_literal_false: {
@@ -1022,6 +1025,13 @@ struct parser_impl {
                     throw parse_error(filename, lex->pos(), "expected compile-time expression after '`'");
                 }
                 return make_comptime_expr_node(*ast_arena, pos, std::move(expr));
+            }
+            default: {
+                if (is_unary_op(TOK)) {
+                    auto op = TOK;
+                    lex->next();
+                    return make_unary_expr_node(*ast_arena, pos, op, parse_cast_expr());
+                }
             }
             }
 
@@ -1120,6 +1130,8 @@ struct parser_impl {
                 }
             }
         }
+
+        char tokchar = TOK_CHAR;
 
         if (TOK_CHAR != end) {
             throw parse_error(filename, lex->pos(), "expected closing parentheses in argument list");

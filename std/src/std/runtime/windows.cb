@@ -6,18 +6,22 @@ func HeapAlloc(
   hHeap:   int,
   dwFlags: int,
   dwBytes: usize
-): rawptr
+): rawptr;
 
 func HeapFree(
   hHeap:   int,
   dwFlags: int,
   lpMem:   rawptr
-): bool
+): bool;
 
-func GetProcessHeap(): int
+func GetProcessHeap(): int;
 
 // Command-line related functions
 
-func GetCommandLineA(): *pure uint8
+func GetCommandLineA(): *pure uint8;
+
+func GetStdHandle(nStdHandle: int): int;
+
+func WriteFile(handle: int, str: *pure uint8, len: usize, written: *int, ov: rawptr);
 
 }

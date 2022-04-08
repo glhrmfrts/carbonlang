@@ -493,6 +493,10 @@ struct emitter {
         emitln(" idiv %s", tostr_sized(b).c_str());
     }
 
+    void neg(gen_destination a) {
+        emitln(" neg %s", tostr_sized(a).c_str());
+    }
+
     void cdq(type_id t) {
         switch (t.get().size)
         {
@@ -1152,6 +1156,22 @@ struct generator {
             push(toop(dest));
             break;
         }
+        case ir_neg: {
+            auto [a, atype] = transform_ir_operand(instr.operands[0]);
+            auto dest = adjust_for_type(instr_dest_to_gen_dest(idata.dest), instr.result_type);
+
+            auto op = adjust_for_type(rax, atype);
+
+            move(op, atype, a, atype);
+
+            em->neg(op);
+
+            move(dest, instr.result_type, toop(op), atype);
+
+            push(toop(dest));
+
+            break;
+        }
         case ir_cast: {
             auto [a, atype] = transform_ir_operand(instr.operands[0]);
             auto dest = adjust_for_type(instr_dest_to_gen_dest(idata.dest), instr.result_type);
@@ -1381,6 +1401,10 @@ struct generator {
     }
 
     void move(const gen_destination& dest, type_id dest_tid, const gen_operand& op, type_id tid) {
+        if (toop(dest) == op && (dest_tid == tid)) {
+            return;
+        }
+
         if (std::holds_alternative<gen_offset>(dest) && std::holds_alternative<gen_offset>(op)) {
             auto areg = adjust_for_type(reg_intermediate, tid);
             move(areg, tid, op, tid);

@@ -1024,10 +1024,6 @@ type_id get_value_node_type(type_system& ts, ast_node& node) {
         auto& sym = ts.builtin_scope->scope.symbols[string_hash{ "char" }];
         return to_type_id(*sym);
     }
-    case ast_type::string_literal: {
-        auto& sym = ts.builtin_scope->scope.symbols[string_hash{ "$rawstring" }];
-        return to_type_id(*sym);
-    }
     case ast_type::nullptr_: {
         auto& sym = ts.builtin_scope->scope.symbols[string_hash{ "rawptr" }];
         return to_type_id(*sym);
@@ -1308,6 +1304,9 @@ type_id get_type_expr_node_type(type_system& ts, ast_node& node) {
         }
         break;
     }
+    case ast_type::type_resolver: {
+        return node.type_id;
+    }
     }
 
     return node.type_id;
@@ -1417,9 +1416,15 @@ bool check_convertible_and_cast_call_args(type_system& ts, ast_node& node, type_
 
         auto [convertible, ncast] = is_convertible_to(ts, node.type_id, target);
         if (!convertible) {
-            if (target.get().kind == type_kind::ptr && target.get().elem_type == node.type_id) {
-                info.cast_needed_idxs.push_back(std::make_tuple(toptr_cast, target, idx));
-                return true;
+            if (target.get().kind == type_kind::ptr) {
+                if (target.get().elem_type == node.type_id) {
+                    info.cast_needed_idxs.push_back(std::make_tuple(toptr_cast, target, idx));
+                    return true;
+                }
+                else if ((target.get().elem_type.get().flags & type_flags::is_pure) && (target.get().elem_type.get().elem_type == node.type_id)) {
+                    info.cast_needed_idxs.push_back(std::make_tuple(toptr_cast, target, idx));
+                    return true;
+                }
             }
 
             return false;
@@ -2537,6 +2542,11 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
                 node.type_def.is_opaque = false;
                 node.type_def.name = string_hash{ build_identifier_value(node.children[0]->id_parts) };
                 node.type_def.mangled_name = string_hash{ "U_" + build_identifier_value(node.children[0]->id_parts) };
+
+                bool is_alias = node.int_value == 1;
+                if (is_alias) {
+                    node.type_def.alias_to = type;
+                }
                 //register_user_type(ts, node);
             }
             else {
@@ -2967,7 +2977,7 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
             while (stype.valid() && !is_aggregate_root(stype) && (si++) < LIMIT) {
                 if (stype.get().kind == type_kind::nullableptr) {
                     node.type_error = true;
-                    add_type_error(ts, node.pos, "cannot access field of optional type '%s', check in an if statement", type_to_string(ltype).c_str());
+                    add_type_error(ts, node.pos, "cannot access field of nullable pointer '%s', perform a nullcast first", type_to_string(ltype).c_str());
                 }
                 else if ((stype.get().kind == type_kind::ptr) && is_aggregate(stype.get().elem_type)) {
                     is_struct = true;
@@ -3068,7 +3078,7 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
                 node.lvalue.self = &node;
                 node.type_id = node.children[0]->type_id.get().elem_type;
 
-                auto field = make_struct_field_access(*ts.ast_arena, std::move(node.children[0]), "data");
+                auto field = make_struct_field_access(*ts.ast_arena, std::move(node.children[0]), "ptr");
                 resolve_node_type(ts, field.get());
                 node.children[0] = std::move(field);
             }
@@ -3209,6 +3219,10 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
 
             ensure_bool_op_is_comparison_unary(ts, node);
         }
+        else {
+            node.type_id = node.children[0]->type_id;
+            node.type_error = node.children[0]->type_error;
+        }
         break;
     }
     case ast_type::init_expr: {
@@ -3282,11 +3296,36 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
     case ast_type::nullcast_expr:
         visit_children(ts, *node.children[1]);
         break;
+    case ast_type::string_literal:
+        if (!node.type_id.valid()) {
+            // Transform the string literal into a static array of chars
+            auto& sym = ts.builtin_scope->scope.symbols[string_hash{ "uint8" }];
+            auto rstype = to_type_id(*sym);
+            auto pure_rstype = get_pure_type_to(ts, rstype);
+            auto pointer_type = get_ptr_type_to(ts, pure_rstype);
+
+            auto slicetype = get_slice_type_to(ts, pure_rstype);
+            auto slicetypenode = make_type_expr_node(*ts.ast_arena, node.pos, make_type_resolver_node(*ts.ast_arena, slicetype));
+
+            std::vector<arena_ptr<ast_node>> nodes;
+            nodes.push_back(make_string_literal_node(*ts.ast_arena, node.pos, std::string{ node.string_value }));
+            nodes.push_back(make_int_literal_node(*ts.ast_arena, node.pos, node.string_value.size()));
+            nodes[0]->type_id = pointer_type; // So the created string literal doesn't need to be transformed.
+
+            auto arglist = make_arg_list_node(*ts.ast_arena, node.pos, std::move(nodes));
+            auto initlist = make_init_expr_node(*ts.ast_arena, node.pos, std::move(slicetypenode), std::move(arglist));
+
+            auto parent = node.parent;
+            auto idx = find_child_index(parent, &node);
+            if (idx) {
+                parent->children[*idx] = std::move(initlist);
+            }
+        }
+        break;
     case ast_type::bool_literal:
     case ast_type::int_literal:
     case ast_type::float_literal:
     case ast_type::char_literal:
-    case ast_type::string_literal:
     case ast_type::nullptr_:
         node.type_id = get_value_node_type(ts, node);
         break;
@@ -3631,6 +3670,7 @@ type_system::type_system(memory_arena& arena) {
             tf.alignment = type_arg.get().alignment;
             tf.elem_type = type_arg;
             tf.flags |= type_flags::is_pure;
+            tf.structure = type_arg.get().structure;
             return node;
         };
 
@@ -3739,7 +3779,7 @@ type_system::type_system(memory_arena& arena) {
             tf.elem_type = std::get<type_id>(args[0]);
 
             auto ptype = get_ptr_type_to(*this, tf.elem_type);
-            tf.structure.fields.push_back({ { "data" }, ptype, 0 });
+            tf.structure.fields.push_back({ { "ptr" }, ptype, 0 });
             tf.structure.fields.push_back({ { "len" }, this->usize_type, 0 });
 
             compute_struct_size_alignment_offsets(tf);

@@ -3,7 +3,5 @@ code_unit{
   decl_list{
     linkage_specifier{ extern(C) decl_list{
         func_decl{exit (var_decl{status: type_expr{int}}): type_expr{tuple_type{}} }
-        func_decl{free (var_decl{ptr: type_expr{rawptr}}): type_expr{int} }
-        func_decl{malloc (var_decl{size: type_expr{usize}}): type_expr{rawptr} }
         func_decl{rand (): type_expr{int} }
         func_decl{system (var_decl{c: type_expr{type_qualifier{pointer, char}}}): type_expr{int} }}}}}

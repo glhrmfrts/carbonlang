@@ -17,6 +17,7 @@ static const std::string opnames[] = {
     "ir_sub",
     "ir_mul",
     "ir_div",
+    "ir_neg",
     "ir_call",
     "ir_return",
     "ir_index",
@@ -720,6 +721,11 @@ void generate_ir_unary_expr(ast_node& node) {
     else if (token_to_char(node.op) == '!') {
         generate_ir_node(*node.children[0]);
     }
+    else if (token_to_char(node.op) == '-') {
+        generate_ir_node(*node.children[0]);
+        temit(ir_neg, node.type_id, pop());
+        push(ir_stack{ node.type_id });
+    }
 }
 
 void generate_ir_var(ast_node& node) {
@@ -807,10 +813,6 @@ void generate_ir_string_literal(ast_node& node) {
 
 void generate_ir_int_literal(ast_node& node) {
     push(ir_int{ node.int_value, node.type_id });
-}
-
-void generate_ir_nullptr_literal(ast_node& node) {
-    push(ir_int{ 0, ts->uintptr_type });
 }
 
 void generate_ir_char_literal(ast_node& node) {
@@ -911,7 +913,7 @@ void generate_ir_node(ast_node& node) {
     case ast_type::int_literal:
     case ast_type::bool_literal:
     case ast_type::nullptr_:
-        generate_ir_nullptr_literal(node);
+        generate_ir_int_literal(node);
         break;
     case ast_type::char_literal:
         generate_ir_char_literal(node);
@@ -1067,6 +1069,7 @@ bool instr_pushes_to_stack(const ir_instr& instr) {
     case ir_index:
     case ir_load_addr:
     case ir_cast:
+    case ir_neg:
         return true;
     case ir_call:
         return instr.result_type != ts->void_type;

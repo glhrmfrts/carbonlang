@@ -15,6 +15,7 @@ enum ir_op {
     ir_sub,
     ir_mul,
     ir_div,
+    ir_neg,
     ir_call,
     ir_return,
     ir_index,
