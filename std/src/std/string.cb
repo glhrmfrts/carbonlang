@@ -7,7 +7,7 @@ type string = struct {
     cap: usize
 }
 
-type string_view = []pure uint8
+type string = []pure uint8
 
 let MAX_INTEGER_STRING_LEN = 24
 

@@ -515,7 +515,6 @@ struct parser_impl {
         switch (t) {
         case token_type::const_:
         case token_type::let:
-        case token_type::auto_:
         case token_type::pure:
             return parse_var_decl(t);
         case token_type::func:
@@ -591,6 +590,9 @@ struct parser_impl {
         auto content = arena_ptr<ast_node>{ nullptr, nullptr };
         if (TOK == token_type::func) {
             content = parse_func_decl();
+        }
+        else if (TOK == token_type::let) {
+            content = parse_var_decl(token_type::let);
         }
         else if (TOK_CHAR == '{') {
             lex->next();

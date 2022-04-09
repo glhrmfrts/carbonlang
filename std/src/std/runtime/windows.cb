@@ -16,12 +16,23 @@ func HeapFree(
 
 func GetProcessHeap(): int;
 
+
 // Command-line related functions
 
 func GetCommandLineA(): *pure uint8;
 
+
+// General I/O functions
+
 func GetStdHandle(nStdHandle: int): int;
 
 func WriteFile(handle: int, str: *pure uint8, len: usize, written: *int, ov: rawptr);
+
+
+// Time functions
+
+func QueryPerformanceFrequency(value: *int64): bool;
+
+func QueryPerformanceCounter(value: *int64): bool;
 
 }

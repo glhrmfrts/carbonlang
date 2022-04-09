@@ -6,7 +6,8 @@ code_unit{
         decl_list{
           var_decl{written: type_expr{int} = 0}}
         stmt_list{
-          call{WriteFile (handle, ptr, len, {& written}, )}
+          call{WriteFile (handle, ptr, len, {& written}, )}}
+        stmt_list{
           return{written}}}}
     func_decl{write (var_decl{data: }) {
         decl_list{

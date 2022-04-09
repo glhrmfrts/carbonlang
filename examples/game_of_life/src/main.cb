@@ -187,10 +187,8 @@ func main(args: []string): int {
     let a = gun()
 
     for (i in 0,50) {
-        import std::threading, std::time
-
-        a.update()
-        a.print()
+        a->update()
+        a->print()
         sleep(100->milliseconds())
     }
     return 0

@@ -1,15 +1,26 @@
 import std::io
 import std::string
-import std::mem
+import std::memory
+import std::time as time
 import std::runtime::memory as rtm
-import std::runtime::io as rio
+import std::runtime::io as rtio
 
 func whatever(a: int) {
     return a + 2
 }
 
+// TODO: fix nested function calls
+// TODO: extern variables
+// TODO: review function pointers
+// TODO: rename array to static array
+// TODO: rename slice to array
+// TODO: auto-array
+// TODO: auto-strings
+// TODO: unions
+// TODO: enums
+
 func main(args: [][]pure uint8) {
-    println(args[0]);
+    println(args[0])
 
     let m = as_memory([32]uint8{})
     let dest = as_string(m)

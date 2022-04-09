@@ -4,6 +4,7 @@ code_unit{
     import_decl{ std::io}
     import_decl{ std::string}
     import_decl{ std::mem}
+    import_decl{ std::time}
     import_decl{ std::runtime::memory rtm}
     import_decl{ std::runtime::io rio}
     func_decl{whatever (var_decl{a: type_expr{int}}) {
@@ -92,5 +93,23 @@ code_unit{
         stmt_list{
           var_decl{$cbT10 = dest}
           call{println ({& $cbT10})}}
+        decl_list{
+          var_decl{curtime = call{now ()}}}
+        stmt_list{
+          call{to_string (cast_expr{type_expr{int} curtime}, {& dest})}}
+        stmt_list{
+          var_decl{$cbT11 = dest}
+          call{println ({& $cbT11})}}
+        decl_list{
+          var_decl{nowtime = call{now ()}}
+          var_decl{elapsed = {nowtime - curtime}}
+          var_decl{$cbT12 = call{duration (elapsed)}}
+          call{milliseconds ({& dur}, {& $cbT12})}
+          var_decl{dur}}
+        stmt_list{
+          call{to_string (cast_expr{type_expr{int} dur.value}, {& dest})}}
+        stmt_list{
+          var_decl{$cbT13 = dest}
+          call{println ({& $cbT13})}}
         stmt_list{
           return{0}}}}}}

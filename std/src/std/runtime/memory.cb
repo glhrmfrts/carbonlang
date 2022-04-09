@@ -1,5 +1,5 @@
 import std::runtime::windows
-import std::mem
+import std::memory
 
 func alloc(size: usize): memory {
     return memory{HeapAlloc(GetProcessHeap(), 0, size), size}

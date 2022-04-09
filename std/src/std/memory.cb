@@ -1,9 +1,17 @@
+
+type I_allocator = struct {
+    alloc: {usize} -> memory
+    free:  {&memory} -> {}
+}
+
+extern let default_allocator: *I_allocator
+
 type memory = struct {
     ptr: rawptr
     len: usize
 }
 
-func as_memory(a) {
+func as_memory(a) { // static_array(uint8)
     return memory{ cast(rawptr)&a[0], sizeof(a) }
 }
 
@@ -20,7 +28,7 @@ rep movsb
 
 pop rsi
 pop rdi
-    }%asm;
+    }%asm
 }
 
 /// Stores [count] amount of [value] in [dest].
@@ -34,7 +42,7 @@ mov rcx,r8
 rep stosb
 
 pop rdi
-    }%asm;
+    }%asm
 }
 
 func set(dest: &memory, value: uint8) {
