@@ -618,6 +618,9 @@ bool type_allows_no_init(type_system& ts, type_id id) {
         }
         return false;
     }
+    if (id.get().kind == type_kind::func_pointer) {
+        return false;
+    }
     return true;
 }
 
@@ -1408,7 +1411,11 @@ struct call_match_info
     std::vector<std::tuple<cast_type, type_id, int>> cast_needed_idxs;
 };
 
+bool in_desugar = false;
+
 bool check_convertible_and_cast_call_args(type_system& ts, ast_node& node, type_id target, int idx, call_match_info& info) {
+    if (in_desugar) { return true; }
+
     bool needcast = false;
     auto [convertible, ncast] = is_convertible_to(ts, node.type_id, target);
     if (!convertible) {
@@ -1416,7 +1423,7 @@ bool check_convertible_and_cast_call_args(type_system& ts, ast_node& node, type_
 
         auto [convertible, ncast] = is_convertible_to(ts, node.type_id, target);
         if (!convertible) {
-            if (target.get().kind == type_kind::ptr) {
+            if (target.get().kind == type_kind::ptr || target.get().kind == type_kind::nullableptr) {
                 if (target.get().elem_type == node.type_id) {
                     info.cast_needed_idxs.push_back(std::make_tuple(toptr_cast, target, idx));
                     return true;
@@ -1426,7 +1433,6 @@ bool check_convertible_and_cast_call_args(type_system& ts, ast_node& node, type_
                     return true;
                 }
             }
-
             return false;
         }
         else if (ncast) {
@@ -1976,10 +1982,10 @@ void resolve_and_declare_local_variable(type_system& ts, const string_hash& id, 
 }
 
 void register_var_declaration_node(type_system& ts, ast_node& node) {
-    auto id = string_hash{ build_identifier_value(node.var_id()->id_parts) };
+    auto id = string_hash{ node.var_id()->id_parts.back() };
     auto prev = find_symbol_in_current_scope(ts, id);
     if (prev) {
-        add_type_error(ts, node.pos, "cannot redeclare name '%s'", build_identifier_value(node.var_id()->id_parts).c_str());
+        add_type_error(ts, node.pos, "cannot redeclare name '%s'", node.var_id()->id_parts.back().c_str());
         return;
     }
 
@@ -2461,8 +2467,39 @@ void visit_children(type_system& ts, ast_node& node) {
 template <typename F> void for_each_child_recur(ast_node& node, ast_type type, F f) {
     for (auto& child : node.children) {
         if (child) {
-            if (child->type == type) { f(*child); }
-            for_each_child_recur(*child, type, f);
+            if (child->type == type) {
+                f(*child);
+            }
+            else { 
+                for_each_child_recur(*child, type, f);
+            }
+        }
+    }
+}
+
+void apply_linkage_specifier(const std::vector<arena_ptr<ast_node>>& children, func_linkage linkage, const std::vector<std::string>& alias) {
+    for (auto& child : children) {
+        if (!child) continue;
+
+        if (child->type == ast_type::func_decl || child->type == ast_type::var_decl) {
+            child->func.linkage = linkage;
+            child->func.extern_alias = alias;
+        }
+        else if (child->type == ast_type::decl_list || child->type == ast_type::visibility_specifier) {
+            apply_linkage_specifier(child->children, linkage, alias);
+        }
+    }
+}
+
+void apply_visibility_specifier(const std::vector<arena_ptr<ast_node>>& children, decl_visibility vis) {
+    for (auto& child : children) {
+        if (!child) continue;
+
+        if (child->type == ast_type::func_decl || child->type == ast_type::var_decl) {
+            child->visibility = vis;
+        }
+        else if (child->type == ast_type::decl_list || child->type == ast_type::linkage_specifier) {
+            apply_visibility_specifier(child->children, vis);
         }
     }
 }
@@ -2525,12 +2562,22 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
     case ast_type::type_decl: {
         check_for_unresolved = false;
 
-        node.type_def.self = &node;
         node.type_def.name = string_hash{ build_identifier_value(node.children[0]->id_parts) };
-        node.type_def.mangled_name = string_hash{ "U_" + build_identifier_value(node.children[0]->id_parts) };
+        node.type_def.mangled_name = string_hash{ build_identifier_value(node.children[0]->id_parts) };
         node.type_def.size = 0;
         node.type_def.is_opaque = true;
-        type_id new_type_id = register_user_type(ts, node);
+
+        type_id new_type_id{};
+        if (!node.type_def.self) {
+            auto sym = find_symbol_in_current_scope(ts, node.type_def.mangled_name);
+            if (sym) {
+                add_type_error(ts, node.pos, "cannot re-declare type '%s'", node.type_def.mangled_name.str.c_str());
+                break;
+            }
+            new_type_id = register_user_type(ts, node);
+        }
+
+        node.type_def.self = &node;
 
         visit_tree(ts, *node.children[1]);
         if (node.children[1]) {
@@ -2541,7 +2588,7 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
                 node.type_def.self = &node;
                 node.type_def.is_opaque = false;
                 node.type_def.name = string_hash{ build_identifier_value(node.children[0]->id_parts) };
-                node.type_def.mangled_name = string_hash{ "U_" + build_identifier_value(node.children[0]->id_parts) };
+                node.type_def.mangled_name = string_hash{ build_identifier_value(node.children[0]->id_parts) };
 
                 bool is_alias = node.int_value == 1;
                 if (is_alias) {
@@ -2560,7 +2607,7 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
 
         node.type_def.self = &node;
         node.type_def.name = string_hash{ build_identifier_value(node.children[0]->id_parts) };
-        node.type_def.mangled_name = string_hash{ "U_" + build_identifier_value(node.children[0]->id_parts) };
+        node.type_def.mangled_name = string_hash{ build_identifier_value(node.children[0]->id_parts) };
         node.type_def.kind = type_kind::constructor;
 
         type_constructor* type_ctor = &node.type_def.constructor;
@@ -2739,6 +2786,7 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
         if (ts.inside_defer) {
             add_type_error(ts, node.pos, "illegal use of defer statement inside another defer statement");
             node.type_error = true;
+            break;
         }
 
         check_for_unresolved = false;
@@ -2749,9 +2797,31 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
     }
     case ast_type::linkage_specifier: {
         check_for_unresolved = false;
-        for_each_child_recur(node, ast_type::func_decl, [&node](ast_node& child) {
-            child.func.linkage = node.func.linkage;
-        });
+
+        if (!node.func.self) {
+            auto& alias = node.children[0];
+            std::vector<std::string> alias_id = {};
+            if (alias) {
+                alias_id = alias->id_parts;
+            }
+
+            apply_linkage_specifier(node.children, node.func.linkage, alias_id);
+
+            node.children.erase(node.children.begin());
+
+            node.func.self = &node;
+        }
+
+        int i = 0;
+        for (auto& child : node.children) {
+            visit_tree(ts, *child);
+            i++;
+        }
+        break;
+    }
+    case ast_type::visibility_specifier: {
+        check_for_unresolved = false;
+        apply_visibility_specifier(node.children, node.visibility);
         visit_children(ts, node);
         break;
     }
@@ -3362,11 +3432,18 @@ void remangle_names(type_system& ts, ast_node* nodeptr) {
     case ast_type::func_decl: {
         if (node.func.is_generic) { break; }
 
-        // remangle the function name with the fully qualified module name
+        // remangle the function name with the fully qualified module name or alias
         if ((node.func.linkage == func_linkage::external_carbon || node.func.linkage == func_linkage::local_carbon)
             && !node.func.args_unresolved) {
 
-            auto parts = ts.current_scope->self_module_parts;
+            std::vector<std::string> parts;
+            if (node.func.extern_alias.size() > 0) {
+                parts = node.func.extern_alias;
+            }
+            else {
+                parts = ts.current_scope->self_module_parts;
+            }
+
             for (const auto& part : node.var_id()->id_parts) {
                 parts.push_back(part);
             }
@@ -3440,7 +3517,6 @@ void spit_declaration(type_system& ts, ast_node& node, std::ofstream& file) {
     case ast_type::linkage_specifier: {
         for (auto& child : node.children) {
             if (child) {
-                child->func.linkage = node.func.linkage;
                 spit_declaration(ts, *child, file);
             }
         }
@@ -3451,11 +3527,28 @@ void spit_declaration(type_system& ts, ast_node& node, std::ofstream& file) {
         if (linkage == func_linkage::local_carbon) {
             linkage = func_linkage::external_carbon;
         }
-        file << func_linkage_name(linkage) << " " << build_identifier_value(node.children[0]->id_parts);
+        file << func_linkage_name(linkage) << " func " << build_identifier_value(node.children[0]->id_parts);
         file << "(";
 
+        auto& arg_list = node.children[ast_node::child_func_decl_arg_list];
+        int i = 0;
+        for (const auto& child : arg_list->children) {
+            if (child) {
+                if (child->type == ast_type::var_decl) {
+                    file << ":" << type_to_string(child->type_id);
+                    if (i < arg_list->children.size() - 1) {
+                        file << ", ";
+                    }
+                }
+            }
+            i++;
+        }
+
         file << "):";
-        spit_declaration(ts, *node.children[ast_node::child_func_decl_ret_type], file);
+
+        type_id ret_type = node.type_def.func.ret_type;
+        file << type_to_string(ret_type);
+
         file << ";\n";
         break;
     }
@@ -3480,9 +3573,9 @@ void spit_declaration(type_system& ts, ast_node& node, std::ofstream& file) {
     }
 }
 
-void create_interface_file(type_system& ts, ast_node& unit) {
-    auto path = "_carbon/interface/" + std::string{ unit.string_value };
-    replace(path, ".cb", ".cbi");
+void create_header_file(type_system& ts, ast_node& unit) {
+    auto path = "_carbon/headers/" + std::string{ unit.string_value };
+    replace(path, ".cb", ".cbh");
     ensure_directory_exists(path);
     std::ofstream ifile{ path };
     for (auto& child : unit.children) {
@@ -3512,8 +3605,8 @@ void resolve_imports(type_system& ts, ast_node& node) {
 
 void visit_tree(type_system& ts, ast_node& node) {
     switch (ts.pass) {
-    case type_system_pass::create_interface_files:
-        create_interface_file(ts, node);
+    case type_system_pass::create_header_files:
+        create_header_file(ts, node);
         break;
     case type_system_pass::resolve_literals_and_register_declarations:
     case type_system_pass::perform_checks:
@@ -3920,7 +4013,16 @@ void type_system::resolve_and_check() {
         current_error = {};
     }
 
+    this->pass = type_system_pass::create_header_files;
+    this->subpass = 0;
+    for (auto unit : this->code_units) {
+        enter_scope(*unit);
+        visit_tree(*this, *unit);
+        leave_scope();
+    }
+
     if (errors.empty()) {
+        in_desugar = true;
         for (int i = 0; i < 3; i++) {
             this->pass = type_system_pass::desugar;
             this->subpass = i;
@@ -3931,6 +4033,7 @@ void type_system::resolve_and_check() {
                 leave_scope();
             }
         }
+        in_desugar = false;
 
         for (int i = 0; i < 2; i++) {
             this->pass = type_system_pass::remangle_names;

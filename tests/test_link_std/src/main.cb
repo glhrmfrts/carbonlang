@@ -1,0 +1,3 @@
+func main(args: [][]pure uint8) {
+    return 0
+}

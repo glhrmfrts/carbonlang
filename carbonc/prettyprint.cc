@@ -208,7 +208,9 @@ void prettyprint(const ast_node& node, std::ostream& stream, int indent, bool do
         break;
     case ast_type::struct_type:
         stream << "struct_type{";
-        prettyprint(*node.children.front().get(), stream, indent + 1, false);
+        if (node.children.front()) {
+            prettyprint(*node.children.front().get(), stream, indent + 1, false);
+        }
         stream << "}";
         break;
     case ast_type::tuple_type:
@@ -262,7 +264,7 @@ void prettyprint(const ast_node& node, std::ostream& stream, int indent, bool do
     }
     case ast_type::visibility_specifier: {
         stream << "visibility_specifier{ ";
-        stream << visibility_name(node.op);
+        stream << visibility_name(node.visibility);
         auto& content = node.children.front();
         if (content) {
             stream << " ";

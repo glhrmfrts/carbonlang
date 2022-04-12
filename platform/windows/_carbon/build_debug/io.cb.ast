@@ -1,0 +1,18 @@
+code_unit{
+  io.cb
+  decl_list{
+    linkage_specifier{ extern(C) decl_list{
+        func_decl{GetCommandLineA (): type_expr{type_qualifier{pointer, type_qualifier{ uint8}}} }
+        func_decl{GetStdHandle (var_decl{nStdHandle: type_expr{int}}): type_expr{int} }
+        func_decl{WriteFile (var_decl{handle: type_expr{int}}, var_decl{str: type_expr{type_qualifier{pointer, type_qualifier{ uint8}}}}, var_decl{len: type_expr{usize}}, var_decl{written: type_expr{type_qualifier{pointer, int}}}, var_decl{ov: type_expr{rawptr}}) }}}
+    linkage_specifier{ extern decl_list{
+        func_decl{write (var_decl{handle: type_expr{int}}, var_decl{ptr: type_expr{type_qualifier{optional, type_qualifier{ uint8}}}}, var_decl{len: type_expr{usize}}): type_expr{isize} {
+            decl_list{
+              var_decl{written: type_expr{int} = 0}}
+            stmt_list{
+              call{WriteFile (handle, ptr, len, {& written}, )}}
+            stmt_list{
+              return{written}}}}
+        func_decl{get_stdout_fd (): type_expr{int} {
+            stmt_list{
+              return{call{GetStdHandle ({- 11})}}}}}}}}}

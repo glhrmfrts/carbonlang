@@ -1,0 +1,14 @@
+code_unit{
+  std/platform.cb
+  decl_list{
+    linkage_specifier{ extern func_decl{alloc (var_decl{sz: type_expr{usize}}): type_expr{rawptr} }}
+    linkage_specifier{ extern func_decl{alloc2 (var_decl{sz: type_expr{usize}}, var_decl{extra: type_expr{rawptr}}): type_expr{rawptr} }}
+    linkage_specifier{ extern func_decl{free (var_decl{m: type_expr{rawptr}}) }}
+    linkage_specifier{ extern func_decl{write (var_decl{fd: type_expr{int}}, var_decl{data: type_expr{type_qualifier{optional, type_qualifier{ uint8}}}}, var_decl{sz: type_expr{usize}}): type_expr{isize} }}
+    linkage_specifier{ extern func_decl{read (var_decl{fd: type_expr{int}}, var_decl{data: type_expr{type_qualifier{optional, uint8}}}, var_decl{sz: type_expr{usize}}): type_expr{isize} }}
+    linkage_specifier{ extern func_decl{open (var_decl{path: type_expr{type_qualifier{optional, type_qualifier{ uint8}}}}, var_decl{flags: type_expr{int}}): type_expr{int} }}
+    linkage_specifier{ extern func_decl{get_stdout_fd (): type_expr{int} }}
+    linkage_specifier{ extern func_decl{get_stderr_fd (): type_expr{int} }}
+    linkage_specifier{ extern func_decl{get_stdin_fd (): type_expr{int} }}
+    linkage_specifier{ extern func_decl{get_fd_flags (var_decl{fd: type_expr{int}}): type_expr{int} }}
+    linkage_specifier{ extern func_decl{close (var_decl{fd: type_expr{int}}) }}}}

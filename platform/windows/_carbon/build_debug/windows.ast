@@ -1,0 +1,63 @@
+  code_unit{
+    init.cb
+    decl_list{
+      import_decl{ platform}}}  code_unit{
+    io.cb
+    decl_list{
+      linkage_specifier{ extern(C) decl_list{
+          func_decl{GetCommandLineA (): type_expr{type_qualifier{pointer, type_qualifier{ uint8}}} }
+          func_decl{GetStdHandle (var_decl{nStdHandle: type_expr{int}}): type_expr{int} }
+          func_decl{WriteFile (var_decl{handle: type_expr{int}}, var_decl{str: type_expr{type_qualifier{pointer, type_qualifier{ uint8}}}}, var_decl{len: type_expr{usize}}, var_decl{written: type_expr{type_qualifier{pointer, int}}}, var_decl{ov: type_expr{rawptr}}) }}}
+      linkage_specifier{ extern decl_list{
+          func_decl{write (var_decl{handle: type_expr{int}}, var_decl{ptr: type_expr{type_qualifier{optional, type_qualifier{ uint8}}}}, var_decl{len: type_expr{usize}}): type_expr{isize} {
+              decl_list{
+                var_decl{written: type_expr{int} = 0}}
+              stmt_list{
+                call{WriteFile (handle, ptr, len, {& written}, )}}
+              stmt_list{
+                return{written}}}}
+          func_decl{get_stdout_fd (): type_expr{int} {
+              stmt_list{
+                return{call{GetStdHandle ({- 11})}}}}}}}}}  code_unit{
+    memory.cb
+    decl_list{
+      linkage_specifier{ extern(C) decl_list{
+          func_decl{HeapAlloc (var_decl{hHeap: type_expr{int}}, var_decl{dwFlags: type_expr{int}}, var_decl{dwBytes: type_expr{usize}}): type_expr{rawptr} }
+          func_decl{HeapFree (var_decl{hHeap: type_expr{int}}, var_decl{dwFlags: type_expr{int}}, var_decl{lpMem: type_expr{rawptr}}): type_expr{bool} }
+          func_decl{GetProcessHeap (): type_expr{int} }}}
+      linkage_specifier{ extern decl_list{
+          func_decl{alloc (var_decl{size: type_expr{usize}}): type_expr{rawptr} {
+              stmt_list{
+                return{call{HeapAlloc (call{GetProcessHeap ()}, 0, size)}}}}}
+          func_decl{free (var_decl{p: type_expr{rawptr}}) {
+              stmt_list{
+                call{HeapFree (call{GetProcessHeap ()}, 0, p)}}}}}}}}  code_unit{
+    platform.cb
+    decl_list{
+      linkage_specifier{ extern(C) func_decl{QueryPerformanceFrequency (var_decl{value: type_expr{type_qualifier{pointer, int64}}}): type_expr{bool} }}
+      linkage_specifier{ extern(C) func_decl{QueryPerformanceCounter (var_decl{value: type_expr{type_qualifier{pointer, int64}}}): type_expr{bool} }}}}  code_unit{
+    test.cb
+    decl_list{
+      import_decl{ io}
+      import_decl{ memory}
+      linkage_specifier{ extern(C) func_decl{test_main (): type_expr{int} {
+            decl_list{
+              var_decl{str = init{type=type_expr{} 
+                  {str.ptr = "Hello"}
+                  {str.len = cast_expr{ 5}}
+                  }}}
+            stmt_list{
+              call{write (call{get_stdout_fd ()}, str.ptr, str.len)}}
+            decl_list{
+              var_decl{m = call{alloc ({str.len + 1})}}
+              var_decl{ptr = nullcast(cast_expr{type_expr{type_qualifier{pointer, uint8}} m})}}
+            stmt_list{
+                              (i)                {
+                  stmt_list{
+                    {ptr[i] = cast_expr{ str.ptr[i]}}}}}
+            stmt_list{
+              call{write (call{get_stdout_fd ()}, ptr, str.len)}}
+            stmt_list{
+              call{free (cast_expr{type_expr{rawptr} ptr})}}
+            stmt_list{
+              return{0}}}}}}}

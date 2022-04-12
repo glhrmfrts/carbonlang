@@ -1,0 +1,6 @@
+  code_unit{
+    main.cb
+    decl_list{
+      func_decl{main (var_decl{args: }) {
+          stmt_list{
+            return{0}}}}}}

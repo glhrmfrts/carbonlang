@@ -135,6 +135,7 @@ struct ast_node {
     ast_node* parent = nullptr;
     desugar_flag::type desugar_flags = 0;
     std::vector<token_type> var_modifiers;
+    decl_visibility visibility;
 
     // data filled by the type system
     scope_def scope;
@@ -277,9 +278,9 @@ arena_ptr<ast_node> make_type_constructor_instance_node(memory_arena& arena, con
 
 arena_ptr<ast_node> make_type_qualifier_node(memory_arena& arena, const position& pos, type_qualifier q, arena_ptr<ast_node>&& to_type);
 
-arena_ptr<ast_node> make_linkage_specifier_node(memory_arena& arena, const position& pos, func_linkage l, arena_ptr<ast_node>&& content);
+arena_ptr<ast_node> make_linkage_specifier_node(memory_arena& arena, const position& pos, func_linkage l, arena_ptr<ast_node>&& alias, arena_ptr<ast_node>&& content);
 
-arena_ptr<ast_node> make_visibility_specifier_node(memory_arena& arena, const position& pos, token_type spec, arena_ptr<ast_node>&& content);
+arena_ptr<ast_node> make_visibility_specifier_node(memory_arena& arena, const position& pos, decl_visibility spec, arena_ptr<ast_node>&& content);
 
 arena_ptr<ast_node> make_code_unit_node(memory_arena& arena, const position& pos, const std::string& filename, arena_ptr<ast_node>&& decls);
 
@@ -295,7 +296,7 @@ bool is_bool_op(ast_node& node);
 
 std::string build_identifier_value(const std::vector<std::string>& parts);
 
-std::string visibility_name(token_type op);
+std::string visibility_name(decl_visibility op);
 
 std::string func_linkage_name(func_linkage l);
 

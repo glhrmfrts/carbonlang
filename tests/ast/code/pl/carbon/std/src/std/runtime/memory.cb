@@ -2,7 +2,7 @@ code_unit{
   std/runtime/memory.cb
   decl_list{
     import_decl{ std::runtime::windows}
-    import_decl{ std::mem}
+    import_decl{ std::memory}
     func_decl{alloc (var_decl{size: type_expr{usize}}): type_expr{memory} {
         stmt_list{
           return{init{type=type_expr{memory} (call{HeapAlloc (call{GetProcessHeap ()}, 0, size)}, size)}}}}}

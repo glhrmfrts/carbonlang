@@ -1,0 +1,18 @@
+code_unit{
+  std/io.cb
+  decl_list{
+    import_decl{ std::platform}
+    func_decl{print (var_decl{str: }) {
+        stmt_list{
+          return{call{write (call{get_stdout_fd ()}, {@ str}.ptr, {@ str}.len)}}}}}
+    func_decl{println (var_decl{str: }) {
+        stmt_list{
+          var_decl{$cbT0 = {@ str}}
+          call{print ({& $cbT0})}}
+        stmt_list{
+          var_decl{$cbT1 = init{type=type_expr{} 
+              {$cbT1.ptr = "
+"}
+              {$cbT1.len = cast_expr{ 1}}
+              }}
+          call{print ({& $cbT1})}}}}}}

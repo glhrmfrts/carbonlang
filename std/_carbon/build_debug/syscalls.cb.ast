@@ -1,0 +1,4 @@
+code_unit{
+  std/runtime/syscalls.cb
+  decl_list{
+    visibility_specifier{ private func_decl{_dummy () {}}}}}

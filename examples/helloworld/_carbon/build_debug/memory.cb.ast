@@ -2,7 +2,7 @@ code_unit{
   std/runtime/memory.cb
   decl_list{
     import_decl{ std::runtime::windows}
-    import_decl{ std::mem}
+    import_decl{ std::memory}
     func_decl{alloc (var_decl{$cb_agg_ret: }, var_decl{size: type_expr{usize}}):  {
         stmt_list{
           {{@ $cb_agg_ret} = init{type=type_expr{memory} 

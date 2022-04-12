@@ -1,0 +1,25 @@
+extern(C) {
+func HeapAlloc(
+    hHeap:   int,
+    dwFlags: int,
+    dwBytes: usize
+): rawptr
+
+func HeapFree(
+    hHeap:   int,
+    dwFlags: int,
+    lpMem:   rawptr
+): bool
+
+func GetProcessHeap(): int
+}
+
+extern(carbon, std::platform) {
+func alloc(size: usize): rawptr {
+    return HeapAlloc(GetProcessHeap(), 0, size)
+}
+
+func free(p: rawptr) {
+    HeapFree(GetProcessHeap(), 0, p)
+}
+}

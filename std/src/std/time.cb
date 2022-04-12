@@ -1,3 +1,4 @@
+/*
 import std::runtime::windows
 
 type ticks = int64
@@ -10,16 +11,9 @@ func get_tick_counter(): ticks {
     return 0
 }
 
-type duration = /*private*/ struct {
+type duration = struct {
     s: int64
     us: int64
-}
-
-type precision = enum {
-    seconds,
-    milliseconds,
-    microseconds,
-    nanoseconds,
 }
 
 let PRECISION_SECONDS = 1
@@ -27,15 +21,13 @@ let RATIO_MILLISECONDS = 1000
 let RATIO_MICROSECONDS = 1000000
 
 func to_duration(t: ticks): duration {
+    let frequency : int64
+    
     QueryPerformanceFrequency(frequency)
 
     let us = t * RATIO_MICROSECONDS / frequency
     
     return duration{us / RATIO_MICROSECONDS, (us % RATIO_MICROSECONDS)}
-}
-
-func format(d: duration, p: precision, w: writer) {
-    
 }
 
 type timestamp = struct {
@@ -45,13 +37,6 @@ type timestamp = struct {
 
 func now(): timestamp {
     return timestamp{}
-}
+}*/
 
-func format(t: timestamp, w: writer) {
-    write("hello=", w)
-    write("world", w)
-}
-
-type string_writer_t = struct {
-
-}
+func dummy() {}

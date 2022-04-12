@@ -20,6 +20,12 @@ enum class func_linkage {
     external_c,
 };
 
+enum class decl_visibility {
+    public_,
+    internal_,
+    private_,
+};
+
 enum class type_qualifier {
     ptr,
     nullableptr,
@@ -255,6 +261,7 @@ struct func_def {
     scope_def* decl_scope;
     string_hash base_symbol;
     std::vector<comptime_value> comptime_args{};
+    std::vector<std::string> extern_alias;
 };
 
 struct field_access {
@@ -284,8 +291,8 @@ enum class type_system_pass {
     // if no errors found, provide fully-qualified mangled names
     remangle_names,
 
-    // if no errors found, generate interface files
-    create_interface_files,
+    // if no errors found, generate header files
+    create_header_files,
 };
 
 struct type_error {

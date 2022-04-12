@@ -1,10 +1,4 @@
-
-type I_allocator = struct {
-    alloc: {usize} -> memory
-    free:  {&memory} -> {}
-}
-
-extern let default_allocator: *I_allocator
+import std::platform
 
 type memory = struct {
     ptr: rawptr
@@ -14,6 +8,28 @@ type memory = struct {
 func as_memory(a) { // static_array(uint8)
     return memory{ cast(rawptr)&a[0], sizeof(a) }
 }
+
+
+type I_allocator = struct {
+    alloc: {&I_allocator, usize} -> memory
+    free:  {&I_allocator, &memory} -> {}
+}
+
+private func platform_alloc(self: &I_allocator, sz: usize): memory {
+    return memory{alloc(sz), sz}
+}
+
+private func platform_free(self: &I_allocator, m: &memory) {
+    free(m.ptr)
+    m.ptr = nullptr
+    m.len = 0
+}
+
+func get_default_allocator(allocator: &I_allocator) {
+    allocator.alloc = platform_alloc\{&I_allocator, usize}
+    allocator.free = platform_free\{&I_allocator, &memory}
+}
+
 
 /// Copies [size] bytes from [src] to [dest].
 func copy(dest: rawptr, src: rawptr, size: usize) {
@@ -29,6 +45,11 @@ rep movsb
 pop rsi
 pop rdi
     }%asm
+}
+
+func copy(dest: &memory, src: &pure memory) {
+    let copylen = dest.len < src.len then dest.len else src.len
+    copy(dest.ptr, src.ptr, copylen)
 }
 
 /// Stores [count] amount of [value] in [dest].

@@ -1,0 +1,26 @@
+code_unit{
+  test.cb
+  decl_list{
+    import_decl{ io}
+    import_decl{ memory}
+    linkage_specifier{ extern(C) func_decl{test_main (): type_expr{int} {
+          decl_list{
+            var_decl{str = init{type=type_expr{} 
+                {str.ptr = "Hello"}
+                {str.len = cast_expr{ 5}}
+                }}}
+          stmt_list{
+            call{write (call{get_stdout_fd ()}, str.ptr, str.len)}}
+          decl_list{
+            var_decl{m = call{alloc ({str.len + 1})}}
+            var_decl{ptr = nullcast(cast_expr{type_expr{type_qualifier{pointer, uint8}} m})}}
+          stmt_list{
+                          (i)              {
+                stmt_list{
+                  {ptr[i] = cast_expr{ str.ptr[i]}}}}}
+          stmt_list{
+            call{write (call{get_stdout_fd ()}, ptr, str.len)}}
+          stmt_list{
+            call{free (cast_expr{type_expr{rawptr} ptr})}}
+          stmt_list{
+            return{0}}}}}}}

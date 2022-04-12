@@ -527,6 +527,8 @@ struct parser_impl {
             return parse_asm_stmt();
         case token_type::extern_:
             return parse_linkage_decl();
+        case token_type::export_:
+            return parse_export_decl();
         case token_type::public_:
         case token_type::private_:
         case token_type::internal_:
@@ -556,7 +558,20 @@ struct parser_impl {
             content = parse_decl();
         }
 
-        return make_visibility_specifier_node(*ast_arena, pos, spec, std::move(content));
+        decl_visibility vis;
+        switch (spec) {
+        case token_type::public_:
+            vis = decl_visibility::public_;
+            break;
+        case token_type::private_:
+            vis = decl_visibility::private_;
+            break;
+        case token_type::internal_:
+            vis = decl_visibility::internal_;
+            break;
+        }
+
+        return make_visibility_specifier_node(*ast_arena, pos, vis, std::move(content));
     }
 
     std::optional<func_linkage> parse_func_linkage() {
@@ -564,6 +579,10 @@ struct parser_impl {
             if (lex->string_value() == "C") {
                 lex->next();
                 return func_linkage::external_c;
+            }
+            if (lex->string_value() == "carbon") {
+                lex->next();
+                return func_linkage::external_carbon;
             }
         }
         return {};
@@ -574,11 +593,22 @@ struct parser_impl {
         lex->next(); // eat the 'extern'
 
         func_linkage linkage = func_linkage::external_carbon;
+        arena_ptr<ast_node> alias{nullptr, nullptr};
+
         if (TOK_CHAR == '(') {
             lex->next();
+
             auto linkopt = parse_func_linkage();
             if (linkopt) {
                 linkage = *linkopt;
+            }
+
+            if (TOK_CHAR == ',') {
+                lex->next();
+                alias = parse_qualified_identifier();
+                if (!alias) {
+                    throw parse_error(filename, lex->pos(), "expecting qualified identifier for alias in function linkage declaration");
+                }
             }
 
             if (TOK_CHAR != ')') {
@@ -608,7 +638,53 @@ struct parser_impl {
             throw parse_error(filename, lex->pos(), "invalid linkage specifier declaration");
         }
 
-        return make_linkage_specifier_node(*ast_arena, pos, linkage, std::move(content));
+        return make_linkage_specifier_node(*ast_arena, pos, linkage, std::move(alias), std::move(content));
+    }
+
+    arena_ptr<ast_node> parse_export_decl() {
+        auto pos = lex->pos();
+        lex->next(); // eat the 'export'
+
+        arena_ptr<ast_node> id{ nullptr, nullptr };
+
+        if (TOK_CHAR == '(') {
+            lex->next();
+
+            id = parse_qualified_identifier();
+            if (!id) {
+                throw parse_error(filename, lex->pos(), "expecting qualified identifier in export declaration");
+            }
+
+            if (TOK_CHAR != ')') {
+                throw parse_error(filename, lex->pos(), "expecting closing ')' in export declaration");
+            }
+            lex->next();
+        }
+
+        auto content = arena_ptr<ast_node>{ nullptr, nullptr };
+        if (TOK == token_type::func) {
+            content = parse_func_decl();
+        }
+        else if (TOK == token_type::let) {
+            content = parse_var_decl(token_type::let);
+        }
+        else if (TOK_CHAR == '{') {
+            lex->next();
+
+            auto decls = parse_decl_list();
+            if (TOK_CHAR != '}') {
+                throw parse_error(filename, lex->pos(), "expecting closing '}' in export declaration");
+            }
+            lex->next();
+            content = std::move(decls);
+        }
+        else {
+            throw parse_error(filename, lex->pos(), "invalid export declaration");
+        }
+
+        throw parse_error(filename, lex->pos(), "export not implemented");
+
+        //return make_export_decl_node(*ast_arena, pos, id, std::move(content));
     }
 
     arena_ptr<ast_node> parse_import_decl() {
@@ -759,11 +835,15 @@ struct parser_impl {
             throw parse_error(filename, lex->pos(), "expected 'let' in variable declaration");
         }
 
+        auto id = parse_qualified_identifier();
+
+#if 0
         if (TOK != token_type::identifier) {
             throw parse_error(filename, lex->pos(), "expected identifier in variable declaration");
         }
         auto id = make_identifier_node(*ast_arena, lex->pos(), { lex->string_value() });
         lex->next();
+#endif
 
         arena_ptr<ast_node> var_type{nullptr, nullptr};
         if (TOK_CHAR == ':') {

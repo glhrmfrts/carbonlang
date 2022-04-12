@@ -1,22 +1,9 @@
-import std::io
-import std::string
+import platform
+/*
 import std::rawstring
-import std::memory
-import std::runtime::windows
-import std::runtime::memory as rtm
 
-private {
-
-let default_allocator: *I_allocator
 
 extern(C) func carbon_main(): int {
-    let my_allocator: I_allocator
-
-    my_allocator.alloc = rtm::alloc
-    my_allocator.free = rtm::free
-
-    default_allocator = &my_allocator
-
     let cmd_line_args_buf = [1][]pure uint8{ "" }
     let cmdline = nullcast(GetCommandLineA())
     let args = [][]pure uint8{ &cmd_line_args_buf[0], 1 }
@@ -24,6 +11,4 @@ extern(C) func carbon_main(): int {
 
     import main
     return main(args)
-}
-
-}
+}*/

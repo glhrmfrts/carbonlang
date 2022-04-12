@@ -1,0 +1,8 @@
+import std::memory as mem;
+import std::platform as plat;
+extern func copy(:&pure uint8):&uint8;
+extern func copy(:&pure uint8, :usize):&uint8;
+extern func copy(:&pure uint8, :&pure uint8, :usize):{};
+extern func set(:&pure uint8, :pure uint8, :usize):{};
+extern func length(:&pure uint8):usize;
+extern func equals(:&pure uint8, :&pure uint8):bool;

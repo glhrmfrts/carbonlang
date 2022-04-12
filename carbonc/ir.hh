@@ -107,6 +107,7 @@ struct ir_global_data {
     std::string name;
     type_id type;
     std::optional<ir_operand> value;
+    func_linkage linkage;
 };
 
 struct ir_func {
@@ -116,6 +117,7 @@ struct ir_func {
     std::vector<ir_local_data> locals;
     std::vector<ir_instr> instrs;
     type_id ret_type;
+    decl_visibility visibility;
     bool is_extern;
     bool calls_extern_c;
     int index = 0;

@@ -359,6 +359,7 @@ void generate_ir_func(ast_node& node) {
     auto mangled_name = node.type_def.mangled_name.str;
     auto orig_name = node.type_def.name.str;
 
+    func.visibility = node.visibility;
     func.demangled_name = orig_name;
     func.ret_type = node.type_def.func.ret_type;
 
@@ -729,6 +730,11 @@ void generate_ir_unary_expr(ast_node& node) {
 }
 
 void generate_ir_var(ast_node& node) {
+    if (node.func.linkage != func_linkage::local_carbon) {
+        prog->globals.push_back(ir_global_data{ node.local.mangled_name.str, node.type_id, {}, node.func.linkage });
+        return;
+    }
+
     if (node.var_value()) {
         generate_ir_node(*node.var_value());
 
@@ -736,7 +742,11 @@ void generate_ir_var(ast_node& node) {
         if (ts->current_scope->kind == scope_kind::code_unit && !node.local.mangled_name.str.empty()) {
             if (is_primary_expr(*node.var_value()) && node.var_value()->type != ast_type::identifier) {
                 // TODO: what if it's an identifier ?
-                prog->globals.push_back(ir_global_data{ node.local.mangled_name.str, node.type_id, pop() });
+                prog->globals.push_back(ir_global_data{ node.local.mangled_name.str, node.type_id, pop(), func_linkage::local_carbon });
+                return;
+            }
+            else if (node.type_id.get().kind == type_kind::nullableptr) {
+                prog->globals.push_back(ir_global_data{ node.local.mangled_name.str, node.type_id, pop(), func_linkage::local_carbon });
                 return;
             }
             assert(!"generate_ir_var: non primary global");

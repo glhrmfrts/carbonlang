@@ -1,0 +1,7 @@
+import std::platform;
+extern func as_memory(:unknown):unknown;
+extern func get_default_allocator(:&I_allocator):{};
+extern func copy(:rawptr, :rawptr, :usize):{};
+extern func copy(:&memory, :&pure memory):{};
+extern func set(:rawptr, :uint8, :usize):{};
+extern func set(:&memory, :uint8):{};

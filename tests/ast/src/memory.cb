@@ -1,0 +1,5 @@
+code_unit{
+  memory.cb
+  decl_list{
+    linkage_specifier{ extern(C)}
+    linkage_specifier{ extern std::platform}}}

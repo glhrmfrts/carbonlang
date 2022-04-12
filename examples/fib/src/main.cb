@@ -1,24 +1,25 @@
-import std::string;
-import std::io;
 
-type Field2D = struct {
-    width:  int
-    height: int
-    data:   *int
+type data1 = struct {
+    f: int64
+    b: int64
 }
 
-type Automaton = struct {
-    field:      Field2D
-    new_field:  Field2D
+func makedata1() {
+    return data1{}
 }
 
-func fib(n: int): int {
-    if (n <= 2) { return 1; }
-    return fib(n - 1) + fib(n - 2)
+func makedata2(d: data1) {
+    return data1{ d.f + 2, d.b + 2 }
 }
 
-func main(args: []string): int {
-    println("hello")
-    defer println("ended")
-    return fib(39)
+type I_allocator = struct {
+    alloc: rawptr
+    free: rawptr
+}
+
+extern let default_allocator: *I_allocator
+
+extern(C) func myentrypoint(): int {
+    let data = makedata2(makedata1())
+    return 0
 }

@@ -432,22 +432,23 @@ arena_ptr<ast_node> make_type_qualifier_node(memory_arena& arena, const position
     return ptr;
 }
 
-arena_ptr<ast_node> make_linkage_specifier_node(memory_arena& arena, const position& pos, func_linkage l, arena_ptr<ast_node>&& content) {
+arena_ptr<ast_node> make_linkage_specifier_node(memory_arena& arena, const position& pos, func_linkage l, arena_ptr<ast_node>&& alias, arena_ptr<ast_node>&& content) {
     auto ptr = make_in_arena<ast_node>(arena);
     ptr->node_id = node_id_gen++;
     ptr->type = ast_type::linkage_specifier;
     ptr->pos = pos;
     ptr->func.linkage = l;
+    ptr->children.push_back(std::move(alias));
     ptr->children.push_back(std::move(content));
     return ptr;
 }
 
-arena_ptr<ast_node> make_visibility_specifier_node(memory_arena& arena, const position& pos, token_type spec, arena_ptr<ast_node>&& content) {
+arena_ptr<ast_node> make_visibility_specifier_node(memory_arena& arena, const position& pos, decl_visibility vis, arena_ptr<ast_node>&& content) {
     auto ptr = make_in_arena<ast_node>(arena);
     ptr->node_id = node_id_gen++;
     ptr->type = ast_type::visibility_specifier;
     ptr->pos = pos;
-    ptr->op = spec;
+    ptr->visibility = vis;
     ptr->children.push_back(std::move(content));
     return ptr;
 }
@@ -533,13 +534,13 @@ std::string build_identifier_value(const std::vector<std::string>& parts) {
     return result;
 }
 
-std::string visibility_name(token_type op) {
+std::string visibility_name(decl_visibility op) {
     switch (op) {
-    case token_type::public_:
+    case decl_visibility::public_:
         return "public";
-    case token_type::private_:
+    case decl_visibility::private_:
         return "private";
-    case token_type::internal_:
+    case decl_visibility::internal_:
         return "internal";
     }
 }

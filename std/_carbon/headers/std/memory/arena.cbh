@@ -1,0 +1,10 @@
+import std::platform;
+import std::memory;
+extern func align(:usize, :usize):usize;
+extern func fits_in_block(:&arena_block, :usize):bool;
+extern func allocate_in_block(:&arena_block, :usize):memory;
+extern func i_alloc(:&I_allocator, :usize):memory;
+extern func i_free(:&I_allocator, :&memory):{};
+extern func make_arena_allocator(:usize):arena;
+extern func free(:&arena):{};
+extern func alloc(:&arena, :usize):memory;

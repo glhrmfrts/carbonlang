@@ -384,6 +384,10 @@ struct emitter {
         out_file << "global " << name << "\n";
     }
 
+    void add_export_func_decl(const char* name) {
+        out_file << "export " << name << "\n";
+    }
+
     void add_extern_func_decl(const char* name) {
         out_file << "extern " << name << "\n";
     }
@@ -761,6 +765,9 @@ struct generator {
             }
             else {
                 em->add_global_func_decl(func.name.c_str());
+                if (func.visibility == decl_visibility::public_) {
+                    em->add_export_func_decl(func.name.c_str());
+                }
             }
         }
         em->begin_data_segment();
@@ -789,6 +796,11 @@ struct generator {
     // Section: code generators
 
     void generate_global_var(const ir_global_data& gd) {
+        if (gd.linkage != func_linkage::local_carbon) {
+            em->add_extern_func_decl(gd.name.c_str());
+            return;
+        }
+
         if (gd.type.get().kind == type_kind::integral) {
             int_type value = 0;
             if (gd.value && std::holds_alternative<ir_int>(*gd.value)) {
@@ -804,6 +816,15 @@ struct generator {
             if (gd.type.get().size == 8) {
                 em->add_global_int64(gd.name, (int64_t)value);
             }
+        }
+        else if (gd.type.get().kind == type_kind::nullableptr) {
+            int_type value = 0;
+            if (gd.value && std::holds_alternative<ir_int>(*gd.value)) {
+                auto& integer = std::get<ir_int>(*gd.value);
+                value = integer.val;
+            }
+
+            em->add_global_int64(gd.name, value);
         }
         else {
             assert(!"generate_global_var: type not handled");

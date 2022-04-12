@@ -39,6 +39,7 @@ enum class token_type : unsigned int {
     public_,
     internal_,
     import_,
+    export_,
     as_,
     in_,
     cast_,

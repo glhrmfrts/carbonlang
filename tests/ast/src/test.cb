@@ -1,0 +1,6 @@
+code_unit{
+  test.cb
+  decl_list{
+    import_decl{ io}
+    import_decl{ memory}
+    linkage_specifier{ extern(C)}}}

@@ -214,6 +214,9 @@ struct lexer_impl {
             if (!std::strcmp("import", l.string)) {
                 return token_type::import_;
             }
+            if (!std::strcmp("export", l.string)) {
+                return token_type::export_;
+            }
             if (!std::strcmp("struct", l.string)) {
                 return token_type::struct_;
             }

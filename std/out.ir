@@ -1,0 +1,636 @@
+string #0: "
+";
+string #1: "zyxwvutsrqponmlkjihgfedcba9876543210123456789abcdefghijklmnopqrstuvwxyz";
+string #2: "true";
+string #3: "false";
+func cb__Nstd__Nio__Nprint__Aptr__Tslice__Tpure__Tuint8 -> isize
+    arg #0 str: ptr__Tslice__Tpure__Tuint8;
+    ir_call cb__Nstd__Nplatform__Nget_stdout_fd;
+    ir_deref A0;
+    ir_deref A0;
+    ir_call cb__Nstd__Nplatform__Nwrite__Aint__Aptr__Tpure__Tuint8__Ausize ST [ST . 0] [ST . 1];
+    ir_return ST;
+endf
+
+func cb__Nstd__Nio__Nprintln__Aptr__Tslice__Tpure__Tuint8 -> void
+    arg #0 str: ptr__Tslice__Tpure__Tuint8;
+    local #0 $cbT0: slice__Tpure__Tuint8;
+    local #1 $cbT1: slice__Tpure__Tuint8;
+    ir_deref A0;
+    ir_copy L0 ST 16;
+    ir_load_addr L0;
+    ir_call cb__Nstd__Nio__Nprint__Aptr__Tslice__Tpure__Tuint8 ST;
+    ir_noop ST;
+    ir_load_addr STR0;
+    ir_load [L1 . 0] ST;
+    ir_load [L1 . 1] 1;
+    ir_load_addr L1;
+    ir_call cb__Nstd__Nio__Nprint__Aptr__Tslice__Tpure__Tuint8 ST;
+    ir_noop ST;
+endf
+
+func exit -> void
+endf
+
+func cb__Nstd__Nmemory__Narena__Nalign__Ausize__Ausize -> usize
+    arg #0 number: usize;
+    arg #1 alignment: usize;
+    ir_return A0;
+endf
+
+func cb__Nstd__Nmemory__Narena__Nfits_in_block__Aptr__Tarena_block__Ausize -> bool
+    arg #0 b: ptr__Tarena_block;
+    arg #1 size: usize;
+    local #0 $cbT2: bool;
+    ir_deref A0;
+    ir_add [ST . 1] A1;
+    ir_deref A0;
+    ir_jmp_gt ST [ . 1] cb__Nstd__Nmemory__Narena__Nfits_in_block__Aptr__Tarena_block__Ausize$if2055$else;
+    ir_make_label cb__Nstd__Nmemory__Narena__Nfits_in_block__Aptr__Tarena_block__Ausize$if2055$body;
+    ir_load L0 1;
+    ir_jmp cb__Nstd__Nmemory__Narena__Nfits_in_block__Aptr__Tarena_block__Ausize$if2055$end;
+    ir_make_label cb__Nstd__Nmemory__Narena__Nfits_in_block__Aptr__Tarena_block__Ausize$if2055$else;
+    ir_load L0 0;
+    ir_make_label cb__Nstd__Nmemory__Narena__Nfits_in_block__Aptr__Tarena_block__Ausize$if2055$end;
+    ir_return L0;
+endf
+
+func cb__Nstd__Nmemory__Narena__Nallocate_in_block__Aptr__Tmemory__Aptr__Tarena_block__Ausize -> ptr__Tmemory
+    arg #0 $cb_agg_ret: ptr__Tmemory;
+    arg #1 b: ptr__Tarena_block;
+    arg #2 size: usize;
+    local #0 result: rawptr;
+    ir_deref A1;
+    ir_deref A1;
+    ir_add [ . 0] [ST . 1];
+    ir_load L0 ST;
+    ir_deref A1;
+    ir_deref A1;
+    ir_add [ST . 1] A2;
+    ir_load [ST . 1] ST;
+    ir_deref A0;
+    ir_load [ST . 0] L0;
+    ir_deref A0;
+    ir_load [ST . 1] A2;
+    ir_return A0;
+endf
+
+func cb__Nstd__Nmemory__Narena__Ni_alloc__Aptr__Tmemory__Aptr__TI_allocator__Ausize -> ptr__Tmemory
+    arg #0 $cb_agg_ret: ptr__Tmemory;
+    arg #1 self: ptr__TI_allocator;
+    arg #2 sz: usize;
+    local #0 rawself: rawptr;
+    local #1 m: memory;
+    ir_load L0 A1;
+    ir_load_addr L1;
+    ir_call cb__Nstd__Nmemory__Narena__Nalloc__Aptr__Tmemory__Aptr__Tarena__Ausize ST L0 A2;
+    ir_deref A0;
+    ir_copy ST L1 16;
+    ir_return A0;
+endf
+
+func cb__Nstd__Nmemory__Narena__Ni_free__Aptr__TI_allocator__Aptr__Tmemory -> void
+    arg #0 self: ptr__TI_allocator;
+    arg #1 m: ptr__Tmemory;
+endf
+
+func cb__Nstd__Nmemory__Narena__Nmake_arena_allocator__Aptr__Tarena__Ausize -> ptr__Tarena
+    arg #0 $cb_agg_ret: ptr__Tarena;
+    arg #1 block_size: usize;
+    local #0 a: arena;
+    ir_load [L0 . 0] 0;
+    ir_load [L0 . 1] 0;
+    ir_load [L0 . 2] 0;
+    ir_load [L0 . 1] 8;
+    ir_call cb__Nstd__Nmemory__Narena__Nalign__Ausize__Ausize A1 [L0 . 1];
+    ir_load [L0 . 2] ST;
+    ir_load [L0 . 0] 0;
+    ir_deref A0;
+    ir_copy ST L0 24;
+    ir_return A0;
+endf
+
+func cb__Nstd__Nmemory__Narena__Nfree__Aptr__Tarena -> void
+    arg #0 a: ptr__Tarena;
+    local #0 pblock: nullableptr__Tarena_block;
+    local #1 block: ptr__Tarena_block;
+    local #2 prev: nullableptr__Tarena_block;
+    ir_deref A0;
+    ir_load L0 [ST . 0];
+    ir_make_label cb__Nstd__Nmemory__Narena__Nfree__Aptr__Tarena$w336$cond;
+    ir_jmp_eq L0 0 cb__Nstd__Nmemory__Narena__Nfree__Aptr__Tarena$w336$end;
+    ir_make_label cb__Nstd__Nmemory__Narena__Nfree__Aptr__Tarena$w336$body;
+    ir_load L1 L0;
+    ir_deref L1;
+    ir_load L2 [ST . 2];
+    ir_deref L1;
+    ir_call cb__Nstd__Nplatform__Nfree__Arawptr [ . 0];
+    ir_load L0 L2;
+    ir_jmp cb__Nstd__Nmemory__Narena__Nfree__Aptr__Tarena$w336$cond;
+    ir_make_label cb__Nstd__Nmemory__Narena__Nfree__Aptr__Tarena$w336$end;
+endf
+
+func cb__Nstd__Nmemory__Narena__Nalloc__Aptr__Tmemory__Aptr__Tarena__Ausize -> ptr__Tmemory
+    arg #0 $cb_agg_ret: ptr__Tmemory;
+    arg #1 a: ptr__Tarena;
+    arg #2 user_size: usize;
+    local #0 size: usize;
+    local #1 pblock: nullableptr__Tarena_block;
+    local #2 new_block_memory: memory;
+    local #3 new_block: ptr__Tarena_block;
+    local #4 block: ptr__Tarena_block;
+    ir_deref A1;
+    ir_call cb__Nstd__Nmemory__Narena__Nalign__Ausize__Ausize A2 [ST . 1];
+    ir_load L0 ST;
+    ir_deref A1;
+    ir_load L1 [ST . 0];
+    ir_make_label cb__Nstd__Nmemory__Narena__Nalloc__Aptr__Tmemory__Aptr__Tarena__Ausize$w400$cond;
+    ir_jmp_eq L1 0 cb__Nstd__Nmemory__Narena__Nalloc__Aptr__Tmemory__Aptr__Tarena__Ausize$w400$end;
+    ir_make_label cb__Nstd__Nmemory__Narena__Nalloc__Aptr__Tmemory__Aptr__Tarena__Ausize$w400$body;
+    ir_load L4 L1;
+    ir_call cb__Nstd__Nmemory__Narena__Nfits_in_block__Aptr__Tarena_block__Ausize L4 L0;
+    ir_jmp_eq ST 0 cb__Nstd__Nmemory__Narena__Nalloc__Aptr__Tmemory__Aptr__Tarena__Ausize$if391$else;
+    ir_make_label cb__Nstd__Nmemory__Narena__Nalloc__Aptr__Tmemory__Aptr__Tarena__Ausize$if391$body;
+    ir_call cb__Nstd__Nmemory__Narena__Nallocate_in_block__Aptr__Tmemory__Aptr__Tarena_block__Ausize A0 L4 L0;
+    ir_return A0;
+    ir_noop ST;
+    ir_make_label cb__Nstd__Nmemory__Narena__Nalloc__Aptr__Tmemory__Aptr__Tarena__Ausize$if391$else;
+    ir_deref L4;
+    ir_load L1 [ST . 2];
+    ir_jmp cb__Nstd__Nmemory__Narena__Nalloc__Aptr__Tmemory__Aptr__Tarena__Ausize$w400$cond;
+    ir_make_label cb__Nstd__Nmemory__Narena__Nalloc__Aptr__Tmemory__Aptr__Tarena__Ausize$w400$end;
+    ir_deref A1;
+    ir_add 0 [ST . 2];
+    ir_call cb__Nstd__Nplatform__Nalloc__Ausize ST;
+    ir_load [L2 . 0] ST;
+    ir_deref A1;
+    ir_add 0 [ST . 2];
+    ir_load [L2 . 1] ST;
+    ir_load L3 [L2 . 0];
+    ir_deref L3;
+    ir_add [L2 . 0] 0;
+    ir_load [ . 0] ST;
+    ir_deref L3;
+    ir_sub [L2 . 1] 0;
+    ir_load [ . 1] ST;
+    ir_deref L3;
+    ir_load [ST . 1] 0;
+    ir_deref L3;
+    ir_deref A1;
+    ir_load [ST . 2] [ST . 0];
+    ir_deref A1;
+    ir_load [ST . 0] L3;
+    ir_call cb__Nstd__Nmemory__Narena__Nallocate_in_block__Aptr__Tmemory__Aptr__Tarena_block__Ausize A0 L3 L0;
+    ir_return A0;
+    ir_noop ST;
+endf
+
+func cb__Nstd__Nmemory__Nplatform_alloc__Aptr__Tmemory__Aptr__TI_allocator__Ausize -> ptr__Tmemory
+    arg #0 $cb_agg_ret: ptr__Tmemory;
+    arg #1 self: ptr__TI_allocator;
+    arg #2 sz: usize;
+    ir_deref A0;
+    ir_call cb__Nstd__Nplatform__Nalloc__Ausize A2;
+    ir_load [ST . 0] ST;
+    ir_deref A0;
+    ir_load [ST . 1] A2;
+    ir_return A0;
+endf
+
+func cb__Nstd__Nmemory__Nplatform_free__Aptr__TI_allocator__Aptr__Tmemory -> void
+    arg #0 self: ptr__TI_allocator;
+    arg #1 m: ptr__Tmemory;
+    ir_deref A1;
+    ir_call cb__Nstd__Nplatform__Nfree__Arawptr [ST . 0];
+    ir_deref A1;
+    ir_load [ST . 0] 0;
+    ir_deref A1;
+    ir_load [ST . 1] 0;
+endf
+
+func cb__Nstd__Nmemory__Nget_default_allocator__Aptr__TI_allocator -> void
+    arg #0 allocator: ptr__TI_allocator;
+    ir_deref A0;
+    ir_load_addr func(cb__Nstd__Nmemory__Nplatform_alloc__Aptr__Tmemory__Aptr__TI_allocator__Ausize);
+    ir_load [ST . 0] ST;
+    ir_deref A0;
+    ir_load_addr func(cb__Nstd__Nmemory__Nplatform_free__Aptr__TI_allocator__Aptr__Tmemory);
+    ir_load [ST . 1] ST;
+endf
+
+func cb__Nstd__Nmemory__Ncopy__Arawptr__Arawptr__Ausize -> void
+    arg #0 dest: rawptr;
+    arg #1 src: rawptr;
+    arg #2 size: usize;
+    ir_asm push rdi
+push rsi
+
+mov rdi,rcx
+mov rsi,rdx
+mov rcx,r8
+rep movsb
+
+pop rsi
+pop rdi
+    ;
+endf
+
+func cb__Nstd__Nmemory__Ncopy__Aptr__Tmemory__Aptr__Tpure__Tmemory -> void
+    arg #0 dest: ptr__Tmemory;
+    arg #1 src: ptr__Tpure__Tmemory;
+    local #0 copylen: usize;
+    ir_deref A0;
+    ir_deref A1;
+    ir_jmp_gte [ST . 1] [ST . 1] cb__Nstd__Nmemory__Ncopy__Aptr__Tmemory__Aptr__Tpure__Tmemory$if2063$else;
+    ir_make_label cb__Nstd__Nmemory__Ncopy__Aptr__Tmemory__Aptr__Tpure__Tmemory$if2063$body;
+    ir_deref A0;
+    ir_load L0 [ST . 1];
+    ir_jmp cb__Nstd__Nmemory__Ncopy__Aptr__Tmemory__Aptr__Tpure__Tmemory$if2063$end;
+    ir_make_label cb__Nstd__Nmemory__Ncopy__Aptr__Tmemory__Aptr__Tpure__Tmemory$if2063$else;
+    ir_deref A1;
+    ir_load L0 [ST . 1];
+    ir_make_label cb__Nstd__Nmemory__Ncopy__Aptr__Tmemory__Aptr__Tpure__Tmemory$if2063$end;
+    ir_deref A0;
+    ir_deref A1;
+    ir_call cb__Nstd__Nmemory__Ncopy__Arawptr__Arawptr__Ausize [ST . 0] [ST . 0] L0;
+endf
+
+func cb__Nstd__Nmemory__Nset__Arawptr__Auint8__Ausize -> void
+    arg #0 dest: rawptr;
+    arg #1 value: uint8;
+    arg #2 count: usize;
+    ir_asm push rdi
+
+mov rdi,rcx
+mov rax,rdx
+mov rcx,r8
+rep stosb
+
+pop rdi
+    ;
+endf
+
+func cb__Nstd__Nmemory__Nset__Aptr__Tmemory__Auint8 -> void
+    arg #0 dest: ptr__Tmemory;
+    arg #1 value: uint8;
+    ir_deref A0;
+    ir_deref A0;
+    ir_call cb__Nstd__Nmemory__Nset__Arawptr__Auint8__Ausize [ST . 0] A1 [ST . 1];
+endf
+
+func cb__Nstd__Nplatform__Nalloc__Ausize -> rawptr
+endf
+
+func cb__Nstd__Nplatform__Nalloc2__Ausize__Arawptr -> rawptr
+endf
+
+func cb__Nstd__Nplatform__Nfree__Arawptr -> void
+endf
+
+func cb__Nstd__Nplatform__Nwrite__Aint__Aptr__Tpure__Tuint8__Ausize -> isize
+endf
+
+func cb__Nstd__Nplatform__Nread__Aint__Aptr__Tuint8__Ausize -> isize
+endf
+
+func cb__Nstd__Nplatform__Nopen__Aptr__Tpure__Tuint8__Aint -> int
+endf
+
+func cb__Nstd__Nplatform__Nget_stdout_fd -> int
+endf
+
+func cb__Nstd__Nplatform__Nget_stderr_fd -> int
+endf
+
+func cb__Nstd__Nplatform__Nget_stdin_fd -> int
+endf
+
+func cb__Nstd__Nplatform__Nget_fd_flags__Aint -> int
+endf
+
+func cb__Nstd__Nplatform__Nclose__Aint -> void
+endf
+
+func cb__Nstd__Nrawstring__Ncopy__Aptr__Tpure__Tuint8 -> ptr__Tuint8
+    arg #0 str: ptr__Tpure__Tuint8;
+    ir_call cb__Nstd__Nrawstring__Nlength__Aptr__Tpure__Tuint8 A0;
+    ir_call cb__Nstd__Nrawstring__Ncopy__Aptr__Tpure__Tuint8__Ausize A0 ST;
+    ir_return ST;
+endf
+
+func cb__Nstd__Nrawstring__Ncopy__Aptr__Tpure__Tuint8__Ausize -> ptr__Tuint8
+    arg #0 str: ptr__Tpure__Tuint8;
+    arg #1 size: usize;
+    local #0 ptr: rawptr;
+    local #1 newstr: ptr__Tuint8;
+    ir_add A1 1;
+    ir_call cb__Nstd__Nplatform__Nalloc__Ausize ST;
+    ir_load L0 ST;
+    ir_load L1 L0;
+    ir_call cb__Nstd__Nrawstring__Ncopy__Aptr__Tpure__Tuint8__Aptr__Tpure__Tuint8__Ausize L1 A0 A1;
+    ir_deref L1;
+    ir_index ST A1;
+    ir_load ST #0;
+    ir_return L1;
+endf
+
+func cb__Nstd__Nrawstring__Ncopy__Aptr__Tpure__Tuint8__Aptr__Tpure__Tuint8__Ausize -> void
+    arg #0 dest: ptr__Tpure__Tuint8;
+    arg #1 src: ptr__Tpure__Tuint8;
+    arg #2 size: usize;
+    ir_call cb__Nstd__Nmemory__Ncopy__Arawptr__Arawptr__Ausize A0 A1 A2;
+endf
+
+func cb__Nstd__Nrawstring__Nset__Aptr__Tpure__Tuint8__Apure__Tuint8__Ausize -> void
+    arg #0 dest: ptr__Tpure__Tuint8;
+    arg #1 value: pure__Tuint8;
+    arg #2 count: usize;
+    ir_call cb__Nstd__Nmemory__Nset__Arawptr__Auint8__Ausize A0 A1 A2;
+endf
+
+func cb__Nstd__Nrawstring__Nlength__Aptr__Tpure__Tuint8 -> usize
+    arg #0 str: ptr__Tpure__Tuint8;
+    local #0 c: usize;
+    local #1 p: ptr__Tpure__Tuint8;
+    ir_load L0 0;
+    ir_load L1 A0;
+    ir_make_label cb__Nstd__Nrawstring__Nlength__Aptr__Tpure__Tuint8$w1105$cond;
+    ir_deref L1;
+    ir_cast ST;
+    ir_jmp_eq ST 0 cb__Nstd__Nrawstring__Nlength__Aptr__Tpure__Tuint8$w1105$end;
+    ir_make_label cb__Nstd__Nrawstring__Nlength__Aptr__Tpure__Tuint8$w1105$body;
+    ir_add L1 1;
+    ir_load L1 ST;
+    ir_add L0 1;
+    ir_load L0 ST;
+    ir_jmp cb__Nstd__Nrawstring__Nlength__Aptr__Tpure__Tuint8$w1105$cond;
+    ir_make_label cb__Nstd__Nrawstring__Nlength__Aptr__Tpure__Tuint8$w1105$end;
+    ir_return L0;
+endf
+
+func cb__Nstd__Nrawstring__Nequals__Aptr__Tpure__Tuint8__Aptr__Tpure__Tuint8 -> bool
+    arg #0 a: ptr__Tpure__Tuint8;
+    arg #1 b: ptr__Tpure__Tuint8;
+    local #0 $foriter: tuple__Tint__Tusize;
+    local #1 i: int;
+    local #2 i: int;
+    ir_call cb__Nstd__Nrawstring__Nlength__Aptr__Tpure__Tuint8 A0;
+    ir_call cb__Nstd__Nrawstring__Nlength__Aptr__Tpure__Tuint8 A1;
+    ir_jmp_eq ST ST cb__Nstd__Nrawstring__Nequals__Aptr__Tpure__Tuint8__Aptr__Tpure__Tuint8$if1141$else;
+    ir_make_label cb__Nstd__Nrawstring__Nequals__Aptr__Tpure__Tuint8__Aptr__Tpure__Tuint8$if1141$body;
+    ir_return 0;
+    ir_make_label cb__Nstd__Nrawstring__Nequals__Aptr__Tpure__Tuint8__Aptr__Tpure__Tuint8$if1141$else;
+    ir_load [L0 . 0] 0;
+    ir_call cb__Nstd__Nrawstring__Nlength__Aptr__Tpure__Tuint8 A0;
+    ir_load [L0 . 1] ST;
+    ir_load L2 [L0 . 0];
+    ir_make_label cb__Nstd__Nrawstring__Nequals__Aptr__Tpure__Tuint8__Aptr__Tpure__Tuint8$f1167$cond;
+    ir_cast L2;
+    ir_jmp_gte ST [L0 . 1] cb__Nstd__Nrawstring__Nequals__Aptr__Tpure__Tuint8__Aptr__Tpure__Tuint8$f1167$end;
+    ir_make_label cb__Nstd__Nrawstring__Nequals__Aptr__Tpure__Tuint8__Aptr__Tpure__Tuint8$f1167$body;
+    ir_deref A0;
+    ir_index ST L2;
+    ir_deref A1;
+    ir_index ST L2;
+    ir_jmp_eq ST ST cb__Nstd__Nrawstring__Nequals__Aptr__Tpure__Tuint8__Aptr__Tpure__Tuint8$if1164$else;
+    ir_make_label cb__Nstd__Nrawstring__Nequals__Aptr__Tpure__Tuint8__Aptr__Tpure__Tuint8$if1164$body;
+    ir_return 0;
+    ir_make_label cb__Nstd__Nrawstring__Nequals__Aptr__Tpure__Tuint8__Aptr__Tpure__Tuint8$if1164$else;
+    ir_add L2 1;
+    ir_load L2 ST;
+    ir_jmp cb__Nstd__Nrawstring__Nequals__Aptr__Tpure__Tuint8__Aptr__Tpure__Tuint8$f1167$cond;
+    ir_make_label cb__Nstd__Nrawstring__Nequals__Aptr__Tpure__Tuint8__Aptr__Tpure__Tuint8$f1167$end;
+    ir_return 1;
+endf
+
+func cb__Nstd__Nstring__Nint_to_string__Aint__Aint__Aptr__Tstring -> int
+    arg #0 value: int;
+    arg #1 base: int;
+    arg #2 dest: ptr__Tstring;
+    local #0 result: string;
+    local #1 tpl_str: slice__Tpure__Tuint8;
+    local #2 tmp_value: int;
+    local #3 offs: int;
+    local #4 ptr: ptr__Tuint8;
+    local #5 ptr1: ptr__Tuint8;
+    local #6 tmp_char: uint8;
+    ir_jmp_lt A1 2 cb__Nstd__Nstring__Nint_to_string__Aint__Aint__Aptr__Tstring$if1232$body;
+    ir_jmp_lte A1 36 cb__Nstd__Nstring__Nint_to_string__Aint__Aint__Aptr__Tstring$if1232$else;
+    ir_make_label cb__Nstd__Nstring__Nint_to_string__Aint__Aint__Aptr__Tstring$if1232$body;
+    ir_return 0;
+    ir_make_label cb__Nstd__Nstring__Nint_to_string__Aint__Aint__Aptr__Tstring$if1232$else;
+    ir_deref A2;
+    ir_copy L0 ST 24;
+    ir_load_addr STR1;
+    ir_load [L1 . 0] ST;
+    ir_load [L1 . 1] 71;
+    ir_load L2 0;
+    ir_load L3 0;
+    ir_make_label cb__Nstd__Nstring__Nint_to_string__Aint__Aint__Aptr__Tstring$w1296$cond;
+    ir_jmp_eq A0 0 cb__Nstd__Nstring__Nint_to_string__Aint__Aint__Aptr__Tstring$w1296$end;
+    ir_make_label cb__Nstd__Nstring__Nint_to_string__Aint__Aint__Aptr__Tstring$w1296$body;
+    ir_cast L3;
+    ir_jmp_lt ST [L0 . 2] cb__Nstd__Nstring__Nint_to_string__Aint__Aint__Aptr__Tstring$if1265$else;
+    ir_make_label cb__Nstd__Nstring__Nint_to_string__Aint__Aint__Aptr__Tstring$if1265$body;
+    ir_sub L3 1;
+    ir_load L3 ST;
+    ir_jmp cb__Nstd__Nstring__Nint_to_string__Aint__Aint__Aptr__Tstring$w1296$end;
+    ir_make_label cb__Nstd__Nstring__Nint_to_string__Aint__Aint__Aptr__Tstring$if1265$else;
+    ir_load L2 A0;
+    ir_div A0 A1;
+    ir_load A0 ST;
+    ir_deref [L0 . 0];
+    ir_index ST L3;
+    ir_deref [L1 . 0];
+    ir_mul A0 A1;
+    ir_sub L2 ST;
+    ir_add 35 ST;
+    ir_index ST ST;
+    ir_load ST ST;
+    ir_add L3 1;
+    ir_load L3 ST;
+    ir_jmp cb__Nstd__Nstring__Nint_to_string__Aint__Aint__Aptr__Tstring$w1296$cond;
+    ir_make_label cb__Nstd__Nstring__Nint_to_string__Aint__Aint__Aptr__Tstring$w1296$end;
+    ir_deref [L0 . 0];
+    ir_index ST L3;
+    ir_load_addr ST;
+    ir_load L4 ST;
+    ir_deref [L0 . 0];
+    ir_index ST 0;
+    ir_load_addr ST;
+    ir_load L5 ST;
+    ir_jmp_gte L2 0 cb__Nstd__Nstring__Nint_to_string__Aint__Aint__Aptr__Tstring$if1334$else;
+    ir_make_label cb__Nstd__Nstring__Nint_to_string__Aint__Aint__Aptr__Tstring$if1334$body;
+    ir_deref L4;
+    ir_load ST #45;
+    ir_add L4 1;
+    ir_load L4 ST;
+    ir_make_label cb__Nstd__Nstring__Nint_to_string__Aint__Aint__Aptr__Tstring$if1334$else;
+    ir_deref L4;
+    ir_load ST #0;
+    ir_sub L4 1;
+    ir_load L4 ST;
+    ir_load L6 0;
+    ir_make_label cb__Nstd__Nstring__Nint_to_string__Aint__Aint__Aptr__Tstring$w1378$cond;
+    ir_jmp_gte L5 L4 cb__Nstd__Nstring__Nint_to_string__Aint__Aint__Aptr__Tstring$w1378$end;
+    ir_make_label cb__Nstd__Nstring__Nint_to_string__Aint__Aint__Aptr__Tstring$w1378$body;
+    ir_deref L4;
+    ir_load L6 ST;
+    ir_deref L4;
+    ir_deref L5;
+    ir_load ST ST;
+    ir_sub L4 1;
+    ir_load L4 ST;
+    ir_deref L5;
+    ir_load ST L6;
+    ir_add L5 1;
+    ir_load L5 ST;
+    ir_jmp cb__Nstd__Nstring__Nint_to_string__Aint__Aint__Aptr__Tstring$w1378$cond;
+    ir_make_label cb__Nstd__Nstring__Nint_to_string__Aint__Aint__Aptr__Tstring$w1378$end;
+    ir_deref A2;
+    ir_cast L3;
+    ir_load [ST . 1] ST;
+    ir_return 0;
+endf
+
+func cb__Nstd__Nstring__Nas_string__Aptr__Tstring__Aptr__Tpure__Tuint8 -> ptr__Tstring
+    arg #0 $cb_agg_ret: ptr__Tstring;
+    arg #1 c: ptr__Tpure__Tuint8;
+    ir_deref A0;
+    ir_load [ST . 0] A1;
+    ir_deref A0;
+    ir_call cb__Nstd__Nrawstring__Nlength__Aptr__Tpure__Tuint8 A1;
+    ir_load [ST . 1] ST;
+    ir_deref A0;
+    ir_call cb__Nstd__Nrawstring__Nlength__Aptr__Tpure__Tuint8 A1;
+    ir_load [ST . 2] ST;
+    ir_return A0;
+endf
+
+func cb__Nstd__Nstring__Nas_string__Aptr__Tstring__Aptr__Tslice__Tpure__Tuint8 -> ptr__Tstring
+    arg #0 $cb_agg_ret: ptr__Tstring;
+    arg #1 c: ptr__Tslice__Tpure__Tuint8;
+    ir_deref A0;
+    ir_deref A1;
+    ir_load [ST . 0] [ST . 0];
+    ir_deref A0;
+    ir_deref A1;
+    ir_load [ST . 1] [ST . 1];
+    ir_deref A0;
+    ir_deref A1;
+    ir_add [ST . 1] 1;
+    ir_load [ST . 2] ST;
+    ir_return A0;
+endf
+
+func cb__Nstd__Nstring__Nas_string__Aptr__Tstring__Aptr__Tmemory -> ptr__Tstring
+    arg #0 $cb_agg_ret: ptr__Tstring;
+    arg #1 m: ptr__Tmemory;
+    local #0 ptr: ptr__Tuint8;
+    ir_deref A1;
+    ir_load L0 [ST . 0];
+    ir_deref A0;
+    ir_load [ST . 0] L0;
+    ir_deref A0;
+    ir_call cb__Nstd__Nrawstring__Nlength__Aptr__Tpure__Tuint8 L0;
+    ir_load [ST . 1] ST;
+    ir_deref A0;
+    ir_deref A1;
+    ir_load [ST . 2] [ST . 1];
+    ir_return A0;
+endf
+
+func cb__Nstd__Nstring__Nas_string__Aptr__Tstring__Aptr__Tslice__Tuint8 -> ptr__Tstring
+    arg #0 $cb_agg_ret: ptr__Tstring;
+    arg #1 buf: ptr__Tslice__Tuint8;
+    ir_deref A0;
+    ir_deref A1;
+    ir_load [ST . 0] [ST . 0];
+    ir_deref A0;
+    ir_deref A1;
+    ir_call cb__Nstd__Nrawstring__Nlength__Aptr__Tpure__Tuint8 [ST . 0];
+    ir_load [ST . 1] ST;
+    ir_deref A0;
+    ir_deref A1;
+    ir_load [ST . 2] [ST . 1];
+    ir_return A0;
+endf
+
+func cb__Nstd__Nstring__Nas_slice__Aptr__Tslice__Tpure__Tuint8__Aptr__Tpure__Tstring -> ptr__Tslice__Tpure__Tuint8
+    arg #0 $cb_agg_ret: ptr__Tslice__Tpure__Tuint8;
+    arg #1 str: ptr__Tpure__Tstring;
+    ir_deref A0;
+    ir_deref A1;
+    ir_load [ST . 0] [ST . 0];
+    ir_deref A0;
+    ir_deref A1;
+    ir_load [ST . 1] [ST . 1];
+    ir_return A0;
+endf
+
+func cb__Nstd__Nstring__Nto_string__Aint__Aptr__Tstring -> int
+    arg #0 i: int;
+    arg #1 dest: ptr__Tstring;
+    local #0 n: int;
+    ir_call cb__Nstd__Nstring__Nint_to_string__Aint__Aint__Aptr__Tstring A0 10 A1;
+    ir_load L0 ST;
+    ir_return L0;
+endf
+
+func cb__Nstd__Nstring__Nto_string__Abool__Aptr__Tstring -> void
+    arg #0 b: bool;
+    arg #1 dest: ptr__Tstring;
+    local #0 $cbT3: slice__Tpure__Tuint8;
+    local #1 $cbT4: slice__Tpure__Tuint8;
+    ir_jmp_eq A0 0 cb__Nstd__Nstring__Nto_string__Abool__Aptr__Tstring$if1601$else;
+    ir_make_label cb__Nstd__Nstring__Nto_string__Abool__Aptr__Tstring$if1601$body;
+    ir_load_addr STR2;
+    ir_load [L0 . 0] ST;
+    ir_load [L0 . 1] 4;
+    ir_load_addr L0;
+    ir_call cb__Nstd__Nstring__Nas_string__Aptr__Tstring__Aptr__Tslice__Tpure__Tuint8 A1 ST;
+    ir_noop ST;
+    ir_jmp cb__Nstd__Nstring__Nto_string__Abool__Aptr__Tstring$if1601$end;
+    ir_make_label cb__Nstd__Nstring__Nto_string__Abool__Aptr__Tstring$if1601$else;
+    ir_load_addr STR3;
+    ir_load [L1 . 0] ST;
+    ir_load [L1 . 1] 5;
+    ir_load_addr L1;
+    ir_call cb__Nstd__Nstring__Nas_string__Aptr__Tstring__Aptr__Tslice__Tpure__Tuint8 A1 ST;
+    ir_noop ST;
+    ir_make_label cb__Nstd__Nstring__Nto_string__Abool__Aptr__Tstring$if1601$end;
+endf
+
+func cb__Nstd__Nstring__Nappend__Aptr__Tslice__Tpure__Tuint8__Aptr__Tstring -> usize
+    arg #0 a: ptr__Tslice__Tpure__Tuint8;
+    arg #1 result: ptr__Tstring;
+    local #0 copylen: usize;
+    ir_deref A0;
+    ir_load L0 [ST . 1];
+    ir_deref A1;
+    ir_add L0 [ST . 1];
+    ir_deref A1;
+    ir_jmp_lte ST [ST . 2] cb__Nstd__Nstring__Nappend__Aptr__Tslice__Tpure__Tuint8__Aptr__Tstring$if1647$else;
+    ir_make_label cb__Nstd__Nstring__Nappend__Aptr__Tslice__Tpure__Tuint8__Aptr__Tstring$if1647$body;
+    ir_deref A1;
+    ir_deref A1;
+    ir_sub [ST . 2] [ST . 1];
+    ir_load L0 ST;
+    ir_make_label cb__Nstd__Nstring__Nappend__Aptr__Tslice__Tpure__Tuint8__Aptr__Tstring$if1647$else;
+    ir_deref A1;
+    ir_deref A1;
+    ir_add [ST . 0] [ST . 1];
+    ir_deref A0;
+    ir_call cb__Nstd__Nmemory__Ncopy__Arawptr__Arawptr__Ausize ST [ST . 0] L0;
+    ir_deref A1;
+    ir_deref A1;
+    ir_add [ST . 1] L0;
+    ir_load [ST . 1] ST;
+    ir_deref A0;
+    ir_sub [ST . 1] L0;
+    ir_return ST;
+endf
+
+func cb__Nstd__Ntime__Ndummy -> void
+endf
+

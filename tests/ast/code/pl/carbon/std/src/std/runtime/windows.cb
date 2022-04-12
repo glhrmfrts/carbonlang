@@ -8,5 +8,5 @@ code_unit{
         func_decl{GetCommandLineA (): type_expr{type_qualifier{pointer, type_qualifier{ uint8}}} }
         func_decl{GetStdHandle (var_decl{nStdHandle: type_expr{int}}): type_expr{int} }
         func_decl{WriteFile (var_decl{handle: type_expr{int}}, var_decl{str: type_expr{type_qualifier{pointer, type_qualifier{ uint8}}}}, var_decl{len: type_expr{usize}}, var_decl{written: type_expr{type_qualifier{pointer, int}}}, var_decl{ov: type_expr{rawptr}}) }
-        func_decl{QueryPerformanceFrequency (var_decl{value: type_expr{type_qualifier{optional, int64}}}): type_expr{bool} }
-        func_decl{QueryPerformanceCounter (var_decl{value: type_expr{type_qualifier{optional, int64}}}): type_expr{bool} }}}}}
+        func_decl{QueryPerformanceFrequency (var_decl{value: type_expr{type_qualifier{pointer, int64}}}): type_expr{bool} }
+        func_decl{QueryPerformanceCounter (var_decl{value: type_expr{type_qualifier{pointer, int64}}}): type_expr{bool} }}}}}

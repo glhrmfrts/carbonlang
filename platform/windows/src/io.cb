@@ -1,0 +1,19 @@
+extern(C) {
+func GetCommandLineA(): *pure uint8
+
+func GetStdHandle(nStdHandle: int): int
+
+func WriteFile(handle: int, str: *pure uint8, len: usize, written: *int, ov: rawptr)
+}
+
+extern(carbon, std::platform) {
+func write(handle: int, ptr: &pure uint8, len: usize): isize {
+    let written : int
+    WriteFile(handle, ptr, len, &written, nullptr)
+    return written
+}
+
+func get_stdout_fd(): int {
+    return GetStdHandle(-11)
+}
+}

@@ -1,0 +1,20 @@
+import io
+import memory
+
+extern(C) func test_main(): int {
+    // TODO: write(get_stdout_fd(), "Hello".ptr, 5)
+    let str = "Hello"
+    write(get_stdout_fd(), str.ptr, str.len)
+
+    let m = alloc(str.len + 1)
+    let ptr = nullcast(cast(*uint8)m)
+
+    for (i in 0,str.len) {
+        ptr[i] = str[i]
+    }
+    write(get_stdout_fd(), ptr, str.len)
+
+    free(cast(rawptr)ptr)
+
+    return 0
+}

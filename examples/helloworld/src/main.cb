@@ -22,8 +22,7 @@ func whatever(a: int) {
 func main(args: [][]pure uint8) {
     println(args[0])
 
-    let m = as_memory([32]uint8{})
-    let dest = as_string(m)
+    let dest = as_string(as_memory([32]uint8{}))
 
     to_string(36345, dest)
     println(dest)

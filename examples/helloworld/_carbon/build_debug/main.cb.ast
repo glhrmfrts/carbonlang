@@ -3,10 +3,10 @@ code_unit{
   decl_list{
     import_decl{ std::io}
     import_decl{ std::string}
-    import_decl{ std::mem}
-    import_decl{ std::time}
+    import_decl{ std::memory}
+    import_decl{ std::time time}
     import_decl{ std::runtime::memory rtm}
-    import_decl{ std::runtime::io rio}
+    import_decl{ std::runtime::io rtio}
     func_decl{whatever (var_decl{a: type_expr{int}}) {
         stmt_list{
           return{{a + 2}}}}}
@@ -15,44 +15,42 @@ code_unit{
           var_decl{$cbT0 = {@ args}.ptr[0]}
           call{println ({& $cbT0})}}
         decl_list{
-          var_decl{$cbT1 = init{type=type_expr{array_type{size=32 type_expr{uint8}}} 
-              {$cbT1[0] = 0}
-              {$cbT1[1] = 0}
-              {$cbT1[2] = 0}
-              {$cbT1[3] = 0}
-              {$cbT1[4] = 0}
-              {$cbT1[5] = 0}
-              {$cbT1[6] = 0}
-              {$cbT1[7] = 0}
-              {$cbT1[8] = 0}
-              {$cbT1[9] = 0}
-              {$cbT1[10] = 0}
-              {$cbT1[11] = 0}
-              {$cbT1[12] = 0}
-              {$cbT1[13] = 0}
-              {$cbT1[14] = 0}
-              {$cbT1[15] = 0}
-              {$cbT1[16] = 0}
-              {$cbT1[17] = 0}
-              {$cbT1[18] = 0}
-              {$cbT1[19] = 0}
-              {$cbT1[20] = 0}
-              {$cbT1[21] = 0}
-              {$cbT1[22] = 0}
-              {$cbT1[23] = 0}
-              {$cbT1[24] = 0}
-              {$cbT1[25] = 0}
-              {$cbT1[26] = 0}
-              {$cbT1[27] = 0}
-              {$cbT1[28] = 0}
-              {$cbT1[29] = 0}
-              {$cbT1[30] = 0}
-              {$cbT1[31] = 0}
-              }}
-          call{as_memory ({& m}, {& $cbT1})}
-          var_decl{m}
-          var_decl{$cbT2 = m}
-          call{as_string ({& dest}, {& $cbT2})}
+          var_decl{$cbT1 = var_decl{$cbT2 = init{type=type_expr{array_type{size=32 type_expr{uint8}}} 
+                {$cbT2[0] = 0}
+                {$cbT2[1] = 0}
+                {$cbT2[2] = 0}
+                {$cbT2[3] = 0}
+                {$cbT2[4] = 0}
+                {$cbT2[5] = 0}
+                {$cbT2[6] = 0}
+                {$cbT2[7] = 0}
+                {$cbT2[8] = 0}
+                {$cbT2[9] = 0}
+                {$cbT2[10] = 0}
+                {$cbT2[11] = 0}
+                {$cbT2[12] = 0}
+                {$cbT2[13] = 0}
+                {$cbT2[14] = 0}
+                {$cbT2[15] = 0}
+                {$cbT2[16] = 0}
+                {$cbT2[17] = 0}
+                {$cbT2[18] = 0}
+                {$cbT2[19] = 0}
+                {$cbT2[20] = 0}
+                {$cbT2[21] = 0}
+                {$cbT2[22] = 0}
+                {$cbT2[23] = 0}
+                {$cbT2[24] = 0}
+                {$cbT2[25] = 0}
+                {$cbT2[26] = 0}
+                {$cbT2[27] = 0}
+                {$cbT2[28] = 0}
+                {$cbT2[29] = 0}
+                {$cbT2[30] = 0}
+                {$cbT2[31] = 0}
+                }}
+call{as_memory ({& $cbT2})}}
+          call{as_string ({& dest}, {& $cbT1})}
           var_decl{dest}}
         stmt_list{
           call{to_string (36345, {& dest})}}
@@ -93,23 +91,5 @@ code_unit{
         stmt_list{
           var_decl{$cbT10 = dest}
           call{println ({& $cbT10})}}
-        decl_list{
-          var_decl{curtime = call{now ()}}}
-        stmt_list{
-          call{to_string (cast_expr{type_expr{int} curtime}, {& dest})}}
-        stmt_list{
-          var_decl{$cbT11 = dest}
-          call{println ({& $cbT11})}}
-        decl_list{
-          var_decl{nowtime = call{now ()}}
-          var_decl{elapsed = {nowtime - curtime}}
-          var_decl{$cbT12 = call{duration (elapsed)}}
-          call{milliseconds ({& dur}, {& $cbT12})}
-          var_decl{dur}}
-        stmt_list{
-          call{to_string (cast_expr{type_expr{int} dur.value}, {& dest})}}
-        stmt_list{
-          var_decl{$cbT13 = dest}
-          call{println ({& $cbT13})}}
         stmt_list{
           return{0}}}}}}

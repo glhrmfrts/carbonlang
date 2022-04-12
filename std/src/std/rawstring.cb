@@ -1,5 +1,5 @@
-import std::mem as mem
-import std::runtime::memory as rtm
+import std::memory as mem
+import std::platform as plat
 
 func copy(str: &pure uint8) {
     return copy(str, str->length())
@@ -7,8 +7,8 @@ func copy(str: &pure uint8) {
 
 //conditional runtime_included
 func copy(str: &pure uint8, size: usize) {
-    let m = rtm::alloc(size+1)
-    let newstr = nullcast(cast(*uint8) m.ptr)
+    let ptr = plat::alloc(size+1)
+    let newstr = nullcast(cast(*uint8) ptr)
     copy(newstr, str, size)
     newstr[size] = '\0'
     return newstr

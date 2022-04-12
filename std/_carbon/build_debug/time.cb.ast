@@ -1,0 +1,4 @@
+code_unit{
+  std/time.cb
+  decl_list{
+    func_decl{dummy () {}}}}

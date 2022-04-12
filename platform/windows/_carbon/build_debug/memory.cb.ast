@@ -1,0 +1,14 @@
+code_unit{
+  memory.cb
+  decl_list{
+    linkage_specifier{ extern(C) decl_list{
+        func_decl{HeapAlloc (var_decl{hHeap: type_expr{int}}, var_decl{dwFlags: type_expr{int}}, var_decl{dwBytes: type_expr{usize}}): type_expr{rawptr} }
+        func_decl{HeapFree (var_decl{hHeap: type_expr{int}}, var_decl{dwFlags: type_expr{int}}, var_decl{lpMem: type_expr{rawptr}}): type_expr{bool} }
+        func_decl{GetProcessHeap (): type_expr{int} }}}
+    linkage_specifier{ extern decl_list{
+        func_decl{alloc (var_decl{size: type_expr{usize}}): type_expr{rawptr} {
+            stmt_list{
+              return{call{HeapAlloc (call{GetProcessHeap ()}, 0, size)}}}}}
+        func_decl{free (var_decl{p: type_expr{rawptr}}) {
+            stmt_list{
+              call{HeapFree (call{GetProcessHeap ()}, 0, p)}}}}}}}}
