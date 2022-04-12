@@ -200,6 +200,9 @@ struct lexer_impl {
             if (!std::strcmp("break", l.string)) {
                 return token_type::break_;
             }
+            if (!std::strcmp("const", l.string)) {
+                return token_type::const_;
+            }
             break;
         case 6:
             if (!std::strcmp("return", l.string)) {

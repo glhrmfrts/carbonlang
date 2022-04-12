@@ -730,6 +730,10 @@ void generate_ir_unary_expr(ast_node& node) {
 }
 
 void generate_ir_var(ast_node& node) {
+    if (node.op != token_type::let) {
+        return;
+    }
+
     if (node.func.linkage != func_linkage::local_carbon) {
         prog->globals.push_back(ir_global_data{ node.local.mangled_name.str, node.type_id, {}, node.func.linkage });
         return;
@@ -803,6 +807,15 @@ void generate_ir_nullcast_expr(ast_node& node) {
 }
 
 void generate_ir_identifier(ast_node& node) {
+    if (node.lvalue.symbol->kind == symbol_kind::comptime) {
+        auto value = node.lvalue.symbol->ctvalue;
+        auto type = node.lvalue.symbol->cttype;
+        if (std::holds_alternative<int_type>(value)) {
+            push(ir_int{ std::get<int_type>(value), type });
+        }
+        return;
+    }
+
     auto local = node.lvalue.symbol->scope->local_defs[node.lvalue.symbol->local_index];
     if (local->flags & local_flag::is_argument) {
         push(ir_arg{ local->ir_index, node.type_id });

@@ -1,9 +1,38 @@
+import std::platform
+
 extern(C) {
 func GetCommandLineA(): *pure uint8
 
 func GetStdHandle(nStdHandle: int): int
 
 func WriteFile(handle: int, str: *pure uint8, len: usize, written: *int, ov: rawptr)
+
+func ReadFile(
+    hFile: int,
+    lpBuffer: rawptr,
+    nNumberOfBytesToRead: int,
+    lpNumberOfBytesRead: *int,
+    lpOverlapped: rawptr
+): bool
+
+type LPSECURITY_ATTRIBUTES = struct {
+    nLength: int
+    lpSecurityDescriptor: rawptr
+    bInheritHandle: bool
+}
+
+func CreateFileA(
+    lpFileName: *pure uint8,
+    dwDesiredAccess: int,
+    dwShareMode: int,
+    lpSecurityAttributes: *LPSECURITY_ATTRIBUTES,
+    dwCreationDisposition: int,
+    dwFlagsAndAttributes: int,
+    hTemplateFile: int
+): int
+
+func CloseHandle(handle: int): int
+
 }
 
 extern(carbon, std::platform) {
@@ -13,7 +42,59 @@ func write(handle: int, ptr: &pure uint8, len: usize): isize {
     return written
 }
 
-func get_stdout_fd(): int {
-    return GetStdHandle(-11)
+func read(handle: int, ptr: &uint8, len: usize): isize {
+    let bytes_read : int
+    ReadFile(handle, cast(rawptr)ptr, cast(int)len, &bytes_read, nullptr)
+    return bytes_read
 }
+
+func open(path: &pure uint8, flags: int): {int, error} {
+    const GENERIC_READ = 1<<31
+    const GENERIC_WRITE = 1<<30
+    
+    let access = GENERIC_READ
+    if ((flags & (O_APPEND | O_WRITE)) != 0) {
+        access |= GENERIC_WRITE
+    }
+
+    const FILE_SHARE_READ = 1
+    const FILE_SHARE_WRITE = 2
+    let sharemode = FILE_SHARE_READ | FILE_SHARE_WRITE
+
+    let secattr : LPSECURITY_ATTRIBUTES
+
+    const OPEN_ALWAYS = 4
+    const OPEN_EXISTS = 3
+    let creation = OPEN_EXISTS
+    if (flags & O_CREATE != 0) {
+        creation = OPEN_ALWAYS
+    }
+
+    const FILE_ATTRIBUTE_NORMAL = 128
+    let attrs = FILE_ATTRIBUTE_NORMAL
+
+    let handle = CreateFileA(path, access, sharemode, secattr, creation, attrs)
+    return handle, 0
+}
+
+func close(fd: int): error {
+    return CloseHandle(fd)
+}
+
+const STD_INPUT_HANDLE = -10
+const STD_OUTPUT_HANDLE = -11
+const STD_ERROR_HANDLE = -12
+
+func get_stdin_fd(): int {
+    return GetStdHandle(STD_INPUT_HANDLE)
+}
+
+func get_stdout_fd(): int {
+    return GetStdHandle(STD_OUTPUT_HANDLE)
+}
+
+func get_stderr_fd(): int {
+    return GetStdHandle(STD_ERROR_HANDLE)
+}
+
 }

@@ -1,10 +1,17 @@
 extern GetCommandLineA
 extern GetStdHandle
 extern WriteFile
+extern ReadFile
 global cb__Nstd__Nplatform__Nwrite__Aint__Aptr__Tpure__Tuint8__Ausize
 export cb__Nstd__Nplatform__Nwrite__Aint__Aptr__Tpure__Tuint8__Ausize
+global cb__Nstd__Nplatform__Nread__Aint__Aptr__Tuint8__Ausize
+export cb__Nstd__Nplatform__Nread__Aint__Aptr__Tuint8__Ausize
+global cb__Nstd__Nplatform__Nget_stdin_fd
+export cb__Nstd__Nplatform__Nget_stdin_fd
 global cb__Nstd__Nplatform__Nget_stdout_fd
 export cb__Nstd__Nplatform__Nget_stdout_fd
+global cb__Nstd__Nplatform__Nget_stderr_fd
+export cb__Nstd__Nplatform__Nget_stderr_fd
 extern HeapAlloc
 extern HeapFree
 extern GetProcessHeap
@@ -53,6 +60,67 @@ cb__Nstd__Nplatform__Nwrite__Aint__Aptr__Tpure__Tuint8__Ausize$end:
  ret
 
 
+cb__Nstd__Nplatform__Nread__Aint__Aptr__Tuint8__Ausize:
+ ;func read(int, &uint8, usize): isize
+ mov qword [rsp+24],r8
+ mov qword [rsp+16],rdx
+ mov dword [rsp+8],ecx
+ push rbp
+ push rbx
+ mov rbp,rsp
+ sub rsp,72
+ ;prolog end
+
+ mov r10d,0
+ mov dword [rbp-4],r10d
+ ;ir_load L0 0;
+
+ mov r10,qword [rbp+40]
+ mov ebx,r10d
+ ;ir_cast A2;
+
+ lea rax,dword [rbp-4]
+ ;ir_load_addr L0;
+
+ mov qword [rsp+32],0
+ mov r9,rax
+ mov r8d,ebx
+ mov rdx,qword [rbp+32]
+ mov ecx,dword [rbp+24]
+ call ReadFile
+ ;ir_call ReadFile A0 A1 ST ST 0;
+
+ ;ir_noop ST;
+
+ movsxd rax,dword [rbp-4]
+ ;ir_return L0;
+
+cb__Nstd__Nplatform__Nread__Aint__Aptr__Tuint8__Ausize$end:
+ add rsp,72
+ pop rbx
+ pop rbp
+ ret
+
+
+cb__Nstd__Nplatform__Nget_stdin_fd:
+ ;func get_stdin_fd(): int
+ push rbp
+ mov rbp,rsp
+ sub rsp,32
+ ;prolog end
+
+ mov ecx,-10
+ call GetStdHandle
+ ;ir_call GetStdHandle -10;
+
+ ;ir_return ST;
+
+cb__Nstd__Nplatform__Nget_stdin_fd$end:
+ add rsp,32
+ pop rbp
+ ret
+
+
 cb__Nstd__Nplatform__Nget_stdout_fd:
  ;func get_stdout_fd(): int
  push rbp
@@ -60,17 +128,32 @@ cb__Nstd__Nplatform__Nget_stdout_fd:
  sub rsp,32
  ;prolog end
 
- mov eax,11
- neg eax
- ;ir_neg 11;
-
- mov ecx,eax
+ mov ecx,-11
  call GetStdHandle
- ;ir_call GetStdHandle ST;
+ ;ir_call GetStdHandle -11;
 
  ;ir_return ST;
 
 cb__Nstd__Nplatform__Nget_stdout_fd$end:
+ add rsp,32
+ pop rbp
+ ret
+
+
+cb__Nstd__Nplatform__Nget_stderr_fd:
+ ;func get_stderr_fd(): int
+ push rbp
+ mov rbp,rsp
+ sub rsp,32
+ ;prolog end
+
+ mov ecx,-12
+ call GetStdHandle
+ ;ir_call GetStdHandle -12;
+
+ ;ir_return ST;
+
+cb__Nstd__Nplatform__Nget_stderr_fd$end:
  add rsp,32
  pop rbp
  ret
@@ -183,18 +266,18 @@ test_main:
  mov dword [rbp-56],r10d
  ;ir_load L5 [L3 . 0];
 
-test_main$f275$cond:
- ;ir_make_label test_main$f275$cond;
+test_main$f380$cond:
+ ;ir_make_label test_main$f380$cond;
 
  movsxd rax,dword [rbp-56]
  ;ir_cast L5;
 
  cmp rax,qword [rbp-44]
- jge test_main$f275$end
- ;ir_jmp_gte ST [L3 . 1] test_main$f275$end;
+ jge test_main$f380$end
+ ;ir_jmp_gte ST [L3 . 1] test_main$f380$end;
 
-test_main$f275$body:
- ;ir_make_label test_main$f275$body;
+test_main$f380$body:
+ ;ir_make_label test_main$f380$body;
 
  mov rax,qword [rbp-32]
  ;ir_deref L2;
@@ -222,11 +305,11 @@ test_main$f275$body:
  mov dword [rbp-56],eax
  ;ir_load L5 ST;
 
- jmp test_main$f275$cond
- ;ir_jmp test_main$f275$cond;
+ jmp test_main$f380$cond
+ ;ir_jmp test_main$f380$cond;
 
-test_main$f275$end:
- ;ir_make_label test_main$f275$end;
+test_main$f380$end:
+ ;ir_make_label test_main$f380$end;
 
  call cb__Nstd__Nplatform__Nget_stdout_fd
  ;ir_call cb__Nstd__Nplatform__Nget_stdout_fd;

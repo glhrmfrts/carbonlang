@@ -291,6 +291,10 @@ std::pair<comptime_value, bool> node_to_comptime_value(type_system& ts, ast_node
         arg = node.int_value;
         break;
     }
+    case ast_type::string_literal: {
+        arg = std::string{ node.string_value };
+        break;
+    }
     case ast_type::comptime_expr: {
         auto tid = get_type_expr_node_type(ts, *node.children[0]);
         if (tid.valid()) {
@@ -309,6 +313,24 @@ std::pair<comptime_value, bool> node_to_comptime_value(type_system& ts, ast_node
     }
     }
     return std::make_pair(arg, node.type_id.valid());
+}
+
+std::pair<comptime_value, bool> node_to_comptime_value_fold(type_system& ts, ast_node& node) {
+    comptime_value arg = {};
+    switch (node.type) {
+    case ast_type::unary_expr: {
+        auto [value, ok] = node_to_comptime_value_fold(ts, *node.children[0]);
+        if (ok) {
+            if (std::holds_alternative<int_type>(value) && node.op == token_from_char('-')) {
+                arg = (int_type)(- std::get<int_type>(value));
+            }
+        }
+        break;
+    }
+    default:
+        return node_to_comptime_value(ts, node);
+    }
+    return std::make_pair(arg, true);
 }
 
 std::pair<std::vector<comptime_value>, bool> nodes_to_comptime_values(type_system& ts, std::vector<arena_ptr<ast_node>>& nodes) {
@@ -1342,6 +1364,11 @@ type_id resolve_identifier(type_system& ts, ast_node& node) {
         node.lvalue.self = &node;
         node.lvalue.symbol = sym;
     }
+    else if (sym && sym->kind == symbol_kind::comptime) {
+        node.lvalue.self = &node;
+        node.lvalue.symbol = sym;
+        node.type_id = sym->cttype;
+    }
 
     if (!sym) {
         unk_type_error(ts, node.type_id, node.pos, "unknown symbol '%s'", node_to_string(node).c_str());
@@ -1820,7 +1847,7 @@ bool visit_generated_func(type_system& ts, ast_node* node, ast_node& gnode, ast_
                 }
 
                 if (expected_comp_type == ts.type_type && std::holds_alternative<type_id>(comptime_args[i])) {
-                    declare_comptime_symbol(ts, build_identifier_value(id_node->id_parts), comptime_args[i]);
+                    declare_comptime_symbol(ts, build_identifier_value(id_node->id_parts), comptime_args[i], expected_comp_type);
                     node->func.comptime_args.push_back(comptime_args[i]);
                 }
             }
@@ -1927,6 +1954,22 @@ arena_ptr<ast_node> generate_func_for_call(type_system& ts, ast_node& gnode, ast
 
 void resolve_and_declare_local_variable(type_system& ts, const string_hash& id, ast_node& node) {
     resolve_local_variable_type(ts, node);
+
+    if (node.op == token_type::const_ && node.type_id.valid()) {
+        if (!node.var_value()) {
+            add_type_error(ts, node.pos, "const declaration requires a initializer expression");
+            return;
+        }
+
+        auto [value, ok] = node_to_comptime_value_fold(ts, *node.var_value());
+        if (ok) {
+            declare_comptime_symbol(ts, id, value, node.type_id);
+        }
+        else {
+            add_type_error(ts, node.pos, "invalid constant expression");
+        }
+        return;
+    }
 
     if (ts.current_scope->kind == scope_kind::code_unit) {
         declare_global_symbol(ts, id, node);
@@ -2626,7 +2669,7 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
                 type_id arg_type = ts.type_type;//TODO: get_comptime_arg_type(ctor_arg_node);
                 if (arg_type.get().kind == type_kind::type) {
                     auto instance_targ = std::get<type_id>(args[i]);
-                    declare_comptime_symbol(ts, string_hash{ build_identifier_value(ctor_arg_node.var_id()->id_parts) }, instance_targ);
+                    declare_comptime_symbol(ts, string_hash{ build_identifier_value(ctor_arg_node.var_id()->id_parts) }, instance_targ, arg_type);
                 }
                 else {
                     assert(!"user type constructor arg type not handled");
@@ -3368,7 +3411,7 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
         break;
     case ast_type::string_literal:
         if (!node.type_id.valid()) {
-            // Transform the string literal into a static array of chars
+            // Transform the string literal into a array of chars
             auto& sym = ts.builtin_scope->scope.symbols[string_hash{ "uint8" }];
             auto rstype = to_type_id(*sym);
             auto pure_rstype = get_pure_type_to(ts, rstype);

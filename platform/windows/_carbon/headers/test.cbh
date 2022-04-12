@@ -1,0 +1,3 @@
+import io;
+import memory;
+extern(C) func test_main():int;

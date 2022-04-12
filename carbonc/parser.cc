@@ -170,7 +170,6 @@ struct parser_impl {
         auto t = TOK;
         switch (t) {
         case token_type::identifier:
-        case token_type::auto_:
             return parse_arg_decl(token_type::let);
         case token_type::func:
             return parse_func_decl();
@@ -831,6 +830,9 @@ struct parser_impl {
         if (TOK == token_type::let) {
             lex->next();
         }
+        else if (TOK == token_type::const_) {
+            lex->next();
+        }
         else {
             throw parse_error(filename, lex->pos(), "expected 'let' in variable declaration");
         }
@@ -862,7 +864,7 @@ struct parser_impl {
 
     std::vector<token_type> parse_var_modifiers() {
         std::vector<token_type> mods;
-        while (TOK == token_type::auto_ || TOK == token_type::pure) {
+        while (TOK == token_type::pure) {
             mods.push_back(TOK);
             lex->next();
         }

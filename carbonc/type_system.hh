@@ -167,6 +167,7 @@ struct symbol_info {
 
     // if kind == comptime
     comptime_value ctvalue;
+    type_id cttype;
 };
 
 struct lvalue {

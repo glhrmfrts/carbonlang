@@ -8,6 +8,9 @@ endf
 func WriteFile -> void
 endf
 
+func ReadFile -> bool
+endf
+
 func cb__Nstd__Nplatform__Nwrite__Aint__Aptr__Tpure__Tuint8__Ausize -> isize
     arg #0 handle: int;
     arg #1 ptr: ptr__Tpure__Tuint8;
@@ -19,9 +22,31 @@ func cb__Nstd__Nplatform__Nwrite__Aint__Aptr__Tpure__Tuint8__Ausize -> isize
     ir_return L0;
 endf
 
+func cb__Nstd__Nplatform__Nread__Aint__Aptr__Tuint8__Ausize -> isize
+    arg #0 handle: int;
+    arg #1 ptr: ptr__Tuint8;
+    arg #2 len: usize;
+    local #0 bytes_read: int;
+    ir_load L0 0;
+    ir_cast A2;
+    ir_load_addr L0;
+    ir_call ReadFile A0 A1 ST ST 0;
+    ir_noop ST;
+    ir_return L0;
+endf
+
+func cb__Nstd__Nplatform__Nget_stdin_fd -> int
+    ir_call GetStdHandle -10;
+    ir_return ST;
+endf
+
 func cb__Nstd__Nplatform__Nget_stdout_fd -> int
-    ir_neg 11;
-    ir_call GetStdHandle ST;
+    ir_call GetStdHandle -11;
+    ir_return ST;
+endf
+
+func cb__Nstd__Nplatform__Nget_stderr_fd -> int
+    ir_call GetStdHandle -12;
     ir_return ST;
 endf
 
@@ -74,10 +99,10 @@ func test_main -> int
     ir_load [L3 . 0] 0;
     ir_load [L3 . 1] [L0 . 1];
     ir_load L5 [L3 . 0];
-    ir_make_label test_main$f275$cond;
+    ir_make_label test_main$f380$cond;
     ir_cast L5;
-    ir_jmp_gte ST [L3 . 1] test_main$f275$end;
-    ir_make_label test_main$f275$body;
+    ir_jmp_gte ST [L3 . 1] test_main$f380$end;
+    ir_make_label test_main$f380$body;
     ir_deref L2;
     ir_index ST L5;
     ir_deref [L0 . 0];
@@ -85,8 +110,8 @@ func test_main -> int
     ir_load ST ST;
     ir_add L5 1;
     ir_load L5 ST;
-    ir_jmp test_main$f275$cond;
-    ir_make_label test_main$f275$end;
+    ir_jmp test_main$f380$cond;
+    ir_make_label test_main$f380$end;
     ir_call cb__Nstd__Nplatform__Nget_stdout_fd;
     ir_call cb__Nstd__Nplatform__Nwrite__Aint__Aptr__Tpure__Tuint8__Ausize ST L2 [L0 . 1];
     ir_noop ST;

@@ -1376,6 +1376,9 @@ struct generator {
         else if (auto arg = std::get_if<ir_local>(&opr); arg) {
             return arg->type;
         }
+        else if (auto arg = std::get_if<ir_global>(&opr); arg) {
+            return arg->type;
+        }
         else if (auto arg = std::get_if<ir_stack>(&opr); arg) {            
             return arg->type;
         }

@@ -145,7 +145,7 @@ bool declare_type_symbol(type_system& ts, scope_def& scope, const string_hash& h
     return true;
 }
 
-bool declare_comptime_symbol(type_system& ts, const string_hash& hash, const comptime_value& value) {
+bool declare_comptime_symbol(type_system& ts, const string_hash& hash, const comptime_value& value, type_id tid) {
     auto it = ts.current_scope->symbols.find(hash);
     if (it != ts.current_scope->symbols.end()) {
         return false;
@@ -155,6 +155,7 @@ bool declare_comptime_symbol(type_system& ts, const string_hash& hash, const com
     info.kind = symbol_kind::comptime;
     info.scope = ts.current_scope;
     info.ctvalue = value;
+    info.cttype = tid;
     ts.current_scope->symbols[hash] = std::make_unique<symbol_info>(info);
     return true;
 }

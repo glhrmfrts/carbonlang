@@ -1,0 +1,12 @@
+import std::platform;
+extern(C) func GetCommandLineA():*pure uint8;
+extern(C) func GetStdHandle(:int):int;
+extern(C) func WriteFile(:int, :*pure uint8, :usize, :*int, :rawptr):{};
+extern(C) func ReadFile(:int, :rawptr, :int, :*int, :rawptr):bool;
+extern(C) func CreateFileA(:*pure uint8, :int, :int, :*LPSECURITY_ATTRIBUTES, :int, :int, :int):int;
+extern func write(:int, :&pure uint8, :usize):isize;
+extern func read(:int, :&uint8, :usize):isize;
+extern func open(:&pure uint8, :int):{int, error};
+extern func get_stdin_fd():int;
+extern func get_stdout_fd():int;
+extern func get_stderr_fd():int;

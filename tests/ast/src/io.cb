@@ -1,5 +1,6 @@
 code_unit{
   io.cb
   decl_list{
+    import_decl{ std::platform}
     linkage_specifier{ extern(C)}
     linkage_specifier{ extern std::platform}}}

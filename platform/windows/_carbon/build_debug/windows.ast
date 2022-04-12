@@ -7,7 +7,8 @@
       linkage_specifier{ extern(C) decl_list{
           func_decl{GetCommandLineA (): type_expr{type_qualifier{pointer, type_qualifier{ uint8}}} }
           func_decl{GetStdHandle (var_decl{nStdHandle: type_expr{int}}): type_expr{int} }
-          func_decl{WriteFile (var_decl{handle: type_expr{int}}, var_decl{str: type_expr{type_qualifier{pointer, type_qualifier{ uint8}}}}, var_decl{len: type_expr{usize}}, var_decl{written: type_expr{type_qualifier{pointer, int}}}, var_decl{ov: type_expr{rawptr}}) }}}
+          func_decl{WriteFile (var_decl{handle: type_expr{int}}, var_decl{str: type_expr{type_qualifier{pointer, type_qualifier{ uint8}}}}, var_decl{len: type_expr{usize}}, var_decl{written: type_expr{type_qualifier{pointer, int}}}, var_decl{ov: type_expr{rawptr}}) }
+          func_decl{ReadFile (var_decl{hFile: type_expr{int}}, var_decl{lpBuffer: type_expr{rawptr}}, var_decl{nNumberOfBytesToRead: type_expr{int}}, var_decl{lpNumberOfBytesRead: type_expr{type_qualifier{pointer, int}}}, var_decl{lpOverlapped: type_expr{rawptr}}): type_expr{bool} }}}
       linkage_specifier{ extern decl_list{
           func_decl{write (var_decl{handle: type_expr{int}}, var_decl{ptr: type_expr{type_qualifier{optional, type_qualifier{ uint8}}}}, var_decl{len: type_expr{usize}}): type_expr{isize} {
               decl_list{
@@ -16,9 +17,25 @@
                 call{WriteFile (handle, ptr, len, {& written}, )}}
               stmt_list{
                 return{written}}}}
+          func_decl{read (var_decl{handle: type_expr{int}}, var_decl{ptr: type_expr{type_qualifier{optional, uint8}}}, var_decl{len: type_expr{usize}}): type_expr{isize} {
+              decl_list{
+                var_decl{bytes_read: type_expr{int} = 0}}
+              stmt_list{
+                call{ReadFile (handle, cast_expr{type_expr{rawptr} ptr}, cast_expr{type_expr{int} len}, {& bytes_read}, )}}
+              stmt_list{
+                return{bytes_read}}}}
+          var_decl{STD_INPUT_HANDLE = {- 10}}
+          var_decl{STD_OUTPUT_HANDLE = {- 11}}
+          var_decl{STD_ERROR_HANDLE = {- 12}}
+          func_decl{get_stdin_fd (): type_expr{int} {
+              stmt_list{
+                return{call{GetStdHandle (STD_INPUT_HANDLE)}}}}}
           func_decl{get_stdout_fd (): type_expr{int} {
               stmt_list{
-                return{call{GetStdHandle ({- 11})}}}}}}}}}  code_unit{
+                return{call{GetStdHandle (STD_OUTPUT_HANDLE)}}}}}
+          func_decl{get_stderr_fd (): type_expr{int} {
+              stmt_list{
+                return{call{GetStdHandle (STD_ERROR_HANDLE)}}}}}}}}}  code_unit{
     memory.cb
     decl_list{
       linkage_specifier{ extern(C) decl_list{

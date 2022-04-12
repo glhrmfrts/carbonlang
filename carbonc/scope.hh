@@ -31,7 +31,7 @@ bool declare_type_symbol(type_system& ts, scope_def& scope, const string_hash& h
 
 bool declare_overloaded_func_base_symbol(type_system& ts, const string_hash& hash);
 
-bool declare_comptime_symbol(type_system& ts, const string_hash& hash, const comptime_value& value);
+bool declare_comptime_symbol(type_system& ts, const string_hash& hash, const comptime_value& value, type_id type);
 
 symbol_info* find_symbol_in_current_scope(type_system& ts, const string_hash& hash);
 

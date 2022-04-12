@@ -1,0 +1,19 @@
+code_unit{
+  std/platform.cb
+  decl_list{
+    type_decl{error = type_expr{int}}
+    linkage_specifier{ extern}
+    linkage_specifier{ extern}
+    linkage_specifier{ extern}
+    linkage_specifier{ extern}
+    linkage_specifier{ extern}
+    var_decl{O_CREATE = 1}
+    var_decl{O_WRITE = 2}
+    var_decl{O_READ = 4}
+    var_decl{O_APPEND = 8}
+    linkage_specifier{ extern}
+    linkage_specifier{ extern}
+    linkage_specifier{ extern}
+    linkage_specifier{ extern}
+    linkage_specifier{ extern}
+    linkage_specifier{ extern}}}
