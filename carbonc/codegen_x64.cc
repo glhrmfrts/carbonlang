@@ -631,7 +631,7 @@ struct generator {
             }
             else if (inst.op == ir_shl || inst.op == ir_shr) {
                 // shifting uses rcx
-                calls_ever_made;
+                calls_ever_made = true;
             }
             else if (inst.op == ir_div) {
                 // ir_div uses rdx
@@ -1226,7 +1226,7 @@ struct generator {
                 em->sar(op, b);
             }
 
-            move(dest, instr.result_type, a, atype);
+            move(dest, instr.result_type, toop(op), atype);
             break;
         }
         case ir_neg: {

@@ -1,7 +1,8 @@
 string #0: "file.txt";
-string #1: "
+string #1: "HELLO_WORLD";
+string #2: "
 ";
-string #2: "QWEQWEQWE";
+string #3: "QWEQWEQWE";
 func GetCommandLineA -> nullableptr__Tpure__Tuint8
 endf
 
@@ -176,6 +177,77 @@ endf
 func cb__Nstd__Nplatform__Nclose__Aint -> void
 endf
 
+func cb__Ntest__Ntest_file_write -> bool
+    local #0 handle: tuple__Tint__Terror;
+    local #1 bufdata: array__I12__Tuint8;
+    local #2 data: slice__Tuint8;
+    local #3 $cbT0: slice__Tpure__Tuint8;
+    local #4 $cbT1: slice__Tpure__Tuint8;
+    local #5 $cbT2: slice__Tpure__Tuint8;
+    local #6 $cbT3: slice__Tuint8;
+    local #7 $cbT4: slice__Tuint8;
+    ir_load_addr STR0;
+    ir_load [L3 . 0] ST;
+    ir_load [L3 . 1] 8;
+    ir_load_addr L0;
+    ir_load_addr L3;
+    ir_or 1 2;
+    ir_call cb__Nstd__Nplatform__Nopen__Aptr__Ttuple__Tint__Terror__Aptr__Tslice__Tpure__Tuint8__Aint ST ST ST;
+    ir_load_addr STR1;
+    ir_load [L4 . 0] ST;
+    ir_load [L4 . 1] 11;
+    ir_load_addr L4;
+    ir_call cb__Nstd__Nplatform__Nwrite__Aint__Aptr__Tslice__Tpure__Tuint8 [L0 . 0] ST;
+    ir_noop ST;
+    ir_call cb__Nstd__Nplatform__Nclose__Aint [L0 . 0];
+    ir_load_addr STR0;
+    ir_load [L5 . 0] ST;
+    ir_load [L5 . 1] 8;
+    ir_load_addr L0;
+    ir_load_addr L5;
+    ir_or 1 4;
+    ir_call cb__Nstd__Nplatform__Nopen__Aptr__Ttuple__Tint__Terror__Aptr__Tslice__Tpure__Tuint8__Aint ST ST ST;
+    ir_noop ST;
+    ir_index L1 0;
+    ir_load ST 0;
+    ir_index L1 1;
+    ir_load ST 0;
+    ir_index L1 2;
+    ir_load ST 0;
+    ir_index L1 3;
+    ir_load ST 0;
+    ir_index L1 4;
+    ir_load ST 0;
+    ir_index L1 5;
+    ir_load ST 0;
+    ir_index L1 6;
+    ir_load ST 0;
+    ir_index L1 7;
+    ir_load ST 0;
+    ir_index L1 8;
+    ir_load ST 0;
+    ir_index L1 9;
+    ir_load ST 0;
+    ir_index L1 10;
+    ir_load ST 0;
+    ir_index L1 11;
+    ir_load ST 0;
+    ir_index L1 0;
+    ir_load_addr ST;
+    ir_load [L2 . 0] ST;
+    ir_load [L2 . 1] 12;
+    ir_copy L6 L2 16;
+    ir_load_addr L6;
+    ir_call cb__Nstd__Nplatform__Nread__Aint__Aptr__Tslice__Tuint8 [L0 . 0] ST;
+    ir_noop ST;
+    ir_copy L7 L2 16;
+    ir_call cb__Nstd__Nplatform__Nget_stdout_fd;
+    ir_load_addr L7;
+    ir_call cb__Nstd__Nplatform__Nwrite__Aint__Aptr__Tslice__Tpure__Tuint8 ST ST;
+    ir_noop ST;
+    ir_return 1;
+endf
+
 func test_main -> int
     local #0 handle: tuple__Tint__Terror;
     local #1 bufdata: array__I12__Tuint8;
@@ -185,14 +257,14 @@ func test_main -> int
     local #5 ptr: ptr__Tuint8;
     local #6 or: tuple__Tint__Terror;
     local #7 file: int;
-    local #8 $cbT0: slice__Tpure__Tuint8;
-    local #9 $cbT1: slice__Tuint8;
-    local #10 $cbT2: slice__Tuint8;
-    local #11 $cbT3: slice__Tpure__Tuint8;
-    local #12 $cbT4: slice__Tpure__Tuint8;
-    local #13 $cbT5: slice__Tpure__Tuint8;
-    local #14 $cbT6: slice__Tpure__Tuint8;
-    local #15 $cbT7: slice__Tpure__Tuint8;
+    local #8 $cbT5: slice__Tpure__Tuint8;
+    local #9 $cbT6: slice__Tuint8;
+    local #10 $cbT7: slice__Tuint8;
+    local #11 $cbT8: slice__Tpure__Tuint8;
+    local #12 $cbT9: slice__Tpure__Tuint8;
+    local #13 $cbT10: slice__Tpure__Tuint8;
+    local #14 $cbT11: slice__Tpure__Tuint8;
+    local #15 $cbT12: slice__Tpure__Tuint8;
     local #16 $foriter: tuple__Tint__Tusize;
     local #17 i: int;
     local #18 i: int;
@@ -239,7 +311,7 @@ func test_main -> int
     ir_load_addr L10;
     ir_call cb__Nstd__Nplatform__Nwrite__Aint__Aptr__Tslice__Tpure__Tuint8 ST ST;
     ir_noop ST;
-    ir_load_addr STR1;
+    ir_load_addr STR2;
     ir_load [L11 . 0] ST;
     ir_load [L11 . 1] 1;
     ir_call cb__Nstd__Nplatform__Nget_stdout_fd;
@@ -247,7 +319,7 @@ func test_main -> int
     ir_call cb__Nstd__Nplatform__Nwrite__Aint__Aptr__Tslice__Tpure__Tuint8 ST ST;
     ir_noop ST;
     ir_call cb__Nstd__Nplatform__Nclose__Aint [L0 . 0];
-    ir_load_addr STR2;
+    ir_load_addr STR3;
     ir_load [L3 . 0] ST;
     ir_load [L3 . 1] 9;
     ir_copy L12 L3 16;
@@ -262,10 +334,10 @@ func test_main -> int
     ir_load [L16 . 0] 0;
     ir_load [L16 . 1] [L3 . 1];
     ir_load L18 [L16 . 0];
-    ir_make_label test_main$f817$cond;
+    ir_make_label test_main$f901$cond;
     ir_cast L18;
-    ir_jmp_gte ST [L16 . 1] test_main$f817$end;
-    ir_make_label test_main$f817$body;
+    ir_jmp_gte ST [L16 . 1] test_main$f901$end;
+    ir_make_label test_main$f901$body;
     ir_deref L5;
     ir_index ST L18;
     ir_deref [L3 . 0];
@@ -273,8 +345,8 @@ func test_main -> int
     ir_load ST ST;
     ir_add L18 1;
     ir_load L18 ST;
-    ir_jmp test_main$f817$cond;
-    ir_make_label test_main$f817$end;
+    ir_jmp test_main$f901$cond;
+    ir_make_label test_main$f901$end;
     ir_load [L13 . 0] L5;
     ir_load [L13 . 1] [L3 . 1];
     ir_call cb__Nstd__Nplatform__Nget_stdout_fd;

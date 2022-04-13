@@ -1,4 +1,5 @@
 import std::platform;
 import io;
 import memory;
+extern func test_file_write():bool;
 extern(C) func test_main():int;

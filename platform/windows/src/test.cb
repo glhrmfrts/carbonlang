@@ -2,6 +2,20 @@ import std::platform
 import io
 import memory
 
+func test_file_write() {
+    let handle = open("file.txt", O_CREATE | O_WRITE)
+    write(handle.first, "HELLO_WORLD")
+    close(handle.first)
+
+    handle = open("file.txt", O_CREATE | O_READ)
+    let bufdata = [12]uint8{}
+    let data = []uint8{&bufdata[0], sizeof(bufdata)}
+    read(handle.first, data)
+    write(get_stdout_fd(), data)
+
+    return true
+}
+
 extern(C) func test_main(): int {
     // TODO: write(get_stdout_fd(), "Hello".ptr, 5)
     // TODO: let a, b = fn()

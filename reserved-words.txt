@@ -1,0 +1,8 @@
+as, if, in
+asm, for, let
+cast, else, func, pure, then, true, type
+false, while, defer, break, const
+return, extern, public, import, struct
+private, nullptr
+internal, continue
+typealias
