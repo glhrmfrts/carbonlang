@@ -321,8 +321,56 @@ std::pair<comptime_value, bool> node_to_comptime_value_fold(type_system& ts, ast
     case ast_type::unary_expr: {
         auto [value, ok] = node_to_comptime_value_fold(ts, *node.children[0]);
         if (ok) {
-            if (std::holds_alternative<int_type>(value) && node.op == token_from_char('-')) {
-                arg = (int_type)(- std::get<int_type>(value));
+            if (std::holds_alternative<int_type>(value)) {
+                switch (node.op) {
+                case token_from_char('-'):
+                    arg = (int_type)(-std::get<int_type>(value));
+                    break;
+                case token_from_char('~'):
+                    arg = (int_type)(~std::get<int_type>(value));
+                    break;
+                }
+            }
+        }
+        break;
+    }
+    case ast_type::binary_expr: {
+        auto [avalue, aok] = node_to_comptime_value_fold(ts, *node.children[0]);
+        auto [bvalue, bok] = node_to_comptime_value_fold(ts, *node.children[1]);
+        if (aok && bok && std::holds_alternative<int_type>(avalue) && std::holds_alternative<int_type>(bvalue)) {
+            int_type a = std::get<int_type>(avalue);
+            int_type b = std::get<int_type>(bvalue);
+            switch (node.op) {
+            case token_type::shr:
+                arg = a >> b;
+                break;
+            case token_type::shl:
+                arg = a << b;
+                break;
+            case token_from_char('&'):
+                arg = a & b;
+                break;
+            case token_from_char('|'):
+                arg = a | b;
+                break;
+            case token_from_char('^'):
+                arg = a ^ b;
+                break;
+            case token_from_char('+'):
+                arg = a + b;
+                break;
+            case token_from_char('-'):
+                arg = a - b;
+                break;
+            case token_from_char('*'):
+                arg = a * b;
+                break;
+            case token_from_char('/'):
+                arg = a / b;
+                break;
+            case token_from_char('%'):
+                arg = a % b;
+                break;
             }
         }
         break;
@@ -2144,10 +2192,6 @@ void resolve_assignment_type(type_system& ts, ast_node& node) {
     node.type_id = node.children[0]->type_id;
 }
 
-bool is_assignment_sugar_op(token_type op) {
-    return op == token_type::plus_assign || op == token_type::minus_assign || op == token_type::mul_assign || op == token_type::div_assign;
-}
-
 token_type get_desugared_assignment_op(token_type op) {
     switch (op) {
     case token_type::plus_assign:
@@ -2158,6 +2202,14 @@ token_type get_desugared_assignment_op(token_type op) {
         return token_from_char('*');
     case token_type::div_assign:
         return token_from_char('/');
+    case token_type::and_assign:
+        return token_from_char('&');
+    case token_type::or_assign:
+        return token_from_char('|');
+    case token_type::shr_assign:
+        return token_type::shr;
+    case token_type::shl_assign:
+        return token_type::shl;
     default:
         assert(!"unhandled get_desugared_assignment_op");
     }

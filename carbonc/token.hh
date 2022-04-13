@@ -61,6 +61,10 @@ enum class token_type : unsigned int {
     minus_assign,
     mul_assign,
     div_assign,
+    shl_assign,
+    shr_assign,
+    and_assign,
+    or_assign
 };
 
 struct position {
@@ -83,13 +87,17 @@ bool is_cmp_binary_op(token_type t);
 
 bool is_right_assoc(token_type t);
 
+bool is_assignment_sugar_op(token_type t);
+
 int precedence(token_type t);
 
 int precedence_cmp(token_type a, token_type b);
 
-token_type token_from_char(char c);
-
 char token_to_char(token_type t);
+
+constexpr token_type token_from_char(char c) {
+    return token_type{ (unsigned int)c };
+}
 
 inline bool token_is_char(token_type t, char c) { return t == token_from_char(c); }
 

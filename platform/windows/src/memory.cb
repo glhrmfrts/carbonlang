@@ -1,3 +1,5 @@
+import std::platform
+
 extern(C) {
 func HeapAlloc(
     hHeap:   int,
@@ -15,11 +17,12 @@ func GetProcessHeap(): int
 }
 
 extern(carbon, std::platform) {
-func alloc(size: usize): rawptr {
-    return HeapAlloc(GetProcessHeap(), 0, size)
+func alloc(size: usize): memory {
+    return memory{ HeapAlloc(GetProcessHeap(), 0, size), size }
 }
 
-func free(p: rawptr) {
-    HeapFree(GetProcessHeap(), 0, p)
+func free(m: &memory) {
+    HeapFree(GetProcessHeap(), 0, m.ptr)
+    m.ptr = nullptr
 }
 }

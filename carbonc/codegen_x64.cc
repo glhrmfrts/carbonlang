@@ -497,8 +497,24 @@ struct emitter {
         emitln(" idiv %s", tostr_sized(b).c_str());
     }
 
+    void and_(gen_destination a, gen_operand b) {
+        emitln(" and %s,%s", tostr_sized(a).c_str(), tostr_sized(b).c_str());
+    }
+
+    void or_(gen_destination a, gen_operand b) {
+        emitln(" or %s,%s", tostr_sized(a).c_str(), tostr_sized(b).c_str());
+    }
+
     void neg(gen_destination a) {
         emitln(" neg %s", tostr_sized(a).c_str());
+    }
+
+    void sal(gen_destination a, gen_operand b) {
+        emitln(" sal %s,%s", tostr_sized(a).c_str(), tostr_sized(b).c_str());
+    }
+
+    void sar(gen_destination a, gen_operand b) {
+        emitln(" sar %s,%s", tostr_sized(a).c_str(), tostr_sized(b).c_str());
     }
 
     void cdq(type_id t) {
@@ -612,6 +628,10 @@ struct generator {
             else if (inst.op == ir_copy) {
                 // ir_copy uses rcx as well
                 calls_ever_made = true;
+            }
+            else if (inst.op == ir_shl || inst.op == ir_shr) {
+                // shifting uses rcx
+                calls_ever_made;
             }
             else if (inst.op == ir_div) {
                 // ir_div uses rdx
@@ -1145,7 +1165,9 @@ struct generator {
         case ir_add:
         case ir_sub:
         case ir_mul:
-        case ir_div: {
+        case ir_div: 
+        case ir_and:
+        case ir_or: {
             auto [b, btype] = transform_ir_operand(instr.operands[1]);
             auto [a, atype] = transform_ir_operand(instr.operands[0]);
             auto dest = adjust_for_type(instr_dest_to_gen_dest(idata.dest), instr.result_type);
@@ -1175,6 +1197,36 @@ struct generator {
             }
 
             push(toop(dest));
+            break;
+        }
+        case ir_shr:
+        case ir_shl: {
+            auto [b, btype] = transform_ir_operand(instr.operands[1]);
+            auto [a, atype] = transform_ir_operand(instr.operands[0]);
+            auto dest = adjust_for_type(instr_dest_to_gen_dest(idata.dest), instr.result_type);
+
+            gen_destination op = todest(a);
+
+            if (!is_reg(a)) {
+                auto reg = adjust_for_type(reg_intermediate, atype);
+                move(reg, atype, a, atype);
+                op = reg;
+            }
+
+            if (!is_lit(b)) {
+                auto reg = adjust_for_type(rcx, btype);
+                move(reg, btype, b, btype);
+                b = toop(reg);
+            }
+
+            if (instr.op == ir_shl) {
+                em->sal(op, b);
+            }
+            else if (instr.op == ir_shr) {
+                em->sar(op, b);
+            }
+
+            move(dest, instr.result_type, a, atype);
             break;
         }
         case ir_neg: {
@@ -1242,6 +1294,12 @@ struct generator {
             break;
         case ir_mul:
             em->imul(a, b);
+            break;
+        case ir_and:
+            em->and_(a, b);
+            break;
+        case ir_or:
+            em->or_(a, b);
             break;
         }
     }

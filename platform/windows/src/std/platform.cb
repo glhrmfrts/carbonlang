@@ -2,15 +2,20 @@
 
 type error = int
 
-extern func alloc(sz: usize): rawptr
+type memory = struct {
+    ptr: rawptr
+    len: usize
+}
 
-extern func alloc2(sz: usize, extra: rawptr): rawptr
+extern func alloc(sz: usize): memory
 
-extern func free(m: rawptr)
+extern func alloc2(sz: usize, extra: rawptr): memory
 
-extern func write(fd: int, data: &pure uint8, sz: usize): isize
+extern func free(m: &memory)
 
-extern func read(fd: int, data: &uint8, sz: usize): isize
+extern func write(fd: int, data: []pure uint8): isize
+
+extern func read(fd: int, data: []uint8): isize
 
 
 const O_CREATE = 1

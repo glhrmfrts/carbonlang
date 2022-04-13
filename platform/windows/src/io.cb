@@ -5,7 +5,7 @@ func GetCommandLineA(): *pure uint8
 
 func GetStdHandle(nStdHandle: int): int
 
-func WriteFile(handle: int, str: *pure uint8, len: usize, written: *int, ov: rawptr)
+func WriteFile(handle: int, str: *pure uint8, len: int, written: *int, ov: rawptr)
 
 func ReadFile(
     hFile: int,
@@ -36,19 +36,22 @@ func CloseHandle(handle: int): int
 }
 
 extern(carbon, std::platform) {
-func write(handle: int, ptr: &pure uint8, len: usize): isize {
+func write(handle: int, data: []pure uint8): isize {
     let written : int
-    WriteFile(handle, ptr, len, &written, nullptr)
+    WriteFile(handle, cast(rawptr)data.ptr, cast(int)data.len, &written, nullptr)
     return written
 }
 
-func read(handle: int, ptr: &uint8, len: usize): isize {
+func read(handle: int, data: []uint8): isize {
     let bytes_read : int
-    ReadFile(handle, cast(rawptr)ptr, cast(int)len, &bytes_read, nullptr)
+    ReadFile(handle, cast(rawptr)data.ptr, cast(int)data.len, &bytes_read, nullptr)
     return bytes_read
 }
 
-func open(path: &pure uint8, flags: int): {int, error} {
+// TODO: review bitwise operations
+// TODO: const-fold binary expressions
+
+func open(path: []pure uint8, flags: int): {int, error} {
     const GENERIC_READ = 1<<31
     const GENERIC_WRITE = 1<<30
     
@@ -61,20 +64,20 @@ func open(path: &pure uint8, flags: int): {int, error} {
     const FILE_SHARE_WRITE = 2
     let sharemode = FILE_SHARE_READ | FILE_SHARE_WRITE
 
-    let secattr : LPSECURITY_ATTRIBUTES
-
     const OPEN_ALWAYS = 4
     const OPEN_EXISTS = 3
     let creation = OPEN_EXISTS
-    if (flags & O_CREATE != 0) {
+    if ((flags & O_CREATE) != 0) {
         creation = OPEN_ALWAYS
     }
 
     const FILE_ATTRIBUTE_NORMAL = 128
     let attrs = FILE_ATTRIBUTE_NORMAL
 
-    let handle = CreateFileA(path, access, sharemode, secattr, creation, attrs)
-    return handle, 0
+    let err : error
+    let handle = CreateFileA(path.ptr, access, sharemode, nullptr, creation, attrs, 0)
+    
+    return handle, err
 }
 
 func close(fd: int): error {

@@ -18,6 +18,10 @@ static const std::string opnames[] = {
     "ir_mul",
     "ir_div",
     "ir_neg",
+    "ir_and",
+    "ir_or",
+    "ir_shr",
+    "ir_shl",
     "ir_call",
     "ir_return",
     "ir_index",
@@ -668,6 +672,14 @@ void generate_ir_binary_expr(ast_node& node) {
     case '>':
         emit((node.ir.bin_invert_jump) ? ir_jmp_lte : ir_jmp_gt, a, b, ir_label{node.ir.bin_target_label});
         break;
+    case '&':
+        temit(ir_and, node.type_id, a, b);
+        push(ir_stack{ node.type_id });
+        break;
+    case '|':
+        temit(ir_or, node.type_id, a, b);
+        push(ir_stack{ node.type_id });
+        break;
     }
 
     switch (node.op) {
@@ -682,6 +694,14 @@ void generate_ir_binary_expr(ast_node& node) {
         break;
     case token_type::gteq:
         emit((node.ir.bin_invert_jump) ? ir_jmp_lt : ir_jmp_gte, a, b, ir_label{ node.ir.bin_target_label });
+        break;
+    case token_type::shr:
+        temit(ir_shr, node.type_id, a, b);
+        push(ir_stack{ node.type_id });
+        break;
+    case token_type::shl:
+        temit(ir_shl, node.type_id, a, b);
+        push(ir_stack{ node.type_id });
         break;
     }
 }
