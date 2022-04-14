@@ -23,7 +23,7 @@ const O_WRITE = 2
 const O_READ = 4
 const O_APPEND = 8
 
-extern func open(path: &pure uint8, flags: int): {int, error}
+extern func open(path: &pure uint8, flags: int, mode: int): {int, error}
 
 
 extern func get_stdout_fd(): int

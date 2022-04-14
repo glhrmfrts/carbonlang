@@ -3771,7 +3771,7 @@ type_system::type_system(memory_arena& arena) {
     isize_type = register_integral_type<std::int64_t>(*this, "isize");
     bool_type = register_integral_type<bool>(*this, "bool");
 
-    register_integral_type<std::int8_t>(*this, "int8");
+    int8_type = register_integral_type<std::int8_t>(*this, "int8");
     register_integral_type<std::int16_t>(*this, "int16");
     register_integral_type<std::int32_t>(*this, "int32");
     register_integral_type<std::int64_t>(*this, "int64");

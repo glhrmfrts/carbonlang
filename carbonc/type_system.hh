@@ -331,6 +331,7 @@ struct type_system {
     type_id bool_type{};
     type_id usize_type{};
     type_id isize_type{};
+    type_id int8_type{};
     type_id raw_string_type{}; // only used internally
 
     type_constructor* ptr_type_constructor;

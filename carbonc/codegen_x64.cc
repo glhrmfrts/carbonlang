@@ -1216,7 +1216,7 @@ struct generator {
             if (!is_lit(b)) {
                 auto reg = adjust_for_type(rcx, btype);
                 move(reg, btype, b, btype);
-                b = toop(reg);
+                b = toop(adjust_for_type(rcx, ts->int8_type));
             }
 
             if (instr.op == ir_shl) {
