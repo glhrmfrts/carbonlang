@@ -863,6 +863,8 @@ void generate_ir_char_literal(ast_node& node) {
 }
 
 void generate_ir_node(ast_node& node) {
+    if (node.disabled) return;
+
     for (auto& child : node.pre_children) {
         if (child) {
             generate_ir_node(*child);

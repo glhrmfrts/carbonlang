@@ -3,17 +3,17 @@ code_unit{
   decl_list{
     type_decl{error = type_expr{int}}
     type_decl{memory = type_expr{struct_type{decl_list{
-            var_decl{ptr: type_expr{rawptr}}
-            var_decl{len: type_expr{usize}}}}}}
+            var_decl{(ptr): type_expr{rawptr}}
+            var_decl{(len): type_expr{usize}}}}}}
     linkage_specifier{ extern}
     linkage_specifier{ extern}
     linkage_specifier{ extern}
     linkage_specifier{ extern}
     linkage_specifier{ extern}
-    var_decl{O_CREATE = 1}
-    var_decl{O_WRITE = 2}
-    var_decl{O_READ = 4}
-    var_decl{O_APPEND = 8}
+    var_decl{(O_CREATE) = 1}
+    var_decl{(O_WRITE) = 2}
+    var_decl{(O_READ) = 4}
+    var_decl{(O_APPEND) = 8}
     linkage_specifier{ extern}
     linkage_specifier{ extern}
     linkage_specifier{ extern}

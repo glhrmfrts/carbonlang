@@ -1,0 +1,4 @@
+extern(C) func carbon_main(): int {
+    let a, b = {1, 2}
+    return a
+}

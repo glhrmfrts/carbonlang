@@ -1063,7 +1063,7 @@ std::string type_list_to_string(const std::vector<type_id>& args) {
 
 std::string func_declaration_to_string(func_def* func) {
     std::string result = "func ";
-    result += func->self->var_id()->id_parts.front() + "(";
+    result += func->self->func_id()->id_parts.front() + "(";
     result += type_list_to_string(func->self->type_def.func.arg_types);
     result += "): " + type_to_string(func->self->type_def.func.ret_type);
     return result;
@@ -1626,7 +1626,7 @@ string_hash mangle_func_name(type_system& ts, const std::vector<std::string>& id
 }
 
 void resolve_func_args_type(type_system& ts, ast_node& node) {
-    auto funcname = node_to_string(*node.var_id());
+    auto funcname = node_to_string(*node.func_id());
 
     node.func.args_unresolved = false;
     node.type_def.func.arg_types.clear();
@@ -1649,7 +1649,7 @@ type_id deduce_func_return_type(type_system& ts, ast_node& f) {
         return ts.void_type;
     }
 
-    auto funcname = node_to_string(*f.var_id());
+    auto funcname = node_to_string(*f.func_id());
 
     type_id ret_type = invalid_type;
     for (auto& ret : f.func.return_statements) {
@@ -1677,7 +1677,7 @@ type_id deduce_func_return_type(type_system& ts, ast_node& f) {
 type_id resolve_func_type(type_system& ts, ast_node& f) {
     assert(f.func.self || !"func not declared yet");
 
-    auto funcname = node_to_string(*f.var_id());
+    auto funcname = node_to_string(*f.func_id());
 
     f.type_def.kind = type_kind::func;
     f.type_def.size = sizeof(void*);
@@ -1806,7 +1806,7 @@ void register_func_declaration_node(type_system& ts, ast_node& node) {
     auto body = node.children[ast_node::child_func_decl_body].get();
 
     node.func.decl_scope = ts.current_scope;
-    node.func.base_symbol = build_identifier_value(node.var_id()->id_parts);
+    node.func.base_symbol = build_identifier_value(node.func_id()->id_parts);
     auto ovbase = find_symbol_in_current_scope(ts, node.func.base_symbol);
     if (!ovbase) {
         declare_overloaded_func_base_symbol(ts, node.func.base_symbol);
@@ -2000,9 +2000,60 @@ arena_ptr<ast_node> generate_func_for_call(type_system& ts, ast_node& gnode, ast
     return std::move(node);
 }
 
-void resolve_and_declare_local_variable(type_system& ts, const string_hash& id, ast_node& node) {
+void generate_unpacking_operations(type_system& ts, ast_node& node) {
+    auto valuecopy = copy_node(ts, node.var_value());
+    auto tempname = generate_temp_name();
+    auto tempdecl = make_var_decl_with_value(*ts.ast_arena, tempname, std::move(valuecopy));
+    tempdecl->pos = node.pos;
+    resolve_node_type(ts, tempdecl.get());
+    node.parent->children_to_add.push_back(std::move(tempdecl));
+
+    auto tempref = make_identifier_node(*ts.ast_arena, node.var_value()->pos, { tempname });
+
+    if (node.type_id.get().kind == type_kind::structure || node.type_id.get().kind == type_kind::tuple) {
+        const auto& fields = get_type_fields(node.type_id);
+        int index = 0;
+        for (auto& idnode : node.var_decl_ids()) {
+            auto id = string_hash{ idnode->id_parts.back() };
+            auto sym = find_symbol_in_current_scope(ts, id);
+
+            auto dest = make_identifier_node(*ts.ast_arena, idnode->pos, idnode->id_parts);
+            auto value = make_struct_field_access(*ts.ast_arena, copy_node(ts, tempref.get()), fields[index].names.front());
+
+            if (sym) {
+                // Symbol exists, generate assignment
+                auto assign = make_assignment(*ts.ast_arena, std::move(dest), std::move(value));
+
+                resolve_node_type(ts, assign.get());
+                node.parent->children_to_add.push_back(std::move(assign));
+            }
+            else {
+                // Symbol does not exist yet, generate declaration
+                auto newdecl_type = make_type_expr_node(*ts.ast_arena, idnode->pos, make_type_resolver_node(*ts.ast_arena, fields[index].type));
+
+                auto newdecl = make_var_decl_node_single(*ts.ast_arena, node.pos, token_type::let,
+                    std::move(dest), std::move(newdecl_type), std::move(value), node.var_modifiers);
+
+                resolve_node_type(ts, newdecl.get());
+                node.parent->children_to_add.push_back(std::move(newdecl));
+            }
+            index++;
+        }
+    }
+}
+
+void resolve_and_declare_local_variables(type_system& ts, ast_node& node) {
     resolve_local_variable_type(ts, node);
 
+    // Check if we're unpacking a tuple / struct / array
+    if (node.type_id.valid() && is_aggregate(node.type_id) && node.var_decl_ids().size() > 1) {
+        generate_unpacking_operations(ts, node);
+        node.desugar_flags |= desugar_flag::var_decl_unpacked;
+        node.disabled = true;
+        return;
+    }
+
+    // Check if we're declaring a const (compile-time) value
     if (node.op == token_type::const_ && node.type_id.valid()) {
         if (!node.var_value()) {
             add_type_error(ts, node.pos, "const declaration requires a initializer expression");
@@ -2011,6 +2062,7 @@ void resolve_and_declare_local_variable(type_system& ts, const string_hash& id, 
 
         auto [value, ok] = node_to_comptime_value_fold(ts, *node.var_value());
         if (ok) {
+            auto id = string_hash{ node.var_id()->id_parts.back() };
             declare_comptime_symbol(ts, id, value, node.type_id);
         }
         else {
@@ -2019,14 +2071,18 @@ void resolve_and_declare_local_variable(type_system& ts, const string_hash& id, 
         return;
     }
 
-    if (ts.current_scope->kind == scope_kind::code_unit) {
-        declare_global_symbol(ts, id, node);
-    }
-    else {
-        declare_local_symbol(ts, id, node);
-    }
+    auto id = string_hash{ build_identifier_value(node.var_id()->id_parts) };
 
-    node.local.self = &node;
+    if (node.type_id.valid()) {
+        // Proceed with normal variable declaration (non-const, only 1 variable)
+        if (ts.current_scope->kind == scope_kind::code_unit) {
+            declare_global_symbol(ts, id, node);
+        }
+        else {
+            declare_local_symbol(ts, id, node);
+        }
+        node.local.self = &node;
+    }
 
     if (node.type_id.valid() && node.type_id.get().size == 0) {
         add_type_error(ts, node.pos, "cannot create value of an anonymous empty type");
@@ -2073,14 +2129,17 @@ void resolve_and_declare_local_variable(type_system& ts, const string_hash& id, 
 }
 
 void register_var_declaration_node(type_system& ts, ast_node& node) {
-    auto id = string_hash{ node.var_id()->id_parts.back() };
-    auto prev = find_symbol_in_current_scope(ts, id);
-    if (prev) {
-        add_type_error(ts, node.pos, "cannot redeclare name '%s'", node.var_id()->id_parts.back().c_str());
-        return;
+    // First check if at least one identifier is new
+    for (auto& idnode : node.var_decl_ids()) {
+        auto id = string_hash{ idnode->id_parts.back() };
+        auto prev = find_symbol_in_current_scope(ts, id);
+        if (prev) {
+            add_type_error(ts, node.pos, "cannot redeclare name '%s'", idnode->id_parts.back().c_str());
+            return;
+        }
     }
 
-    resolve_and_declare_local_variable(ts, id, node);
+    resolve_and_declare_local_variables(ts, node);
 }
 
 void resolve_assignment_type(type_system& ts, ast_node& node) {
@@ -2246,7 +2305,7 @@ void register_for_declarations(type_system& ts, ast_node& node) {
             }
 
             auto iterdecl = make_var_decl_with_value(*ts.ast_arena, "$foriter", std::move(node.children[1]));
-            resolve_and_declare_local_variable(ts, string_hash{ "$foriter" }, *iterdecl);
+            resolve_and_declare_local_variables(ts, *iterdecl);
 
             auto iterref1 = make_identifier_node(*ts.ast_arena, {}, { "$foriter" });
             resolve_node_type(ts, iterref1.get());
@@ -2262,7 +2321,7 @@ void register_for_declarations(type_system& ts, ast_node& node) {
 
             // declare the variable to hold the element of the range
             auto elem_decl_node = make_var_decl_with_value(*ts.ast_arena, elem_node->id_parts.front(), std::move(iterstart));
-            resolve_and_declare_local_variable(ts, string_hash{ build_identifier_value(elem_decl_node->id_parts) }, *elem_decl_node);
+            resolve_and_declare_local_variables(ts, *elem_decl_node);
 
             auto elemref = make_identifier_node(*ts.ast_arena, {}, elem_node->id_parts);
             resolve_node_type(ts, elemref.get());
@@ -2790,7 +2849,7 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
         node.type_id = resolve_node_type(ts, node.children.front().get());
         if (!node.type_id.valid() || node.type_error) {
             auto funcname = node_to_string(
-                *(find_nearest_scope_local(ts, scope_kind::func_body)->self->var_id())
+                *(find_nearest_scope_local(ts, scope_kind::func_body)->self->func_id())
             );
             complement_error(ts, node.pos, "in return statement of function '%s'", funcname.c_str());
         }
@@ -2925,7 +2984,7 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
             register_func_declaration_node(ts, node);
         }
         else if (!node.func.is_generic) {
-            auto funcname = node_to_string(*node.var_id());
+            auto funcname = node_to_string(*node.func_id());
             resolve_func_args_type(ts, node);
 
             auto body = node.func_body();
@@ -3270,19 +3329,16 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
         break;
     }
     case ast_type::var_decl: {
-        if (node.children[ast_node::child_var_decl_value]) {
-            //node.children[ast_node::child_var_decl_value]->receiver = &node;
-        }
-
-        if (ts.pass == type_system_pass::resolve_literals_and_register_declarations) {
-            register_var_declaration_node(ts, node);
-        }
-        else {
-            auto id = string_hash{ build_identifier_value(node.var_id()->id_parts) };
-            resolve_and_declare_local_variable(ts, id, node);
-            if (!node.type_id.valid() || node.type_error) {
-                auto name = node_to_string(*node.var_id());
-                complement_error(ts, node.pos, "in declaration of variable '%s'", name.c_str());
+        if (!(node.desugar_flags & desugar_flag::var_decl_unpacked)) {
+            if (ts.pass == type_system_pass::resolve_literals_and_register_declarations) {
+                register_var_declaration_node(ts, node);
+            }
+            else {
+                resolve_and_declare_local_variables(ts, node);
+                if (!node.type_id.valid() || node.type_error) {
+                    auto name = node_to_string(*node.var_id());
+                    complement_error(ts, node.pos, "in declaration of variable '%s'", name.c_str());
+                }
             }
         }
         break;
@@ -3539,7 +3595,7 @@ void remangle_names(type_system& ts, ast_node* nodeptr) {
                 parts = ts.current_scope->self_module_parts;
             }
 
-            for (const auto& part : node.var_id()->id_parts) {
+            for (const auto& part : node.func_id()->id_parts) {
                 parts.push_back(part);
             }
 
@@ -3699,6 +3755,10 @@ void resolve_imports(type_system& ts, ast_node& node) {
 }
 
 void visit_tree(type_system& ts, ast_node& node) {
+    auto ptr = &node;
+    if (!ptr) return;
+    if (ptr->disabled) return;
+
     switch (ts.pass) {
     case type_system_pass::create_header_files:
         create_header_file(ts, node);

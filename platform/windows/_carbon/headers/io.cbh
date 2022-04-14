@@ -7,7 +7,7 @@ extern(C) func CreateFileA(:*pure uint8, :int, :int, :*LPSECURITY_ATTRIBUTES, :i
 extern(C) func CloseHandle(:int):int;
 extern func write(:int, :[]pure uint8):isize;
 extern func read(:int, :[]uint8):isize;
-extern func open(:[]pure uint8, :int):{int, error};
+extern func open(:[]pure uint8, :int, :int):{int, error};
 extern func close(:int):error;
 extern func get_stdin_fd():int;
 extern func get_stdout_fd():int;

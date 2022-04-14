@@ -3,18 +3,18 @@ code_unit{
   decl_list{
     import_decl{ std::platform}
     linkage_specifier{ extern(C) decl_list{
-        func_decl{HeapAlloc (var_decl{hHeap: type_expr{int}}, var_decl{dwFlags: type_expr{int}}, var_decl{dwBytes: type_expr{usize}}): type_expr{rawptr} }
-        func_decl{HeapFree (var_decl{hHeap: type_expr{int}}, var_decl{dwFlags: type_expr{int}}, var_decl{lpMem: type_expr{rawptr}}): type_expr{bool} }
+        func_decl{HeapAlloc (var_decl{(hHeap): type_expr{int}}, var_decl{(dwFlags): type_expr{int}}, var_decl{(dwBytes): type_expr{usize}}): type_expr{rawptr} }
+        func_decl{HeapFree (var_decl{(hHeap): type_expr{int}}, var_decl{(dwFlags): type_expr{int}}, var_decl{(lpMem): type_expr{rawptr}}): type_expr{bool} }
         func_decl{GetProcessHeap (): type_expr{int} }}}
     linkage_specifier{ extern decl_list{
-        func_decl{alloc (var_decl{$cb_agg_ret: }, var_decl{size: type_expr{usize}}):  {
+        func_decl{alloc (var_decl{($cb_agg_ret): }, var_decl{(size): type_expr{usize}}):  {
             stmt_list{
               {{@ $cb_agg_ret} = init{type=type_expr{memory} 
                 {{@ $cb_agg_ret}.ptr = call{HeapAlloc (call{GetProcessHeap ()}, 0, size)}}
                 {{@ $cb_agg_ret}.len = size}
                 }}
               return{$cb_agg_ret}}}}
-        func_decl{free (var_decl{m: type_expr{type_qualifier{optional, memory}}}) {
+        func_decl{free (var_decl{(m): type_expr{type_qualifier{optional, memory}}}) {
             stmt_list{
               call{HeapFree (call{GetProcessHeap ()}, 0, m.ptr)}}
             stmt_list{

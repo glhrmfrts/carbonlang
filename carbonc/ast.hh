@@ -79,6 +79,7 @@ struct desugar_flag {
     static constexpr type none = 0;
     static constexpr type bool_op_desugared = 1;
     static constexpr type ternary_desugared = 2;
+    static constexpr type var_decl_unpacked = 4;
 };
 
 struct ast_node {
@@ -136,6 +137,7 @@ struct ast_node {
     desugar_flag::type desugar_flags = 0;
     std::vector<token_type> var_modifiers;
     decl_visibility visibility;
+    bool disabled = false;
 
     // data filled by the type system
     scope_def scope;
@@ -164,12 +166,18 @@ struct ast_node {
     ast_node*                         func_body() const  { return children[3].get(); }
     ast_node*                         func_ret_type() const  { return children[2].get(); }
 
-    ast_node* var_id() const { return children[0].get(); }
+    ast_node* var_id() const { return children[0]->children[0].get(); }
     ast_node* var_type() const { return children[1].get(); }
     ast_node* var_value() const { return children[2].get(); }
 
+    std::vector<arena_ptr<ast_node>>& var_decl_ids() const { return children[0]->children; }
+
     ast_node*                         call_func() const  { return children[0].get(); }
     std::vector<arena_ptr<ast_node>>& call_args() const  { return children[1]->children; }
+
+    //ast_node* arg_id() const { return children[0].get(); }
+
+    //ast_node* field_decl_id() const { return children[0].get(); }
 
     ast_node* field_struct() const  { return children[0].get(); }
     ast_node* field_field() const  { return children[1].get(); }
@@ -235,6 +243,8 @@ arena_ptr<ast_node> make_type_decl_node(memory_arena& arena, const position& pos
 arena_ptr<ast_node> make_type_constructor_decl_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& tpl, arena_ptr<ast_node>&& arg_list, arena_ptr<ast_node>&& contents);
 
 arena_ptr<ast_node> make_var_decl_node(memory_arena& arena, const position& pos, token_type kind, arena_ptr<ast_node>&& id, arena_ptr<ast_node>&& decl_type, arena_ptr<ast_node>&& decl_val, const std::vector<token_type>& mods);
+
+arena_ptr<ast_node> make_var_decl_node_single(memory_arena& arena, const position& pos, token_type kind, arena_ptr<ast_node>&& id, arena_ptr<ast_node>&& decl_type, arena_ptr<ast_node>&& decl_val, const std::vector<token_type>& mods);
 
 arena_ptr<ast_node> make_func_decl_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& id, arena_ptr<ast_node>&& arg_list, arena_ptr<ast_node>&& ret_type, arena_ptr<ast_node>&& body, func_linkage linkage);
 

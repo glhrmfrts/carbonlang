@@ -3,7 +3,7 @@ extern func alloc2(:usize, :rawptr):memory;
 extern func free(:&memory):{};
 extern func write(:int, :[]pure uint8):isize;
 extern func read(:int, :[]uint8):isize;
-extern func open(:&pure uint8, :int):{int, error};
+extern func open(:&pure uint8, :int, :int):{int, error};
 extern func get_stdout_fd():int;
 extern func get_stderr_fd():int;
 extern func get_stdin_fd():int;

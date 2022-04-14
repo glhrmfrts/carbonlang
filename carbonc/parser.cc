@@ -819,7 +819,7 @@ struct parser_impl {
             value = parse_braceless_tuple_expr();
         }
 
-        return make_var_decl_node(*ast_arena, pos, kind, std::move(id), std::move(var_type), std::move(value), modifiers);
+        return make_var_decl_node_single(*ast_arena, pos, kind, std::move(id), std::move(var_type), std::move(value), modifiers);
     }
 
     arena_ptr<ast_node> parse_var_decl(token_type kind) {
@@ -837,15 +837,18 @@ struct parser_impl {
             throw parse_error(filename, lex->pos(), "expected 'let' in variable declaration");
         }
 
-        auto id = parse_qualified_identifier();
-
-#if 0
-        if (TOK != token_type::identifier) {
-            throw parse_error(filename, lex->pos(), "expected identifier in variable declaration");
+        if (TOK_CHAR == '{') {
+            lex->next();
         }
-        auto id = make_identifier_node(*ast_arena, lex->pos(), { lex->string_value() });
-        lex->next();
-#endif
+
+        auto ids = parse_identifier_list();
+        if (!ids) {
+            throw parse_error(filename, lex->pos(), "expected one or more identifiers in variable declaration");
+        }
+
+        if (TOK_CHAR == '}') {
+            lex->next();
+        }
 
         arena_ptr<ast_node> var_type{nullptr, nullptr};
         if (TOK_CHAR == ':') {
@@ -859,7 +862,7 @@ struct parser_impl {
             value = parse_braceless_tuple_expr();
         }
 
-        return make_var_decl_node(*ast_arena, pos, kind, std::move(id), std::move(var_type), std::move(value), modifiers);
+        return make_var_decl_node(*ast_arena, pos, kind, std::move(ids), std::move(var_type), std::move(value), modifiers);
     }
 
     std::vector<token_type> parse_var_modifiers() {
@@ -869,6 +872,32 @@ struct parser_impl {
             lex->next();
         }
         return mods;
+    }
+
+    arena_ptr<ast_node> parse_identifier_list() {
+        auto id = parse_qualified_identifier();
+        if (!id) {
+            return { nullptr, nullptr };
+        }
+
+        auto list = make_arg_list_node(*ast_arena, id->pos, {});
+        list->children.push_back(std::move(id));
+
+        while (TOK_CHAR == ',') {
+            lex->next();
+
+            if (TOK == token_type::identifier) {
+                auto curexpr = parse_qualified_identifier();
+                if (curexpr) {
+                    list->children.push_back(std::move(curexpr));
+                }
+                else {
+                    break;
+                }
+            }
+        }
+
+        return list;
     }
 
     // Section: expressions
@@ -1154,7 +1183,7 @@ struct parser_impl {
                     }
 
                     // TODO: specialized node type needed?
-                    return make_var_decl_node(*ast_arena, pos, token_type::let, std::move(id), { nullptr, nullptr }, std::move(value), {});
+                    return make_var_decl_node_single(*ast_arena, pos, token_type::let, std::move(id), { nullptr, nullptr }, std::move(value), {});
                 }
                 else {
                     return parse_expr();

@@ -2,49 +2,49 @@ import std::platform
 import io
 import memory
 
-func test_file_write() {
-    let handle = open("file.txt", O_CREATE | O_WRITE, 0)
-    write(handle.first, "HELLO_WORLD")
-    close(handle.first)
+// TODO: let a, b = {1, 2}
+// TODO: write(get_stdout_fd(), "Hello".ptr, 5)
 
-    handle = open("file.txt", O_CREATE | O_READ, 0)
+func test_file_write() {
+    let handle, err = open("file.txt", O_CREATE | O_WRITE, 0)
+    write(handle, "HELLO_WORLD")
+    close(handle)
+
+    let newhandle, err = open("file.txt", O_READ, 0)
+    defer close(newhandle)
+
     let bufdata = [12]uint8{}
     let data = []uint8{&bufdata[0], sizeof(bufdata)}
-    read(handle.first, data)
+    read(newhandle, data)
     write(get_stdout_fd(), data)
+    write(get_stdout_fd(), "\n")
 
     return true
 }
 
 extern(C) func test_main(): int {
-    // TODO: write(get_stdout_fd(), "Hello".ptr, 5)
-    // TODO: let a, b = fn()
+    test_file_write()
 
-    let handle = open("file.txt", O_READ, 0)
+    let handle, err = open("file.txt", O_READ, 0)
     let bufdata = [12]uint8{}
     let data = []uint8{&bufdata[0], sizeof(bufdata)}
-    read(handle.first, data)
+    read(handle, data)
     write(get_stdout_fd(), data)
     write(get_stdout_fd(), "\n")
-    close(handle.first)
+    close(handle)
 
     let str = "QWEQWEQWE"
     write(get_stdout_fd(), str)
 
     let m = alloc(str.len + 1)
+    defer free(m)
+
     let ptr = nullcast(cast(*uint8)m.ptr)
 
     for (i in 0,str.len) {
         ptr[i] = str[i]
     }
     write(get_stdout_fd(), []pure uint8{ptr, str.len})
-
-    let or = open("file.txt", O_APPEND, 0)
-    let file = or.first
-    write(file, []pure uint8{ptr, str.len})
-    close(file)
-
-    free(m)
 
     return 0
 }

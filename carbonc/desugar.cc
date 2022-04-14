@@ -192,6 +192,7 @@ void check_temp_aggregate_call(type_system& ts, ast_node& node) {
 
 void desugar(type_system& ts, ast_node* nodeptr) {
     if (!nodeptr) return;
+    if (nodeptr->disabled) return;
 
     auto& node = *nodeptr;
     switch (node.type) {

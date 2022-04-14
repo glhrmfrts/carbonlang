@@ -13,6 +13,8 @@ void do_indent(std::ostream& stream, int indent) {
 }
 
 void prettyprint(const ast_node& node, std::ostream& stream, int indent, bool doindent) {
+    if (node.disabled) return;
+
     for (const auto& child : node.pre_children) {
         if (child) { prettyprint(*child, stream, indent, doindent); stream << "\n"; }
     }

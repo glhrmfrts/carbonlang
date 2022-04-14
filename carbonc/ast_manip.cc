@@ -12,7 +12,7 @@ void resolve_node_type_post(type_system& ts, ast_node* nodeptr) {
 
 arena_ptr<ast_node> make_var_decl_with_value(memory_arena& ast_arena, std::string varname, arena_ptr<ast_node> value) {
     // TODO: modifiers
-    auto res = make_var_decl_node(ast_arena, {}, token_type::let, make_identifier_node(ast_arena, {}, { varname }), { nullptr, nullptr }, std::move(value), {});
+    auto res = make_var_decl_node_single(ast_arena, {}, token_type::let, make_identifier_node(ast_arena, {}, { varname }), { nullptr, nullptr }, std::move(value), {});
     res->local.self = res.get();
     return res;
 }
@@ -232,7 +232,7 @@ std::pair<arena_ptr<ast_node>, arena_ptr<ast_node>> make_temp_variable_for_call_
     val_node->pre_children = std::move(call.pre_children);
 
     // Generate and register the declaration of the temp
-    auto decl = make_var_decl_node(*ts.ast_arena, {}, token_type::let, std::move(id_node), { nullptr, nullptr }, std::move(val_node), { token_type::auto_ });
+    auto decl = make_var_decl_node_single(*ts.ast_arena, {}, token_type::let, std::move(id_node), { nullptr, nullptr }, std::move(val_node), { token_type::auto_ });
     resolve_node_type_post(ts, decl.get());
 
     // Make a reference to use as the new argument
@@ -248,7 +248,7 @@ std::pair<arena_ptr<ast_node>, arena_ptr<ast_node>> make_temp_variable_for_index
     auto id_node = make_identifier_node(*ts.ast_arena, {}, { tempname });
 
     // Generate and register the declaration of the temp
-    auto decl = make_var_decl_node(*ts.ast_arena, {}, token_type::let, std::move(id_node), { nullptr, nullptr }, std::move(lhs), { token_type::auto_ });
+    auto decl = make_var_decl_node_single(*ts.ast_arena, {}, token_type::let, std::move(id_node), { nullptr, nullptr }, std::move(lhs), { token_type::auto_ });
     resolve_node_type_post(ts, decl.get());
 
     // Make a reference to use as the new argument6
@@ -270,7 +270,7 @@ std::pair<arena_ptr<ast_node>, arena_ptr<ast_node>> make_temp_variable_for_bool_
     auto type_node = make_type_expr_node(*ts.ast_arena, {}, make_identifier_node(*ts.ast_arena, {}, { "bool" }));
 
     // Generate and register the declaration of the temp
-    auto decl = make_var_decl_node(*ts.ast_arena, {}, token_type::let, std::move(id_node), std::move(type_node), { nullptr, nullptr }, { token_type::auto_ });
+    auto decl = make_var_decl_node_single(*ts.ast_arena, {}, token_type::let, std::move(id_node), std::move(type_node), { nullptr, nullptr }, { token_type::auto_ });
     resolve_node_type_post(ts, decl.get());
 
     // Make a reference to use as the new argument
@@ -305,7 +305,7 @@ std::pair<arena_ptr<ast_node>, arena_ptr<ast_node>> make_temp_variable_for_terna
     auto type_node = make_type_resolver_node(*ts.ast_arena, expr->type_id);
 
     // Generate and register the declaration of the temp
-    auto decl = make_var_decl_node(*ts.ast_arena, {}, token_type::let, std::move(id_node), std::move(type_node), { nullptr, nullptr }, { token_type::auto_ });
+    auto decl = make_var_decl_node_single(*ts.ast_arena, {}, token_type::let, std::move(id_node), std::move(type_node), { nullptr, nullptr }, { token_type::auto_ });
     resolve_node_type_post(ts, decl.get());
 
     // Make a reference to use as the new argument
@@ -335,7 +335,7 @@ arena_ptr<ast_node> make_var_decl_of_type(type_system& ts, token_type kind, cons
     
     // TODO: modifiers
 
-    auto res = make_var_decl_node(*ts.ast_arena, {}, kind, std::move(id_node), std::move(type_node), { nullptr, nullptr }, {});
+    auto res = make_var_decl_node_single(*ts.ast_arena, {}, kind, std::move(id_node), std::move(type_node), { nullptr, nullptr }, {});
     res->local.self = res.get();
     return res;
 }

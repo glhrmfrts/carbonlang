@@ -233,6 +233,26 @@ arena_ptr<ast_node> make_var_decl_node(memory_arena& arena, const position& pos,
     return ptr;
 }
 
+arena_ptr<ast_node> make_var_decl_node_single(memory_arena& arena, const position& pos, token_type kind, arena_ptr<ast_node>&& id, arena_ptr<ast_node>&& decl_type, arena_ptr<ast_node>&& decl_val, const std::vector<token_type>& mods) {
+    auto ptr = make_in_arena<ast_node>(arena);
+    ptr->node_id = node_id_gen++;
+    ptr->type = ast_type::var_decl;
+    ptr->pos = pos;
+    ptr->op = kind;
+    ptr->var_modifiers = mods;
+
+    auto idpos = id->pos;
+
+    std::vector<arena_ptr<ast_node>> idlist;
+    idlist.push_back(std::move(id));
+    auto arg_list = make_arg_list_node(arena, idpos, std::move(idlist));
+
+    ptr->children.push_back(std::move(arg_list));
+    ptr->children.push_back(std::move(decl_type));
+    ptr->children.push_back(std::move(decl_val));
+    return ptr;
+}
+
 arena_ptr<ast_node> make_func_decl_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& id, arena_ptr<ast_node>&& arg_list,
     arena_ptr<ast_node>&& ret_type, arena_ptr<ast_node>&& body, func_linkage linkage) {
 
