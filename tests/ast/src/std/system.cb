@@ -19,12 +19,12 @@ code_unit{
     linkage_specifier{ extern}
     linkage_specifier{ extern}
     linkage_specifier{ extern}
+    linkage_specifier{ extern}
     var_decl{(SEEK_SET) = 0}
     var_decl{(SEEK_CUR) = 1}
     var_decl{(SEEK_END) = 2}
     var_decl{(SEEK_DATA) = 3}
     var_decl{(SEEK_HOLE) = 4}
-    linkage_specifier{ extern}
     linkage_specifier{ extern}
     type_decl{stat_data = type_expr{struct_type{decl_list{
             var_decl{(size): type_expr{usize}}
@@ -32,6 +32,11 @@ code_unit{
             var_decl{(atime): type_expr{int64}}
             var_decl{(ctime): type_expr{int64}}
             var_decl{(mode): type_expr{int}}}}}}
+    linkage_specifier{ extern}
+    linkage_specifier{ extern}
+    linkage_specifier{ extern}
+    linkage_specifier{ extern}
+    linkage_specifier{ extern}
     linkage_specifier{ extern}
     linkage_specifier{ extern}
     linkage_specifier{ extern}}}

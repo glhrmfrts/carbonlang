@@ -7,16 +7,21 @@ type memory = struct {
     len: usize
 }
 
+
+// memory.cb
+
 extern func alloc(sz: usize): memory
 
-extern func alloc2(sz: usize, extra: rawptr): memory
+extern func alloc(sz: usize, extra: rawptr): memory
 
 extern func free(m: &memory)
+
+
+// io.cb
 
 extern func write(fd: int, data: []pure uint8): isize
 
 extern func read(fd: int, data: []uint8): isize
-
 
 const O_CREATE = 1
 const O_WRITE = 2
@@ -33,6 +38,7 @@ extern func get_stdin_fd(): int
 
 extern func get_fd_flags(fd: int): int
 
+extern func close(fd: int): error
 
 const SEEK_SET = 0
 const SEEK_CUR = 1
@@ -41,10 +47,6 @@ const SEEK_DATA = 3
 const SEEK_HOLE = 4
 
 extern func seek(fd: int, offset: int64, whence: int)
-
-
-extern func close(fd: int): error
-
 
 type stat_data = struct {
     size: usize
@@ -58,5 +60,17 @@ extern func stat(filename: []pure uint8, buf: &stat_data): error
 
 extern func stat(fd: int, buf: &stat_data): error
 
+extern func unlink(path: []pure uint8): error
+
+extern func remove(path: []pure uint8): error
+
+extern func rename(path: []pure uint8, dest: []pure uint8): error
+
+extern func copy(path: []pure uint8, dest: []pure uint8): error
+
+extern func mkdir(path: []pure uint8): error
+
+
+// system.cb
 
 extern func exit(code: int)

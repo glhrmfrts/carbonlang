@@ -356,8 +356,18 @@ void generate_ir_children(ast_node& node) {
 }
 
 void generate_ir_func(ast_node& node) {
-    ir_func& func = prog->funcs.emplace_back();
-    func.index = prog->funcs.size() - 1;
+    ir_func* funcptr = nullptr;
+    for (auto& f : prog->funcs) {
+        if (f.name == node.type_def.mangled_name.str) {
+            funcptr = &f;
+        }
+    }
+
+    ir_func& func = funcptr ? *funcptr : prog->funcs.emplace_back();
+    if (!funcptr) {
+        func.index = prog->funcs.size() - 1;
+    }
+
     fn = &func;
 
     auto mangled_name = node.type_def.mangled_name.str;
@@ -366,14 +376,20 @@ void generate_ir_func(ast_node& node) {
     func.visibility = node.visibility;
     func.demangled_name = orig_name;
     func.ret_type = node.type_def.func.ret_type;
+    func.name = mangled_name;
 
-    if (!node.scope.body_node) {
-        func.name = mangled_name;
+    if (!funcptr && !node.scope.body_node) {
+        // First declaration of function is extern
         func.is_extern = true;
         return;
     }
+    else if (!node.scope.body_node) {
+        // Definition already exists, this was the extern declaration
+        return;
+    }
 
-    func.name = mangled_name;
+    // We have the function definition here
+    func.is_extern = false;
 
     for (auto& arg : node.func_args()) {
         ir_arg_data iarg;

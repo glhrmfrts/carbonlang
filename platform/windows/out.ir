@@ -34,6 +34,21 @@ endf
 func GetLastError -> int
 endf
 
+func CopyFileA -> bool
+endf
+
+func DeleteFileA -> bool
+endf
+
+func MoveFileA -> bool
+endf
+
+func CreateDirectoryA -> bool
+endf
+
+func RemoveDirectoryA -> bool
+endf
+
 func cb__Nstd__Nsystem__Nwrite__Aint__Aptr__Tslice__Tpure__Tuint8 -> isize
     arg #0 handle: int;
     arg #1 data: ptr__Tslice__Tpure__Tuint8;
@@ -75,31 +90,39 @@ func cb__Nstd__Nsystem__Nopen__Aptr__Ttuple__Tint__Terror__Aptr__Tslice__Tpure__
     ir_load L0 2147483648;
     ir_or 8 2;
     ir_and A2 POP();
-    ir_jmp_eq POP() 0 cb__Nstd__Nsystem__Nopen__Aptr__Ttuple__Tint__Terror__Aptr__Tslice__Tpure__Tuint8__Aint__Aint$if426$else;
-    ir_make_label cb__Nstd__Nsystem__Nopen__Aptr__Ttuple__Tint__Terror__Aptr__Tslice__Tpure__Tuint8__Aint__Aint$if426$body;
+    ir_jmp_eq POP() 0 cb__Nstd__Nsystem__Nopen__Aptr__Ttuple__Tint__Terror__Aptr__Tslice__Tpure__Tuint8__Aint__Aint$if511$else;
+    ir_make_label cb__Nstd__Nsystem__Nopen__Aptr__Ttuple__Tint__Terror__Aptr__Tslice__Tpure__Tuint8__Aint__Aint$if511$body;
     ir_or L0 1073741824;
     ir_load L0 POP();
-    ir_make_label cb__Nstd__Nsystem__Nopen__Aptr__Ttuple__Tint__Terror__Aptr__Tslice__Tpure__Tuint8__Aint__Aint$if426$else;
+    ir_make_label cb__Nstd__Nsystem__Nopen__Aptr__Ttuple__Tint__Terror__Aptr__Tslice__Tpure__Tuint8__Aint__Aint$if511$else;
     ir_or 1 2;
     ir_load L1 POP();
     ir_load L2 3;
     ir_and A2 1;
-    ir_jmp_eq POP() 0 cb__Nstd__Nsystem__Nopen__Aptr__Ttuple__Tint__Terror__Aptr__Tslice__Tpure__Tuint8__Aint__Aint$if465$else;
-    ir_make_label cb__Nstd__Nsystem__Nopen__Aptr__Ttuple__Tint__Terror__Aptr__Tslice__Tpure__Tuint8__Aint__Aint$if465$body;
+    ir_jmp_eq POP() 0 cb__Nstd__Nsystem__Nopen__Aptr__Ttuple__Tint__Terror__Aptr__Tslice__Tpure__Tuint8__Aint__Aint$if550$else;
+    ir_make_label cb__Nstd__Nsystem__Nopen__Aptr__Ttuple__Tint__Terror__Aptr__Tslice__Tpure__Tuint8__Aint__Aint$if550$body;
     ir_load L2 4;
-    ir_make_label cb__Nstd__Nsystem__Nopen__Aptr__Ttuple__Tint__Terror__Aptr__Tslice__Tpure__Tuint8__Aint__Aint$if465$else;
+    ir_make_label cb__Nstd__Nsystem__Nopen__Aptr__Ttuple__Tint__Terror__Aptr__Tslice__Tpure__Tuint8__Aint__Aint$if550$else;
     ir_load L3 128;
     ir_load L4 0;
     ir_deref A1; (push)
     ir_call CreateFileA [POP() . 0] L0 L1 0 L2 L3 0; (push)
     ir_load L5 POP();
-    ir_jmp_eq L5 0 cb__Nstd__Nsystem__Nopen__Aptr__Ttuple__Tint__Terror__Aptr__Tslice__Tpure__Tuint8__Aint__Aint$if514$else;
+    ir_jmp_neq L5 0 cb__Nstd__Nsystem__Nopen__Aptr__Ttuple__Tint__Terror__Aptr__Tslice__Tpure__Tuint8__Aint__Aint$if596$else;
+    ir_make_label cb__Nstd__Nsystem__Nopen__Aptr__Ttuple__Tint__Terror__Aptr__Tslice__Tpure__Tuint8__Aint__Aint$if596$body;
+    ir_deref A0; (push)
+    ir_load [POP() . 0] 0;
+    ir_deref A0; (push)
+    ir_call GetLastError; (push)
+    ir_load [POP() . 1] POP();
+    ir_return A0;
+    ir_make_label cb__Nstd__Nsystem__Nopen__Aptr__Ttuple__Tint__Terror__Aptr__Tslice__Tpure__Tuint8__Aint__Aint$if596$else;
     ir_and A2 8;
-    ir_jmp_eq POP() 0 cb__Nstd__Nsystem__Nopen__Aptr__Ttuple__Tint__Terror__Aptr__Tslice__Tpure__Tuint8__Aint__Aint$if514$else;
-    ir_make_label cb__Nstd__Nsystem__Nopen__Aptr__Ttuple__Tint__Terror__Aptr__Tslice__Tpure__Tuint8__Aint__Aint$if514$body;
+    ir_jmp_eq POP() 0 cb__Nstd__Nsystem__Nopen__Aptr__Ttuple__Tint__Terror__Aptr__Tslice__Tpure__Tuint8__Aint__Aint$if612$else;
+    ir_make_label cb__Nstd__Nsystem__Nopen__Aptr__Ttuple__Tint__Terror__Aptr__Tslice__Tpure__Tuint8__Aint__Aint$if612$body;
     ir_call SetFilePointer L5 0 0 2; (push)
     ir_noop POP();
-    ir_make_label cb__Nstd__Nsystem__Nopen__Aptr__Ttuple__Tint__Terror__Aptr__Tslice__Tpure__Tuint8__Aint__Aint$if514$else;
+    ir_make_label cb__Nstd__Nsystem__Nopen__Aptr__Ttuple__Tint__Terror__Aptr__Tslice__Tpure__Tuint8__Aint__Aint$if612$else;
     ir_deref A0; (push)
     ir_load [POP() . 0] L5;
     ir_deref A0; (push)
@@ -132,11 +155,11 @@ func cb__Nstd__Nsystem__Nstat__Aint__Aptr__Tstat_data -> error
     ir_load [L0 . 9] 0;
     ir_load_addr L0; (push)
     ir_call GetFileInformationByHandle A0 POP(); (push)
-    ir_jmp_neq POP() 0 cb__Nstd__Nsystem__Nstat__Aint__Aptr__Tstat_data$if590$else;
-    ir_make_label cb__Nstd__Nsystem__Nstat__Aint__Aptr__Tstat_data$if590$body;
+    ir_jmp_neq POP() 0 cb__Nstd__Nsystem__Nstat__Aint__Aptr__Tstat_data$if688$else;
+    ir_make_label cb__Nstd__Nsystem__Nstat__Aint__Aptr__Tstat_data$if688$body;
     ir_call GetLastError; (push)
     ir_return POP();
-    ir_make_label cb__Nstd__Nsystem__Nstat__Aint__Aptr__Tstat_data$if590$else;
+    ir_make_label cb__Nstd__Nsystem__Nstat__Aint__Aptr__Tstat_data$if688$else;
     ir_deref A1; (push)
     ir_or [L0 . 5] [L0 . 6];
     ir_cast POP(); (push)
@@ -160,18 +183,18 @@ func cb__Nstd__Nsystem__Nstat__Aptr__Tslice__Tpure__Tuint8__Aptr__Tstat_data -> 
     ir_call cb__Nstd__Nsystem__Nopen__Aptr__Ttuple__Tint__Terror__Aptr__Tslice__Tpure__Tuint8__Aint__Aint POP() A0 0 0; (push)
     ir_load L1 [L0 . 0];
     ir_load L2 [L0 . 1];
-    ir_jmp_eq L2 0 cb__Nstd__Nsystem__Nstat__Aptr__Tslice__Tpure__Tuint8__Aptr__Tstat_data$if669$else;
-    ir_make_label cb__Nstd__Nsystem__Nstat__Aptr__Tslice__Tpure__Tuint8__Aptr__Tstat_data$if669$body;
+    ir_jmp_eq L2 0 cb__Nstd__Nsystem__Nstat__Aptr__Tslice__Tpure__Tuint8__Aptr__Tstat_data$if767$else;
+    ir_make_label cb__Nstd__Nsystem__Nstat__Aptr__Tslice__Tpure__Tuint8__Aptr__Tstat_data$if767$body;
     ir_return L2;
-    ir_make_label cb__Nstd__Nsystem__Nstat__Aptr__Tslice__Tpure__Tuint8__Aptr__Tstat_data$if669$else;
+    ir_make_label cb__Nstd__Nsystem__Nstat__Aptr__Tslice__Tpure__Tuint8__Aptr__Tstat_data$if767$else;
     ir_call cb__Nstd__Nsystem__Nstat__Aint__Aptr__Tstat_data L1 A1; (push)
     ir_load L0 POP();
-    ir_jmp_eq L2 0 cb__Nstd__Nsystem__Nstat__Aptr__Tslice__Tpure__Tuint8__Aptr__Tstat_data$if693$else;
-    ir_make_label cb__Nstd__Nsystem__Nstat__Aptr__Tslice__Tpure__Tuint8__Aptr__Tstat_data$if693$body;
+    ir_jmp_eq L2 0 cb__Nstd__Nsystem__Nstat__Aptr__Tslice__Tpure__Tuint8__Aptr__Tstat_data$if791$else;
+    ir_make_label cb__Nstd__Nsystem__Nstat__Aptr__Tslice__Tpure__Tuint8__Aptr__Tstat_data$if791$body;
     ir_call cb__Nstd__Nsystem__Nclose__Aint L1; (push)
     ir_noop POP();
     ir_return L2;
-    ir_make_label cb__Nstd__Nsystem__Nstat__Aptr__Tslice__Tpure__Tuint8__Aptr__Tstat_data$if693$else;
+    ir_make_label cb__Nstd__Nsystem__Nstat__Aptr__Tslice__Tpure__Tuint8__Aptr__Tstat_data$if791$else;
     ir_call cb__Nstd__Nsystem__Nclose__Aint L1; (push)
     ir_noop POP();
     ir_return 0;
@@ -196,6 +219,70 @@ endf
 func cb__Nstd__Nsystem__Nget_stderr_fd -> int
     ir_call GetStdHandle -12; (push)
     ir_return POP();
+endf
+
+func cb__Nstd__Nsystem__Nunlink__Aptr__Tslice__Tpure__Tuint8 -> error
+    arg #0 path: ptr__Tslice__Tpure__Tuint8;
+    ir_deref A0; (push)
+    ir_call DeleteFileA [POP() . 0]; (push)
+    ir_jmp_neq POP() 0 cb__Nstd__Nsystem__Nunlink__Aptr__Tslice__Tpure__Tuint8$if894$else;
+    ir_make_label cb__Nstd__Nsystem__Nunlink__Aptr__Tslice__Tpure__Tuint8$if894$body;
+    ir_call GetLastError; (push)
+    ir_return POP();
+    ir_make_label cb__Nstd__Nsystem__Nunlink__Aptr__Tslice__Tpure__Tuint8$if894$else;
+    ir_return 0;
+endf
+
+func cb__Nstd__Nsystem__Nremove__Aptr__Tslice__Tpure__Tuint8 -> error
+    arg #0 path: ptr__Tslice__Tpure__Tuint8;
+    ir_deref A0; (push)
+    ir_call RemoveDirectoryA [POP() . 0]; (push)
+    ir_jmp_neq POP() 0 cb__Nstd__Nsystem__Nremove__Aptr__Tslice__Tpure__Tuint8$if929$else;
+    ir_make_label cb__Nstd__Nsystem__Nremove__Aptr__Tslice__Tpure__Tuint8$if929$body;
+    ir_call GetLastError; (push)
+    ir_return POP();
+    ir_make_label cb__Nstd__Nsystem__Nremove__Aptr__Tslice__Tpure__Tuint8$if929$else;
+    ir_return 0;
+endf
+
+func cb__Nstd__Nsystem__Nrename__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8 -> error
+    arg #0 path: ptr__Tslice__Tpure__Tuint8;
+    arg #1 dest: ptr__Tslice__Tpure__Tuint8;
+    ir_deref A0; (push)
+    ir_deref A1; (push)
+    ir_call MoveFileA [POP() . 0] [POP() . 0]; (push)
+    ir_jmp_neq POP() 0 cb__Nstd__Nsystem__Nrename__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8$if975$else;
+    ir_make_label cb__Nstd__Nsystem__Nrename__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8$if975$body;
+    ir_call GetLastError; (push)
+    ir_return POP();
+    ir_make_label cb__Nstd__Nsystem__Nrename__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8$if975$else;
+    ir_return 0;
+endf
+
+func cb__Nstd__Nsystem__Ncopy__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8 -> error
+    arg #0 path: ptr__Tslice__Tpure__Tuint8;
+    arg #1 dest: ptr__Tslice__Tpure__Tuint8;
+    ir_deref A0; (push)
+    ir_deref A1; (push)
+    ir_call CopyFileA [POP() . 0] [POP() . 0] 0; (push)
+    ir_jmp_neq POP() 0 cb__Nstd__Nsystem__Ncopy__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8$if1022$else;
+    ir_make_label cb__Nstd__Nsystem__Ncopy__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8$if1022$body;
+    ir_call GetLastError; (push)
+    ir_return POP();
+    ir_make_label cb__Nstd__Nsystem__Ncopy__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8$if1022$else;
+    ir_return 0;
+endf
+
+func cb__Nstd__Nsystem__Nmkdir__Aptr__Tslice__Tpure__Tuint8 -> error
+    arg #0 path: ptr__Tslice__Tpure__Tuint8;
+    ir_deref A0; (push)
+    ir_call CreateDirectoryA [POP() . 0] 0; (push)
+    ir_jmp_neq POP() 0 cb__Nstd__Nsystem__Nmkdir__Aptr__Tslice__Tpure__Tuint8$if1058$else;
+    ir_make_label cb__Nstd__Nsystem__Nmkdir__Aptr__Tslice__Tpure__Tuint8$if1058$body;
+    ir_call GetLastError; (push)
+    ir_return POP();
+    ir_make_label cb__Nstd__Nsystem__Nmkdir__Aptr__Tslice__Tpure__Tuint8$if1058$else;
+    ir_return 0;
 endf
 
 func HeapAlloc -> rawptr
@@ -229,49 +316,18 @@ func cb__Nstd__Nsystem__Nfree__Aptr__Tmemory -> void
     ir_load [POP() . 0] 0;
 endf
 
-func cb__Nstd__Nsystem__Nalloc__Aptr__Tmemory__Ausize -> ptr__Tmemory
-endf
-
-func cb__Nstd__Nsystem__Nalloc2__Aptr__Tmemory__Ausize__Arawptr -> ptr__Tmemory
-endf
-
-func cb__Nstd__Nsystem__Nfree__Aptr__Tmemory -> void
-endf
-
-func cb__Nstd__Nsystem__Nwrite__Aint__Aptr__Tslice__Tpure__Tuint8 -> isize
-endf
-
-func cb__Nstd__Nsystem__Nread__Aint__Aptr__Tslice__Tuint8 -> isize
+func cb__Nstd__Nsystem__Nalloc__Aptr__Tmemory__Ausize__Arawptr -> ptr__Tmemory
 endf
 
 func cb__Nstd__Nsystem__Nopen__Aptr__Ttuple__Tint__Terror__Aptr__Tpure__Tuint8__Aint__Aint -> ptr__Ttuple__Tint__Terror
 endf
 
-func cb__Nstd__Nsystem__Nget_stdout_fd -> int
-endf
-
-func cb__Nstd__Nsystem__Nget_stderr_fd -> int
-endf
-
-func cb__Nstd__Nsystem__Nget_stdin_fd -> int
-endf
-
 func cb__Nstd__Nsystem__Nget_fd_flags__Aint -> int
 endf
 
-func cb__Nstd__Nsystem__Nseek__Aint__Aint64__Aint -> void
-endf
-
-func cb__Nstd__Nsystem__Nclose__Aint -> error
-endf
-
-func cb__Nstd__Nsystem__Nstat__Aptr__Tslice__Tpure__Tuint8__Aptr__Tstat_data -> error
-endf
-
-func cb__Nstd__Nsystem__Nstat__Aint__Aptr__Tstat_data -> error
-endf
-
 func cb__Nstd__Nsystem__Nexit__Aint -> void
+    arg #0 code: int;
+    ir_call ExitProcess A0;
 endf
 
 func QueryPerformanceFrequency -> bool
@@ -281,11 +337,6 @@ func QueryPerformanceCounter -> bool
 endf
 
 func ExitProcess -> void
-endf
-
-func cb__Nstd__Nsystem__Nexit__Aint -> void
-    arg #0 code: int;
-    ir_call ExitProcess A0;
 endf
 
 func cb__Ntest__Ntest_defer -> void
@@ -427,8 +478,8 @@ func test_main -> int
     ir_load_addr L11; (push)
     ir_call cb__Nstd__Nsystem__Nwrite__Aint__Aptr__Tslice__Tpure__Tuint8 POP() POP(); (push)
     ir_noop POP();
-    ir_jmp_neq L6 48 test_main$if1476$else;
-    ir_make_label test_main$if1476$body;
+    ir_jmp_neq L6 48 test_main$if1869$else;
+    ir_make_label test_main$if1869$body;
     ir_load_addr STR5; (push)
     ir_load [L20 . 0] POP();
     ir_load [L20 . 1] 4;
@@ -436,7 +487,7 @@ func test_main -> int
     ir_load_addr L20; (push)
     ir_call cb__Nstd__Nsystem__Nwrite__Aint__Aptr__Tslice__Tpure__Tuint8 POP() POP(); (push)
     ir_noop POP();
-    ir_make_label test_main$if1476$else;
+    ir_make_label test_main$if1869$else;
     ir_load_addr STR3; (push)
     ir_load [L12 . 0] POP();
     ir_load [L12 . 1] 1;
@@ -522,10 +573,10 @@ func test_main -> int
     ir_load [L21 . 0] 0;
     ir_load [L21 . 1] [L3 . 1];
     ir_load L22 [L21 . 0];
-    ir_make_label test_main$f1625$cond;
+    ir_make_label test_main$f2018$cond;
     ir_cast L22; (push)
-    ir_jmp_gte POP() [L21 . 1] test_main$f1625$end;
-    ir_make_label test_main$f1625$body;
+    ir_jmp_gte POP() [L21 . 1] test_main$f2018$end;
+    ir_make_label test_main$f2018$body;
     ir_deref L2; (push)
     ir_index POP() L22; (push)
     ir_deref [L3 . 0]; (push)
@@ -533,8 +584,8 @@ func test_main -> int
     ir_load POP() POP();
     ir_add L22 1; (push)
     ir_load L22 POP();
-    ir_jmp test_main$f1625$cond;
-    ir_make_label test_main$f1625$end;
+    ir_jmp test_main$f2018$cond;
+    ir_make_label test_main$f2018$end;
     ir_load [L19 . 0] L2;
     ir_load [L19 . 1] [L3 . 1];
     ir_call cb__Nstd__Nsystem__Nget_stdout_fd; (push)

@@ -1,3 +1,5 @@
+// TODO: use the widechar version of functions
+
 import std::system
 
 extern(C) {
@@ -60,6 +62,17 @@ type BY_HANDLE_FILE_INFORMATION = struct {
 func GetFileInformationByHandle(handle: int, lpFileInformation: &BY_HANDLE_FILE_INFORMATION): bool
 
 func GetLastError(): int
+
+func CopyFileA(path: *pure uint8, newpath: *pure uint8, failIfExists: bool): bool
+
+func DeleteFileA(path: *pure uint8): bool
+
+func MoveFileA(path: *pure uint8, newpath: *pure uint8): bool
+
+func CreateDirectoryA(path: *pure uint8, lpSecurityAttributes: *LPSECURITY_ATTRIBUTES): bool
+
+func RemoveDirectoryA(path: *pure uint8): bool
+
 }
 
 extern(carbon, std::system) {
@@ -102,7 +115,11 @@ func open(path: []pure uint8, flags: int, mode: int): {int, error} {
     let err : error
     let handle = CreateFileA(path.ptr, access, sharemode, nullptr, creation, attrs, 0)
 
-    if (handle != 0 && ((flags & O_APPEND) != 0)) {
+    if (handle == 0) {
+        return 0, cast(error) GetLastError()
+    }
+
+    if ((flags & O_APPEND) != 0) {
         SetFilePointer(handle, 0, nullptr, FILE_END)
     }
     
@@ -111,7 +128,7 @@ func open(path: []pure uint8, flags: int, mode: int): {int, error} {
 
 func seek(fd: int, offset: int64, whence: int) {
     // TODO: handle large offset
-    SetFilePointer(fd, cast(int)offset, nullptr, whence)
+    SetFilePointer(fd, cast(int) offset, nullptr, whence)
 }
 
 func stat(fd: int, buf: &stat_data): error {
@@ -159,6 +176,41 @@ func get_stdout_fd(): int {
 
 func get_stderr_fd(): int {
     return GetStdHandle(STD_ERROR_HANDLE)
+}
+
+func unlink(path: []pure uint8): error {
+    if (!DeleteFileA(path.ptr)) {
+        return cast(error) GetLastError()
+    }
+    return 0
+}
+
+func remove(path: []pure uint8): error {
+    if (!RemoveDirectoryA(path.ptr)) {
+        return cast(error) GetLastError()
+    }
+    return 0
+}
+
+func rename(path: []pure uint8, dest: []pure uint8): error {
+    if (!MoveFileA(path.ptr, dest.ptr)) {
+        return cast(error) GetLastError()
+    }
+    return 0
+}
+
+func copy(path: []pure uint8, dest: []pure uint8): error {
+    if (!CopyFileA(path.ptr, dest.ptr, false)) {
+        return cast(error) GetLastError()
+    }
+    return 0
+}
+
+func mkdir(path: []pure uint8): error {
+    if (!CreateDirectoryA(path.ptr, nullptr)) {
+        return cast(error) GetLastError()
+    }
+    return 0
 }
 
 }
