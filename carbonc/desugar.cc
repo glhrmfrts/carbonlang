@@ -90,6 +90,15 @@ void check_func_arg_aggregate_type(type_system& ts, ast_node& func, int idx) {
 
 void check_call_arg_aggregate_type(type_system &ts, ast_node& call, int idx) {
     if (is_aggregate_type(call.call_args()[idx]->type_id)) {
+        auto& arg = call.call_args()[idx];
+        if (arg->lvalue.self && arg->lvalue.symbol) {
+            auto local = arg->lvalue.symbol->scope->local_defs[arg->lvalue.symbol->local_index];
+            if (local->flags & local_flag::is_argument) {
+                // An argument will be a pointer anyway
+                return;
+            }
+        }
+
         auto [temp, ref] = make_temp_variable_for_aggregate_type_resolved(ts, std::move(call.children[ast_node::child_call_expr_arg_list]->children[idx]));
         call.children[ast_node::child_call_expr_arg_list]->children[idx] = std::move(ref);
         call.pre_children.push_back(std::move(temp));
@@ -113,7 +122,7 @@ void check_func_return_aggregate_type(type_system& ts, ast_node& func) {
             auto agg_ret_id = make_identifier_node(*ts.ast_arena, ret->pos, { "$cb_agg_ret" });
             auto agg_ret_deref = make_deref_expr(ts, std::move(agg_ret_id));
             auto agg_assign = make_assignment(*ts.ast_arena, std::move(agg_ret_deref), std::move(ret->children[0]));
-            resolve_node_type_post(ts, agg_assign->bin_left());
+            resolve_node_type_post(ts, agg_assign.get());
 
             check_assignment_aggregate_call(ts, *agg_assign);
             if (!agg_assign->bin_right()) {
@@ -178,7 +187,11 @@ void check_var_decl_aggregate_call(type_system& ts, ast_node& node) {
 void check_temp_aggregate_call(type_system& ts, ast_node& node) {
     if (node.type == ast_type::call_expr && is_aggregate_type(node.type_id) && !(node.call.flags & call_flag::is_aggregate_return)) {
         auto tempname = generate_temp_name();
-        auto temp = make_var_decl_of_type(ts, token_type::let, tempname, node.type_id); // TODO: auto
+        auto temp = make_var_decl_node_single(*ts.ast_arena, node.pos, token_type::let, 
+            make_identifier_node(*ts.ast_arena, node.pos, { tempname }), // id
+            make_type_expr_node(*ts.ast_arena, node.pos, make_type_resolver_node(*ts.ast_arena, node.type_id)), // type
+            make_noinit_token_node(*ts.ast_arena), {}); // value
+
         resolve_node_type_post(ts, temp.get());
 
         auto ref = make_identifier_node(*ts.ast_arena, node.pos, { tempname });
@@ -261,12 +274,6 @@ void desugar(type_system& ts, ast_node* nodeptr) {
             visit_tree(ts, *as);
         }
         visit_pre_children(ts, node);
-        break;
-    }
-    case ast_type::field_expr: {
-        if (ts.subpass < 1) { break; }
-
-        check_temp_aggregate_call(ts, *node.field_struct());
         break;
     }
     case ast_type::binary_expr: {

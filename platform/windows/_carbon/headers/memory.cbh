@@ -1,4 +1,4 @@
-import std::platform;
+import std::system;
 extern(C) func HeapAlloc(:int, :int, :usize):rawptr;
 extern(C) func HeapFree(:int, :int, :rawptr):bool;
 extern(C) func GetProcessHeap():int;

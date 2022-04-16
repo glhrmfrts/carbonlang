@@ -2305,7 +2305,7 @@ void register_for_declarations(type_system& ts, ast_node& node) {
             }
 
             auto iterdecl = make_var_decl_with_value(*ts.ast_arena, "$foriter", std::move(node.children[1]));
-            resolve_and_declare_local_variables(ts, *iterdecl);
+            resolve_node_type(ts, iterdecl.get());
 
             auto iterref1 = make_identifier_node(*ts.ast_arena, {}, { "$foriter" });
             resolve_node_type(ts, iterref1.get());
@@ -2321,7 +2321,7 @@ void register_for_declarations(type_system& ts, ast_node& node) {
 
             // declare the variable to hold the element of the range
             auto elem_decl_node = make_var_decl_with_value(*ts.ast_arena, elem_node->id_parts.front(), std::move(iterstart));
-            resolve_and_declare_local_variables(ts, *elem_decl_node);
+            resolve_node_type(ts, elem_decl_node.get());
 
             auto elemref = make_identifier_node(*ts.ast_arena, {}, elem_node->id_parts);
             resolve_node_type(ts, elemref.get());
@@ -2682,6 +2682,25 @@ void process_thread_first_expr(type_system& ts, ast_node& node) {
 
     node.type = ast_type::call_expr;
     node.call.flags |= call_flag::is_method_sugar_call;
+}
+
+void generate_temp_for_field_expr(type_system& ts, ast_node& node, type_id ltype) {
+    auto tempname = generate_temp_name();
+    auto temp = make_var_decl_node_single(*ts.ast_arena, node.pos, token_type::let,
+        make_identifier_node(*ts.ast_arena, node.pos, { tempname }), // id
+        make_type_expr_node(*ts.ast_arena, node.pos, make_type_resolver_node(*ts.ast_arena, ltype)), // type
+        std::move(node.children[0]), {}); // value
+
+    resolve_node_type(ts, temp.get());
+
+    auto ref = make_identifier_node(*ts.ast_arena, temp->pos, { tempname });
+    resolve_node_type(ts, ref.get());
+
+    node.children[0] = std::move(ref);
+
+    node.pre_children.push_back(std::move(temp));
+
+    node.desugar_flags |= 1;
 }
 
 static bool g_inside_loop;
@@ -3191,6 +3210,18 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
         if (node.children[0]->type_id.valid()) {
             auto ltype = node.children[0]->type_id;
             auto stype = ltype;
+
+            // Generate a temp variable if it's not a lvalue
+            if (!node.desugar_flags) {
+                if (node.children[0]->type == ast_type::init_expr) {
+                    generate_temp_for_field_expr(ts, node, ltype);
+                    node.desugar_flags |= 1;
+                }
+                else if (node.children[0]->type == ast_type::call_expr && is_aggregate_root(ltype)) {
+                    generate_temp_for_field_expr(ts, node, ltype);
+                    node.desugar_flags |= 1;
+                }
+            }
             
             bool is_pointer = false;
             bool is_optional = false;
@@ -3316,11 +3347,12 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
                 else {
                     node.lvalue.self = &node;
 
-                    const auto& field = fields[node.children[1]->int_value];
+                    int findex = node.children[1]->int_value;
+                    const auto& field = fields[findex];
 
-                    //node.children[1] = make_identifier_node(*ts.ast_arena, node.children[1]->pos, { field.names.front() });
+                    node.children[1] = make_identifier_node(*ts.ast_arena, node.children[1]->pos, { field.names.front() });
                     node.field.self = &node;
-                    node.field.field_index = node.children[1]->int_value;
+                    node.field.field_index = findex;
                     node.type = ast_type::field_expr;
                     node.type_id = field.type;
                 }
@@ -4177,6 +4209,7 @@ void type_system::resolve_and_check() {
     }
 
     if (errors.empty()) {
+#if 1
         in_desugar = true;
         for (int i = 0; i < 3; i++) {
             this->pass = type_system_pass::desugar;
@@ -4199,6 +4232,7 @@ void type_system::resolve_and_check() {
                 leave_scope();
             }
         }
+#endif
     }
 
     if (!current_error.msg.empty()) {
@@ -4211,6 +4245,8 @@ void type_system::resolve_and_check() {
         prettyprint(*unit, ast_file);
         ast_file << "\n";
     }
+
+    //exit(EXIT_FAILURE);
 }
 
 void type_system::enter_scope(ast_node& node) {

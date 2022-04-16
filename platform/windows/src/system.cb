@@ -1,0 +1,11 @@
+extern(C) func QueryPerformanceFrequency(value: *int64): bool
+
+extern(C) func QueryPerformanceCounter(value: *int64): bool
+
+extern(C) func ExitProcess(uExitCode: uint)
+
+extern(carbon, std::system) {
+func exit(code: int) {
+    ExitProcess(code)
+}
+}

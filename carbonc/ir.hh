@@ -47,7 +47,7 @@ struct ir_arg_data {
     type_id type;
 };
 
-struct ir_stack {
+struct ir_stackpop {
     type_id type;
 };
 
@@ -91,14 +91,14 @@ struct ir_label {
 
 struct ir_field;
 
-using ir_ref = std::variant<ir_global, ir_local, ir_arg, ir_stack, std::shared_ptr<ir_field>>;
+using ir_ref = std::variant<ir_global, ir_local, ir_arg, ir_stackpop, std::shared_ptr<ir_field>>;
 
 struct ir_field {
     ir_ref ref;
     int field_index;
 };
 
-using ir_operand = std::variant<std::string, ir_field, ir_label, ir_funclabel, ir_global, ir_local, ir_arg, ir_stack, ir_string, ir_int, ir_float, char>;
+using ir_operand = std::variant<std::string, ir_field, ir_label, ir_funclabel, ir_global, ir_local, ir_arg, ir_stackpop, ir_string, ir_int, ir_float, char>;
 
 struct ir_instr {
     ir_op op;

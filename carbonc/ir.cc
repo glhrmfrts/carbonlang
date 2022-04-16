@@ -119,7 +119,7 @@ ir_ref toref(const ir_operand& opr) {
     if (auto arg = std::get_if<ir_local>(&opr); arg) {
         return *arg;
     }
-    if (auto arg = std::get_if<ir_stack>(&opr); arg) {
+    if (auto arg = std::get_if<ir_stackpop>(&opr); arg) {
         return *arg;
     }
     if (auto arg = std::get_if<ir_field>(&opr); arg) {
@@ -534,7 +534,12 @@ void generate_ir_field_expr(ast_node& node) {
     if (is_pointer_type(node.field_struct()->type_id)) {
         auto stype = node.field_struct()->type_id.get().elem_type;
         temit(ir_deref, stype, a);
-        push(ir_field{ ir_stack{ stype }, node.field.field_index });
+        push(ir_field{ ir_stackpop{ stype }, node.field.field_index });
+    }
+    else if (std::holds_alternative<ir_field>(a)) {
+        auto stype = node.field_struct()->type_id;
+        temit(ir_load_addr, node.type_id, a);
+        push(ir_field{ ir_stackpop{ stype }, node.field.field_index });
     }
     else {
         push(ir_field{ toref(a), node.field.field_index });
@@ -548,14 +553,14 @@ void generate_ir_index_expr(ast_node& node) {
     if (is_pointer_type(node.children[0]->type_id)) {
         auto ptype = node.children[0]->type_id.get().elem_type;
         temit(ir_deref, ptype, a);
-        a = ir_stack{ ptype };
+        a = ir_stackpop{ ptype };
     }
 
     generate_ir_node(*node.children[1]);
     auto b = pop();
 
     temit(ir_index, node.type_id, a, b);
-    push(ir_stack{ node.type_id });
+    push(ir_stackpop{ node.type_id });
 }
 
 void generate_ir_call_expr(ast_node& node) {
@@ -589,7 +594,7 @@ void generate_ir_call_expr(ast_node& node) {
 
     if (pushes) {
         emitops(ir_call, node.type_id, args);
-        push(ir_stack{ node.type_id });
+        push(ir_stackpop{ node.type_id });
     }
     else {
         emitops(ir_call, ts->void_type, args);
@@ -598,7 +603,7 @@ void generate_ir_call_expr(ast_node& node) {
 
 void generate_ir_func_overload_selector_expr(ast_node& node) {
     temit(ir_load_addr, node.type_id, ir_funclabel{ node.call.mangled_name.str, node.type_id });
-    push(ir_stack{ node.type_id });
+    push(ir_stackpop{ node.type_id });
 }
 
 void generate_ir_assignment(ast_node& node) {
@@ -652,19 +657,19 @@ void generate_ir_binary_expr(ast_node& node) {
     switch (token_to_char(node.op)) {
     case '+':
         temit(ir_add, node.type_id, a, b);
-        push(ir_stack{ node.type_id });
+        push(ir_stackpop{ node.type_id });
         break;
     case '-':
         temit(ir_sub, node.type_id, a, b);
-        push(ir_stack{ node.type_id });
+        push(ir_stackpop{ node.type_id });
         break;
     case '*':
         temit(ir_mul, node.type_id, a, b);
-        push(ir_stack{ node.type_id });
+        push(ir_stackpop{ node.type_id });
         break;
     case '/':
         temit(ir_div, node.type_id, a, b);
-        push(ir_stack{ node.type_id });
+        push(ir_stackpop{ node.type_id });
         break;
     case '<':
         emit((node.ir.bin_invert_jump) ? ir_jmp_gte : ir_jmp_lt, a, b, ir_label{node.ir.bin_target_label});
@@ -674,11 +679,11 @@ void generate_ir_binary_expr(ast_node& node) {
         break;
     case '&':
         temit(ir_and, node.type_id, a, b);
-        push(ir_stack{ node.type_id });
+        push(ir_stackpop{ node.type_id });
         break;
     case '|':
         temit(ir_or, node.type_id, a, b);
-        push(ir_stack{ node.type_id });
+        push(ir_stackpop{ node.type_id });
         break;
     }
 
@@ -697,11 +702,11 @@ void generate_ir_binary_expr(ast_node& node) {
         break;
     case token_type::shr:
         temit(ir_shr, node.type_id, a, b);
-        push(ir_stack{ node.type_id });
+        push(ir_stackpop{ node.type_id });
         break;
     case token_type::shl:
         temit(ir_shl, node.type_id, a, b);
-        push(ir_stack{ node.type_id });
+        push(ir_stackpop{ node.type_id });
         break;
     }
 }
@@ -715,7 +720,7 @@ void generate_ir_deref_expr(ast_node& node) {
 
     generate_ir_node(*node.children[0]);
     temit(ir_deref, node.type_id, pop());
-    push(ir_stack{ node.type_id });
+    push(ir_stackpop{ node.type_id });
 }
 
 void generate_ir_addr_expr(ast_node& node) {
@@ -729,7 +734,7 @@ void generate_ir_addr_expr(ast_node& node) {
 
     generate_ir_node(*node.children[0]);
     temit(ir_load_addr, node.type_id, pop());
-    push(ir_stack{ node.type_id });
+    push(ir_stackpop{ node.type_id });
 }
 
 void generate_ir_unary_expr(ast_node& node) {
@@ -745,7 +750,7 @@ void generate_ir_unary_expr(ast_node& node) {
     else if (token_to_char(node.op) == '-') {
         generate_ir_node(*node.children[0]);
         temit(ir_neg, node.type_id, pop());
-        push(ir_stack{ node.type_id });
+        push(ir_stackpop{ node.type_id });
     }
 }
 
@@ -805,7 +810,7 @@ void generate_ir_cast_expr(ast_node& node) {
     generate_ir_node(*node.children[1]);
     if (node.type_id.get().size != node.children[1]->type_id.get().size && node.children[1]->type != ast_type::int_literal) {
         temit(ir_cast, node.type_id, pop());
-        push(ir_stack{ node.type_id });
+        push(ir_stackpop{ node.type_id });
     }
 }
 
@@ -851,7 +856,7 @@ void generate_ir_identifier(ast_node& node) {
 void generate_ir_string_literal(ast_node& node) {
     int index = find_or_add_global_string_data(std::string{node.string_value});
     temit(ir_load_addr, ts->raw_string_type, ir_string{index});
-    push(ir_stack{ ts->raw_string_type });
+    push(ir_stackpop{ ts->raw_string_type });
 }
 
 void generate_ir_int_literal(ast_node& node) {
@@ -991,8 +996,14 @@ void print_ref(std::ostream& f, const ir_ref& opr) {
     if (auto arg = std::get_if<ir_local>(&opr); arg) {
         f << "L" << arg->index;
     }
-    if (auto arg = std::get_if<ir_stack>(&opr); arg) {
-        f << "ST";
+    if (auto arg = std::get_if<ir_stackpop>(&opr); arg) {
+        f << "POP()";
+    }
+    if (auto arg = std::get_if<std::shared_ptr<ir_field>>(&opr); arg) {
+        auto field = arg->get();
+        f << "[";
+        print_ref(f, field->ref);
+        f << " . " << field->field_index << "]";
     }
 }
 
@@ -1017,8 +1028,8 @@ void print_opr(std::ostream& f, const ir_operand& opr) {
     if (auto arg = std::get_if<ir_local>(&opr); arg) {
         f << "L" << arg->index;
     }
-    if (auto arg = std::get_if<ir_stack>(&opr); arg) {
-        f << "ST";
+    if (auto arg = std::get_if<ir_stackpop>(&opr); arg) {
+        f << "POP()";
     }
     if (auto arg = std::get_if<ir_string>(&opr); arg) {
         f << "STR" << arg->index;
@@ -1040,7 +1051,11 @@ void print_instr(std::ostream& f, const ir_instr& instr) {
         f << " ";
         print_opr(f, opr);
     }
-    f << ";\n";
+    f << ";";
+    if (instr_pushes_to_stack(instr)) {
+        f << " (push)";
+    }
+    f << "\n";
 }
 
 void print_ir() {
@@ -1074,7 +1089,7 @@ void print_ir() {
 
 int ref_opstack_consumption(const ir_ref& ref) {
     int i = 0;
-    if (std::holds_alternative<ir_stack>(ref)) {
+    if (std::holds_alternative<ir_stackpop>(ref)) {
         i++;
     }
     else if (std::holds_alternative<std::shared_ptr<ir_field>>(ref)) {
@@ -1086,7 +1101,7 @@ int ref_opstack_consumption(const ir_ref& ref) {
 
 int operand_opstack_consumption(const ir_operand& opr) {
     int i = 0;
-    if (std::holds_alternative<ir_stack>(opr)) {
+    if (std::holds_alternative<ir_stackpop>(opr)) {
         i++;
     }
     else if (std::holds_alternative<ir_field>(opr)) {

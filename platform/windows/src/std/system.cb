@@ -1,4 +1,4 @@
-// Low-level platform provided layer
+// Low-level system provided layer
 
 type error = int
 
@@ -25,7 +25,6 @@ const O_APPEND = 8
 
 extern func open(path: &pure uint8, flags: int, mode: int): {int, error}
 
-
 extern func get_stdout_fd(): int
 
 extern func get_stderr_fd(): int
@@ -34,4 +33,30 @@ extern func get_stdin_fd(): int
 
 extern func get_fd_flags(fd: int): int
 
-extern func close(fd: int)
+
+const SEEK_SET = 0
+const SEEK_CUR = 1
+const SEEK_END = 2
+const SEEK_DATA = 3
+const SEEK_HOLE = 4
+
+extern func seek(fd: int, offset: int64, whence: int)
+
+
+extern func close(fd: int): error
+
+
+type stat_data = struct {
+    size: usize
+    mtime: int64
+    atime: int64
+    ctime: int64
+    mode: int
+}
+
+extern func stat(filename: []pure uint8, buf: &stat_data): error
+
+extern func stat(fd: int, buf: &stat_data): error
+
+
+extern func exit(code: int)

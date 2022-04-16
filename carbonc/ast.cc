@@ -505,6 +505,13 @@ arena_ptr<ast_node> make_type_resolver_node(memory_arena& arena, type_id tid) {
     return ptr;
 }
 
+arena_ptr<ast_node> make_noinit_token_node(memory_arena& arena) {
+    auto ptr = make_in_arena<ast_node>(arena);
+    ptr->node_id = node_id_gen++;
+    ptr->type = ast_type::noinit_token;
+    return ptr;
+}
+
 bool is_primary_expr(ast_node& node) {
     switch (node.type) {
     case ast_type::bool_literal:

@@ -1,7 +1,7 @@
 code_unit{
   memory.cb
   decl_list{
-    import_decl{ std::platform}
+    import_decl{ std::system}
     linkage_specifier{ extern(C) decl_list{
         func_decl{HeapAlloc (var_decl{(hHeap): type_expr{int}}, var_decl{(dwFlags): type_expr{int}}, var_decl{(dwBytes): type_expr{usize}}): type_expr{rawptr} }
         func_decl{HeapFree (var_decl{(hHeap): type_expr{int}}, var_decl{(dwFlags): type_expr{int}}, var_decl{(lpMem): type_expr{rawptr}}): type_expr{bool} }

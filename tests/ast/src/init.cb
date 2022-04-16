@@ -1,4 +1,4 @@
 code_unit{
   init.cb
   decl_list{
-    import_decl{ platform}}}
+    import_decl{ system}}}

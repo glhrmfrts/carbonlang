@@ -1,4 +1,4 @@
-import platform
+import system
 /*
 import std::rawstring
 

@@ -1,20 +1,31 @@
-import std::platform
+import std::system
 import io
 import memory
 
-// TODO: let a, b = {1, 2}
 // TODO: write(get_stdout_fd(), "Hello".ptr, 5)
 
+func test_defer() {
+    write(get_stdout_fd(), "DEFER\n")
+}
+
 func test_file_write() {
-    let handle, err = open("file.txt", O_CREATE | O_WRITE, 0)
+    let handle, err = open("file.txt", O_APPEND, 0)
     write(handle, "HELLO_WORLD")
     close(handle)
+
+    defer test_defer()
 
     let newhandle, err = open("file.txt", O_READ, 0)
     defer close(newhandle)
 
-    let bufdata = [12]uint8{}
-    let data = []uint8{&bufdata[0], sizeof(bufdata)}
+    let statdata : stat_data
+    stat("file.txt", statdata)
+
+    let bufdata = alloc(statdata.size + 1)
+    defer free(bufdata)
+
+    let data = []uint8{nullcast(cast(*uint8)bufdata.ptr), bufdata.len}
+
     read(newhandle, data)
     write(get_stdout_fd(), data)
     write(get_stdout_fd(), "\n")
@@ -22,7 +33,18 @@ func test_file_write() {
     return true
 }
 
+func get_values() {
+    return "GET_VALUES",48
+}
+
 extern(C) func test_main(): int {
+    let a,b = get_values()
+    write(get_stdout_fd(), a)
+    if (b == 48) {
+        write(get_stdout_fd(), ", 48")
+    }
+    write(get_stdout_fd(), "\n")
+
     test_file_write()
 
     let handle, err = open("file.txt", O_READ, 0)
@@ -35,12 +57,12 @@ extern(C) func test_main(): int {
 
     let str = "QWEQWEQWE"
     write(get_stdout_fd(), str)
+    write(get_stdout_fd(), "\n")
 
     let m = alloc(str.len + 1)
     defer free(m)
 
     let ptr = nullcast(cast(*uint8)m.ptr)
-
     for (i in 0,str.len) {
         ptr[i] = str[i]
     }

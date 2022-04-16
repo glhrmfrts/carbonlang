@@ -1,0 +1,10 @@
+code_unit{
+  system.cb
+  decl_list{
+    linkage_specifier{ extern(C) func_decl{QueryPerformanceFrequency (var_decl{(value): type_expr{type_qualifier{pointer, int64}}}): type_expr{bool} }}
+    linkage_specifier{ extern(C) func_decl{QueryPerformanceCounter (var_decl{(value): type_expr{type_qualifier{pointer, int64}}}): type_expr{bool} }}
+    linkage_specifier{ extern(C) func_decl{ExitProcess (var_decl{(uExitCode): type_expr{uint}}) }}
+    linkage_specifier{ extern decl_list{
+        func_decl{exit (var_decl{(code): type_expr{int}}) {
+            stmt_list{
+              call{ExitProcess (cast_expr{ code})}}}}}}}}

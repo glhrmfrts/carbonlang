@@ -1,0 +1,2 @@
+extern func get_values():{[]pure uint8, int};
+extern(C) func carbon_main():int;

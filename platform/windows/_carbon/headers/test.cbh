@@ -1,5 +1,7 @@
-import std::platform;
+import std::system;
 import io;
 import memory;
+extern func test_defer():{};
 extern func test_file_write():bool;
+extern func get_values():{[]pure uint8, int};
 extern(C) func test_main():int;

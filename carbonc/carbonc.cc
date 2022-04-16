@@ -152,6 +152,11 @@ std::string run_linker(
 
 // Execute the command
     FILE* ph = _popen(cmd.c_str(), "r");
+    while (!feof(ph)) {
+        char buf[512];
+        fgets(buf, 512, ph);
+        std::cout << buf;
+    }
     _pclose(ph);
     
     return out_file;
@@ -314,7 +319,9 @@ int run_project_mode(int argc, const char* argv[]) {
             outpath = out_file.c_str();
         }
 
-        std::cout << "carbonc - output: " << outpath << "\n";
+        if (exists(outpath)) {
+            std::cout << "carbonc - output: " << outpath << "\n";
+        }
     }
 
     auto dur = std::chrono::system_clock::now() - timebegin;

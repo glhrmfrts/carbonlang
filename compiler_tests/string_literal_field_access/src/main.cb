@@ -1,5 +1,5 @@
 extern(C) func carbon_main(): int {
     let ptr = "Hello World 1".ptr
     let len = "Hello World 2".len
-    return len
+    return cast(int)len
 }

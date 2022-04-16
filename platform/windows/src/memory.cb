@@ -1,4 +1,4 @@
-import std::platform
+import std::system
 
 extern(C) {
 func HeapAlloc(
@@ -16,7 +16,7 @@ func HeapFree(
 func GetProcessHeap(): int
 }
 
-extern(carbon, std::platform) {
+extern(carbon, std::system) {
 func alloc(size: usize): memory {
     return memory{ HeapAlloc(GetProcessHeap(), 0, size), size }
 }

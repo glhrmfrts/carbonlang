@@ -1,0 +1,27 @@
+string #0: "Nice";
+string #1: "Hello";
+func cb__Nmain__Nget_values__Aptr__Ttuple__Tslice__Tpure__Tuint8__Tint -> ptr__Ttuple__Tslice__Tpure__Tuint8__Tint
+    arg #0 $cb_agg_ret: ptr__Ttuple__Tslice__Tpure__Tuint8__Tint;
+    ir_deref A0; (push)
+    ir_load_addr [POP() . 0]; (push)
+    ir_load_addr STR0; (push)
+    ir_load [POP() . 0] POP();
+    ir_deref A0; (push)
+    ir_load_addr [POP() . 0]; (push)
+    ir_load [POP() . 1] 4;
+    ir_deref A0; (push)
+    ir_load [POP() . 1] 2;
+    ir_return A0;
+endf
+
+func carbon_main -> int
+    local #0 $cbT0: slice__Tpure__Tuint8;
+    local #1 sz: usize;
+    ir_load_addr STR1; (push)
+    ir_load [L0 . 0] POP();
+    ir_load [L0 . 1] 5;
+    ir_load L1 [L0 . 1];
+    ir_cast L1; (push)
+    ir_return POP();
+endf
+

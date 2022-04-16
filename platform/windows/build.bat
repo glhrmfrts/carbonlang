@@ -1,1 +1,1 @@
-\code\pl\carbon\build\carbonc\Debug\carbonc.exe --carbon-path /code/pl/carbon --freestanding --entrypoint test_main --verbose
+\code\pl\carbon\build\carbonc\Debug\carbonc.exe --carbon-path /code/pl/carbon -f -e test_main --verbose

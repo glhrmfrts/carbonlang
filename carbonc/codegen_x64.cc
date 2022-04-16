@@ -1329,9 +1329,9 @@ struct generator {
             offs.expr[2] = std::get<int_type>(offs.expr[2]) - int_type(field.offset);
             return std::make_pair(toop(dest), field.type);
         }
-        else if (std::holds_alternative<ir_stack>(arg->ref)) {
+        else if (std::holds_alternative<ir_stackpop>(arg->ref)) {
             auto op = pop();
-            auto type = std::get<ir_stack>(arg->ref).type;
+            auto type = std::get<ir_stackpop>(arg->ref).type;
             auto& field = type.get().structure.fields[arg->field_index];
 
             if (is_reg(op)) {
@@ -1375,7 +1375,7 @@ struct generator {
         else if (auto arg = std::get_if<ir_global>(&opr); arg) {
             return std::make_pair(gen_data_offset{ arg->name }, arg->type);
         }
-        else if (auto arg = std::get_if<ir_stack>(&opr); arg) {
+        else if (auto arg = std::get_if<ir_stackpop>(&opr); arg) {
             auto cgop = pop();
             return std::make_pair(cgop, arg->type);
         }
@@ -1412,8 +1412,8 @@ struct generator {
             auto& field = type.get().structure.fields[arg->field_index];
             return field.type;
         }
-        else if (std::holds_alternative<ir_stack>(arg->ref)) {
-            auto type = std::get<ir_stack>(arg->ref).type;
+        else if (std::holds_alternative<ir_stackpop>(arg->ref)) {
+            auto type = std::get<ir_stackpop>(arg->ref).type;
             auto& field = type.get().structure.fields[arg->field_index];
             return field.type;
         }
@@ -1437,7 +1437,7 @@ struct generator {
         else if (auto arg = std::get_if<ir_global>(&opr); arg) {
             return arg->type;
         }
-        else if (auto arg = std::get_if<ir_stack>(&opr); arg) {            
+        else if (auto arg = std::get_if<ir_stackpop>(&opr); arg) {            
             return arg->type;
         }
         else if (auto arg = std::get_if<ir_funclabel>(&opr); arg) {

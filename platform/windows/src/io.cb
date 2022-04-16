@@ -1,6 +1,10 @@
-import std::platform
+import std::system
 
 extern(C) {
+const FILE_BEGIN = 0
+const FILE_CURRENT = 1
+const FILE_END = 2
+
 func GetCommandLineA(): *pure uint8
 
 func GetStdHandle(nStdHandle: int): int
@@ -31,11 +35,35 @@ func CreateFileA(
     hTemplateFile: int
 ): int
 
+func SetFilePointer(
+    hFile: int,
+    lDistanceToMove: int,
+    lpDistanceToMoveHigh: *int,
+    dwMoveMethod: int
+): int
+
 func CloseHandle(handle: int): int
 
+type BY_HANDLE_FILE_INFORMATION = struct {
+    dwFileAttributes: int
+    ftCreationTime: int64
+    ftLastAccessTime: int64
+    ftLastWriteTime: int64
+    dwVolumeSerialNumber: int
+    nFileSizeHigh: int
+    nFileSizeLow: int
+    nNumberOfLinks: int
+    nFileIndexHigh: int
+    nFileIndexLow: int
 }
 
-extern(carbon, std::platform) {
+func GetFileInformationByHandle(handle: int, lpFileInformation: &BY_HANDLE_FILE_INFORMATION): bool
+
+func GetLastError(): int
+}
+
+extern(carbon, std::system) {
+
 func write(handle: int, data: []pure uint8): isize {
     let written : int
     WriteFile(handle, cast(rawptr)data.ptr, cast(int)data.len, &written, nullptr)
@@ -47,9 +75,6 @@ func read(handle: int, data: []uint8): isize {
     ReadFile(handle, cast(rawptr)data.ptr, cast(int)data.len, &bytes_read, nullptr)
     return bytes_read
 }
-
-// TODO: review bitwise operations
-// TODO: const-fold binary expressions
 
 func open(path: []pure uint8, flags: int, mode: int): {int, error} {
     const GENERIC_READ = 1<<31
@@ -76,8 +101,44 @@ func open(path: []pure uint8, flags: int, mode: int): {int, error} {
 
     let err : error
     let handle = CreateFileA(path.ptr, access, sharemode, nullptr, creation, attrs, 0)
+
+    if (handle != 0 && ((flags & O_APPEND) != 0)) {
+        SetFilePointer(handle, 0, nullptr, FILE_END)
+    }
     
     return handle, err
+}
+
+func seek(fd: int, offset: int64, whence: int) {
+    // TODO: handle large offset
+    SetFilePointer(fd, cast(int)offset, nullptr, whence)
+}
+
+func stat(fd: int, buf: &stat_data): error {
+    let info : BY_HANDLE_FILE_INFORMATION
+    if (!GetFileInformationByHandle(fd, info)) {
+        return cast(error)GetLastError()
+    }
+    buf.size = info.nFileSizeHigh | info.nFileSizeLow
+    buf.mtime = info.ftLastWriteTime
+    buf.atime = info.ftLastAccessTime
+    buf.ctime = info.ftCreationTime
+    return 0
+}
+
+func stat(filename: []pure uint8, buf: &stat_data): error {
+    let handle, err = open(filename, 0, 0)
+    if (err != 0) {
+        return err
+    }
+    defer close(handle)
+
+    // TODO: if (let err = stat(handle, buf); err != 0)
+    let err = stat(handle, buf)
+    if (err != 0) {
+        return err
+    }
+    return 0
 }
 
 func close(fd: int): error {
