@@ -636,9 +636,6 @@ arena_ptr<ast_node> get_zero_value_node_for_type(type_system& ts, type_id id) {
     else if (id.get().kind == type_kind::nullableptr)  {
         return make_nullpointer_node(*ts.ast_arena, {});
     }
-    else if (id.get().kind == type_kind::ptr && id.get().elem_type.get().kind == type_kind::integral && id.get().elem_type.get().size == 1) {
-        return make_string_literal_node(*ts.ast_arena, {}, "");
-    }
     return { nullptr, nullptr };
 }
 
@@ -683,9 +680,6 @@ bool is_type_kind(type_id id, type_kind k) {
 
 bool type_allows_no_init(type_system& ts, type_id id) {
     if (id.get().kind == type_kind::ptr) {
-        if (id.get().elem_type.get().kind == type_kind::integral && id.get().elem_type.get().size == 1) {
-            return true;
-        }
         return false;
     }
     if (id.get().kind == type_kind::func_pointer) {

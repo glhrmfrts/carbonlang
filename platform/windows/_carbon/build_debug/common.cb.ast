@@ -1,0 +1,7 @@
+code_unit{
+  common.cb
+  decl_list{
+    type_decl{SECURITY_ATTRIBUTES = type_expr{struct_type{decl_list{
+            var_decl{(nLength): type_expr{int}}
+            var_decl{(lpSecurityDescriptor): type_expr{rawptr}}
+            var_decl{(bInheritHandle): type_expr{bool}}}}}}}}

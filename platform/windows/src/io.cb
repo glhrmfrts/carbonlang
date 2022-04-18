@@ -1,5 +1,4 @@
 // TODO: use the widechar version of functions
-
 import std::system
 
 extern(C) {
@@ -7,44 +6,13 @@ const FILE_BEGIN = 0
 const FILE_CURRENT = 1
 const FILE_END = 2
 
-func GetCommandLineA(): *pure uint8
+const INVALID_HANDLE_VALUE = -1
 
-func GetStdHandle(nStdHandle: int): int
-
-func WriteFile(handle: int, str: *pure uint8, len: int, written: *int, ov: rawptr)
-
-func ReadFile(
-    hFile: int,
-    lpBuffer: rawptr,
-    nNumberOfBytesToRead: int,
-    lpNumberOfBytesRead: *int,
-    lpOverlapped: rawptr
-): bool
-
-type LPSECURITY_ATTRIBUTES = struct {
+type SECURITY_ATTRIBUTES = struct {
     nLength: int
     lpSecurityDescriptor: rawptr
     bInheritHandle: bool
 }
-
-func CreateFileA(
-    lpFileName: *pure uint8,
-    dwDesiredAccess: int,
-    dwShareMode: int,
-    lpSecurityAttributes: *LPSECURITY_ATTRIBUTES,
-    dwCreationDisposition: int,
-    dwFlagsAndAttributes: int,
-    hTemplateFile: int
-): int
-
-func SetFilePointer(
-    hFile: int,
-    lDistanceToMove: int,
-    lpDistanceToMoveHigh: *int,
-    dwMoveMethod: int
-): int
-
-func CloseHandle(handle: int): int
 
 type BY_HANDLE_FILE_INFORMATION = struct {
     dwFileAttributes: int
@@ -59,7 +27,40 @@ type BY_HANDLE_FILE_INFORMATION = struct {
     nFileIndexLow: int
 }
 
-func GetFileInformationByHandle(handle: int, lpFileInformation: &BY_HANDLE_FILE_INFORMATION): bool
+func GetCommandLineA(): *pure uint8
+
+func GetStdHandle(nStdHandle: int): rawptr
+
+func WriteFile(handle: rawptr, str: *pure uint8, len: int, written: *int, ov: rawptr)
+
+func ReadFile(
+    hFile: rawptr,
+    lpBuffer: rawptr,
+    nNumberOfBytesToRead: int,
+    lpNumberOfBytesRead: *int,
+    lpOverlapped: rawptr
+): bool
+
+func CreateFileA(
+    lpFileName: *pure uint8,
+    dwDesiredAccess: int,
+    dwShareMode: int,
+    lpSecurityAttributes: *SECURITY_ATTRIBUTES,
+    dwCreationDisposition: int,
+    dwFlagsAndAttributes: int,
+    hTemplateFile: rawptr
+): rawptr
+
+func SetFilePointer(
+    hFile: rawptr,
+    lDistanceToMove: int,
+    lpDistanceToMoveHigh: *int,
+    dwMoveMethod: int
+): int
+
+func CloseHandle(handle: rawptr): int
+
+func GetFileInformationByHandle(handle: rawptr, lpFileInformation: &BY_HANDLE_FILE_INFORMATION): bool
 
 func GetLastError(): int
 
@@ -69,7 +70,7 @@ func DeleteFileA(path: *pure uint8): bool
 
 func MoveFileA(path: *pure uint8, newpath: *pure uint8): bool
 
-func CreateDirectoryA(path: *pure uint8, lpSecurityAttributes: *LPSECURITY_ATTRIBUTES): bool
+func CreateDirectoryA(path: *pure uint8, lpSecurityAttributes: *SECURITY_ATTRIBUTES): bool
 
 func RemoveDirectoryA(path: *pure uint8): bool
 
@@ -77,19 +78,19 @@ func RemoveDirectoryA(path: *pure uint8): bool
 
 extern(carbon, std::system) {
 
-func write(handle: int, data: []pure uint8): isize {
+func write(handle: rawptr, data: []pure uint8): isize {
     let written : int
     WriteFile(handle, cast(rawptr)data.ptr, cast(int)data.len, &written, nullptr)
     return written
 }
 
-func read(handle: int, data: []uint8): isize {
+func read(handle: rawptr, data: []uint8): isize {
     let bytes_read : int
     ReadFile(handle, cast(rawptr)data.ptr, cast(int)data.len, &bytes_read, nullptr)
     return bytes_read
 }
 
-func open(path: []pure uint8, flags: int, mode: int): {int, error} {
+func open(path: []pure uint8, flags: int, mode: int): {rawptr, error} {
     const GENERIC_READ = 1<<31
     const GENERIC_WRITE = 1<<30
     
@@ -113,10 +114,10 @@ func open(path: []pure uint8, flags: int, mode: int): {int, error} {
     let attrs = FILE_ATTRIBUTE_NORMAL
 
     let err : error
-    let handle = CreateFileA(path.ptr, access, sharemode, nullptr, creation, attrs, 0)
+    let handle = CreateFileA(path.ptr, access, sharemode, nullptr, creation, attrs, nullptr)
 
-    if (handle == 0) {
-        return 0, cast(error) GetLastError()
+    if (handle == cast(rawptr)(cast(uintptr)INVALID_HANDLE_VALUE)) {
+        return nullptr, cast(error) GetLastError()
     }
 
     if ((flags & O_APPEND) != 0) {
@@ -126,12 +127,12 @@ func open(path: []pure uint8, flags: int, mode: int): {int, error} {
     return handle, err
 }
 
-func seek(fd: int, offset: int64, whence: int) {
+func seek(fd: rawptr, offset: int64, whence: int) {
     // TODO: handle large offset
     SetFilePointer(fd, cast(int) offset, nullptr, whence)
 }
 
-func stat(fd: int, buf: &stat_data): error {
+func stat(fd: rawptr, buf: &stat_data): error {
     let info : BY_HANDLE_FILE_INFORMATION
     if (!GetFileInformationByHandle(fd, info)) {
         return cast(error)GetLastError()
@@ -158,7 +159,7 @@ func stat(filename: []pure uint8, buf: &stat_data): error {
     return 0
 }
 
-func close(fd: int): error {
+func close(fd: rawptr): error {
     return CloseHandle(fd)
 }
 
@@ -166,15 +167,15 @@ const STD_INPUT_HANDLE = -10
 const STD_OUTPUT_HANDLE = -11
 const STD_ERROR_HANDLE = -12
 
-func get_stdin_fd(): int {
+func get_stdin_fd(): rawptr {
     return GetStdHandle(STD_INPUT_HANDLE)
 }
 
-func get_stdout_fd(): int {
+func get_stdout_fd(): rawptr {
     return GetStdHandle(STD_OUTPUT_HANDLE)
 }
 
-func get_stderr_fd(): int {
+func get_stderr_fd(): rawptr {
     return GetStdHandle(STD_ERROR_HANDLE)
 }
 

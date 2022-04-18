@@ -35,6 +35,8 @@ std::string get_source_code_near(const std::string& src, const position& pos) {
     return line;
 }
 
+static int total_lines_parsed;
+
 void compile_file(type_system& ts, ast_node& target, const std::string& filename, const std::string& modname) {
     std::string src;
     if (!read_file_text(filename, src)) return;
@@ -64,6 +66,8 @@ void compile_file(type_system& ts, ast_node& target, const std::string& filename
         prettyprint(*ast, ast_file);
         ast_file << "\n";
     }
+
+    total_lines_parsed += p.get_lines_parsed();
 
     ts.process_code_unit(*ast);
     target.children.push_back(std::move(ast));
@@ -239,11 +243,16 @@ int run_project_mode(int argc, const char* argv[]) {
     }
 
     {
+        auto cdur = std::chrono::system_clock::now() - timebegin;
+        std::cout << "carbonc - parsing time: " << std::chrono::duration_cast<std::chrono::milliseconds>(cdur).count() << "ms\n\n";
+    }
+
+    {
         auto ctimebegin = std::chrono::system_clock::now();
-        //std::cout << "carbonc - type checking " << "\n";
+        std::cout << "carbonc - type checking " << "\n";
         ts.resolve_and_check();
         auto cdur = std::chrono::system_clock::now() - ctimebegin;
-        //std::cout << "carbonc - type checking time: " << std::chrono::duration_cast<std::chrono::milliseconds>(cdur).count() << "ms\n\n";
+        std::cout << "carbonc - type checking time: " << std::chrono::duration_cast<std::chrono::milliseconds>(cdur).count() << "ms\n\n";
     }
 
     if (!ts.errors.empty()) {
@@ -291,16 +300,23 @@ int run_project_mode(int argc, const char* argv[]) {
         ast_file << "\n";
     }
 
-    auto irprog = generate_ir(ts, *target_node);
+    ir_program irprog;
+    {
+        auto ctimebegin = std::chrono::system_clock::now();
+        std::cout << "carbonc - generating IR " << "\n";
+        irprog = generate_ir(ts, *target_node);
+        auto cdur = std::chrono::system_clock::now() - ctimebegin;
+        std::cout << "carbonc - IR generation time: " << std::chrono::duration_cast<std::chrono::milliseconds>(cdur).count() << "ms\n\n";
+    }
 
     auto asm_file = "_carbon/build_debug/" + dirname + ".asm";
 
     {
         auto ctimebegin = std::chrono::system_clock::now();
-        //std::cout << "carbonc - generating: std.asm " << "\n";
+        std::cout << "carbonc - generating assembly " << "\n";
         codegen(irprog, &ts, asm_file);
         auto cdur = std::chrono::system_clock::now() - ctimebegin;
-        //std::cout << "carbonc - code generation time: " << std::chrono::duration_cast<std::chrono::milliseconds>(cdur).count() << "ms\n\n";
+        std::cout << "carbonc - assembly generation time: " << std::chrono::duration_cast<std::chrono::milliseconds>(cdur).count() << "ms\n\n";
     }
 
     auto obj_file = run_assembler(p, asm_file);
@@ -325,7 +341,8 @@ int run_project_mode(int argc, const char* argv[]) {
     }
 
     auto dur = std::chrono::system_clock::now() - timebegin;
-    std::cout << "\ncarbonc - compilation time: " << std::chrono::duration_cast<std::chrono::milliseconds>(dur).count() << "ms\n";
+    std::cout << "\ncarbonc - total lines parsed: " << total_lines_parsed;
+    std::cout << "\ncarbonc - total compilation time: " << std::chrono::duration_cast<std::chrono::milliseconds>(dur).count() << "ms\n";
 
     return 0;
 }

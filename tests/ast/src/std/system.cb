@@ -39,4 +39,5 @@ code_unit{
     linkage_specifier{ extern}
     linkage_specifier{ extern}
     linkage_specifier{ extern}
+    linkage_specifier{ extern}
     linkage_specifier{ extern}}}

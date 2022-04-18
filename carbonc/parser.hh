@@ -20,6 +20,8 @@ struct parser {
     arena_ptr<ast_node> parse_decl_list();
 
     arena_ptr<ast_node> parse_expr();
+
+    int get_lines_parsed();
 };
 
 }

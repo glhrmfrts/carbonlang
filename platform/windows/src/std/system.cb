@@ -19,26 +19,26 @@ extern func free(m: &memory)
 
 // io.cb
 
-extern func write(fd: int, data: []pure uint8): isize
+extern func write(fd: rawptr, data: []pure uint8): isize
 
-extern func read(fd: int, data: []uint8): isize
+extern func read(fd: rawptr, data: []uint8): isize
 
 const O_CREATE = 1
 const O_WRITE = 2
 const O_READ = 4
 const O_APPEND = 8
 
-extern func open(path: &pure uint8, flags: int, mode: int): {int, error}
+extern func open(path: []pure uint8, flags: int, mode: int): {rawptr, error}
 
-extern func get_stdout_fd(): int
+extern func get_stdout_fd(): rawptr
 
-extern func get_stderr_fd(): int
+extern func get_stderr_fd(): rawptr
 
-extern func get_stdin_fd(): int
+extern func get_stdin_fd(): rawptr
 
-extern func get_fd_flags(fd: int): int
+extern func get_fd_flags(fd: rawptr): int
 
-extern func close(fd: int): error
+extern func close(fd: rawptr): error
 
 const SEEK_SET = 0
 const SEEK_CUR = 1
@@ -46,7 +46,7 @@ const SEEK_END = 2
 const SEEK_DATA = 3
 const SEEK_HOLE = 4
 
-extern func seek(fd: int, offset: int64, whence: int)
+extern func seek(fd: rawptr, offset: int64, whence: int)
 
 type stat_data = struct {
     size: usize
@@ -58,7 +58,7 @@ type stat_data = struct {
 
 extern func stat(filename: []pure uint8, buf: &stat_data): error
 
-extern func stat(fd: int, buf: &stat_data): error
+extern func stat(fd: rawptr, buf: &stat_data): error
 
 extern func unlink(path: []pure uint8): error
 
@@ -74,3 +74,8 @@ extern func mkdir(path: []pure uint8): error
 // system.cb
 
 extern func exit(code: int)
+
+
+// process.cb
+
+extern func exec_process(cmdline: []pure uint8, pwd: []pure uint8): error

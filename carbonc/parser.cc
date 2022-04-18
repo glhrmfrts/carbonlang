@@ -25,6 +25,7 @@ struct parser_impl {
     std::string modname;
     std::stack<parse_context> ctx_stack;
     int func_body_level = 0;
+    int lines_parsed = 0;
 
     enum aggregate_mode { UNDEFINED, TUPLE, STRUCT };
 
@@ -34,6 +35,9 @@ struct parser_impl {
     arena_ptr<ast_node> parse_code_unit() {
         auto pos = lex->pos();
         auto decls = parse_decl_list();
+
+        lines_parsed += lex->pos().line_number - pos.line_number;
+
         if (decls) {
             return make_code_unit_node(*ast_arena, pos, modname, std::move(decls));
         }
@@ -1287,5 +1291,7 @@ arena_ptr<ast_node> parser::parse_decl_list() { return _impl->parse_decl_list();
 arena_ptr<ast_node> parser::parse_code_unit() { return _impl->parse_code_unit(); }
 
 arena_ptr<ast_node> parser::parse_expr() { return _impl->parse_expr(); }
+
+int parser::get_lines_parsed() { return _impl->lines_parsed; }
 
 }

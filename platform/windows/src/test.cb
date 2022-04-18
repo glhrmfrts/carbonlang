@@ -2,18 +2,53 @@ import std::system
 import io
 import memory
 
-// TODO: write(get_stdout_fd(), "Hello".ptr, 5)
+// TODO: enum
+// TODO: enumflags
+// TODO: union
+
+func string_equals(a: []pure uint8, b: []pure uint8) {
+    if (a.len != b.len) { return false }
+
+    for (i in 0,a.len) {
+        if (a[i] != b[i]) {
+            return false
+        }
+    }
+
+    return true
+}
+
+func read_file(filename: []pure uint8): {[]uint8, memory} {
+    let statdata : stat_data
+    stat(filename, statdata)
+
+    let bufdata = alloc(statdata.size + 1)
+
+    let data = []uint8{nullcast(cast(*uint8)bufdata.ptr), bufdata.len - 1}
+    data[statdata.size] = 0
+    
+    let handle, err = open(filename, 0, 0)
+    if (err != 0) {
+        data.len = 0
+        return data, bufdata
+    }
+
+    read(handle, data)
+    close(handle)
+
+    return data, bufdata
+}
 
 func test_defer() {
     write(get_stdout_fd(), "DEFER\n")
+    write(get_stdout_fd(), "Exit code should be 1440\n")
+    exit(1440)
 }
 
 func test_file_write() {
-    let handle, err = open("file.txt", O_APPEND, 0)
+    let handle, err = open("file.txt", O_CREATE | O_WRITE, 0)
     write(handle, "HELLO_WORLD")
     close(handle)
-
-    defer test_defer()
 
     let newhandle, err = open("file.txt", O_READ, 0)
     defer close(newhandle)
@@ -24,11 +59,140 @@ func test_file_write() {
     let bufdata = alloc(statdata.size + 1)
     defer free(bufdata)
 
-    let data = []uint8{nullcast(cast(*uint8)bufdata.ptr), bufdata.len}
+    let data = []uint8{nullcast(cast(*uint8)bufdata.ptr), bufdata.len - 1}
+    data[statdata.size] = 0
 
     read(newhandle, data)
-    write(get_stdout_fd(), data)
-    write(get_stdout_fd(), "\n")
+    //write(get_stdout_fd(), data)
+    //write(get_stdout_fd(), "\n")
+
+    return string_equals(data, "HELLO_WORLD")
+}
+
+func test_file_move() {
+    let filedata, filemem = read_file("file.txt")
+    defer free(filemem)
+
+    let err = rename("file.txt", "file2.txt")
+    if (err != 0) {
+        return false
+    }
+    defer rename("file2.txt", "file.txt")
+
+    let filedata2, filemem2 = read_file("file2.txt")
+    defer free(filemem2)
+
+    return string_equals(filedata, filedata2)
+}
+
+func test_file_copy() {
+    let filedata, filemem = read_file("file.txt")
+    defer free(filemem)
+
+    let err = copy("file.txt", "file_copy.txt")
+    if (err != 0) {
+        return false
+    }
+    defer unlink("file_copy.txt")
+
+    let filedata2, filemem2 = read_file("file_copy.txt")
+    defer free(filemem2)
+
+    return string_equals(filedata, filedata2)
+}
+
+func test_file_append() {
+    let handle, err = open("file.txt", O_APPEND, 0)
+    write(handle, "HELLO_WORLD")
+    close(handle)
+
+    let newhandle, err = open("file.txt", O_READ, 0)
+    defer close(newhandle)
+
+    let statdata : stat_data
+    stat("file.txt", statdata)
+
+    let bufdata = alloc(statdata.size)
+    defer free(bufdata)
+
+    let data = []uint8{nullcast(cast(*uint8)bufdata.ptr), bufdata.len - 1}
+    data[statdata.size] = 0
+
+    read(newhandle, data)
+    //write(get_stdout_fd(), data)
+    //write(get_stdout_fd(), "\n")
+
+    return (string_equals(data, "HELLO_WORLDHELLO_WORLD"))
+}
+
+func test_file_unlink() {
+    let s : stat_data
+    let err = stat("file.txt", s)
+    if (err != 0) {
+        //write(get_stdout_fd(), "ERROR\n")
+        return false
+    }
+    //write(get_stdout_fd(), "EXISTS\n")
+
+    err = unlink("file.txt")
+    if (err != 0) {
+        return false
+    }
+
+    err = stat("file.txt", s)
+    if (err != 0) {
+        return true
+    }
+
+    return false
+}
+
+func test_alloc_copy() {
+    let str = "ALLOC_COPY\n"
+    //write(get_stdout_fd(), str)
+
+    let m = alloc(str.len + 1)
+    defer free(m)
+
+    let ptr = nullcast(cast(*uint8)m.ptr)
+    for (i in 0,str.len) {
+        ptr[i] = str[i]
+    }
+    ptr[str.len] = 0
+    
+    //write(get_stdout_fd(), []pure uint8{ptr, str.len})
+    return (string_equals([]pure uint8{ptr, str.len}, "ALLOC_COPY\n"))
+}
+
+func test_dir_create() {
+    let err = mkdir("test_dir_create")
+    if (err != 0) {
+        return false
+    }
+    return true
+}
+
+func test_dir_remove() {
+    let handle, err = open("test_dir_create/testfile.txt", O_CREATE | O_WRITE, 0)
+    if (err != 0) {
+        return false
+    }
+    write(handle, "TESTFILE")
+    close(handle)
+
+    // Should not be able to remove non-empty dir
+    err = remove("test_dir_create")
+    if (err == 0) {
+        return false
+    }
+
+    unlink("test_dir_create/testfile.txt")
+
+    // Should be able to remove empty dir
+    err = remove("test_dir_create")
+    if (err != 0) {
+        return false
+    }
 
     return true
 }
@@ -45,28 +209,73 @@ extern(C) func test_main(): int {
     }
     write(get_stdout_fd(), "\n")
 
-    test_file_write()
+    defer test_defer()
 
-    let handle, err = open("file.txt", O_READ, 0)
-    let bufdata = [12]uint8{}
-    let data = []uint8{&bufdata[0], sizeof(bufdata)}
-    read(handle, data)
-    write(get_stdout_fd(), data)
-    write(get_stdout_fd(), "\n")
-    close(handle)
-
-    let str = "QWEQWEQWE"
-    write(get_stdout_fd(), str)
-    write(get_stdout_fd(), "\n")
-
-    let m = alloc(str.len + 1)
-    defer free(m)
-
-    let ptr = nullcast(cast(*uint8)m.ptr)
-    for (i in 0,str.len) {
-        ptr[i] = str[i]
+    if (test_file_write()) {
+        write(get_stdout_fd(), "test_file_write: OK\n")
     }
-    write(get_stdout_fd(), []pure uint8{ptr, str.len})
+    else {
+        write(get_stdout_fd(), "test_file_write: NOK\n")
+    }
+
+    if (test_file_move()) {
+        write(get_stdout_fd(), "test_file_move: OK\n")
+    }
+    else {
+        write(get_stdout_fd(), "test_file_move: NOK\n")
+    }
+
+    if (test_file_copy()) {
+        write(get_stdout_fd(), "test_file_copy: OK\n")
+    }
+    else {
+        write(get_stdout_fd(), "test_file_copy: NOK\n")
+    }
+
+    if (test_file_append()) {
+        write(get_stdout_fd(), "test_file_append: OK\n")
+    }
+    else {
+        write(get_stdout_fd(), "test_file_append: NOK\n")
+    }
+
+    if (test_alloc_copy()) {
+        write(get_stdout_fd(), "test_alloc_copy: OK\n")
+    }
+    else {
+        write(get_stdout_fd(), "test_alloc_copy: NOK\n")
+    }
+
+    if (test_file_unlink()) {
+        write(get_stdout_fd(), "test_file_unlink: OK\n")
+    }
+    else {
+        write(get_stdout_fd(), "test_file_unlink: NOK\n")
+    }
+
+    if (test_dir_create()) {
+        write(get_stdout_fd(), "test_dir_create: OK\n")
+    }
+    else {
+        write(get_stdout_fd(), "test_dir_create: NOK\n")
+    }
+
+    if (test_dir_remove()) {
+        write(get_stdout_fd(), "test_dir_remove: OK\n")
+    }
+    else {
+        write(get_stdout_fd(), "test_dir_remove: NOK\n")
+    }
+
+    let c : uint8
+    let err = exec_process("C:\\q2dev\\q2tools-220\\x64\\Release\\4rad.exe", []pure uint8{&c, 0})
+    if (err == 0) {
+        write(get_stdout_fd(), "exec_process: OK\n")
+    }
+    else {
+        write(get_stdout_fd(), "exec_process: NOK\n")
+        exit(err)
+    }
 
     return 0
 }

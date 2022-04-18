@@ -1,0 +1,138 @@
+import std::system
+import io
+
+// TODO: make this work without casting the nullptr: (pwd.len > 0 then pwd.ptr else nullptr)
+
+const STARTF_USESTDHANDLES = 0x00000100
+const CREATE_NO_WINDOW     = 0x08000000
+
+type STARTUPINFOA = struct {
+    cb: int;
+    lpReserved: *uint8;
+    lpDesktop: *uint8;
+    lpTitle: *uint8;
+    dwX: int;
+    dwY: int;
+    dwXSize: int;
+    dwYSize: int;
+    dwXCountChars: int;
+    dwYCountChars: int;
+    dwFillAttribute: int;
+    dwFlags: int;
+    wShowWindow: int16;
+    cbReserved2: int16;
+    lpReserved2: *uint8;
+    hStdInput: rawptr;
+    hStdOutput: rawptr;
+    hStdError: rawptr;
+}
+
+type PROCESS_INFORMATION = struct {
+    hProcess: rawptr;
+    hThread: rawptr;
+    dwProcessId: int;
+    dwThreadId: int;
+}
+
+extern(C) func ExitProcess(uExitCode: uint)
+
+extern(C) func CreatePipe(
+    hReadPipe: *rawptr,
+    hWritePipe: *rawptr,
+    lpPipeAttributes: *SECURITY_ATTRIBUTES,
+    nSize: int
+): bool
+
+extern(C) func TerminateProcess(handle: rawptr, exitCode: uint): bool
+
+extern(C) func CreateProcessA(
+    lpApplicationName: *pure uint8,
+    lpCommandLine: *pure uint8,
+    lpProcessAttributes: *pure SECURITY_ATTRIBUTES,
+    lpThreadAttributes: *pure SECURITY_ATTRIBUTES,
+    bInheritHandles: bool,
+    dwCreationFlags: int32,
+    lpEnvironment: rawptr,
+    lpCurrentDirectory: *uint8,
+    lpStartupInfo: *pure STARTUPINFOA,
+    lpProcessInformation: *PROCESS_INFORMATION
+): bool
+
+extern(carbon, std::system) {
+func exit(code: int) {
+    ExitProcess(code)
+}
+
+func read_process_char(handle: rawptr, c: &uint8): bool {
+    let dwRead : int
+    let bSuccess = ReadFile( handle, cast(rawptr)c, 1, &dwRead, nullptr )
+    return bSuccess && (dwRead == 1)
+}
+
+func exec_process(cmdline: []pure uint8, pwd: []pure uint8): error {
+    let output_handle_read  : rawptr
+    let output_handle_write : rawptr
+    let input_handle_read   : rawptr
+    let input_handle_write  : rawptr
+
+    let sa_attr : SECURITY_ATTRIBUTES
+    sa_attr.nLength = sizeof(SECURITY_ATTRIBUTES)
+    sa_attr.bInheritHandle = true
+    sa_attr.lpSecurityDescriptor = nullptr
+
+    if (!CreatePipe(&output_handle_read, &output_handle_write, &sa_attr, 0)) {
+        return cast(error)GetLastError()
+    }
+    if (!CreatePipe(&input_handle_read, &input_handle_write, &sa_attr, 0)) {
+        return cast(error)GetLastError()
+    }
+
+    let si : STARTUPINFOA
+    si.cb = sizeof(si)
+    si.dwFlags |= STARTF_USESTDHANDLES
+    si.hStdOutput = output_handle_write
+    si.hStdError = output_handle_write
+    si.hStdInput = input_handle_read
+
+    let pi : PROCESS_INFORMATION
+    let success = CreateProcessA(
+        nullptr,
+        cmdline.ptr,
+        nullptr,
+        nullptr,
+        true,
+        CREATE_NO_WINDOW,
+        nullptr,
+        (pwd.len > 0 then cast(*uint8)pwd.ptr else cast(*uint8)nullptr),
+        &si,
+        &pi
+    )
+    if (!success) {
+        return cast(error)GetLastError()
+    }
+
+    // Close handles to the stdin and stdout pipes no longer needed by the child process.
+    // If they are not explicitly closed, there is no way to recognize that the child process has ended.
+    CloseHandle(output_handle_write)
+    CloseHandle(input_handle_read)
+
+    let c : uint8
+    while (read_process_char(output_handle_read, &c)) {
+        write(get_stdout_fd(), []pure uint8{&c, 1})
+    }
+    let err = cast(error)GetLastError()
+    if (err != 0 && err != 109) {
+        return err 
+    }
+
+    CloseHandle(input_handle_write)
+    CloseHandle(output_handle_read)
+    TerminateProcess(pi.hProcess, 0)
+
+    // Close handles to the child process and its primary thread.
+    CloseHandle(pi.hProcess)
+    CloseHandle(pi.hThread)
+
+    return 0
+}
+}

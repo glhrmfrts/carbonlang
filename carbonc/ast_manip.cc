@@ -39,7 +39,9 @@ arena_ptr<ast_node> make_deref_expr(type_system& ts, arena_ptr<ast_node> expr) {
 
 arena_ptr<ast_node> copy_node_helper(type_system& ts, ast_node& node) {
     if (node.type == ast_type::identifier) {
-        return make_identifier_node(*ts.ast_arena, node.pos, node.id_parts);
+        auto ident = make_identifier_node(*ts.ast_arena, node.pos, node.id_parts);
+        ident->lvalue = node.lvalue;
+        return ident;
     }
     else if (node.type == ast_type::nullptr_) {
         return make_nullpointer_node(*ts.ast_arena, node.pos);
@@ -61,7 +63,9 @@ arena_ptr<ast_node> copy_node_helper(type_system& ts, ast_node& node) {
         return make_string_literal_node(*ts.ast_arena, node.pos, std::move(str));
     }
     else if (node.type == ast_type::field_expr) {
-        return make_field_expr_node(*ts.ast_arena, node.pos, copy_node(ts, node.children[0].get()), copy_node(ts, node.children[1].get()));
+        auto field = make_field_expr_node(*ts.ast_arena, node.pos, copy_node(ts, node.children[0].get()), copy_node(ts, node.children[1].get()));
+        field->field = node.field;
+        return field;
     }
     else if (node.type == ast_type::index_expr) {
         return make_index_expr_node(*ts.ast_arena, node.pos, copy_node(ts, node.children[0].get()), copy_node(ts, node.children[1].get()));
@@ -79,7 +83,13 @@ arena_ptr<ast_node> copy_node_helper(type_system& ts, ast_node& node) {
         return make_cast_expr_node(*ts.ast_arena, node.pos, copy_node(ts, node.children[0].get()), copy_node(ts, node.children[1].get()));
     }
     else if (node.type == ast_type::init_expr) {
-        return make_init_expr_node(*ts.ast_arena, node.pos, copy_node(ts, node.children[0].get()), copy_node(ts, node.children[1].get()));
+        auto initexpr = make_init_expr_node(*ts.ast_arena, node.pos, copy_node(ts, node.children[0].get()), copy_node(ts, node.children[1].get()));
+        for (auto& assign : node.initlist.assignments) {
+            initexpr->initlist.assignments.push_back(
+                copy_node(ts, assign.get())
+            );
+        }
+        return initexpr;
     }
     else if (node.type == ast_type::type_resolver) {
         return make_type_resolver_node(*ts.ast_arena, node.type_id);

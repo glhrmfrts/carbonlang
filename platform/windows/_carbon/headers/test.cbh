@@ -1,7 +1,16 @@
 import std::system;
 import io;
 import memory;
+extern func string_equals(:[]pure uint8, :[]pure uint8):bool;
+extern func read_file(:[]pure uint8):{[]uint8, memory};
 extern func test_defer():{};
 extern func test_file_write():bool;
+extern func test_file_move():bool;
+extern func test_file_copy():bool;
+extern func test_file_append():bool;
+extern func test_file_unlink():bool;
+extern func test_alloc_copy():bool;
+extern func test_dir_create():bool;
+extern func test_dir_remove():bool;
 extern func get_values():{[]pure uint8, int};
 extern(C) func test_main():int;
