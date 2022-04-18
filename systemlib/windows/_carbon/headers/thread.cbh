@@ -1,0 +1,8 @@
+import std::system;
+import io;
+extern(C) func GetCurrentThreadId():int;
+extern(C) func CreateThread(:*pure SECURITY_ATTRIBUTES, :int, :{rawptr} -> {}, :rawptr, :int, :*int32):rawptr;
+extern(C) func WaitForSingleObject(:rawptr, :int):int;
+extern func create_thread(:{rawptr} -> {}, :rawptr):{thread_handle, error};
+extern func join(:thread_handle):error;
+extern func get_thread_id():int;

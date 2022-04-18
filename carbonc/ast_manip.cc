@@ -109,6 +109,9 @@ arena_ptr<ast_node> copy_node_helper(type_system& ts, ast_node& node) {
     else if (node.type == ast_type::slice_type) {
         return make_slice_type_node(*ts.ast_arena, node.pos, copy_node(ts, node.children[0].get()));
     }
+    else if (node.type == ast_type::tuple_type) {
+        return make_tuple_type_node(*ts.ast_arena, node.pos, copy_node(ts, node.children[0].get()));
+    }
     else if (node.type == ast_type::type_constructor_instance) {
         return make_type_constructor_instance_node(*ts.ast_arena, node.pos,
             copy_node(ts, node.children[0].get()),
@@ -133,6 +136,15 @@ arena_ptr<ast_node> copy_node_helper(type_system& ts, ast_node& node) {
         return make_call_expr_node(*ts.ast_arena, node.pos,
             copy_node(ts, node.children[0].get()),
             copy_node(ts, node.children[1].get()));
+    }
+    else if (node.type == ast_type::func_overload_selector_expr) {
+        auto ov = make_func_overload_selector_expr_node(*ts.ast_arena, node.pos,
+            copy_node(ts, node.children[0].get()),
+            copy_node(ts, node.children[1].get()));
+
+        ov->func_overload = node.func_overload;
+        ov->call = node.call;
+        return ov;
     }
     else if (node.type == ast_type::arg_list) {
         std::vector<arena_ptr<ast_node>> args;

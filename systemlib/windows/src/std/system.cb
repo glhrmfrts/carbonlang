@@ -71,11 +71,19 @@ extern func copy(path: []pure uint8, dest: []pure uint8): error
 extern func mkdir(path: []pure uint8): error
 
 
-// system.cb
+// process.cb
 
 extern func exit(code: int)
 
-
-// process.cb
-
 extern func exec_process(cmdline: []pure uint8, pwd: []pure uint8): error
+
+
+// thread.cb
+
+type thread_handle = rawptr
+
+extern func create_thread(fn: {rawptr} -> {}, arg: rawptr): {thread_handle, error}
+
+extern func join(th: thread_handle): error
+
+extern func get_thread_id(): int

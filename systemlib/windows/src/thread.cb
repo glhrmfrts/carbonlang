@@ -1,0 +1,36 @@
+import std::system
+import io
+
+extern(C) func GetCurrentThreadId(): int
+
+extern(C) func CreateThread(
+    lpSecurityAttributes: *pure SECURITY_ATTRIBUTES,
+    cbStack: int,
+    lpStartAddr: {rawptr} -> {},
+    lpParam: rawptr,
+    fdwCreate: int,
+    threadId: *int32
+): rawptr
+
+extern(C) func WaitForSingleObject(handle: rawptr, dwMilliseconds: int): int
+
+extern(carbon, std::system) {
+func create_thread(fn: {rawptr} -> {}, arg: rawptr): {thread_handle, error} {
+    let thread_id : int32
+    let th = CreateThread(nullptr, 0, fn, arg, 0, &thread_id)
+    if (th == cast(rawptr)(cast(uintptr)INVALID_HANDLE_VALUE)) {
+        return cast(thread_handle)nullptr, cast(error)GetLastError()
+    }
+
+    let err : error
+    return cast(thread_handle)th, err
+}
+
+func join(th: thread_handle): error {
+    WaitForSingleObject(th, 0xFFFFFFFF)
+}
+
+func get_thread_id(): int {
+    return GetCurrentThreadId()
+}
+}

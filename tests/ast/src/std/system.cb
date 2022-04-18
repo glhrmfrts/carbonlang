@@ -40,4 +40,8 @@ code_unit{
     linkage_specifier{ extern}
     linkage_specifier{ extern}
     linkage_specifier{ extern}
+    linkage_specifier{ extern}
+    type_decl{thread_handle = type_expr{rawptr}}
+    linkage_specifier{ extern}
+    linkage_specifier{ extern}
     linkage_specifier{ extern}}}

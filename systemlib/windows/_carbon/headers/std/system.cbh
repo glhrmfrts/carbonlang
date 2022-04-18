@@ -19,3 +19,6 @@ extern func copy(:[]pure uint8, :[]pure uint8):error;
 extern func mkdir(:[]pure uint8):error;
 extern func exit(:int):{};
 extern func exec_process(:[]pure uint8, :[]pure uint8):error;
+extern func create_thread(:{rawptr} -> {}, :rawptr):{thread_handle, error};
+extern func join(:thread_handle):error;
+extern func get_thread_id():int;

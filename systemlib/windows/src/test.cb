@@ -18,6 +18,62 @@ func string_equals(a: []pure uint8, b: []pure uint8) {
     return true
 }
 
+func int_to_string(value: int, base: int, dest: []uint8) {
+    // check that the base if valid
+    if (base < 2 || base > 36) { return 0 }
+
+    let result = dest
+
+    let tpl_str = "zyxwvutsrqponmlkjihgfedcba9876543210123456789abcdefghijklmnopqrstuvwxyz"
+
+    let tmp_value : int
+    let offs : int
+    while (value != 0) {
+        if (offs >= result.len) {
+            offs -= 1
+            break
+        }
+        
+        tmp_value = value
+        value /= base
+
+        result.ptr[offs] = tpl_str[35 + (tmp_value - value * base)]
+        offs += 1
+    }
+
+    let ptr:  &uint8 = &result.ptr[offs]
+    let ptr1: &uint8 = &result.ptr[0]
+
+    // Apply negative sign
+    if (tmp_value < 0) {
+        @ptr = '-'
+        ptr += 1
+    }
+
+    @ptr = '\0'
+    ptr -= 1
+
+    let tmp_char : uint8
+    while (ptr1 < ptr) {
+        tmp_char = @ptr
+
+        @ptr = @ptr1
+        ptr -= 1
+
+        @ptr1 = tmp_char
+        ptr1 += 1
+    }
+
+    return offs
+}
+
+func write_int(handle: rawptr, value: int) {
+    let buf : [32]uint8{}
+    let dest = []uint8{&buf[0], sizeof(buf)}
+    dest.len = int_to_string(value, 10, dest)
+    write(handle, dest)
+}
+
 func read_file(filename: []pure uint8): {[]uint8, memory} {
     let statdata : stat_data
     stat(filename, statdata)
@@ -201,6 +257,12 @@ func get_values() {
     return "GET_VALUES",48
 }
 
+func worker_thread_func(arg: rawptr) {
+    write(get_stdout_fd(), "worker_thread: ")
+    write_int(get_stdout_fd(), get_thread_id())
+    write(get_stdout_fd(), "\n")
+}
+
 extern(C) func test_main(): int {
     let a,b = get_values()
     write(get_stdout_fd(), a)
@@ -268,7 +330,7 @@ extern(C) func test_main(): int {
     }
 
     let c : uint8
-    let err = exec_process("C:\\q2dev\\q2tools-220\\x64\\Release\\4rad.exe", []pure uint8{&c, 0})
+    let err = exec_process("C:\\q2dev\\q2tools-220\\x64\\Release\\4rad.exe", "")
     if (err == 0) {
         write(get_stdout_fd(), "exec_process: OK\n")
     }
@@ -276,6 +338,16 @@ extern(C) func test_main(): int {
         write(get_stdout_fd(), "exec_process: NOK\n")
         exit(err)
     }
+
+    let th, terr = create_thread(worker_thread_func\{rawptr}, nullptr)
+    if (terr != 0) {
+        exit(1)
+    }
+
+    write(get_stdout_fd(), "main_thread: ")
+    write_int(get_stdout_fd(), get_thread_id())
+    write(get_stdout_fd(), "\n")
+    join(th)
 
     return 0
 }
