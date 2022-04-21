@@ -1,8 +1,15 @@
 // Low-level system provided layer
 
-typealias SystemError = int
+type SystemError = enum {
+    NoError
+    PathNotFound
+    InvalidHandle
+}
 
-const NoError = 0
+/*
+typealias SystemError = int
+const NoError : SystemError = 0
+*/
 
 // memory.cb
 
@@ -19,12 +26,14 @@ extern func write(fd: rawptr, data: []pure uint8): isize
 
 extern func read(fd: rawptr, data: []uint8): isize
 
-const O_CREATE = 1
-const O_WRITE = 2
-const O_READ = 4
-const O_APPEND = 8
+type OpenFlags = enumflags {
+    Create
+    Write
+    Read
+    Append
+}
 
-extern func open(path: []pure uint8, flags: int, mode: int): {rawptr, SystemError}
+extern func open(path: []pure uint8, flags: OpenFlags, mode: int): {rawptr, SystemError}
 
 extern func getStdoutFd(): rawptr
 

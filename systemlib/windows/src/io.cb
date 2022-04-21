@@ -90,12 +90,12 @@ func read(handle: rawptr, data: []uint8): isize {
     return bytes_read
 }
 
-func open(path: []pure uint8, flags: int, mode: int): {rawptr, SystemError} {
+func open(path: []pure uint8, flags: OpenFlags, mode: int): {rawptr, SystemError} {
     const GENERIC_READ = 1<<31
     const GENERIC_WRITE = 1<<30
     
     let access = GENERIC_READ
-    if ((flags & (O_APPEND | O_WRITE)) != 0) {
+    if (flags & (Append | Write)) {
         access |= GENERIC_WRITE
     }
 
@@ -106,7 +106,7 @@ func open(path: []pure uint8, flags: int, mode: int): {rawptr, SystemError} {
     const OPEN_ALWAYS = 4
     const OPEN_EXISTS = 3
     let creation = OPEN_EXISTS
-    if ((flags & O_CREATE) != 0) {
+    if (flags & Create) {
         creation = OPEN_ALWAYS
     }
 
@@ -120,7 +120,7 @@ func open(path: []pure uint8, flags: int, mode: int): {rawptr, SystemError} {
         return nullptr, cast(SystemError) GetLastError()
     }
 
-    if ((flags & O_APPEND) != 0) {
+    if ((flags & Append) != 0) {
         SetFilePointer(handle, 0, nullptr, FILE_END)
     }
     
@@ -141,26 +141,26 @@ func stat(fd: rawptr, buf: &Stat): SystemError {
     buf.mtime = info.ftLastWriteTime
     buf.atime = info.ftLastAccessTime
     buf.ctime = info.ftCreationTime
-    return 0
+    return NoError
 }
 
 func stat(filename: []pure uint8, buf: &Stat): SystemError {
-    let handle, err = open(filename, 0, 0)
-    if (err != 0) {
+    let handle, err = open(filename, noflags, 0)
+    if (err != NoError) {
         return err
     }
     defer close(handle)
 
-    // TODO: if (let err = stat(handle, buf); err != 0)
+    // TODO: if (let err = stat(handle, buf); err != NoError)
     let err = stat(handle, buf)
-    if (err != 0) {
+    if (err != NoError) {
         return err
     }
-    return 0
+    return NoError
 }
 
 func close(fd: rawptr): SystemError {
-    return CloseHandle(fd)
+    return cast(SystemError)CloseHandle(fd)
 }
 
 const STD_INPUT_HANDLE = -10
@@ -183,35 +183,35 @@ func unlink(path: []pure uint8): SystemError {
     if (!DeleteFileA(path.ptr)) {
         return cast(SystemError) GetLastError()
     }
-    return 0
+    return NoError
 }
 
 func remove(path: []pure uint8): SystemError {
     if (!RemoveDirectoryA(path.ptr)) {
         return cast(SystemError) GetLastError()
     }
-    return 0
+    return NoError
 }
 
 func rename(path: []pure uint8, dest: []pure uint8): SystemError {
     if (!MoveFileA(path.ptr, dest.ptr)) {
         return cast(SystemError) GetLastError()
     }
-    return 0
+    return NoError
 }
 
 func copy(path: []pure uint8, dest: []pure uint8): SystemError {
     if (!CopyFileA(path.ptr, dest.ptr, false)) {
         return cast(SystemError) GetLastError()
     }
-    return 0
+    return NoError
 }
 
 func mkdir(path: []pure uint8): SystemError {
     if (!CreateDirectoryA(path.ptr, nullptr)) {
         return cast(SystemError) GetLastError()
     }
-    return 0
+    return NoError
 }
 
 }

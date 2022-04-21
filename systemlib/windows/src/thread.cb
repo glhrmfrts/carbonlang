@@ -58,7 +58,7 @@ func createThread(fn: {rawptr} -> {}, arg: rawptr): {ThreadHandle, SystemError} 
 
     let th = CreateThread(nullptr, 0, fn, arg, 0, &threadId)
     if (th == cast(rawptr)(cast(uintptr)INVALID_HANDLE_VALUE)) {
-        return nullptr, GetLastError()
+        return nullptr, cast(SystemError)GetLastError()
     }
 
     return th, NoError

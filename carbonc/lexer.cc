@@ -192,6 +192,9 @@ struct lexer_impl {
             if (!std::strcmp("then", l.string)) {
                 return token_type::then;
             }
+            if (!std::strcmp("enum", l.string)) {
+                return token_type::enum_;
+            }
             break;
         case 5:
             if (!std::strcmp("false", l.string)) {
@@ -248,6 +251,9 @@ struct lexer_impl {
         case 9:
             if (!std::strcmp("typealias", l.string)) {
                 return token_type::typealias;
+            }
+            if (!std::strcmp("enumflags", l.string)) {
+                return token_type::enumflags;
             }
             break;
         }

@@ -15,7 +15,7 @@ extern(C) func CreateDirectoryA(:*pure uint8, :*SECURITY_ATTRIBUTES):bool;
 extern(C) func RemoveDirectoryA(:*pure uint8):bool;
 extern func write(:rawptr, :[]pure uint8):isize;
 extern func read(:rawptr, :[]uint8):isize;
-extern func open(:[]pure uint8, :int, :int):{rawptr, SystemError};
+extern func open(:[]pure uint8, :OpenFlags, :int):{rawptr, SystemError};
 extern func seek(:rawptr, :int64, :int):{};
 extern func stat(:rawptr, :&Stat):SystemError;
 extern func stat(:[]pure uint8, :&Stat):SystemError;

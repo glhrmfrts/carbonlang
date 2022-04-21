@@ -26,9 +26,11 @@ func intToString(value: int, base: int, dest: []uint8) {
 
     let tpl_str = "zyxwvutsrqponmlkjihgfedcba9876543210123456789abcdefghijklmnopqrstuvwxyz"
 
-    let tmp_value : int
+    let tmp_value = value
     let offs : int
-    while (value != 0) {
+    let nvalue = -1
+
+    while (nvalue != 0) {
         if (offs >= result.len) {
             offs -= 1
             break
@@ -36,6 +38,7 @@ func intToString(value: int, base: int, dest: []uint8) {
         
         tmp_value = value
         value /= base
+        nvalue = value
 
         result.ptr[offs] = tpl_str[35 + (tmp_value - value * base)]
         offs += 1
@@ -84,7 +87,7 @@ func readFile(filename: []pure uint8): []uint8  {
     data[statdata.size] = 0
     
     let handle, err = open(filename, 0, 0)
-    if (err != 0) {
+    if (err != NoError) {
         data.len = 0
         return data
     }
@@ -102,11 +105,11 @@ func test_defer() {
 }
 
 func test_file_write() {
-    let handle, err = open("file.txt", O_CREATE | O_WRITE, 0)
+    let handle, err = open("file.txt", Create | Write, 0)
     write(handle, "HELLO_WORLD")
     close(handle)
 
-    let newhandle, err = open("file.txt", O_READ, 0)
+    let newhandle, err = open("file.txt", Read, 0)
     defer close(newhandle)
 
     let statdata : Stat
@@ -130,7 +133,7 @@ func test_file_move() {
     defer free(cast(rawptr)filedata.ptr)
 
     let err = rename("file.txt", "file2.txt")
-    if (err != 0) {
+    if (err != NoError) {
         return false
     }
     defer rename("file2.txt", "file.txt")
@@ -146,7 +149,7 @@ func test_file_copy() {
     defer free(cast(rawptr)filedata.ptr)
 
     let err = copy("file.txt", "file_copy.txt")
-    if (err != 0) {
+    if (err != NoError) {
         return false
     }
     defer unlink("file_copy.txt")
@@ -158,11 +161,11 @@ func test_file_copy() {
 }
 
 func test_file_append() {
-    let handle, err = open("file.txt", O_APPEND, 0)
+    let handle, err = open("file.txt", Append, 0)
     write(handle, "HELLO_WORLD")
     close(handle)
 
-    let newhandle, err = open("file.txt", O_READ, 0)
+    let newhandle, err = open("file.txt", Read, 0)
     defer close(newhandle)
 
     let statdata : Stat
@@ -184,19 +187,19 @@ func test_file_append() {
 func test_file_unlink() {
     let s : Stat
     let err = stat("file.txt", s)
-    if (err != 0) {
+    if (err != NoError) {
         //write(getStdoutFd(), "ERROR\n")
         return false
     }
     //write(getStdoutFd(), "EXISTS\n")
 
     err = unlink("file.txt")
-    if (err != 0) {
+    if (err != NoError) {
         return false
     }
 
     err = stat("file.txt", s)
-    if (err != 0) {
+    if (err != NoError) {
         return true
     }
 
@@ -222,15 +225,15 @@ func test_alloc_copy() {
 
 func test_dir_create() {
     let err = mkdir("test_dir_create")
-    if (err != 0) {
+    if (err != NoError) {
         return false
     }
     return true
 }
 
 func test_dir_remove() {
-    let handle, err = open("test_dir_create/testfile.txt", O_CREATE | O_WRITE, 0)
-    if (err != 0) {
+    let handle, err = open("test_dir_create/testfile.txt", Create | Write, 0)
+    if (err != NoError) {
         return false
     }
     write(handle, "TESTFILE")
@@ -238,7 +241,7 @@ func test_dir_remove() {
 
     // Should not be able to remove non-empty dir
     err = remove("test_dir_create")
-    if (err == 0) {
+    if (err == NoError) {
         return false
     }
 
@@ -246,7 +249,7 @@ func test_dir_remove() {
 
     // Should be able to remove empty dir
     err = remove("test_dir_create")
-    if (err != 0) {
+    if (err != NoError) {
         return false
     }
 
@@ -254,7 +257,23 @@ func test_dir_remove() {
 }
 
 func getValues() {
-    return "GET_VALUES",48
+    return "GET_VALUES", 48
+}
+
+func testEnumValues() {
+    write(getStdoutFd(), "NoError: ")
+    writeInt(getStdoutFd(), cast(int)NoError)
+    write(getStdoutFd(), "\n")
+
+    write(getStdoutFd(), "PathNotFound: ")
+    writeInt(getStdoutFd(), cast(int)PathNotFound)
+    write(getStdoutFd(), "\n")
+
+    write(getStdoutFd(), "InvalidHandle: ")
+    writeInt(getStdoutFd(), cast(int)InvalidHandle)
+    write(getStdoutFd(), "\n")
+
+    return (cast(int)NoError == 0) && (cast(int)PathNotFound == 1) && (cast(int)InvalidHandle == 2)
 }
 
 let counter : int
@@ -339,16 +358,16 @@ extern(C) func test_main(): int {
 
     let c : uint8
     let err = execProcess("C:\\q2dev\\q2tools-220\\x64\\Release\\4rad.exe", "")
-    if (err == 0) {
+    if (err == NoError) {
         write(getStdoutFd(), "exec_process: OK\n")
     }
     else {
         write(getStdoutFd(), "exec_process: NOK\n")
-        exit(err)
+        exit(cast(int)err)
     }
 
     let mut, merr = createMutex()
-    if (merr != 0) {
+    if (merr != NoError) {
         exit(1)
     }
     defer destroy(mut)
@@ -356,7 +375,7 @@ extern(C) func test_main(): int {
     mutex = mut
 
     let th, terr = createThread(workerThreadFunc\{rawptr}, nullptr)
-    if (terr != 0) {
+    if (terr != NoError) {
         exit(1)
     }
 
@@ -385,6 +404,13 @@ extern(C) func test_main(): int {
     unlock(mutex)
 
     join(th)
+
+    if (testEnumValues()) {
+        write(getStdoutFd(), "testEnumValues: OK\n")
+    }
+    else {
+        write(getStdoutFd(), "testEnumValues: NOK\n")
+    }
 
     return 0
 }

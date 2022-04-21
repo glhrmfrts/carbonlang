@@ -3,7 +3,7 @@ extern func alloc(:usize, :rawptr):rawptr;
 extern func free(:rawptr):{};
 extern func write(:rawptr, :[]pure uint8):isize;
 extern func read(:rawptr, :[]uint8):isize;
-extern func open(:[]pure uint8, :int, :int):{rawptr, SystemError};
+extern func open(:[]pure uint8, :OpenFlags, :int):{rawptr, SystemError};
 extern func getStdoutFd():rawptr;
 extern func getStderrFd():rawptr;
 extern func getStdinFd():rawptr;

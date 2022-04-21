@@ -664,6 +664,10 @@ arena_ptr<ast_node> get_zero_value_node_for_type(type_system& ts, type_id id) {
     else if (id.get().kind == type_kind::nullableptr)  {
         return make_nullpointer_node(*ts.ast_arena, {});
     }
+    else if (id.get().kind == type_kind::enum_) {
+        symbol_info* sym = id.get().enumtype.symbols.front();
+        return make_identifier_node(*ts.ast_arena, {}, { sym->id.str });
+    }
     return { nullptr, nullptr };
 }
 
@@ -979,6 +983,18 @@ bool can_integral_be_cast_from(type_system& ts, type_def& self, type_def& from) 
         return true;
     }
 
+    if (from.kind == type_kind::enum_ || from.kind == type_kind::enumflags) {
+        return true;
+    }
+
+    return false;
+}
+
+bool can_enum_be_cast_from(type_system& ts, type_def& self, type_def& from) {
+    if (from.kind == type_kind::integral || from.kind == type_kind::enum_ || from.kind == type_kind::enumflags) {
+        return true;
+    }
+
     return false;
 }
 
@@ -986,6 +1002,8 @@ static std::unordered_map<type_kind, cast_check_func> cast_check_funcs = {
     {type_kind::ptr, can_pointer_be_cast_from},
     {type_kind::nullableptr, can_nullableptr_be_cast_from},
     {type_kind::integral, can_integral_be_cast_from},
+    {type_kind::enum_, can_enum_be_cast_from},
+    {type_kind::enumflags, can_enum_be_cast_from},
 };
 
 // is A explicitly castable to B?
@@ -1370,6 +1388,54 @@ type_id get_type_expr_node_type(type_system& ts, ast_node& node) {
         }
         else {
             node.type_error = true;
+        }
+        break;
+    }
+    case ast_type::enum_type: {
+        if (node.type_def.self) {
+            break;
+        }
+
+        auto& base_type_node = node.children[0];
+        auto& id_list = node.children[1];
+
+        type_id base_type = ts.int32_type;
+        if (base_type_node) {
+            visit_tree(ts, *base_type_node);
+            if (base_type_node->type_id.valid()) {
+                base_type = base_type_node->type_id;
+            }
+        }
+
+        if (base_type.get().kind != type_kind::integral) {
+            add_type_error(ts, node.pos, "enum base type '%s' is not an integral type", type_to_string(base_type));
+            break;
+        }
+
+        node.type_def = base_type.get();
+        node.type_def.self = &node;
+        node.type_def.kind = type_kind::enum_;
+        node.type_def.name = string_hash{ "anonymous enum" + std::to_string(node.node_id) };
+        node.type_def.mangled_name = string_hash{ "anonymous$enum" + std::to_string(node.node_id) };
+        node.type_id = register_user_type(ts, node);
+
+        bool is_flags = node.int_value == 1;
+
+        int_type numeric_value = 0;
+        for (auto& idnode : id_list->children) {
+            auto id = string_hash{ build_identifier_value(idnode->id_parts) };
+
+            comptime_value value;
+            if (is_flags) {
+                value = 1 << numeric_value;
+            }
+            else {
+                value = numeric_value;
+            }
+
+            declare_comptime_symbol(ts, id, value, node.type_id);
+            node.type_def.enumtype.symbols.push_back(find_symbol_in_current_scope(ts, id));
+            numeric_value++;
         }
         break;
     }
@@ -2789,8 +2855,15 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
                 node.type_def.name = string_hash{ build_identifier_value(node.children[0]->id_parts) };
                 node.type_def.mangled_name = string_hash{ build_identifier_value(node.children[0]->id_parts) };
 
+                // If it's an enum we need to treat this as an alias, because the enum symbols have the 'anonymous enum' type
+                bool is_enum_decl = (node.children[1]->children[0]->type == ast_type::enum_type);
+                if (is_enum_decl) {
+                    type.get().name = node.type_def.name;
+                    type.get().mangled_name = node.type_def.mangled_name;
+                }
+
                 bool is_alias = node.int_value == 1;
-                if (is_alias) {
+                if (is_alias || is_enum_decl) {
                     node.type_def.alias_to = type;
                 }
                 //register_user_type(ts, node);
@@ -3890,9 +3963,9 @@ type_system::type_system(memory_arena& arena) {
     bool_type = register_integral_type<bool>(*this, "bool");
 
     int8_type = register_integral_type<std::int8_t>(*this, "int8");
-    register_integral_type<std::int16_t>(*this, "int16");
-    register_integral_type<std::int32_t>(*this, "int32");
-    register_integral_type<std::int64_t>(*this, "int64");
+    int16_type = register_integral_type<std::int16_t>(*this, "int16");
+    int32_type = register_integral_type<std::int32_t>(*this, "int32");
+    int64_type = register_integral_type<std::int64_t>(*this, "int64");
 
     register_real_type<float>(*this, "float32");
     register_real_type<double>(*this, "float64");

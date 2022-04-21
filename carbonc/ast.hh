@@ -55,6 +55,7 @@ enum class ast_type {
 
     type_expr,
     struct_type,
+    enum_type,
     tuple_type,
     array_type,
     slice_type,
@@ -279,6 +280,8 @@ arena_ptr<ast_node> make_break_stmt_node(memory_arena& arena, const position& po
 arena_ptr<ast_node> make_type_expr_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& expr);
 
 arena_ptr<ast_node> make_struct_type_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& field_list);
+
+arena_ptr<ast_node> make_enum_type_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& base_type, arena_ptr<ast_node>&& member_list, bool is_flags);
 
 arena_ptr<ast_node> make_tuple_type_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& field_list);
 

@@ -404,6 +404,17 @@ arena_ptr<ast_node> make_struct_type_node(memory_arena& arena, const position& p
     return ptr;
 }
 
+arena_ptr<ast_node> make_enum_type_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& base_type, arena_ptr<ast_node>&& member_list, bool is_flags) {
+    auto ptr = make_in_arena<ast_node>(arena);
+    ptr->node_id = node_id_gen++;
+    ptr->type = ast_type::enum_type;
+    ptr->pos = pos;
+    ptr->children.push_back(std::move(base_type));
+    ptr->children.push_back(std::move(member_list));
+    ptr->int_value = is_flags ? 1 : 0;
+    return ptr;    
+}
+
 arena_ptr<ast_node> make_tuple_type_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& field_list) {
     auto ptr = make_in_arena<ast_node>(arena);
     ptr->node_id = node_id_gen++;

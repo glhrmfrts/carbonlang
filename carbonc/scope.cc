@@ -87,6 +87,7 @@ bool declare_global_symbol(type_system& ts, const string_hash& hash, ast_node& l
     info.kind = symbol_kind::global;
     info.scope = ts.current_scope;
     info.local_index = ts.current_scope->local_defs.size();
+    info.id = hash;
 
     ld.local.name = hash;
     ts.current_scope->local_defs.push_back(&ld.local);
@@ -104,6 +105,7 @@ bool declare_local_symbol(type_system& ts, const string_hash& hash, ast_node& ld
     info.kind = symbol_kind::local;
     info.scope = ts.current_scope;
     info.local_index = ts.current_scope->local_defs.size();
+    info.id = hash;
 
     ld.local.name = hash;
     ts.current_scope->local_defs.push_back(&ld.local);
@@ -121,6 +123,7 @@ bool declare_top_level_func_symbol(type_system& ts, const string_hash& hash, ast
     info.kind = symbol_kind::top_level_func;
     info.scope = ts.current_scope;
     info.local_index = ts.current_scope->local_defs.size();
+    info.id = hash;
     ts.current_scope->local_defs.push_back(&ld.local);
     ts.current_scope->symbols[hash] = std::make_unique<symbol_info>(info);
     return true;
@@ -140,6 +143,7 @@ bool declare_type_symbol(type_system& ts, scope_def& scope, const string_hash& h
     info.kind = symbol_kind::type;
     info.scope = &scope;
     info.type_index = scope.type_defs.size();
+    info.id = hash;
     scope.symbols[hash] = std::make_unique<symbol_info>(info);
     scope.type_defs.push_back(&node.type_def);
     return true;
@@ -156,6 +160,7 @@ bool declare_comptime_symbol(type_system& ts, const string_hash& hash, const com
     info.scope = ts.current_scope;
     info.ctvalue = value;
     info.cttype = tid;
+    info.id = hash;
     ts.current_scope->symbols[hash] = std::make_unique<symbol_info>(info);
     return true;
 }
@@ -169,6 +174,7 @@ bool declare_overloaded_func_base_symbol(type_system& ts, const string_hash& has
     symbol_info info;
     info.kind = symbol_kind::overloaded_func_base;
     info.scope = ts.current_scope;
+    info.id = hash;
     ts.current_scope->symbols[hash] = std::make_unique<symbol_info>(info);
     return true;
 }

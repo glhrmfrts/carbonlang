@@ -121,7 +121,7 @@ func execProcess(cmdline: []pure uint8, pwd: []pure uint8): SystemError {
         write(getStdoutFd(), []pure uint8{&c, 1})
     }
     let err = cast(SystemError)GetLastError()
-    if (err != 0 && err != 109) {
+    if (err != NoError && (cast(int)err) != 109) {
         return err 
     }
 
@@ -133,6 +133,6 @@ func execProcess(cmdline: []pure uint8, pwd: []pure uint8): SystemError {
     CloseHandle(pi.hProcess)
     CloseHandle(pi.hThread)
 
-    return 0
+    return NoError
 }
 }

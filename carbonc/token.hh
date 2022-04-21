@@ -57,6 +57,8 @@ enum class token_type : unsigned int {
     arrow_right, // ->
     double_arrow_right, // =>
     struct_,
+    enum_,
+    enumflags,
     plus_assign,
     minus_assign,
     mul_assign,

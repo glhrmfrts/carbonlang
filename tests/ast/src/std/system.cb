@@ -1,17 +1,13 @@
 code_unit{
   std/system.cb
   decl_list{
-    type_decl{SystemError = type_expr{int}}
-    var_decl{(NoError) = 0}
+    type_decl{SystemError = type_expr{(NoError, PathNotFound, InvalidHandle)}}
     linkage_specifier{ extern}
     linkage_specifier{ extern}
     linkage_specifier{ extern}
     linkage_specifier{ extern}
     linkage_specifier{ extern}
-    var_decl{(O_CREATE) = 1}
-    var_decl{(O_WRITE) = 2}
-    var_decl{(O_READ) = 4}
-    var_decl{(O_APPEND) = 8}
+    type_decl{OpenFlags = type_expr{(Create, Write, Read, Append)}}
     linkage_specifier{ extern}
     linkage_specifier{ extern}
     linkage_specifier{ extern}

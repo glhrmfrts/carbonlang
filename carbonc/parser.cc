@@ -56,6 +56,9 @@ struct parser_impl {
         else if (TOK == token_type::struct_) {
             result = parse_struct_type_expr();
         }
+        else if (TOK == token_type::enum_ || TOK == token_type::enumflags) {
+            result = parse_enum_type_expr(TOK == token_type::enumflags);
+        }
         else if (TOK_CHAR == '[') {
             result = parse_array_type_expr();
         }
@@ -110,6 +113,42 @@ struct parser_impl {
             throw parse_error(filename, lex->pos(), "invalid type expression");
         }
         return { nullptr, nullptr };
+    }
+
+    arena_ptr<ast_node> parse_enum_type_expr(bool is_flags = false) {
+        auto pos = lex->pos();
+        lex->next();
+
+        auto base_type = arena_ptr<ast_node>{nullptr, nullptr};
+        if (TOK_CHAR == ':') {
+            lex->next();
+            base_type = parse_type_expr();
+        }
+
+        if (TOK_CHAR != '{') {
+            throw parse_error(filename, lex->pos(), "expecting '{' in enum type");
+        }
+        lex->next();
+
+        std::vector<arena_ptr<ast_node>> members;
+        while (TOK == token_type::identifier) {
+            auto id = parse_qualified_identifier();
+            if (id) {
+                members.push_back(std::move(id));
+            }
+
+            if (TOK_CHAR == ';') { // optional semi-colon
+                lex->next();
+            }
+        }
+
+        if (TOK_CHAR != '}') {
+            throw parse_error(filename, lex->pos(), "expecting closing '}' in enum type");
+        }
+        lex->next();
+
+        auto member_list = make_arg_list_node(*ast_arena, pos, std::move(members));
+        return make_enum_type_node(*ast_arena, pos, std::move(base_type), std::move(member_list), is_flags);
     }
 
     arena_ptr<ast_node> parse_struct_type_expr() {

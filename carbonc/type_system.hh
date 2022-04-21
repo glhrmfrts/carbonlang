@@ -37,6 +37,8 @@ enum class type_kind {
     ptr,
     nullableptr,
     integral,
+    enum_,
+    enumflags,
     real,
     array,
     slice,
@@ -73,6 +75,8 @@ struct type_constructor {
     type_constructor_func func;
 };
 
+struct symbol_info;
+
 struct type_def {
     struct numeric_type {
         std::uint64_t max;
@@ -92,6 +96,10 @@ struct type_def {
         std::vector<struct_field> fields;
     };
 
+    struct enum_type {
+        std::vector<symbol_info*> symbols;
+    };
+
     string_hash name;
     string_hash mangled_name;
     //std::vector<type_qualifier> qualifiers;
@@ -107,6 +115,7 @@ struct type_def {
     array_type array;
     func_type func;
     struct_type structure;
+    enum_type enumtype;
     type_constructor constructor;
 
     type_flags::type flags = 0;
@@ -154,6 +163,7 @@ enum class symbol_kind {
 struct symbol_info {
     symbol_kind kind;
     scope_def* scope;
+    string_hash id;
 
     // if kind == local
     int local_index = -1;
@@ -332,6 +342,9 @@ struct type_system {
     type_id usize_type{};
     type_id isize_type{};
     type_id int8_type{};
+    type_id int16_type{};
+    type_id int32_type{};
+    type_id int64_type{};
     type_id raw_string_type{}; // only used internally
 
     type_constructor* ptr_type_constructor;
