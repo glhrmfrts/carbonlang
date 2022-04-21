@@ -90,7 +90,7 @@ func read(handle: rawptr, data: []uint8): isize {
     return bytes_read
 }
 
-func open(path: []pure uint8, flags: int, mode: int): {rawptr, error} {
+func open(path: []pure uint8, flags: int, mode: int): {rawptr, SystemError} {
     const GENERIC_READ = 1<<31
     const GENERIC_WRITE = 1<<30
     
@@ -113,11 +113,11 @@ func open(path: []pure uint8, flags: int, mode: int): {rawptr, error} {
     const FILE_ATTRIBUTE_NORMAL = 128
     let attrs = FILE_ATTRIBUTE_NORMAL
 
-    let err : error
+    let err : SystemError
     let handle = CreateFileA(path.ptr, access, sharemode, nullptr, creation, attrs, nullptr)
 
     if (handle == cast(rawptr)(cast(uintptr)INVALID_HANDLE_VALUE)) {
-        return nullptr, cast(error) GetLastError()
+        return nullptr, cast(SystemError) GetLastError()
     }
 
     if ((flags & O_APPEND) != 0) {
@@ -132,10 +132,10 @@ func seek(fd: rawptr, offset: int64, whence: int) {
     SetFilePointer(fd, cast(int) offset, nullptr, whence)
 }
 
-func stat(fd: rawptr, buf: &stat_data): error {
+func stat(fd: rawptr, buf: &Stat): SystemError {
     let info : BY_HANDLE_FILE_INFORMATION
     if (!GetFileInformationByHandle(fd, info)) {
-        return cast(error)GetLastError()
+        return cast(SystemError)GetLastError()
     }
     buf.size = info.nFileSizeHigh | info.nFileSizeLow
     buf.mtime = info.ftLastWriteTime
@@ -144,7 +144,7 @@ func stat(fd: rawptr, buf: &stat_data): error {
     return 0
 }
 
-func stat(filename: []pure uint8, buf: &stat_data): error {
+func stat(filename: []pure uint8, buf: &Stat): SystemError {
     let handle, err = open(filename, 0, 0)
     if (err != 0) {
         return err
@@ -159,7 +159,7 @@ func stat(filename: []pure uint8, buf: &stat_data): error {
     return 0
 }
 
-func close(fd: rawptr): error {
+func close(fd: rawptr): SystemError {
     return CloseHandle(fd)
 }
 
@@ -167,49 +167,49 @@ const STD_INPUT_HANDLE = -10
 const STD_OUTPUT_HANDLE = -11
 const STD_ERROR_HANDLE = -12
 
-func get_stdin_fd(): rawptr {
+func getStdinFd(): rawptr {
     return GetStdHandle(STD_INPUT_HANDLE)
 }
 
-func get_stdout_fd(): rawptr {
+func getStdoutFd(): rawptr {
     return GetStdHandle(STD_OUTPUT_HANDLE)
 }
 
-func get_stderr_fd(): rawptr {
+func getStderrFd(): rawptr {
     return GetStdHandle(STD_ERROR_HANDLE)
 }
 
-func unlink(path: []pure uint8): error {
+func unlink(path: []pure uint8): SystemError {
     if (!DeleteFileA(path.ptr)) {
-        return cast(error) GetLastError()
+        return cast(SystemError) GetLastError()
     }
     return 0
 }
 
-func remove(path: []pure uint8): error {
+func remove(path: []pure uint8): SystemError {
     if (!RemoveDirectoryA(path.ptr)) {
-        return cast(error) GetLastError()
+        return cast(SystemError) GetLastError()
     }
     return 0
 }
 
-func rename(path: []pure uint8, dest: []pure uint8): error {
+func rename(path: []pure uint8, dest: []pure uint8): SystemError {
     if (!MoveFileA(path.ptr, dest.ptr)) {
-        return cast(error) GetLastError()
+        return cast(SystemError) GetLastError()
     }
     return 0
 }
 
-func copy(path: []pure uint8, dest: []pure uint8): error {
+func copy(path: []pure uint8, dest: []pure uint8): SystemError {
     if (!CopyFileA(path.ptr, dest.ptr, false)) {
-        return cast(error) GetLastError()
+        return cast(SystemError) GetLastError()
     }
     return 0
 }
 
-func mkdir(path: []pure uint8): error {
+func mkdir(path: []pure uint8): SystemError {
     if (!CreateDirectoryA(path.ptr, nullptr)) {
-        return cast(error) GetLastError()
+        return cast(SystemError) GetLastError()
     }
     return 0
 }

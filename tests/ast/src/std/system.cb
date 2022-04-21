@@ -1,10 +1,8 @@
 code_unit{
   std/system.cb
   decl_list{
-    type_decl{error = type_expr{int}}
-    type_decl{memory = type_expr{struct_type{decl_list{
-            var_decl{(ptr): type_expr{rawptr}}
-            var_decl{(len): type_expr{usize}}}}}}
+    type_decl{SystemError = type_expr{int}}
+    var_decl{(NoError) = 0}
     linkage_specifier{ extern}
     linkage_specifier{ extern}
     linkage_specifier{ extern}
@@ -26,7 +24,7 @@ code_unit{
     var_decl{(SEEK_DATA) = 3}
     var_decl{(SEEK_HOLE) = 4}
     linkage_specifier{ extern}
-    type_decl{stat_data = type_expr{struct_type{decl_list{
+    type_decl{Stat = type_expr{struct_type{decl_list{
             var_decl{(size): type_expr{usize}}
             var_decl{(mtime): type_expr{int64}}
             var_decl{(atime): type_expr{int64}}
@@ -41,7 +39,13 @@ code_unit{
     linkage_specifier{ extern}
     linkage_specifier{ extern}
     linkage_specifier{ extern}
-    type_decl{thread_handle = type_expr{rawptr}}
+    type_decl{ThreadHandle = type_expr{rawptr}}
+    type_decl{MutexHandle = type_expr{rawptr}}
+    linkage_specifier{ extern}
+    linkage_specifier{ extern}
+    linkage_specifier{ extern}
+    linkage_specifier{ extern}
+    linkage_specifier{ extern}
     linkage_specifier{ extern}
     linkage_specifier{ extern}
     linkage_specifier{ extern}}}

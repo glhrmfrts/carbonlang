@@ -63,36 +63,36 @@ func exit(code: int) {
     ExitProcess(code)
 }
 
-func read_process_char(handle: rawptr, c: &uint8): bool {
+func readProcessChar(handle: rawptr, c: &uint8): bool {
     let dwRead : int
     let bSuccess = ReadFile( handle, cast(rawptr)c, 1, &dwRead, nullptr )
     return bSuccess && (dwRead == 1)
 }
 
-func exec_process(cmdline: []pure uint8, pwd: []pure uint8): error {
-    let output_handle_read  : rawptr
-    let output_handle_write : rawptr
-    let input_handle_read   : rawptr
-    let input_handle_write  : rawptr
+func execProcess(cmdline: []pure uint8, pwd: []pure uint8): SystemError {
+    let outputHandleRead  : rawptr
+    let outputHandleWrite : rawptr
+    let inputHandleRead   : rawptr
+    let inputHandleWrite  : rawptr
 
-    let sa_attr : SECURITY_ATTRIBUTES
-    sa_attr.nLength = sizeof(SECURITY_ATTRIBUTES)
-    sa_attr.bInheritHandle = true
-    sa_attr.lpSecurityDescriptor = nullptr
+    let saAttr : SECURITY_ATTRIBUTES
+    saAttr.nLength = sizeof(SECURITY_ATTRIBUTES)
+    saAttr.bInheritHandle = true
+    saAttr.lpSecurityDescriptor = nullptr
 
-    if (!CreatePipe(&output_handle_read, &output_handle_write, &sa_attr, 0)) {
-        return cast(error)GetLastError()
+    if (!CreatePipe(&outputHandleRead, &outputHandleWrite, &saAttr, 0)) {
+        return cast(SystemError)GetLastError()
     }
-    if (!CreatePipe(&input_handle_read, &input_handle_write, &sa_attr, 0)) {
-        return cast(error)GetLastError()
+    if (!CreatePipe(&inputHandleRead, &inputHandleWrite, &saAttr, 0)) {
+        return cast(SystemError)GetLastError()
     }
 
     let si : STARTUPINFOA
     si.cb = sizeof(si)
     si.dwFlags |= STARTF_USESTDHANDLES
-    si.hStdOutput = output_handle_write
-    si.hStdError = output_handle_write
-    si.hStdInput = input_handle_read
+    si.hStdOutput = outputHandleWrite
+    si.hStdError = outputHandleWrite
+    si.hStdInput = inputHandleRead
 
     let pi : PROCESS_INFORMATION
     let success = CreateProcessA(
@@ -108,25 +108,25 @@ func exec_process(cmdline: []pure uint8, pwd: []pure uint8): error {
         &pi
     )
     if (!success) {
-        return cast(error)GetLastError()
+        return cast(SystemError)GetLastError()
     }
 
     // Close handles to the stdin and stdout pipes no longer needed by the child process.
     // If they are not explicitly closed, there is no way to recognize that the child process has ended.
-    CloseHandle(output_handle_write)
-    CloseHandle(input_handle_read)
+    CloseHandle(outputHandleWrite)
+    CloseHandle(inputHandleRead)
 
     let c : uint8
-    while (read_process_char(output_handle_read, &c)) {
-        write(get_stdout_fd(), []pure uint8{&c, 1})
+    while (readProcessChar(outputHandleRead, &c)) {
+        write(getStdoutFd(), []pure uint8{&c, 1})
     }
-    let err = cast(error)GetLastError()
+    let err = cast(SystemError)GetLastError()
     if (err != 0 && err != 109) {
         return err 
     }
 
-    CloseHandle(input_handle_write)
-    CloseHandle(output_handle_read)
+    CloseHandle(inputHandleWrite)
+    CloseHandle(outputHandleRead)
     TerminateProcess(pi.hProcess, 0)
 
     // Close handles to the child process and its primary thread.

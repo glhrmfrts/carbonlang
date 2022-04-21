@@ -24,6 +24,8 @@ std::string node_to_string(const ast_node& node);
 
 std::string type_to_string(type_id t);
 
+std::vector<struct_field>& get_type_fields(type_id id);
+
 // Section: errors
 
 template <typename... Args> void add_module_error(type_system& ts, const position& pos, const char* fmt, Args&&... args) {
@@ -166,6 +168,16 @@ type_id register_pointer_type(type_system& ts, const std::string& name, const st
 }
 
 // Section: types
+
+type_id get_alias_root(type_system& ts, type_id tid) {
+    if (!tid.valid()) {
+        return tid;
+    }
+    if (tid.get().alias_to.valid()) {
+        return get_alias_root(ts, tid.get().alias_to);
+    }
+    return tid;
+}
 
 bool compare_types_exact(const type_def& a, const type_def& b) {
     return a.kind == b.kind
@@ -546,6 +558,22 @@ bool is_assignable_to(type_system& ts, type_id a, type_id b) {
         return true;
     }
 
+    // Assigning a tuple to another tuple (or struct) that contains assignable types is OK.
+    if (ta.kind == type_kind::tuple && (tb.kind == type_kind::tuple || tb.kind == type_kind::structure)) {
+        const auto& afields = get_type_fields(ta.id);
+        const auto& bfields = get_type_fields(tb.id);
+        if (afields.size() != bfields.size()) { return false; }
+
+        for (int i = 0; i < afields.size(); i++) {
+            const auto& afield = afields[i];
+            const auto& bfield = bfields[i];
+            if (!is_assignable_to(ts, afield.type, bfield.type)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     if (tb.kind == ta.kind && (tb.flags & type_flags::is_pure)) {
         return true;
     }
@@ -921,7 +949,7 @@ bool can_pointer_be_cast_from(type_system& ts, type_def& self, type_def& from) {
 }
 
 bool can_nullableptr_be_cast_from(type_system& ts, type_def& self, type_def& from) {
-    if (self.id == ts.raw_ptr_type) {
+    if (get_alias_root(ts, self.id) == ts.raw_ptr_type) {
         if (from.kind == type_kind::ptr || from.kind == type_kind::nullableptr) {
             return true;
         }
@@ -929,7 +957,7 @@ bool can_nullableptr_be_cast_from(type_system& ts, type_def& self, type_def& fro
             return from.id == ts.uintptr_type;
         }
     }
-    else if (from.id == ts.raw_ptr_type) {
+    else if (get_alias_root(ts, from.id) == ts.raw_ptr_type) {
         return true;
     }
 
@@ -2743,11 +2771,15 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
             }
             new_type_id = register_user_type(ts, node);
         }
+        else {
+            new_type_id = node.type_def.id;
+        }
 
         node.type_def.self = &node;
 
-        visit_tree(ts, *node.children[1]);
         if (node.children[1]) {
+            visit_tree(ts, *node.children[1]);
+
             auto type = node.children[1]->type_id;
             if (type.valid()) {
                 node.type_def = type.get();

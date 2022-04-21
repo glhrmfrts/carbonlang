@@ -17,12 +17,11 @@ func GetProcessHeap(): int
 }
 
 extern(carbon, std::system) {
-func alloc(size: usize): memory {
-    return memory{ HeapAlloc(GetProcessHeap(), 0, size), size }
+func alloc(size: usize): rawptr {
+    return HeapAlloc(GetProcessHeap(), 0, size)
 }
 
-func free(m: &memory) {
-    HeapFree(GetProcessHeap(), 0, m.ptr)
-    m.ptr = nullptr
+func free(ptr: rawptr) {
+    HeapFree(GetProcessHeap(), 0, ptr)
 }
 }

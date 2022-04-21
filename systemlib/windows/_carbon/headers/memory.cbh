@@ -2,5 +2,5 @@ import std::system;
 extern(C) func HeapAlloc(:int, :int, :usize):rawptr;
 extern(C) func HeapFree(:int, :int, :rawptr):bool;
 extern(C) func GetProcessHeap():int;
-extern func alloc(:usize):memory;
-extern func free(:&memory):{};
+extern func alloc(:usize):rawptr;
+extern func free(:rawptr):{};

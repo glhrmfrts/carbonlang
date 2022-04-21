@@ -3,6 +3,29 @@ code_unit{
   decl_list{
     import_decl{ std::system}
     import_decl{ io}
+    type_decl{CRITICAL_SECTION = type_expr{struct_type{decl_list{
+            var_decl{(DebugInfo): type_expr{rawptr}}
+            var_decl{(LockCount): type_expr{int64}}
+            var_decl{(RecursionCount): type_expr{int64}}
+            var_decl{(OwningThread): type_expr{rawptr}}
+            var_decl{(LockSemaphore): type_expr{rawptr}}
+            var_decl{(SpinCount): type_expr{type_qualifier{pointer, uint64}}}}}}}
+    type_decl{SYSTEM_INFO = type_expr{struct_type{decl_list{
+            var_decl{(unused): type_expr{int32}}
+            var_decl{(dwPageSize): type_expr{int32}}
+            var_decl{(lpMinimumApplicationAddress): type_expr{rawptr}}
+            var_decl{(lpMaximumApplicationAddress): type_expr{rawptr}}
+            var_decl{(dwActiveProcessorMask): type_expr{type_qualifier{pointer, int32}}}
+            var_decl{(dwNumberOfProcessors): type_expr{int32}}
+            var_decl{(dwProcessorType): type_expr{int32}}
+            var_decl{(dwAllocationGranularity): type_expr{int32}}
+            var_decl{(wProcessorLevel): type_expr{int16}}
+            var_decl{(wProcessorRevision): type_expr{int16}}}}}}
+    linkage_specifier{ extern(C)}
+    linkage_specifier{ extern(C)}
+    linkage_specifier{ extern(C)}
+    linkage_specifier{ extern(C)}
+    linkage_specifier{ extern(C)}
     linkage_specifier{ extern(C)}
     linkage_specifier{ extern(C)}
     linkage_specifier{ extern(C)}

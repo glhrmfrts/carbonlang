@@ -1,7 +1,45 @@
 import std::system
 import io
 
+type CRITICAL_SECTION = struct {
+    DebugInfo: rawptr;
+
+    //
+    // The following three fields control entering and exiting the critical
+    // section for the resource
+    //
+
+    LockCount: int64;
+    RecursionCount: int64;
+    OwningThread: rawptr;        // from the thread's ClientId->UniqueThread
+    LockSemaphore: rawptr;
+    SpinCount: *uint64;        // force size on 64-bit systems when packed
+}
+
+type SYSTEM_INFO = struct {
+    unused:   int32;
+    dwPageSize: int32;
+    lpMinimumApplicationAddress: rawptr;
+    lpMaximumApplicationAddress: rawptr;
+    dwActiveProcessorMask: *int32;
+    dwNumberOfProcessors: int32;
+    dwProcessorType: int32;
+    dwAllocationGranularity: int32;
+    wProcessorLevel: int16;
+    wProcessorRevision: int16;
+}
+
+extern(C) func InitializeCriticalSection(cs: *CRITICAL_SECTION)
+
+extern(C) func EnterCriticalSection(cs: *CRITICAL_SECTION)
+
+extern(C) func LeaveCriticalSection(cs: *CRITICAL_SECTION)
+
+extern(C) func DeleteCriticalSection(cs: *CRITICAL_SECTION)
+
 extern(C) func GetCurrentThreadId(): int
+
+extern(C) func GetSystemInfo(si: *SYSTEM_INFO)
 
 extern(C) func CreateThread(
     lpSecurityAttributes: *pure SECURITY_ATTRIBUTES,
@@ -15,22 +53,51 @@ extern(C) func CreateThread(
 extern(C) func WaitForSingleObject(handle: rawptr, dwMilliseconds: int): int
 
 extern(carbon, std::system) {
-func create_thread(fn: {rawptr} -> {}, arg: rawptr): {thread_handle, error} {
-    let thread_id : int32
-    let th = CreateThread(nullptr, 0, fn, arg, 0, &thread_id)
+func createThread(fn: {rawptr} -> {}, arg: rawptr): {ThreadHandle, SystemError} {
+    let threadId : int32
+
+    let th = CreateThread(nullptr, 0, fn, arg, 0, &threadId)
     if (th == cast(rawptr)(cast(uintptr)INVALID_HANDLE_VALUE)) {
-        return cast(thread_handle)nullptr, cast(error)GetLastError()
+        return nullptr, GetLastError()
     }
 
-    let err : error
-    return cast(thread_handle)th, err
+    return th, NoError
 }
 
-func join(th: thread_handle): error {
-    WaitForSingleObject(th, 0xFFFFFFFF)
+const INFINITE_TIMEOUT = 0xFFFFFFFF
+
+func join(th: ThreadHandle) {
+    WaitForSingleObject(th, INFINITE_TIMEOUT)
 }
 
-func get_thread_id(): int {
+func getThreadId(): int {
     return GetCurrentThreadId()
+}
+
+func getCoreCount(): int {
+    let si : SYSTEM_INFO
+    GetSystemInfo(&si)
+    return si.dwNumberOfProcessors
+}
+
+func createMutex(): {MutexHandle, SystemError} {
+    let cs = cast(*CRITICAL_SECTION)(alloc(sizeof(CRITICAL_SECTION)))
+    InitializeCriticalSection(cs)
+    return cast(MutexHandle)cs, NoError
+}
+
+func lock(m: MutexHandle) {
+    EnterCriticalSection(cast(*CRITICAL_SECTION)(m))
+}
+
+func unlock(m: MutexHandle) {
+    LeaveCriticalSection(cast(*CRITICAL_SECTION)(m))
+}
+
+func destroy(m: MutexHandle) {
+    let cs = cast(*CRITICAL_SECTION)(m)
+    DeleteCriticalSection(cs)
+    // TODO: free(memoryFromPointer(nullcast(cs)))
+    free(cast(rawptr)cs)
 }
 }

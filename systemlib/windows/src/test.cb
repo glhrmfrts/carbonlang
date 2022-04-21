@@ -6,7 +6,7 @@ import memory
 // TODO: enumflags
 // TODO: union
 
-func string_equals(a: []pure uint8, b: []pure uint8) {
+func stringEquals(a: []pure uint8, b: []pure uint8) {
     if (a.len != b.len) { return false }
 
     for (i in 0,a.len) {
@@ -18,7 +18,7 @@ func string_equals(a: []pure uint8, b: []pure uint8) {
     return true
 }
 
-func int_to_string(value: int, base: int, dest: []uint8) {
+func intToString(value: int, base: int, dest: []uint8) {
     // check that the base if valid
     if (base < 2 || base > 36) { return 0 }
 
@@ -67,37 +67,37 @@ func int_to_string(value: int, base: int, dest: []uint8) {
     return offs
 }
 
-func write_int(handle: rawptr, value: int) {
+func writeInt(handle: rawptr, value: int) {
     let buf : [32]uint8{}
     let dest = []uint8{&buf[0], sizeof(buf)}
-    dest.len = int_to_string(value, 10, dest)
+    dest.len = intToString(value, 10, dest)
     write(handle, dest)
 }
 
-func read_file(filename: []pure uint8): {[]uint8, memory} {
-    let statdata : stat_data
+func readFile(filename: []pure uint8): []uint8  {
+    let statdata : Stat
     stat(filename, statdata)
 
     let bufdata = alloc(statdata.size + 1)
 
-    let data = []uint8{nullcast(cast(*uint8)bufdata.ptr), bufdata.len - 1}
+    let data = []uint8{nullcast(cast(*uint8)bufdata), statdata.size}
     data[statdata.size] = 0
     
     let handle, err = open(filename, 0, 0)
     if (err != 0) {
         data.len = 0
-        return data, bufdata
+        return data
     }
 
     read(handle, data)
     close(handle)
 
-    return data, bufdata
+    return data
 }
 
 func test_defer() {
-    write(get_stdout_fd(), "DEFER\n")
-    write(get_stdout_fd(), "Exit code should be 1440\n")
+    write(getStdoutFd(), "DEFER\n")
+    write(getStdoutFd(), "Exit code should be 1440\n")
     exit(1440)
 }
 
@@ -109,25 +109,25 @@ func test_file_write() {
     let newhandle, err = open("file.txt", O_READ, 0)
     defer close(newhandle)
 
-    let statdata : stat_data
+    let statdata : Stat
     stat("file.txt", statdata)
 
     let bufdata = alloc(statdata.size + 1)
     defer free(bufdata)
 
-    let data = []uint8{nullcast(cast(*uint8)bufdata.ptr), bufdata.len - 1}
+    let data = []uint8{nullcast(cast(*uint8)bufdata), statdata.size}
     data[statdata.size] = 0
 
     read(newhandle, data)
-    //write(get_stdout_fd(), data)
-    //write(get_stdout_fd(), "\n")
+    //write(getStdoutFd(), data)
+    //write(getStdoutFd(), "\n")
 
-    return string_equals(data, "HELLO_WORLD")
+    return stringEquals(data, "HELLO_WORLD")
 }
 
 func test_file_move() {
-    let filedata, filemem = read_file("file.txt")
-    defer free(filemem)
+    let filedata = readFile("file.txt")
+    defer free(cast(rawptr)filedata.ptr)
 
     let err = rename("file.txt", "file2.txt")
     if (err != 0) {
@@ -135,15 +135,15 @@ func test_file_move() {
     }
     defer rename("file2.txt", "file.txt")
 
-    let filedata2, filemem2 = read_file("file2.txt")
-    defer free(filemem2)
+    let filedata2 = readFile("file2.txt")
+    defer free(cast(rawptr)filedata2.ptr)
 
-    return string_equals(filedata, filedata2)
+    return stringEquals(filedata, filedata2)
 }
 
 func test_file_copy() {
-    let filedata, filemem = read_file("file.txt")
-    defer free(filemem)
+    let filedata = readFile("file.txt")
+    defer free(cast(rawptr)filedata.ptr)
 
     let err = copy("file.txt", "file_copy.txt")
     if (err != 0) {
@@ -151,10 +151,10 @@ func test_file_copy() {
     }
     defer unlink("file_copy.txt")
 
-    let filedata2, filemem2 = read_file("file_copy.txt")
-    defer free(filemem2)
+    let filedata2 = readFile("file_copy.txt")
+    defer free(cast(rawptr)filedata2.ptr)
 
-    return string_equals(filedata, filedata2)
+    return stringEquals(filedata, filedata2)
 }
 
 func test_file_append() {
@@ -165,30 +165,30 @@ func test_file_append() {
     let newhandle, err = open("file.txt", O_READ, 0)
     defer close(newhandle)
 
-    let statdata : stat_data
+    let statdata : Stat
     stat("file.txt", statdata)
 
     let bufdata = alloc(statdata.size)
     defer free(bufdata)
 
-    let data = []uint8{nullcast(cast(*uint8)bufdata.ptr), bufdata.len - 1}
+    let data = []uint8{nullcast(cast(*uint8)bufdata), statdata.size - 1}
     data[statdata.size] = 0
 
     read(newhandle, data)
-    //write(get_stdout_fd(), data)
-    //write(get_stdout_fd(), "\n")
+    //write(getStdoutFd(), data)
+    //write(getStdoutFd(), "\n")
 
-    return (string_equals(data, "HELLO_WORLDHELLO_WORLD"))
+    return (stringEquals(data, "HELLO_WORLDHELLO_WORLD"))
 }
 
 func test_file_unlink() {
-    let s : stat_data
+    let s : Stat
     let err = stat("file.txt", s)
     if (err != 0) {
-        //write(get_stdout_fd(), "ERROR\n")
+        //write(getStdoutFd(), "ERROR\n")
         return false
     }
-    //write(get_stdout_fd(), "EXISTS\n")
+    //write(getStdoutFd(), "EXISTS\n")
 
     err = unlink("file.txt")
     if (err != 0) {
@@ -205,19 +205,19 @@ func test_file_unlink() {
 
 func test_alloc_copy() {
     let str = "ALLOC_COPY\n"
-    //write(get_stdout_fd(), str)
+    //write(getStdoutFd(), str)
 
     let m = alloc(str.len + 1)
     defer free(m)
 
-    let ptr = nullcast(cast(*uint8)m.ptr)
+    let ptr = nullcast(cast(*uint8)m)
     for (i in 0,str.len) {
         ptr[i] = str[i]
     }
     ptr[str.len] = 0
     
-    //write(get_stdout_fd(), []pure uint8{ptr, str.len})
-    return (string_equals([]pure uint8{ptr, str.len}, "ALLOC_COPY\n"))
+    //write(getStdoutFd(), []pure uint8{ptr, str.len})
+    return (stringEquals([]pure uint8{ptr, str.len}, "ALLOC_COPY\n"))
 }
 
 func test_dir_create() {
@@ -253,100 +253,137 @@ func test_dir_remove() {
     return true
 }
 
-func get_values() {
+func getValues() {
     return "GET_VALUES",48
 }
 
-func worker_thread_func(arg: rawptr) {
-    write(get_stdout_fd(), "worker_thread: ")
-    write_int(get_stdout_fd(), get_thread_id())
-    write(get_stdout_fd(), "\n")
+let counter : int
+let mutex : MutexHandle
+
+func workerThreadFunc(arg: rawptr) {
+    lock(mutex)
+    defer unlock(mutex)
+
+    write(getStdoutFd(), "worker_thread: ")
+    writeInt(getStdoutFd(), getThreadId())
+    write(getStdoutFd(), "\n")
+
+    counter += 1
 }
 
 extern(C) func test_main(): int {
-    let a,b = get_values()
-    write(get_stdout_fd(), a)
+    let a,b = getValues()
+    write(getStdoutFd(), a)
     if (b == 48) {
-        write(get_stdout_fd(), ", 48")
+        write(getStdoutFd(), ", 48")
     }
-    write(get_stdout_fd(), "\n")
+    write(getStdoutFd(), "\n")
 
     defer test_defer()
 
     if (test_file_write()) {
-        write(get_stdout_fd(), "test_file_write: OK\n")
+        write(getStdoutFd(), "test_file_write: OK\n")
     }
     else {
-        write(get_stdout_fd(), "test_file_write: NOK\n")
+        write(getStdoutFd(), "test_file_write: NOK\n")
     }
 
     if (test_file_move()) {
-        write(get_stdout_fd(), "test_file_move: OK\n")
+        write(getStdoutFd(), "test_file_move: OK\n")
     }
     else {
-        write(get_stdout_fd(), "test_file_move: NOK\n")
+        write(getStdoutFd(), "test_file_move: NOK\n")
     }
 
     if (test_file_copy()) {
-        write(get_stdout_fd(), "test_file_copy: OK\n")
+        write(getStdoutFd(), "test_file_copy: OK\n")
     }
     else {
-        write(get_stdout_fd(), "test_file_copy: NOK\n")
+        write(getStdoutFd(), "test_file_copy: NOK\n")
     }
 
     if (test_file_append()) {
-        write(get_stdout_fd(), "test_file_append: OK\n")
+        write(getStdoutFd(), "test_file_append: OK\n")
     }
     else {
-        write(get_stdout_fd(), "test_file_append: NOK\n")
+        write(getStdoutFd(), "test_file_append: NOK\n")
     }
 
     if (test_alloc_copy()) {
-        write(get_stdout_fd(), "test_alloc_copy: OK\n")
+        write(getStdoutFd(), "test_alloc_copy: OK\n")
     }
     else {
-        write(get_stdout_fd(), "test_alloc_copy: NOK\n")
+        write(getStdoutFd(), "test_alloc_copy: NOK\n")
     }
 
     if (test_file_unlink()) {
-        write(get_stdout_fd(), "test_file_unlink: OK\n")
+        write(getStdoutFd(), "test_file_unlink: OK\n")
     }
     else {
-        write(get_stdout_fd(), "test_file_unlink: NOK\n")
+        write(getStdoutFd(), "test_file_unlink: NOK\n")
     }
 
     if (test_dir_create()) {
-        write(get_stdout_fd(), "test_dir_create: OK\n")
+        write(getStdoutFd(), "test_dir_create: OK\n")
     }
     else {
-        write(get_stdout_fd(), "test_dir_create: NOK\n")
+        write(getStdoutFd(), "test_dir_create: NOK\n")
     }
 
     if (test_dir_remove()) {
-        write(get_stdout_fd(), "test_dir_remove: OK\n")
+        write(getStdoutFd(), "test_dir_remove: OK\n")
     }
     else {
-        write(get_stdout_fd(), "test_dir_remove: NOK\n")
+        write(getStdoutFd(), "test_dir_remove: NOK\n")
     }
 
     let c : uint8
-    let err = exec_process("C:\\q2dev\\q2tools-220\\x64\\Release\\4rad.exe", "")
+    let err = execProcess("C:\\q2dev\\q2tools-220\\x64\\Release\\4rad.exe", "")
     if (err == 0) {
-        write(get_stdout_fd(), "exec_process: OK\n")
+        write(getStdoutFd(), "exec_process: OK\n")
     }
     else {
-        write(get_stdout_fd(), "exec_process: NOK\n")
+        write(getStdoutFd(), "exec_process: NOK\n")
         exit(err)
     }
 
-    let th, terr = create_thread(worker_thread_func\{rawptr}, nullptr)
+    let mut, merr = createMutex()
+    if (merr != 0) {
+        exit(1)
+    }
+    defer destroy(mut)
+
+    mutex = mut
+
+    let th, terr = createThread(workerThreadFunc\{rawptr}, nullptr)
     if (terr != 0) {
         exit(1)
     }
 
-    write(get_stdout_fd(), "main_thread: ")
-    write_int(get_stdout_fd(), get_thread_id())
-    write(get_stdout_fd(), "\n")
+    lock(mutex)
+
+    write(getStdoutFd(), "main_thread: ")
+    writeInt(getStdoutFd(), getThreadId())
+    write(getStdoutFd(), "\n")
+
+    counter += 1
+
+    unlock(mutex)
+
+    const LIMIT = 20000000
+    let i = 0
+    while (i < LIMIT) {
+        i += 1
+    }
+
+    lock(mutex)
+
+    write(getStdoutFd(), "counter: ")
+    writeInt(getStdoutFd(), counter)
+    write(getStdoutFd(), "\n")
+
+    unlock(mutex)
+
     join(th)
 
     return 0

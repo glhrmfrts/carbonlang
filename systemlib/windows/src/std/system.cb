@@ -1,20 +1,16 @@
 // Low-level system provided layer
 
-type error = int
+typealias SystemError = int
 
-type memory = struct {
-    ptr: rawptr
-    len: usize
-}
-
+const NoError = 0
 
 // memory.cb
 
-extern func alloc(sz: usize): memory
+extern func alloc(sz: usize): rawptr
 
-extern func alloc(sz: usize, extra: rawptr): memory
+extern func alloc(sz: usize, extra: rawptr): rawptr
 
-extern func free(m: &memory)
+extern func free(m: rawptr)
 
 
 // io.cb
@@ -28,17 +24,17 @@ const O_WRITE = 2
 const O_READ = 4
 const O_APPEND = 8
 
-extern func open(path: []pure uint8, flags: int, mode: int): {rawptr, error}
+extern func open(path: []pure uint8, flags: int, mode: int): {rawptr, SystemError}
 
-extern func get_stdout_fd(): rawptr
+extern func getStdoutFd(): rawptr
 
-extern func get_stderr_fd(): rawptr
+extern func getStderrFd(): rawptr
 
-extern func get_stdin_fd(): rawptr
+extern func getStdinFd(): rawptr
 
-extern func get_fd_flags(fd: rawptr): int
+extern func getFdFlags(fd: rawptr): int
 
-extern func close(fd: rawptr): error
+extern func close(fd: rawptr): SystemError
 
 const SEEK_SET = 0
 const SEEK_CUR = 1
@@ -48,7 +44,7 @@ const SEEK_HOLE = 4
 
 extern func seek(fd: rawptr, offset: int64, whence: int)
 
-type stat_data = struct {
+type Stat = struct {
     size: usize
     mtime: int64
     atime: int64
@@ -56,34 +52,46 @@ type stat_data = struct {
     mode: int
 }
 
-extern func stat(filename: []pure uint8, buf: &stat_data): error
+extern func stat(filename: []pure uint8, buf: &Stat): SystemError
 
-extern func stat(fd: rawptr, buf: &stat_data): error
+extern func stat(fd: rawptr, buf: &Stat): SystemError
 
-extern func unlink(path: []pure uint8): error
+extern func unlink(path: []pure uint8): SystemError
 
-extern func remove(path: []pure uint8): error
+extern func remove(path: []pure uint8): SystemError
 
-extern func rename(path: []pure uint8, dest: []pure uint8): error
+extern func rename(path: []pure uint8, dest: []pure uint8): SystemError
 
-extern func copy(path: []pure uint8, dest: []pure uint8): error
+extern func copy(path: []pure uint8, dest: []pure uint8): SystemError
 
-extern func mkdir(path: []pure uint8): error
+extern func mkdir(path: []pure uint8): SystemError
 
 
 // process.cb
 
 extern func exit(code: int)
 
-extern func exec_process(cmdline: []pure uint8, pwd: []pure uint8): error
+extern func execProcess(cmdline: []pure uint8, pwd: []pure uint8): SystemError
 
 
 // thread.cb
 
-type thread_handle = rawptr
+typealias ThreadHandle = rawptr
 
-extern func create_thread(fn: {rawptr} -> {}, arg: rawptr): {thread_handle, error}
+typealias MutexHandle = rawptr
 
-extern func join(th: thread_handle): error
+extern func createThread(fn: {rawptr} -> {}, arg: rawptr): {ThreadHandle, SystemError}
 
-extern func get_thread_id(): int
+extern func join(th: ThreadHandle): SystemError
+
+extern func getThreadId(): int
+
+extern func getCoreCount(): int
+
+extern func createMutex(): {MutexHandle, SystemError}
+
+extern func lock(m: MutexHandle): SystemError
+
+extern func unlock(m: MutexHandle): SystemError
+
+extern func destroy(m: MutexHandle)

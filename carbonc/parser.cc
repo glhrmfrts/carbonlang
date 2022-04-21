@@ -524,6 +524,8 @@ struct parser_impl {
             return parse_func_decl();
         case token_type::type:
             return parse_type_decl();
+        case token_type::typealias:
+            return parse_type_decl(true);
         case token_type::import_:
             return parse_import_decl();
         case token_type::asm_:
