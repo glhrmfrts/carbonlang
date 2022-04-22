@@ -1,0 +1,163 @@
+import std::system as system
+
+type Field2D = struct {
+    data: &int
+    width: int
+    height: int
+}
+
+type Automaton = struct {
+    field:      Field2D
+    new_field:  Field2D
+}
+
+func println(str: []pure uint8) {
+    system::write(system::getStdoutFd(), str)
+    system::write(system::getStdoutFd(), "\n")
+}
+
+func memset(dest: rawptr, value: uint8, sz: usize) {
+}
+
+func freeListOfStrings(list: [][]pure uint8) {
+}
+
+func append(s: []pure uint8, c: uint8): []pure uint8 {
+    return ""
+}
+
+func split(s: []pure uint8, ned: []pure uint8): [][]pure uint8 {
+    let arr = [1][]pure uint8{}
+    return [][]pure uint8{ &arr[0], 0 }
+}
+
+func makeField(sx: int, sy: int): Field2D {
+    let data = system::alloc(sizeof(int)*sx*sy)
+    return Field2D{ nullcast(cast(*int)data), sx, sy }
+}
+
+func set(f: &Field2D, x: int, y: int, val: int) {
+    f.data[y * f.width + x] = val
+}
+
+func get(f: &pure Field2D, x: int, y: int): int {
+    return f.data[y * f.width + x]
+}
+
+func clear(f: &Field2D) {
+    memset(cast(rawptr)f.data, 0, f.width*f.height*sizeof(int))
+}
+
+func makeAutomaton(ftext: []pure uint8): Automaton {
+    let f = ftext->split("\n")
+    defer freeListOfStrings(f)
+
+    let height = cast(int) f.len
+    let width  = 0
+
+    for (y in 0,f.len) {
+        if (width < f[y].len) {
+            width = cast(int) f[y].len
+        }
+    }
+
+    let field    = makeField(width, height)
+    let newfield = makeField(width, height)
+
+    for (y in 0, field.height) {
+        for (x in 0, field.width) {
+            field->set(x, y, (x < f[y].len && f[y][x] == '#' then 1 else 0))
+        }
+    }
+
+    let a = Automaton{}
+    a.field = field
+    a.new_field = newfield
+    return a
+}
+
+func update(a: &Automaton) {
+    a.new_field->clear()
+    for (y in 1,a.field.height) {
+        for (x in 1,a.field.width) {
+            let moore_sum = (
+                0 + a.field->get(x-1, y-1) + a.field->get(x,y+1) + a.field->get(x+1, y-1) +
+                a.field->get(x-1, y) + 0 + a.field->get(x+1, y) + a.field->get(x-1, y+1) +
+                a.field->get(x,y+1) + a.field->get(x+1, y+1)
+            )
+            let cell = a.field->get(x, y)
+            let alive = (cell == 1) then (moore_sum == 2 || moore_sum == 3) else (moore_sum == 3)
+            a.new_field->set(x, y, alive then 1 else 0)
+        }
+    }
+    let tmp = a.field
+    a.field = a.new_field
+    a.new_field = tmp
+}
+
+func print(a: &Automaton) {
+    let buf = system::alloc(a.field.width * a.field.height + 256)
+    memset(buf, 0, a.field.width * a.field.height + 256)
+
+    let s = []uint8{ nullcast(cast(*uint8)buf), 0 }
+
+    for (y in 1,a.field.height) {
+        for (x in 1,a.field.width) {
+            let cell = a.field->get(x,y)
+
+            // TODO: s[y*a.field.width+x] = cell == 1 then '@' else '.'
+            s[y*a.field.width+x] = (cell == 1 then '@' else '.')
+
+            s.len += 1
+        }
+        println(s)
+    }
+	println("")
+}
+
+func makeGun(): Automaton {
+    let gunfield = "*******************************************
+*                                         *
+*  A shooting gun:                        *
+*                          #              *
+*                        # #              *
+*              ##      ##            ##   *
+*             #   #    ##            ##   *
+*  ##        #     #   ##                 *
+*  ##        #   # ##    # #              *
+*            #     #       #              *
+*             #   #                       *
+*              ##                         *
+*                                         *
+*  Tetris Life:                           *
+*                                         *
+*  ##       ####                          *
+*  ##                                     *
+*                                         *
+*                                         *
+*                                         *
+*  #         ##                           *
+*  ###      ##                            *
+*                                         *
+*                                         *
+*                                         *
+*        #                                *
+*       ###                               *
+*                                         *
+*                                         *
+*                                         *
+*                                         *
+*******************************************"
+    // TODO: return makeAutomaton(gunfield)
+    let a = makeAutomaton(gunfield)
+    return a
+}
+
+func gameOfLife() {
+    let a = makeGun()
+    for (i in 0,50) {
+        a->update()
+        a->print()
+        system::sleepMs(100)
+    }
+}

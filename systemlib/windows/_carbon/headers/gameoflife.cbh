@@ -1,0 +1,15 @@
+import std::system as system;
+extern func println(:[]pure uint8):{};
+extern func memset(:rawptr, :uint8, :usize):{};
+extern func freeListOfStrings(:[][]pure uint8):{};
+extern func append(:[]pure uint8, :uint8):[]pure uint8;
+extern func split(:[]pure uint8, :[]pure uint8):[][]pure uint8;
+extern func makeField(:int, :int):Field2D;
+extern func set(:&Field2D, :int, :int, :int):{};
+extern func get(:&pure Field2D, :int, :int):int;
+extern func clear(:&Field2D):{};
+extern func makeAutomaton(:[]pure uint8):Automaton;
+extern func update(:&Automaton):{};
+extern func print(:&Automaton):{};
+extern func makeGun():Automaton;
+extern func gameOfLife():{};

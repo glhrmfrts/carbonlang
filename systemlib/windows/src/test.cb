@@ -77,7 +77,7 @@ func writeInt(handle: rawptr, value: int) {
     write(handle, dest)
 }
 
-func readFile(filename: []pure uint8): []uint8  {
+func readFile(filename: []pure uint8): []uint8 {
     let statdata : Stat
     stat(filename, statdata)
 
@@ -86,7 +86,7 @@ func readFile(filename: []pure uint8): []uint8  {
     let data = []uint8{nullcast(cast(*uint8)bufdata), statdata.size}
     data[statdata.size] = 0
     
-    let handle, err = open(filename, 0, 0)
+    let handle, err = open(filename, noflags, 0)
     if (err != NoError) {
         data.len = 0
         return data

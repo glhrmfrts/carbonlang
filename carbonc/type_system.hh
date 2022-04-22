@@ -39,6 +39,7 @@ enum class type_kind {
     integral,
     enum_,
     enumflags,
+    error,
     real,
     array,
     slice,
@@ -345,6 +346,12 @@ struct type_system {
     type_id int16_type{};
     type_id int32_type{};
     type_id int64_type{};
+    type_id uint8_type{};
+    type_id uint16_type{};
+    type_id uint32_type{};
+    type_id uint64_type{};
+    type_id error_type{};
+    type_id noflags_type{};
     type_id raw_string_type{}; // only used internally
 
     type_constructor* ptr_type_constructor;

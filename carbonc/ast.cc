@@ -516,10 +516,12 @@ arena_ptr<ast_node> make_type_resolver_node(memory_arena& arena, type_id tid) {
     return ptr;
 }
 
-arena_ptr<ast_node> make_noinit_token_node(memory_arena& arena) {
+arena_ptr<ast_node> make_init_tag_node(memory_arena& arena, const position& pos, token_type tok) {
     auto ptr = make_in_arena<ast_node>(arena);
+    ptr->pos = pos;
     ptr->node_id = node_id_gen++;
-    ptr->type = ast_type::noinit_token;
+    ptr->type = ast_type::init_tag;
+    ptr->op = tok;
     return ptr;
 }
 

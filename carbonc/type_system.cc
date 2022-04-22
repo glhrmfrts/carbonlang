@@ -120,6 +120,21 @@ template <typename T> type_id register_integral_type(type_system& ts, const char
     return register_builtin_type(ts, std::move(node));
 }
 
+template <typename T> type_id register_integral_like_type(type_system& ts, const char* name, type_kind kind) {
+    auto node = make_in_arena<ast_node>(*ts.ast_arena);
+
+    type_def& def = node->type_def;
+    def.kind = kind;
+    def.name = string_hash{ name };
+    def.mangled_name = string_hash{ name };
+    def.alignment = alignof(T);
+    def.size = sizeof(T);
+    def.is_signed = std::is_signed_v<T>;
+    def.numeric.max = std::numeric_limits<T>::max();
+    def.numeric.min = std::numeric_limits<T>::min();
+    return register_builtin_type(ts, std::move(node));
+}
+
 template <typename T> type_id register_real_type(type_system& ts, const char* name) {
     auto node = make_in_arena<ast_node>(*ts.ast_arena);
 
@@ -595,6 +610,10 @@ std::pair<bool, bool> is_convertible_to(type_system& ts, type_id a, type_id b) {
     auto& tb = get_type(ts, b);
 
     if (ta.kind == tb.kind && tb.kind == type_kind::integral) {
+        return std::make_pair(tb.size >= ta.size, true);
+    }
+
+    if (get_alias_root(ts, a) == ts.noflags_type && tb.kind == type_kind::enumflags) {
         return std::make_pair(tb.size >= ta.size, true);
     }
 
@@ -1398,8 +1417,15 @@ type_id get_type_expr_node_type(type_system& ts, ast_node& node) {
 
         auto& base_type_node = node.children[0];
         auto& id_list = node.children[1];
+        bool is_flags = node.int_value == 1;
 
         type_id base_type = ts.int32_type;
+        if (is_flags) {
+            base_type = ts.uint32_type;
+            if (id_list->children.size() > 32) {
+                base_type = ts.uint64_type;
+            }
+        }
         if (base_type_node) {
             visit_tree(ts, *base_type_node);
             if (base_type_node->type_id.valid()) {
@@ -1414,12 +1440,10 @@ type_id get_type_expr_node_type(type_system& ts, ast_node& node) {
 
         node.type_def = base_type.get();
         node.type_def.self = &node;
-        node.type_def.kind = type_kind::enum_;
+        node.type_def.kind = is_flags ? type_kind::enumflags : type_kind::enum_;
         node.type_def.name = string_hash{ "anonymous enum" + std::to_string(node.node_id) };
         node.type_def.mangled_name = string_hash{ "anonymous$enum" + std::to_string(node.node_id) };
         node.type_id = register_user_type(ts, node);
-
-        bool is_flags = node.int_value == 1;
 
         int_type numeric_value = 0;
         for (auto& idnode : id_list->children) {
@@ -3674,6 +3698,22 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
             }
         }
         break;
+    case ast_type::init_tag: {
+        if (node.op == token_type::noflags) {
+            node.type_id = ts.noflags_type;
+            node.int_value = 0;
+            node.type = ast_type::int_literal;
+        }
+        else if (node.op == token_type::noerror) {
+            node.type_id = ts.error_type;
+            node.int_value = 0;
+            node.type = ast_type::int_literal;
+        }
+        else if (node.op == token_type::noinit) {
+            node.type_id = ts.void_type;
+        }
+        break;
+    }
     case ast_type::bool_literal:
     case ast_type::int_literal:
     case ast_type::float_literal:
@@ -3954,10 +3994,10 @@ type_system::type_system(memory_arena& arena) {
     }
 
     // register built-in types
-    register_integral_type<std::uint8_t>(*this, "uint8");
-    register_integral_type<std::uint16_t>(*this, "uint16");
-    register_integral_type<std::uint32_t>(*this, "uint32");
-    register_integral_type<std::uint64_t>(*this, "uint64");
+    uint8_type = register_integral_type<std::uint8_t>(*this, "uint8");
+    uint16_type = register_integral_type<std::uint16_t>(*this, "uint16");
+    uint32_type = register_integral_type<std::uint32_t>(*this, "uint32");
+    uint64_type = register_integral_type<std::uint64_t>(*this, "uint64");
     usize_type = register_integral_type<std::size_t>(*this, "usize");
     isize_type = register_integral_type<std::int64_t>(*this, "isize");
     bool_type = register_integral_type<bool>(*this, "bool");
@@ -3974,6 +4014,11 @@ type_system::type_system(memory_arena& arena) {
     register_alias_to_type_name(*this, "uint", "uint32");
     register_alias_to_type_name(*this, "int", "int32");
     register_alias_to_type_name(*this, "float", "float32");
+
+    error_type = register_integral_like_type<std::int32_t>(*this, "error", type_kind::error);
+    //noerror_type = register_alias_to_type_name(*this, "noerror", "error");
+
+    noflags_type = register_integral_like_type<std::uint32_t>(*this, "noflags", type_kind::enumflags);
 
     {
         auto node = make_in_arena<ast_node>(*ast_arena);

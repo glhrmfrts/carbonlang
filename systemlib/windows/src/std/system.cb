@@ -45,13 +45,15 @@ extern func getFdFlags(fd: rawptr): int
 
 extern func close(fd: rawptr): SystemError
 
-const SEEK_SET = 0
-const SEEK_CUR = 1
-const SEEK_END = 2
-const SEEK_DATA = 3
-const SEEK_HOLE = 4
+type Whence = enum {
+    SeekSet
+    SeekCurrent
+    SeekEnd
+    SeekData
+    SeekHole
+}
 
-extern func seek(fd: rawptr, offset: int64, whence: int)
+extern func seek(fd: rawptr, offset: int64, whence: Whence)
 
 type Stat = struct {
     size: usize
@@ -104,3 +106,5 @@ extern func lock(m: MutexHandle): SystemError
 extern func unlock(m: MutexHandle): SystemError
 
 extern func destroy(m: MutexHandle)
+
+extern func sleepMs(ms: uint64)

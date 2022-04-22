@@ -232,6 +232,9 @@ struct lexer_impl {
             if (!std::strcmp("struct", l.string)) {
                 return token_type::struct_;
             }
+            if (!std::strcmp("noinit", l.string)) {
+                return token_type::noinit;
+            }
             break;
         case 7:
             if (!std::strcmp("private", l.string)) {
@@ -239,6 +242,12 @@ struct lexer_impl {
             }
             if (!std::strcmp("nullptr", l.string)) {
                 return token_type::nullptr_;
+            }
+            if (!std::strcmp("noflags", l.string)) {
+                return token_type::noflags;
+            }
+            if (!std::strcmp("noerror", l.string)) {
+                return token_type::noerror;
             }
             break;
         case 8:
