@@ -412,5 +412,8 @@ extern(C) func test_main(): int {
         write(getStdoutFd(), "testEnumValues: NOK\n")
     }
 
+    import gameoflife
+    gameOfLife()
+
     return 0
 }

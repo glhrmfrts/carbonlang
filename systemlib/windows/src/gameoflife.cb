@@ -1,4 +1,5 @@
 import std::system as system
+import test as t
 
 type Field2D = struct {
     data: &int
@@ -16,7 +17,50 @@ func println(str: []pure uint8) {
     system::write(system::getStdoutFd(), "\n")
 }
 
-func memset(dest: rawptr, value: uint8, sz: usize) {
+func println(i: int) {
+    t::writeInt(system::getStdoutFd(), i)
+    system::write(system::getStdoutFd(), "\n")
+}
+
+func memcopy(dest: rawptr, src: rawptr, size: usize) {
+    asm%{
+push rdi
+push rsi
+
+mov rdi,rcx
+mov rsi,rdx
+mov rcx,r8
+rep movsb
+
+pop rsi
+pop rdi
+    }%asm
+}
+
+func memset(dest: rawptr, value: uint8, count: usize) {
+    asm%{
+push rdi
+
+mov rdi,rcx
+mov rax,rdx
+mov rcx,r8
+rep stosb
+
+pop rdi
+    }%asm
+}
+
+func allocString(sz: usize): []uint8 {
+    let data = system::alloc(sz + 1)
+    memset(data, 0, sz + 1)
+    return []uint8{ nullcast(cast(*uint8)data), sz }
+}
+
+func copySubstr(s: []pure uint8, start: usize, end: usize): []uint8 {
+    let size = end - start
+    let newstr = allocString(size)
+    memcopy(cast(rawptr)newstr.ptr, cast(rawptr)(&s[start]), size)
+    return newstr
 }
 
 func freeListOfStrings(list: [][]pure uint8) {
@@ -26,13 +70,50 @@ func append(s: []pure uint8, c: uint8): []pure uint8 {
     return ""
 }
 
-func split(s: []pure uint8, ned: []pure uint8): [][]pure uint8 {
-    let arr = [1][]pure uint8{}
-    return [][]pure uint8{ &arr[0], 0 }
+func find(s: []pure uint8, ned: uint8): {int, bool} {
+    for (i in 0,s.len) {
+        if (s[i] == ned) {
+            return i, true
+        }
+    }
+    return -1, false
+}
+
+func split(s: []pure uint8, ned: []pure uint8): [][]uint8 {
+    let arr = [1][]uint8{}
+
+    let prefix = []uint8{ nullcast(cast(*uint8)(cast(rawptr)s.ptr)), s.len }
+    let suffix = []uint8{ nullcast(cast(*uint8)(cast(rawptr)s.ptr)), s.len }
+
+    let index, ok = find(suffix, ned[0])
+    if (!ok) {
+        return [][]uint8{ &arr[0], 0 }
+    }
+
+    let listbuf = system::alloc(16 * cast(usize)100)
+    let list = [][]uint8{ nullcast(cast(*[]uint8)listbuf), 0 }
+    let listsize = 0
+
+    while (ok) {
+        prefix = copySubstr(suffix, 0, index)
+        suffix = copySubstr(suffix, index + 1, s.len)
+
+        list[listsize] = prefix
+        listsize += 1
+
+        let newfind = find(suffix, ned[0])
+        index = newfind.first
+        ok = newfind.second
+    }
+
+    list.len = listsize
+
+    return list
 }
 
 func makeField(sx: int, sy: int): Field2D {
-    let data = system::alloc(sizeof(int)*sx*sy)
+    // TODO: let data = system::alloc(sizeof(int)*sx*sy)
+    let data = system::alloc(sizeof(int)*(cast(usize)sx)*(cast(usize)sy))
     return Field2D{ nullcast(cast(*int)data), sx, sy }
 }
 
@@ -60,6 +141,9 @@ func makeAutomaton(ftext: []pure uint8): Automaton {
             width = cast(int) f[y].len
         }
     }
+
+    println(width)
+    println(height)
 
     let field    = makeField(width, height)
     let newfield = makeField(width, height)
@@ -97,55 +181,41 @@ func update(a: &Automaton) {
 
 func print(a: &Automaton) {
     let buf = system::alloc(a.field.width * a.field.height + 256)
-    memset(buf, 0, a.field.width * a.field.height + 256)
+    defer system::free(buf)
 
-    let s = []uint8{ nullcast(cast(*uint8)buf), 0 }
+    for (y in 0,a.field.height) {
+        memset(buf, 0, a.field.width * a.field.height + 256)
+        let s = []uint8{ nullcast(cast(*uint8)buf), 0 }
 
-    for (y in 1,a.field.height) {
-        for (x in 1,a.field.width) {
+        for (x in 0,a.field.width) {
             let cell = a.field->get(x,y)
 
             // TODO: s[y*a.field.width+x] = cell == 1 then '@' else '.'
-            s[y*a.field.width+x] = (cell == 1 then '@' else '.')
+            let val = (cell == 1 then '@' else '.')
+            s[x] = val
 
             s.len += 1
         }
+
         println(s)
     }
-	println("")
+
+	println("print ended")
 }
 
 func makeGun(): Automaton {
     let gunfield = "*******************************************
 *                                         *
 *  A shooting gun:                        *
-*                          #              *
-*                        # #              *
-*              ##      ##            ##   *
-*             #   #    ##            ##   *
-*  ##        #     #   ##                 *
-*  ##        #   # ##    # #              *
-*            #     #       #              *
+*                                         *
+*                                         *
+*              ##                         *
+*             #   #                       *
+*  ##        #     #                      *
+*  ##        #   # ##                     *
+*            #     #                      *
 *             #   #                       *
 *              ##                         *
-*                                         *
-*  Tetris Life:                           *
-*                                         *
-*  ##       ####                          *
-*  ##                                     *
-*                                         *
-*                                         *
-*                                         *
-*  #         ##                           *
-*  ###      ##                            *
-*                                         *
-*                                         *
-*                                         *
-*        #                                *
-*       ###                               *
-*                                         *
-*                                         *
-*                                         *
 *                                         *
 *******************************************"
     // TODO: return makeAutomaton(gunfield)
@@ -158,6 +228,6 @@ func gameOfLife() {
     for (i in 0,50) {
         a->update()
         a->print()
-        system::sleepMs(100)
+        system::sleepMs(200)
     }
 }

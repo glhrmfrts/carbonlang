@@ -29,4 +29,5 @@ code_unit{
     linkage_specifier{ extern(C)}
     linkage_specifier{ extern(C)}
     linkage_specifier{ extern(C)}
+    linkage_specifier{ extern(C)}
     linkage_specifier{ extern std::system}}}

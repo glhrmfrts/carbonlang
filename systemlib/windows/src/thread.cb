@@ -52,6 +52,8 @@ extern(C) func CreateThread(
 
 extern(C) func WaitForSingleObject(handle: rawptr, dwMilliseconds: int): int
 
+extern(C) func Sleep(ms: int)
+
 extern(carbon, std::system) {
 func createThread(fn: {rawptr} -> {}, arg: rawptr): {ThreadHandle, SystemError} {
     let threadId : int32
@@ -99,5 +101,9 @@ func destroy(m: MutexHandle) {
     DeleteCriticalSection(cs)
     // TODO: free(memoryFromPointer(nullcast(cs)))
     free(cast(rawptr)cs)
+}
+
+func sleepMs(ms: uint64) {
+    Sleep(cast(int) ms)
 }
 }
