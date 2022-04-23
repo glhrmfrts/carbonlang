@@ -12,9 +12,17 @@ type Automaton = struct {
     new_field:  Field2D
 }
 
+func print(str: []pure uint8) {
+    system::write(system::getStdoutFd(), str)
+}
+
 func println(str: []pure uint8) {
     system::write(system::getStdoutFd(), str)
     system::write(system::getStdoutFd(), "\n")
+}
+
+func print(i: int) {
+    t::writeInt(system::getStdoutFd(), i)
 }
 
 func println(i: int) {
@@ -148,9 +156,9 @@ func makeAutomaton(ftext: []pure uint8): Automaton {
     let field    = makeField(width, height)
     let newfield = makeField(width, height)
 
-    for (y in 0, field.height) {
-        for (x in 0, field.width) {
-            field->set(x, y, (x < f[y].len && f[y][x] == '#' then 1 else 0))
+    for (y in 0,field.height) {
+        for (x in 0,field.width) {
+            field->set(x, y, ((x < f[y].len && f[y][x] == '#') then 1 else 0))
         }
     }
 
@@ -162,12 +170,20 @@ func makeAutomaton(ftext: []pure uint8): Automaton {
 
 func update(a: &Automaton) {
     a.new_field->clear()
-    for (y in 1,a.field.height) {
-        for (x in 1,a.field.width) {
+    for (y in 1,a.field.height - 1) {
+        for (x in 1,a.field.width - 1) {
+            //print(x)
+            //print(", ")
+            //println(y)
             let moore_sum = (
-                0 + a.field->get(x-1, y-1) + a.field->get(x,y+1) + a.field->get(x+1, y-1) +
-                a.field->get(x-1, y) + 0 + a.field->get(x+1, y) + a.field->get(x-1, y+1) +
-                a.field->get(x,y+1) + a.field->get(x+1, y+1)
+                a.field->get(x-1, y-1)
+                + a.field->get(x, y-1)
+                + a.field->get(x+1, y-1)
+                + a.field->get(x+1, y)
+                + a.field->get(x+1, y+1)
+                + a.field->get(x, y+1)
+                + (a.field->get(x-1, y+1))
+                + (a.field->get(x-1, y))
             )
             let cell = a.field->get(x, y)
             let alive = (cell == 1) then (moore_sum == 2 || moore_sum == 3) else (moore_sum == 3)
@@ -209,13 +225,13 @@ func makeGun(): Automaton {
 *  A shooting gun:                        *
 *                                         *
 *                                         *
-*              ##                         *
-*             #   #                       *
-*  ##        #     #                      *
-*  ##        #   # ##                     *
-*            #     #                      *
-*             #   #                       *
-*              ##                         *
+*                                         *
+*                     #    #              *
+*  ##                 #    #              *
+*  ##                 #    #              *
+*                                         *
+*                                         *
+*                                         *
 *                                         *
 *******************************************"
     // TODO: return makeAutomaton(gunfield)
@@ -225,7 +241,7 @@ func makeGun(): Automaton {
 
 func gameOfLife() {
     let a = makeGun()
-    for (i in 0,50) {
+    for (i in 0,150) {
         a->update()
         a->print()
         system::sleepMs(200)

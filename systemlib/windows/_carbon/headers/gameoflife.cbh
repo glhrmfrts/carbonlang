@@ -1,6 +1,8 @@
 import std::system as system;
 import test as t;
+extern func print(:[]pure uint8):{};
 extern func println(:[]pure uint8):{};
+extern func print(:int):{};
 extern func println(:int):{};
 extern func memcopy(:rawptr, :rawptr, :usize):{};
 extern func memset(:rawptr, :uint8, :usize):{};
