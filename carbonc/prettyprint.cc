@@ -243,10 +243,7 @@ void prettyprint(const ast_node& node, std::ostream& stream, int indent, bool do
         stream << "type_qualifier{";
         switch (node.type_qual) {
         case type_qualifier::ptr:
-            stream << "optional,";
-            break;
-        case type_qualifier::nullableptr:
-            stream << "pointer,";
+            stream << "ptr,";
             break;
         }
         stream << " ";

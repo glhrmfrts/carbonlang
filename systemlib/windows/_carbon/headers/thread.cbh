@@ -1,12 +1,12 @@
 import std::system;
 import io;
-extern(C) func InitializeCriticalSection(:*CRITICAL_SECTION):{};
-extern(C) func EnterCriticalSection(:*CRITICAL_SECTION):{};
-extern(C) func LeaveCriticalSection(:*CRITICAL_SECTION):{};
-extern(C) func DeleteCriticalSection(:*CRITICAL_SECTION):{};
+extern(C) func InitializeCriticalSection(:&CRITICAL_SECTION):{};
+extern(C) func EnterCriticalSection(:&CRITICAL_SECTION):{};
+extern(C) func LeaveCriticalSection(:&CRITICAL_SECTION):{};
+extern(C) func DeleteCriticalSection(:&CRITICAL_SECTION):{};
 extern(C) func GetCurrentThreadId():int;
-extern(C) func GetSystemInfo(:*SYSTEM_INFO):{};
-extern(C) func CreateThread(:*pure SECURITY_ATTRIBUTES, :int, :{rawptr} -> {}, :rawptr, :int, :*int32):rawptr;
+extern(C) func GetSystemInfo(:&SYSTEM_INFO):{};
+extern(C) func CreateThread(:&pure SECURITY_ATTRIBUTES, :int, :{rawptr} -> {}, :rawptr, :int, :&int32):rawptr;
 extern(C) func WaitForSingleObject(:rawptr, :int):int;
 extern(C) func Sleep(:int):{};
 extern func createThread(:{rawptr} -> {}, :rawptr):{ThreadHandle, SystemError};

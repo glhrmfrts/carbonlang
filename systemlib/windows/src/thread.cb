@@ -13,7 +13,7 @@ type CRITICAL_SECTION = struct {
     RecursionCount: int64;
     OwningThread: rawptr;        // from the thread's ClientId->UniqueThread
     LockSemaphore: rawptr;
-    SpinCount: *uint64;        // force size on 64-bit systems when packed
+    SpinCount: &uint64;        // force size on 64-bit systems when packed
 }
 
 type SYSTEM_INFO = struct {
@@ -21,7 +21,7 @@ type SYSTEM_INFO = struct {
     dwPageSize: int32;
     lpMinimumApplicationAddress: rawptr;
     lpMaximumApplicationAddress: rawptr;
-    dwActiveProcessorMask: *int32;
+    dwActiveProcessorMask: &int32;
     dwNumberOfProcessors: int32;
     dwProcessorType: int32;
     dwAllocationGranularity: int32;
@@ -29,25 +29,25 @@ type SYSTEM_INFO = struct {
     wProcessorRevision: int16;
 }
 
-extern(C) func InitializeCriticalSection(cs: *CRITICAL_SECTION)
+extern(C) func InitializeCriticalSection(cs: &CRITICAL_SECTION)
 
-extern(C) func EnterCriticalSection(cs: *CRITICAL_SECTION)
+extern(C) func EnterCriticalSection(cs: &CRITICAL_SECTION)
 
-extern(C) func LeaveCriticalSection(cs: *CRITICAL_SECTION)
+extern(C) func LeaveCriticalSection(cs: &CRITICAL_SECTION)
 
-extern(C) func DeleteCriticalSection(cs: *CRITICAL_SECTION)
+extern(C) func DeleteCriticalSection(cs: &CRITICAL_SECTION)
 
 extern(C) func GetCurrentThreadId(): int
 
-extern(C) func GetSystemInfo(si: *SYSTEM_INFO)
+extern(C) func GetSystemInfo(si: &SYSTEM_INFO)
 
 extern(C) func CreateThread(
-    lpSecurityAttributes: *pure SECURITY_ATTRIBUTES,
+    lpSecurityAttributes: &pure SECURITY_ATTRIBUTES,
     cbStack: int,
     lpStartAddr: {rawptr} -> {},
     lpParam: rawptr,
     fdwCreate: int,
-    threadId: *int32
+    threadId: &int32
 ): rawptr
 
 extern(C) func WaitForSingleObject(handle: rawptr, dwMilliseconds: int): int
@@ -58,9 +58,9 @@ extern(carbon, std::system) {
 func createThread(fn: {rawptr} -> {}, arg: rawptr): {ThreadHandle, SystemError} {
     let threadId : int32
 
-    let th = CreateThread(nullptr, 0, fn, arg, 0, &threadId)
+    let th = CreateThread(nil, 0, fn, arg, 0, &threadId)
     if (th == cast(rawptr)(cast(uintptr)INVALID_HANDLE_VALUE)) {
-        return nullptr, cast(SystemError)GetLastError()
+        return nil, cast(SystemError)GetLastError()
     }
 
     return th, NoError
@@ -83,23 +83,23 @@ func getCoreCount(): int {
 }
 
 func createMutex(): {MutexHandle, SystemError} {
-    let cs = cast(*CRITICAL_SECTION)(alloc(sizeof(CRITICAL_SECTION)))
+    let cs = cast(&CRITICAL_SECTION)(alloc(sizeof(CRITICAL_SECTION)))
     InitializeCriticalSection(cs)
     return cast(MutexHandle)cs, NoError
 }
 
 func lock(m: MutexHandle) {
-    EnterCriticalSection(cast(*CRITICAL_SECTION)(m))
+    EnterCriticalSection(cast(&CRITICAL_SECTION)(m))
 }
 
 func unlock(m: MutexHandle) {
-    LeaveCriticalSection(cast(*CRITICAL_SECTION)(m))
+    LeaveCriticalSection(cast(&CRITICAL_SECTION)(m))
 }
 
 func destroy(m: MutexHandle) {
-    let cs = cast(*CRITICAL_SECTION)(m)
+    let cs = cast(&CRITICAL_SECTION)(m)
     DeleteCriticalSection(cs)
-    // TODO: free(memoryFromPointer(nullcast(cs)))
+    // TODO: free(memoryFromPointer((cs)))
     free(cast(rawptr)cs)
 }
 

@@ -458,6 +458,17 @@ struct emitter {
     }
 
     void mov(gen_destination reg, gen_operand src) {
+#if 0
+        std::size_t sza = get_size(reg);
+        std::size_t szb = get_size(src);
+        if (sza != szb) {
+            printf(" mov %s,%s\n", tostr_sized(reg).c_str(), tostr_sized(src).c_str());
+            if (is_reg(src)) {
+                printf("AKJSHDKJAHSD\n");
+            }
+            printf("DIFFSIZE: %zu %zu\n", sza, szb);
+        }
+#endif
         emitln(" mov %s,%s", tostr_sized(reg).c_str(), tostr_sized(src).c_str());
     }
 
@@ -760,9 +771,6 @@ struct generator {
             fndata->instr_data[instr.index].dest = reg_result;
             if (next_instr) {
                 if (instr_pushes_to_stack(instr) && instr_opstack_consumption(*next_instr) == 0) {
-                    if (instr.index == 19 && instr.op == ir_sub) {
-                        printf("asd\n");
-                    }
                     fndata->instr_data[instr.index].dest = use_temp_destination(instr.result_type);
                 }
             }
@@ -837,7 +845,7 @@ struct generator {
                 em->add_global_int64(gd.name, (int64_t)value);
             }
         }
-        else if (gd.type.get().kind == type_kind::nullableptr) {
+        else if (gd.type.get().kind == type_kind::ptr) {
             int_type value = 0;
             if (gd.value && std::holds_alternative<ir_int>(*gd.value)) {
                 auto& integer = std::get<ir_int>(*gd.value);
@@ -1110,7 +1118,7 @@ struct generator {
         }
         case ir_load_addr: {
             auto [a, atype] = transform_ir_operand(instr.operands[0]);
-            auto dest = instr_dest_to_gen_dest(idata.dest);
+            auto dest = adjust_for_type(instr_dest_to_gen_dest(idata.dest), instr.result_type);
             load_address(dest, todest(a), atype);
             push(toop(dest));
             break;

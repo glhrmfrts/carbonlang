@@ -28,20 +28,19 @@ enum class decl_visibility {
 
 enum class type_qualifier {
     ptr,
-    nullableptr,
     pure,
 };
 
 enum class type_kind {
     void_,
+    nil,
     ptr,
-    nullableptr,
     integral,
     enum_,
     enumflags,
     error,
     real,
-    array,
+    static_array,
     slice,
     structure,
     tuple,
@@ -336,6 +335,7 @@ struct type_system {
 
     type_id type_type{};
     type_id void_type{};
+    type_id nil_type{};
     type_id raw_ptr_type{};
     type_id uintptr_type{};
     type_id ptrdiff_type{};

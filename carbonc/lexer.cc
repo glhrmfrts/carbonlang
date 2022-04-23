@@ -240,9 +240,6 @@ struct lexer_impl {
             if (!std::strcmp("private", l.string)) {
                 return token_type::private_;
             }
-            if (!std::strcmp("nullptr", l.string)) {
-                return token_type::nullptr_;
-            }
             if (!std::strcmp("noflags", l.string)) {
                 return token_type::noflags;
             }

@@ -27,25 +27,25 @@ type BY_HANDLE_FILE_INFORMATION = struct {
     nFileIndexLow: int
 }
 
-func GetCommandLineA(): *pure uint8
+func GetCommandLineA(): &pure uint8
 
 func GetStdHandle(nStdHandle: int): rawptr
 
-func WriteFile(handle: rawptr, str: *pure uint8, len: int, written: *int, ov: rawptr)
+func WriteFile(handle: rawptr, str: &pure uint8, len: int, written: &int, ov: rawptr)
 
 func ReadFile(
     hFile: rawptr,
     lpBuffer: rawptr,
     nNumberOfBytesToRead: int,
-    lpNumberOfBytesRead: *int,
+    lpNumberOfBytesRead: &int,
     lpOverlapped: rawptr
 ): bool
 
 func CreateFileA(
-    lpFileName: *pure uint8,
+    lpFileName: &pure uint8,
     dwDesiredAccess: int,
     dwShareMode: int,
-    lpSecurityAttributes: *SECURITY_ATTRIBUTES,
+    lpSecurityAttributes: &SECURITY_ATTRIBUTES,
     dwCreationDisposition: int,
     dwFlagsAndAttributes: int,
     hTemplateFile: rawptr
@@ -54,7 +54,7 @@ func CreateFileA(
 func SetFilePointer(
     hFile: rawptr,
     lDistanceToMove: int,
-    lpDistanceToMoveHigh: *int,
+    lpDistanceToMoveHigh: &int,
     dwMoveMethod: int
 ): int
 
@@ -64,15 +64,15 @@ func GetFileInformationByHandle(handle: rawptr, lpFileInformation: &BY_HANDLE_FI
 
 func GetLastError(): int
 
-func CopyFileA(path: *pure uint8, newpath: *pure uint8, failIfExists: bool): bool
+func CopyFileA(path: &pure uint8, newpath: &pure uint8, failIfExists: bool): bool
 
-func DeleteFileA(path: *pure uint8): bool
+func DeleteFileA(path: &pure uint8): bool
 
-func MoveFileA(path: *pure uint8, newpath: *pure uint8): bool
+func MoveFileA(path: &pure uint8, newpath: &pure uint8): bool
 
-func CreateDirectoryA(path: *pure uint8, lpSecurityAttributes: *SECURITY_ATTRIBUTES): bool
+func CreateDirectoryA(path: &pure uint8, lpSecurityAttributes: &SECURITY_ATTRIBUTES): bool
 
-func RemoveDirectoryA(path: *pure uint8): bool
+func RemoveDirectoryA(path: &pure uint8): bool
 
 }
 
@@ -80,13 +80,13 @@ extern(carbon, std::system) {
 
 func write(handle: rawptr, data: []pure uint8): isize {
     let written : int
-    WriteFile(handle, cast(rawptr)data.ptr, cast(int)data.len, &written, nullptr)
+    WriteFile(handle, data.ptr, cast(int)data.len, &written, nil)
     return written
 }
 
 func read(handle: rawptr, data: []uint8): isize {
     let bytes_read : int
-    ReadFile(handle, cast(rawptr)data.ptr, cast(int)data.len, &bytes_read, nullptr)
+    ReadFile(handle, data.ptr, cast(int)data.len, &bytes_read, nil)
     return bytes_read
 }
 
@@ -114,14 +114,14 @@ func open(path: []pure uint8, flags: OpenFlags, mode: int): {rawptr, SystemError
     let attrs = FILE_ATTRIBUTE_NORMAL
 
     let err : SystemError
-    let handle = CreateFileA(path.ptr, access, sharemode, nullptr, creation, attrs, nullptr)
+    let handle = CreateFileA(path.ptr, access, sharemode, nil, creation, attrs, nil)
 
     if (handle == cast(rawptr)(cast(uintptr)INVALID_HANDLE_VALUE)) {
-        return nullptr, cast(SystemError) GetLastError()
+        return nil, cast(SystemError) GetLastError()
     }
 
     if ((flags & Append) != noflags) {
-        SetFilePointer(handle, 0, nullptr, FILE_END)
+        SetFilePointer(handle, 0, nil, FILE_END)
     }
     
     return handle, err
@@ -129,7 +129,7 @@ func open(path: []pure uint8, flags: OpenFlags, mode: int): {rawptr, SystemError
 
 func seek(fd: rawptr, offset: int64, whence: Whence) {
     // TODO: handle large offset
-    SetFilePointer(fd, cast(int) offset, nullptr, cast(int)whence)
+    SetFilePointer(fd, cast(int) offset, nil, cast(int)whence)
 }
 
 func stat(fd: rawptr, buf: &Stat): SystemError {
@@ -208,7 +208,7 @@ func copy(path: []pure uint8, dest: []pure uint8): SystemError {
 }
 
 func mkdir(path: []pure uint8): SystemError {
-    if (!CreateDirectoryA(path.ptr, nullptr)) {
+    if (!CreateDirectoryA(path.ptr, nil)) {
         return cast(SystemError) GetLastError()
     }
     return NoError

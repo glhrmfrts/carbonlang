@@ -83,7 +83,7 @@ func readFile(filename: []pure uint8): []uint8 {
 
     let bufdata = alloc(statdata.size + 1)
 
-    let data = []uint8{nullcast(cast(*uint8)bufdata), statdata.size}
+    let data = []uint8{(cast(&uint8)bufdata), statdata.size}
     data[statdata.size] = 0
     
     let handle, err = open(filename, noflags, 0)
@@ -118,7 +118,7 @@ func test_file_write() {
     let bufdata = alloc(statdata.size + 1)
     defer free(bufdata)
 
-    let data = []uint8{nullcast(cast(*uint8)bufdata), statdata.size}
+    let data = []uint8{(cast(&uint8)bufdata), statdata.size}
     data[statdata.size] = 0
 
     read(newhandle, data)
@@ -174,7 +174,7 @@ func test_file_append() {
     let bufdata = alloc(statdata.size)
     defer free(bufdata)
 
-    let data = []uint8{nullcast(cast(*uint8)bufdata), statdata.size - 1}
+    let data = []uint8{(cast(&uint8)bufdata), statdata.size - 1}
     data[statdata.size] = 0
 
     read(newhandle, data)
@@ -213,7 +213,7 @@ func test_alloc_copy() {
     let m = alloc(str.len + 1)
     defer free(m)
 
-    let ptr = nullcast(cast(*uint8)m)
+    let ptr = (cast(&uint8)m)
     for (i in 0,str.len) {
         ptr[i] = str[i]
     }
@@ -374,7 +374,7 @@ extern(C) func test_main(): int {
 
     mutex = mut
 
-    let th, terr = createThread(workerThreadFunc\{rawptr}, nullptr)
+    let th, terr = createThread(workerThreadFunc\{rawptr}, nil)
     if (terr != NoError) {
         exit(1)
     }

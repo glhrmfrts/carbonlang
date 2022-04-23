@@ -790,7 +790,7 @@ void generate_ir_var(ast_node& node) {
                 prog->globals.push_back(ir_global_data{ node.local.mangled_name.str, node.type_id, pop(), func_linkage::local_carbon });
                 return;
             }
-            else if (node.type_id.get().kind == type_kind::nullableptr) {
+            else if (node.type_id.get().kind == type_kind::ptr) {
                 prog->globals.push_back(ir_global_data{ node.local.mangled_name.str, node.type_id, pop(), func_linkage::local_carbon });
                 return;
             }
@@ -978,7 +978,7 @@ void generate_ir_node(ast_node& node) {
         break;
     case ast_type::int_literal:
     case ast_type::bool_literal:
-    case ast_type::nullptr_:
+    case ast_type::nil_literal:
         generate_ir_int_literal(node);
         break;
     case ast_type::char_literal:

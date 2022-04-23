@@ -1,5 +1,5 @@
 code_unit{
   system.cb
   decl_list{
-    linkage_specifier{ extern(C) func_decl{QueryPerformanceFrequency (var_decl{(value): type_expr{type_qualifier{pointer, int64}}}): type_expr{bool} }}
-    linkage_specifier{ extern(C) func_decl{QueryPerformanceCounter (var_decl{(value): type_expr{type_qualifier{pointer, int64}}}): type_expr{bool} }}}}
+    linkage_specifier{ extern(C) func_decl{QueryPerformanceFrequency (var_decl{(value): type_expr{type_qualifier{ptr, int64}}}): type_expr{bool} }}
+    linkage_specifier{ extern(C) func_decl{QueryPerformanceCounter (var_decl{(value): type_expr{type_qualifier{ptr, int64}}}): type_expr{bool} }}}}

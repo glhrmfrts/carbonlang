@@ -70,14 +70,6 @@ struct parser_impl {
                 result = make_type_qualifier_node(*ast_arena, pos, type_qualifier::ptr, std::move(to_type));
             }
         }
-        else if (TOK_CHAR == '*') {
-            lex->next();
-
-            auto to_type = parse_type_expr(false, true); // no wrap
-            if (to_type) {
-                result = make_type_qualifier_node(*ast_arena, pos, type_qualifier::nullableptr, std::move(to_type));
-            }
-        }
         else if (TOK == token_type::pure) {
             lex->next();
 
@@ -1015,7 +1007,8 @@ struct parser_impl {
             auto rhs = parse_unary_expr();
             while (is_binary_op(TOK) && (precedence_cmp(TOK, op) > 0 ||
                 (is_right_assoc(TOK) && precedence_cmp(TOK, op) >= 0))) {
-                rhs = parse_binary_expr(std::move(rhs), precedence(op));
+                auto thisop = TOK;
+                rhs = parse_binary_expr(std::move(rhs), precedence(thisop));
             }
 
             lhs = make_binary_expr_node(*ast_arena, pos, op, std::move(lhs), std::move(rhs));
@@ -1141,9 +1134,9 @@ struct parser_impl {
             scope_guard _{ [this]() { lex->next(); } };
             return make_string_literal_node(*ast_arena, lex->pos(), lex->string_value());
         }
-        case token_type::nullptr_: {
+        case token_type::nil: {
             scope_guard _{ [this]() { lex->next(); } };
-            return make_nullpointer_node(*ast_arena, lex->pos());
+            return make_nil_node(*ast_arena, lex->pos());
         }
         case token_type::noinit:
         case token_type::noflags:

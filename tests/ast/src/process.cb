@@ -7,9 +7,9 @@ code_unit{
     var_decl{(CREATE_NO_WINDOW) = 134217728}
     type_decl{STARTUPINFOA = type_expr{struct_type{decl_list{
             var_decl{(cb): type_expr{int}}
-            var_decl{(lpReserved): type_expr{type_qualifier{pointer, uint8}}}
-            var_decl{(lpDesktop): type_expr{type_qualifier{pointer, uint8}}}
-            var_decl{(lpTitle): type_expr{type_qualifier{pointer, uint8}}}
+            var_decl{(lpReserved): type_expr{type_qualifier{ptr, uint8}}}
+            var_decl{(lpDesktop): type_expr{type_qualifier{ptr, uint8}}}
+            var_decl{(lpTitle): type_expr{type_qualifier{ptr, uint8}}}
             var_decl{(dwX): type_expr{int}}
             var_decl{(dwY): type_expr{int}}
             var_decl{(dwXSize): type_expr{int}}
@@ -20,7 +20,7 @@ code_unit{
             var_decl{(dwFlags): type_expr{int}}
             var_decl{(wShowWindow): type_expr{int16}}
             var_decl{(cbReserved2): type_expr{int16}}
-            var_decl{(lpReserved2): type_expr{type_qualifier{pointer, uint8}}}
+            var_decl{(lpReserved2): type_expr{type_qualifier{ptr, uint8}}}
             var_decl{(hStdInput): type_expr{rawptr}}
             var_decl{(hStdOutput): type_expr{rawptr}}
             var_decl{(hStdError): type_expr{rawptr}}}}}}

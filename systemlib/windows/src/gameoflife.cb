@@ -61,10 +61,10 @@ pop rdi
 func allocString(sz: usize): []uint8 {
     let data = system::alloc(sz + 1)
     memset(data, 0, sz + 1)
-    return []uint8{ nullcast(cast(*uint8)data), sz }
+    return []uint8{ (cast(&uint8)data), sz }
 }
 
-func copySubstr(s: []pure uint8, start: usize, end: usize): []uint8 {
+func copySubstr(s: []pure uint8, start: usize, end: usize): []pure uint8 {
     let size = end - start
     let newstr = allocString(size)
     memcopy(cast(rawptr)newstr.ptr, cast(rawptr)(&s[start]), size)
@@ -87,11 +87,11 @@ func find(s: []pure uint8, ned: uint8): {int, bool} {
     return -1, false
 }
 
-func split(s: []pure uint8, ned: []pure uint8): [][]uint8 {
+func split(s: []pure uint8, ned: []pure uint8): [][]pure uint8 {
     let arr = [1][]uint8{}
 
-    let prefix = []uint8{ nullcast(cast(*uint8)(cast(rawptr)s.ptr)), s.len }
-    let suffix = []uint8{ nullcast(cast(*uint8)(cast(rawptr)s.ptr)), s.len }
+    let prefix = s
+    let suffix = s
 
     let index, ok = find(suffix, ned[0])
     if (!ok) {
@@ -99,7 +99,7 @@ func split(s: []pure uint8, ned: []pure uint8): [][]uint8 {
     }
 
     let listbuf = system::alloc(16 * cast(usize)100)
-    let list = [][]uint8{ nullcast(cast(*[]uint8)listbuf), 0 }
+    let list = [][]pure uint8{ (cast(&[]pure uint8)listbuf), 0 }
     let listsize = 0
 
     while (ok) {
@@ -122,7 +122,7 @@ func split(s: []pure uint8, ned: []pure uint8): [][]uint8 {
 func makeField(sx: int, sy: int): Field2D {
     // TODO: let data = system::alloc(sizeof(int)*sx*sy)
     let data = system::alloc(sizeof(int)*(cast(usize)sx)*(cast(usize)sy))
-    return Field2D{ nullcast(cast(*int)data), sx, sy }
+    return Field2D{ (cast(&int)data), sx, sy }
 }
 
 func set(f: &Field2D, x: int, y: int, val: int) {
@@ -134,7 +134,7 @@ func get(f: &pure Field2D, x: int, y: int): int {
 }
 
 func clear(f: &Field2D) {
-    memset(cast(rawptr)f.data, 0, f.width*f.height*sizeof(int))
+    memset(f.data, 0, f.width*f.height*sizeof(int))
 }
 
 func makeAutomaton(ftext: []pure uint8): Automaton {
@@ -182,8 +182,8 @@ func update(a: &Automaton) {
                 + a.field->get(x+1, y)
                 + a.field->get(x+1, y+1)
                 + a.field->get(x, y+1)
-                + (a.field->get(x-1, y+1))
-                + (a.field->get(x-1, y))
+                + a.field->get(x-1, y+1)
+                + a.field->get(x-1, y)
             )
             let cell = a.field->get(x, y)
             let alive = (cell == 1) then (moore_sum == 2 || moore_sum == 3) else (moore_sum == 3)
@@ -201,7 +201,7 @@ func print(a: &Automaton) {
 
     for (y in 0,a.field.height) {
         memset(buf, 0, a.field.width * a.field.height + 256)
-        let s = []uint8{ nullcast(cast(*uint8)buf), 0 }
+        let s = []uint8{ (cast(&uint8)buf), 0 }
 
         for (x in 0,a.field.width) {
             let cell = a.field->get(x,y)

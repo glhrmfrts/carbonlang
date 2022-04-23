@@ -1,16 +1,16 @@
 import std::system
 import io
 
-// TODO: make this work without casting the nullptr: (pwd.len > 0 then pwd.ptr else nullptr)
+// TODO: make this work without casting the nil: (pwd.len > 0 then pwd.ptr else nil)
 
 const STARTF_USESTDHANDLES = 0x00000100
 const CREATE_NO_WINDOW     = 0x08000000
 
 type STARTUPINFOA = struct {
     cb: int;
-    lpReserved: *uint8;
-    lpDesktop: *uint8;
-    lpTitle: *uint8;
+    lpReserved: &uint8;
+    lpDesktop: &uint8;
+    lpTitle: &uint8;
     dwX: int;
     dwY: int;
     dwXSize: int;
@@ -21,7 +21,7 @@ type STARTUPINFOA = struct {
     dwFlags: int;
     wShowWindow: int16;
     cbReserved2: int16;
-    lpReserved2: *uint8;
+    lpReserved2: &uint8;
     hStdInput: rawptr;
     hStdOutput: rawptr;
     hStdError: rawptr;
@@ -37,25 +37,25 @@ type PROCESS_INFORMATION = struct {
 extern(C) func ExitProcess(uExitCode: uint)
 
 extern(C) func CreatePipe(
-    hReadPipe: *rawptr,
-    hWritePipe: *rawptr,
-    lpPipeAttributes: *SECURITY_ATTRIBUTES,
+    hReadPipe: &rawptr,
+    hWritePipe: &rawptr,
+    lpPipeAttributes: &SECURITY_ATTRIBUTES,
     nSize: int
 ): bool
 
 extern(C) func TerminateProcess(handle: rawptr, exitCode: uint): bool
 
 extern(C) func CreateProcessA(
-    lpApplicationName: *pure uint8,
-    lpCommandLine: *pure uint8,
-    lpProcessAttributes: *pure SECURITY_ATTRIBUTES,
-    lpThreadAttributes: *pure SECURITY_ATTRIBUTES,
+    lpApplicationName: &pure uint8,
+    lpCommandLine: &pure uint8,
+    lpProcessAttributes: &pure SECURITY_ATTRIBUTES,
+    lpThreadAttributes: &pure SECURITY_ATTRIBUTES,
     bInheritHandles: bool,
     dwCreationFlags: int32,
     lpEnvironment: rawptr,
-    lpCurrentDirectory: *uint8,
-    lpStartupInfo: *pure STARTUPINFOA,
-    lpProcessInformation: *PROCESS_INFORMATION
+    lpCurrentDirectory: &uint8,
+    lpStartupInfo: &pure STARTUPINFOA,
+    lpProcessInformation: &PROCESS_INFORMATION
 ): bool
 
 extern(carbon, std::system) {
@@ -65,7 +65,7 @@ func exit(code: int) {
 
 func readProcessChar(handle: rawptr, c: &uint8): bool {
     let dwRead : int
-    let bSuccess = ReadFile( handle, cast(rawptr)c, 1, &dwRead, nullptr )
+    let bSuccess = ReadFile( handle, cast(rawptr)c, 1, &dwRead, nil )
     return bSuccess && (dwRead == 1)
 }
 
@@ -78,7 +78,7 @@ func execProcess(cmdline: []pure uint8, pwd: []pure uint8): SystemError {
     let saAttr : SECURITY_ATTRIBUTES
     saAttr.nLength = sizeof(SECURITY_ATTRIBUTES)
     saAttr.bInheritHandle = true
-    saAttr.lpSecurityDescriptor = nullptr
+    saAttr.lpSecurityDescriptor = nil
 
     if (!CreatePipe(&outputHandleRead, &outputHandleWrite, &saAttr, 0)) {
         return cast(SystemError)GetLastError()
@@ -96,14 +96,14 @@ func execProcess(cmdline: []pure uint8, pwd: []pure uint8): SystemError {
 
     let pi : PROCESS_INFORMATION
     let success = CreateProcessA(
-        nullptr,
+        nil,
         cmdline.ptr,
-        nullptr,
-        nullptr,
+        nil,
+        nil,
         true,
         CREATE_NO_WINDOW,
-        nullptr,
-        (pwd.len > 0 then cast(*uint8)pwd.ptr else cast(*uint8)nullptr),
+        nil,
+        (pwd.len > 0 then cast(&uint8)pwd.ptr else cast(&uint8)nil),
         &si,
         &pi
     )

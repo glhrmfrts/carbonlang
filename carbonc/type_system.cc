@@ -473,7 +473,7 @@ void tquery_for_type_kind(type_query& q, type_id root, type_kind k) {
     }
     switch (root.get().kind) {
     case type_kind::ptr:
-    case type_kind::array:
+    case type_kind::static_array:
     case type_kind::slice:
         q.path.push_back(elem_type);
         q.history.push_back(root);
@@ -491,7 +491,7 @@ void tquery_for_type_id(type_query& q, type_id root, type_id target) {
     }
     switch (root.get().kind) {
     case type_kind::ptr:
-    case type_kind::array:
+    case type_kind::static_array:
     case type_kind::slice:
         q.path.push_back(elem_type);
         q.history.push_back(root);
@@ -509,7 +509,7 @@ void tquery_for_type_with_constructor(type_query& q, type_id root, type_id ctor)
     }
     switch (root.get().kind) {
     case type_kind::ptr:
-    case type_kind::array:
+    case type_kind::static_array:
     case type_kind::slice:
         q.path.push_back(elem_type);
         q.history.push_back(root);
@@ -548,20 +548,25 @@ bool is_assignable_to(type_system& ts, type_id a, type_id b) {
         return true;
     }
 
-    if (ta.kind == type_kind::nullableptr && tb.kind == type_kind::nullableptr) {
-        if (ta.id == ts.raw_ptr_type) {
+    if (ta.kind == type_kind::ptr && tb.kind == type_kind::ptr) {
+        if (get_alias_root(ts, ta.id) == ts.raw_ptr_type) {
+            return true;
+        }
+        if (get_alias_root(ts, tb.id) == ts.raw_ptr_type) {
             return true;
         }
 
         return is_assignable_to(ts, ta.elem_type, tb.elem_type);
     }
 
-    if (ta.kind == type_kind::ptr && tb.kind == type_kind::ptr) {
-        return is_assignable_to(ts, ta.elem_type, tb.elem_type);
+    // NIL = PTR
+    if (ta.kind == type_kind::ptr && tb.kind == type_kind::nil) {
+        return true;
     }
 
-    if (ta.kind == type_kind::ptr && tb.kind == type_kind::nullableptr) {
-        return is_assignable_to(ts, ta.elem_type, tb.elem_type);
+    // PTR = NIL
+    if (ta.kind == type_kind::nil && tb.kind == type_kind::ptr) {
+        return true;
     }
 
     if (ta.kind == type_kind::slice && tb.kind == type_kind::slice) {
@@ -680,8 +685,8 @@ arena_ptr<ast_node> get_zero_value_node_for_type(type_system& ts, type_id id) {
     else if (id.get().kind == type_kind::real) {
         return make_float_literal_node(*ts.ast_arena, {}, 0.0);
     }
-    else if (id.get().kind == type_kind::nullableptr)  {
-        return make_nullpointer_node(*ts.ast_arena, {});
+    else if (id.get().kind == type_kind::ptr)  {
+        return make_nil_node(*ts.ast_arena, {});
     }
     else if (id.get().kind == type_kind::enum_) {
         symbol_info* sym = id.get().enumtype.symbols.front();
@@ -711,7 +716,7 @@ bool is_aggregate(type_id id) {
 
     return id.get().kind == type_kind::structure ||
            id.get().kind == type_kind::tuple ||
-           id.get().kind == type_kind::array ||
+           id.get().kind == type_kind::static_array ||
            id.get().kind == type_kind::slice;
 }
 
@@ -721,7 +726,7 @@ bool is_aggregate_root(type_id id) {
 
     return id.get().kind == type_kind::structure ||
         id.get().kind == type_kind::tuple ||
-        id.get().kind == type_kind::array ||
+        id.get().kind == type_kind::static_array ||
         id.get().kind == type_kind::slice;
 }
 
@@ -730,12 +735,6 @@ bool is_type_kind(type_id id, type_kind k) {
 }
 
 bool type_allows_no_init(type_system& ts, type_id id) {
-    if (id.get().kind == type_kind::ptr) {
-        return false;
-    }
-    if (id.get().kind == type_kind::func_pointer) {
-        return false;
-    }
     return true;
 }
 
@@ -857,7 +856,7 @@ arena_ptr<ast_node> make_assignment_for_init_list_item(type_system& ts, ast_node
         auto fieldexpr = make_struct_field_access(*ts.ast_arena, copy_node(ts, &receiver), field.names[0]);
         return make_assignment(*ts.ast_arena, std::move(fieldexpr), std::move(value));
     }
-    else if (is_type_kind(node.type_id, type_kind::tuple) || is_type_kind(node.type_id, type_kind::array)) {
+    else if (is_type_kind(node.type_id, type_kind::tuple) || is_type_kind(node.type_id, type_kind::static_array)) {
         auto indexexpr = make_index_access(*ts.ast_arena, copy_node(ts, &receiver), idx);
         return make_assignment(*ts.ast_arena, std::move(indexexpr), std::move(value));
     }
@@ -957,7 +956,7 @@ using cast_check_func = std::function<bool(type_system&, type_def&, type_def&)>;
 
 bool can_pointer_be_cast_from(type_system& ts, type_def& self, type_def& from) {
     if (self.id == ts.raw_ptr_type) {
-        if (from.kind == type_kind::ptr || from.kind == type_kind::nullableptr) {
+        if (from.kind == type_kind::ptr) {
             return true;
         }
         if (from.kind == type_kind::integral) {
@@ -973,7 +972,7 @@ bool can_pointer_be_cast_from(type_system& ts, type_def& self, type_def& from) {
 
 bool can_nullableptr_be_cast_from(type_system& ts, type_def& self, type_def& from) {
     if (get_alias_root(ts, self.id) == ts.raw_ptr_type) {
-        if (from.kind == type_kind::ptr || from.kind == type_kind::nullableptr) {
+        if (from.kind == type_kind::ptr) {
             return true;
         }
         if (from.kind == type_kind::integral) {
@@ -1019,7 +1018,7 @@ bool can_enum_be_cast_from(type_system& ts, type_def& self, type_def& from) {
 
 static std::unordered_map<type_kind, cast_check_func> cast_check_funcs = {
     {type_kind::ptr, can_pointer_be_cast_from},
-    {type_kind::nullableptr, can_nullableptr_be_cast_from},
+    //{type_kind::nullableptr, can_nullableptr_be_cast_from},
     {type_kind::integral, can_integral_be_cast_from},
     {type_kind::enum_, can_enum_be_cast_from},
     {type_kind::enumflags, can_enum_be_cast_from},
@@ -1156,9 +1155,8 @@ type_id get_value_node_type(type_system& ts, ast_node& node) {
         auto& sym = ts.builtin_scope->scope.symbols[string_hash{ "char" }];
         return to_type_id(*sym);
     }
-    case ast_type::nullptr_: {
-        auto& sym = ts.builtin_scope->scope.symbols[string_hash{ "rawptr" }];
-        return to_type_id(*sym);
+    case ast_type::nil_literal: {
+        return ts.nil_type;
     }
     case ast_type::cast_expr: {
         // TODO: check cast is possible and reasonable
@@ -1288,12 +1286,6 @@ type_id get_type_expr_node_type(type_system& ts, ast_node& node) {
             auto elem_type = get_type_expr_node_type(ts, *node.children[0]);
             if (elem_type.valid()) {
                 node.type_id = get_ptr_type_to(ts, elem_type);
-            }
-        }
-        else if (node.type_qual == type_qualifier::nullableptr) {
-            auto elem_type = get_type_expr_node_type(ts, *node.children[0]);
-            if (elem_type.valid()) {
-                node.type_id = get_nullableptr_type_to(ts, elem_type);
             }
         }
         else if (node.type_qual == type_qualifier::pure) {
@@ -1610,7 +1602,7 @@ bool check_convertible_and_cast_call_args(type_system& ts, ast_node& node, type_
 
         auto [convertible, ncast] = is_convertible_to(ts, node.type_id, target);
         if (!convertible) {
-            if (target.get().kind == type_kind::ptr || target.get().kind == type_kind::nullableptr) {
+            if (target.get().kind == type_kind::ptr) {
                 if (target.get().elem_type == node.type_id) {
                     info.cast_needed_idxs.push_back(std::make_tuple(toptr_cast, target, idx));
                     return true;
@@ -3353,11 +3345,7 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
             enum { LIMIT = 32 };
             int si = 0;
             while (stype.valid() && !is_aggregate_root(stype) && (si++) < LIMIT) {
-                if (stype.get().kind == type_kind::nullableptr) {
-                    node.type_error = true;
-                    add_type_error(ts, node.pos, "cannot access field of nullable pointer '%s', perform a nullcast first", type_to_string(ltype).c_str());
-                }
-                else if ((stype.get().kind == type_kind::ptr) && is_aggregate(stype.get().elem_type)) {
+                if ((stype.get().kind == type_kind::ptr) && is_aggregate(stype.get().elem_type)) {
                     is_struct = true;
                     is_pointer = true;
                     stype = stype.get().elem_type;
@@ -3400,7 +3388,7 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
         bool tup = false;
 
         if (node.children[0]->type_id.valid()) {
-            arr = node.children[0]->type_id.get().kind == type_kind::array;
+            arr = node.children[0]->type_id.get().kind == type_kind::static_array;
             sli = node.children[0]->type_id.get().kind == type_kind::slice;
             ptr = is_pointer(node.children[0]->type_id);
             tup = node.children[0]->type_id.get().kind == type_kind::tuple;
@@ -3718,7 +3706,7 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
     case ast_type::int_literal:
     case ast_type::float_literal:
     case ast_type::char_literal:
-    case ast_type::nullptr_:
+    case ast_type::nil_literal:
         node.type_id = get_value_node_type(ts, node);
         break;
     default: {
@@ -4049,33 +4037,6 @@ type_system::type_system(memory_arena& arena) {
 
     {
         auto node = make_in_arena<ast_node>(*ast_arena);
-        node->type_def.name = string_hash{ "*" };
-        node->type_def.mangled_name = string_hash{ "nullableptr" };
-        node->type_def.kind = type_kind::constructor;
-
-        type_constructor* ptr_template = &node->type_def.constructor;
-        ptr_template->self = node.get();
-        ptr_template->func = [this](const std::vector<comptime_value>& arg) {
-            auto type_arg = std::get<type_id>(arg.front());
-            auto node = make_in_arena<ast_node>(*ast_arena);
-            type_def& tf = node->type_def;
-
-            tf.kind = type_kind::nullableptr;
-            tf.name = string_hash{ "*" + type_arg.get().name.str };
-            tf.mangled_name = string_hash{ "nullableptr__T" + type_arg.get().mangled_name.str };
-            tf.size = sizeof(void*);
-            tf.alignment = alignof(void*);
-            tf.elem_type = type_arg;
-            return node;
-        };
-
-        nullableptr_type_constructor = ptr_template;
-        register_type(*this, builtin_scope->scope, *node);
-        builtin_type_nodes.push_back(std::move(node));
-    }
-
-    {
-        auto node = make_in_arena<ast_node>(*ast_arena);
         node->type_def.name = string_hash{ "pure" };
         node->type_def.mangled_name = string_hash{ "pure" };
         node->type_def.kind = type_kind::constructor;
@@ -4164,7 +4125,7 @@ type_system::type_system(memory_arena& arena) {
             auto node = make_in_arena<ast_node>(*ast_arena);
             type_def& tf = node->type_def;
 
-            tf.kind = type_kind::array;
+            tf.kind = type_kind::static_array;
             tf.name = build_array_name(std::get<int_type>(args[0]), std::get<type_id>(args[1]));
             tf.mangled_name = build_type_constructor_mangled_name(ctor->type_def.mangled_name.str, args);
             tf.array.length = std::get<int_type>(args[0]);
@@ -4261,7 +4222,20 @@ type_system::type_system(memory_arena& arena) {
         auto node = make_in_arena<ast_node>(*ast_arena);
 
         type_def& tf = node->type_def;
-        tf.kind = type_kind::nullableptr;
+        tf.kind = type_kind::nil;
+        tf.name = string_hash{ "nil" };
+        tf.mangled_name = string_hash{ "nil" };
+        tf.size = sizeof(void*);
+        tf.alignment = alignof(void*);
+        tf.elem_type = void_type;
+        nil_type = register_builtin_type(*this, std::move(node));
+    }
+
+    {
+        auto node = make_in_arena<ast_node>(*ast_arena);
+
+        type_def& tf = node->type_def;
+        tf.kind = type_kind::ptr;
         tf.name = string_hash{ "rawptr" };
         tf.mangled_name = string_hash{ "rawptr" };
         tf.size = sizeof(void*);

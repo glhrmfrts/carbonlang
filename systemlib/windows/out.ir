@@ -178,8 +178,8 @@ func cb__Ngameoflife__NallocString__Aptr__Tslice__Tuint8__Ausize -> ptr__Tslice_
     ir_return A0;
 endf
 
-func cb__Ngameoflife__NcopySubstr__Aptr__Tslice__Tuint8__Aptr__Tslice__Tpure__Tuint8__Ausize__Ausize -> ptr__Tslice__Tuint8
-    arg #0 $cb_agg_ret: ptr__Tslice__Tuint8;
+func cb__Ngameoflife__NcopySubstr__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8__Ausize__Ausize -> ptr__Tslice__Tpure__Tuint8
+    arg #0 $cb_agg_ret: ptr__Tslice__Tpure__Tuint8;
     arg #1 s: ptr__Tslice__Tpure__Tuint8;
     arg #2 start: usize;
     arg #3 end: usize;
@@ -225,25 +225,25 @@ func cb__Ngameoflife__Nfind__Aptr__Ttuple__Tint__Tbool__Aptr__Tslice__Tpure__Tui
     ir_deref A1; (push)
     ir_load [L0 . 1] [POP() . 1];
     ir_load L1 [L0 . 0];
-    ir_make_label cb__Ngameoflife__Nfind__Aptr__Ttuple__Tint__Tbool__Aptr__Tslice__Tpure__Tuint8__Auint8$f368$cond;
+    ir_make_label cb__Ngameoflife__Nfind__Aptr__Ttuple__Tint__Tbool__Aptr__Tslice__Tpure__Tuint8__Auint8$f366$cond;
     ir_cast L1; (push)
-    ir_jmp_gte POP() [L0 . 1] cb__Ngameoflife__Nfind__Aptr__Ttuple__Tint__Tbool__Aptr__Tslice__Tpure__Tuint8__Auint8$f368$end;
-    ir_make_label cb__Ngameoflife__Nfind__Aptr__Ttuple__Tint__Tbool__Aptr__Tslice__Tpure__Tuint8__Auint8$f368$body;
+    ir_jmp_gte POP() [L0 . 1] cb__Ngameoflife__Nfind__Aptr__Ttuple__Tint__Tbool__Aptr__Tslice__Tpure__Tuint8__Auint8$f366$end;
+    ir_make_label cb__Ngameoflife__Nfind__Aptr__Ttuple__Tint__Tbool__Aptr__Tslice__Tpure__Tuint8__Auint8$f366$body;
     ir_deref A1; (push)
     ir_deref [POP() . 0]; (push)
     ir_index POP() L1; (push)
-    ir_jmp_neq POP() A2 cb__Ngameoflife__Nfind__Aptr__Ttuple__Tint__Tbool__Aptr__Tslice__Tpure__Tuint8__Auint8$if365$else;
-    ir_make_label cb__Ngameoflife__Nfind__Aptr__Ttuple__Tint__Tbool__Aptr__Tslice__Tpure__Tuint8__Auint8$if365$body;
+    ir_jmp_neq POP() A2 cb__Ngameoflife__Nfind__Aptr__Ttuple__Tint__Tbool__Aptr__Tslice__Tpure__Tuint8__Auint8$if363$else;
+    ir_make_label cb__Ngameoflife__Nfind__Aptr__Ttuple__Tint__Tbool__Aptr__Tslice__Tpure__Tuint8__Auint8$if363$body;
     ir_deref A0; (push)
     ir_load [POP() . 0] L1;
     ir_deref A0; (push)
     ir_load [POP() . 1] 1;
     ir_return A0;
-    ir_make_label cb__Ngameoflife__Nfind__Aptr__Ttuple__Tint__Tbool__Aptr__Tslice__Tpure__Tuint8__Auint8$if365$else;
+    ir_make_label cb__Ngameoflife__Nfind__Aptr__Ttuple__Tint__Tbool__Aptr__Tslice__Tpure__Tuint8__Auint8$if363$else;
     ir_add L1 1; (push)
     ir_load L1 POP();
-    ir_jmp cb__Ngameoflife__Nfind__Aptr__Ttuple__Tint__Tbool__Aptr__Tslice__Tpure__Tuint8__Auint8$f368$cond;
-    ir_make_label cb__Ngameoflife__Nfind__Aptr__Ttuple__Tint__Tbool__Aptr__Tslice__Tpure__Tuint8__Auint8$f368$end;
+    ir_jmp cb__Ngameoflife__Nfind__Aptr__Ttuple__Tint__Tbool__Aptr__Tslice__Tpure__Tuint8__Auint8$f366$cond;
+    ir_make_label cb__Ngameoflife__Nfind__Aptr__Ttuple__Tint__Tbool__Aptr__Tslice__Tpure__Tuint8__Auint8$f366$end;
     ir_deref A0; (push)
     ir_neg 1; (push)
     ir_load [POP() . 0] POP();
@@ -252,32 +252,28 @@ func cb__Ngameoflife__Nfind__Aptr__Ttuple__Tint__Tbool__Aptr__Tslice__Tpure__Tui
     ir_return A0;
 endf
 
-func cb__Ngameoflife__Nsplit__Aptr__Tslice__Tslice__Tuint8__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8 -> ptr__Tslice__Tslice__Tuint8
-    arg #0 $cb_agg_ret: ptr__Tslice__Tslice__Tuint8;
+func cb__Ngameoflife__Nsplit__Aptr__Tslice__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8 -> ptr__Tslice__Tslice__Tpure__Tuint8
+    arg #0 $cb_agg_ret: ptr__Tslice__Tslice__Tpure__Tuint8;
     arg #1 s: ptr__Tslice__Tpure__Tuint8;
     arg #2 ned: ptr__Tslice__Tpure__Tuint8;
     local #0 arr: array__I1__Tslice__Tuint8;
-    local #1 prefix: slice__Tuint8;
-    local #2 suffix: slice__Tuint8;
-    local #3 list: slice__Tslice__Tuint8;
+    local #1 prefix: slice__Tpure__Tuint8;
+    local #2 suffix: slice__Tpure__Tuint8;
+    local #3 list: slice__Tslice__Tpure__Tuint8;
     local #4 listsize: int;
     local #5 $cbT0: tuple__Tint__Tbool;
     local #6 index: int;
     local #7 ok: bool;
     local #8 listbuf: rawptr;
-    local #9 $cbT15: slice__Tuint8;
-    local #10 $cbT17: slice__Tuint8;
+    local #9 $cbT15: slice__Tpure__Tuint8;
+    local #10 $cbT17: slice__Tpure__Tuint8;
     local #11 newfind: tuple__Tint__Tbool;
-    local #12 $cbT16: slice__Tuint8;
-    local #13 $cbT18: slice__Tuint8;
+    local #12 $cbT16: slice__Tpure__Tuint8;
+    local #13 $cbT18: slice__Tpure__Tuint8;
     ir_deref A1; (push)
-    ir_load [L1 . 0] [POP() . 0];
+    ir_copy L1 POP() 16;
     ir_deref A1; (push)
-    ir_load [L1 . 1] [POP() . 1];
-    ir_deref A1; (push)
-    ir_load [L2 . 0] [POP() . 0];
-    ir_deref A1; (push)
-    ir_load [L2 . 1] [POP() . 1];
+    ir_copy L2 POP() 16;
     ir_copy L9 L2 16;
     ir_load_addr L5; (push)
     ir_load_addr L9; (push)
@@ -287,8 +283,8 @@ func cb__Ngameoflife__Nsplit__Aptr__Tslice__Tslice__Tuint8__Aptr__Tslice__Tpure_
     ir_call cb__Ngameoflife__Nfind__Aptr__Ttuple__Tint__Tbool__Aptr__Tslice__Tpure__Tuint8__Auint8 POP() POP() POP(); (push)
     ir_load L6 [L5 . 0];
     ir_load L7 [L5 . 1];
-    ir_jmp_neq L7 0 cb__Ngameoflife__Nsplit__Aptr__Tslice__Tslice__Tuint8__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8$if495$else;
-    ir_make_label cb__Ngameoflife__Nsplit__Aptr__Tslice__Tslice__Tuint8__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8$if495$body;
+    ir_jmp_neq L7 0 cb__Ngameoflife__Nsplit__Aptr__Tslice__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8$if452$else;
+    ir_make_label cb__Ngameoflife__Nsplit__Aptr__Tslice__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8$if452$body;
     ir_deref A0; (push)
     ir_index L0 0; (push)
     ir_load_addr POP(); (push)
@@ -296,7 +292,7 @@ func cb__Ngameoflife__Nsplit__Aptr__Tslice__Tslice__Tuint8__Aptr__Tslice__Tpure_
     ir_deref A0; (push)
     ir_load [POP() . 1] 0;
     ir_return A0;
-    ir_make_label cb__Ngameoflife__Nsplit__Aptr__Tslice__Tslice__Tuint8__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8$if495$else;
+    ir_make_label cb__Ngameoflife__Nsplit__Aptr__Tslice__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8$if452$else;
     ir_mul 16 100; (push)
     ir_cast POP(); (push)
     ir_call cb__Nstd__Nsystem__Nalloc__Ausize POP(); (push)
@@ -304,14 +300,14 @@ func cb__Ngameoflife__Nsplit__Aptr__Tslice__Tslice__Tuint8__Aptr__Tslice__Tpure_
     ir_load [L3 . 0] L8;
     ir_load [L3 . 1] 0;
     ir_load L4 0;
-    ir_make_label cb__Ngameoflife__Nsplit__Aptr__Tslice__Tslice__Tuint8__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8$w593$cond;
-    ir_jmp_eq L7 0 cb__Ngameoflife__Nsplit__Aptr__Tslice__Tslice__Tuint8__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8$w593$end;
-    ir_make_label cb__Ngameoflife__Nsplit__Aptr__Tslice__Tslice__Tuint8__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8$w593$body;
+    ir_make_label cb__Ngameoflife__Nsplit__Aptr__Tslice__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8$w549$cond;
+    ir_jmp_eq L7 0 cb__Ngameoflife__Nsplit__Aptr__Tslice__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8$w549$end;
+    ir_make_label cb__Ngameoflife__Nsplit__Aptr__Tslice__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8$w549$body;
     ir_copy L12 L2 16;
     ir_load_addr L1; (push)
     ir_load_addr L12; (push)
     ir_cast L6; (push)
-    ir_call cb__Ngameoflife__NcopySubstr__Aptr__Tslice__Tuint8__Aptr__Tslice__Tpure__Tuint8__Ausize__Ausize POP() POP() 0 POP(); (push)
+    ir_call cb__Ngameoflife__NcopySubstr__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8__Ausize__Ausize POP() POP() 0 POP(); (push)
     ir_noop POP();
     ir_copy L10 L2 16;
     ir_load_addr L2; (push)
@@ -319,7 +315,7 @@ func cb__Ngameoflife__Nsplit__Aptr__Tslice__Tslice__Tuint8__Aptr__Tslice__Tpure_
     ir_add L6 1; (push)
     ir_cast POP(); (push)
     ir_deref A1; (push)
-    ir_call cb__Ngameoflife__NcopySubstr__Aptr__Tslice__Tuint8__Aptr__Tslice__Tpure__Tuint8__Ausize__Ausize POP() POP() POP() [POP() . 1]; (push)
+    ir_call cb__Ngameoflife__NcopySubstr__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8__Ausize__Ausize POP() POP() POP() [POP() . 1]; (push)
     ir_noop POP();
     ir_deref [L3 . 0]; (push)
     ir_index POP() L4; (push)
@@ -335,8 +331,8 @@ func cb__Ngameoflife__Nsplit__Aptr__Tslice__Tslice__Tuint8__Aptr__Tslice__Tpure_
     ir_call cb__Ngameoflife__Nfind__Aptr__Ttuple__Tint__Tbool__Aptr__Tslice__Tpure__Tuint8__Auint8 POP() POP() POP(); (push)
     ir_load L6 [L11 . 0];
     ir_load L7 [L11 . 1];
-    ir_jmp cb__Ngameoflife__Nsplit__Aptr__Tslice__Tslice__Tuint8__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8$w593$cond;
-    ir_make_label cb__Ngameoflife__Nsplit__Aptr__Tslice__Tslice__Tuint8__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8$w593$end;
+    ir_jmp cb__Ngameoflife__Nsplit__Aptr__Tslice__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8$w549$cond;
+    ir_make_label cb__Ngameoflife__Nsplit__Aptr__Tslice__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8$w549$end;
     ir_noop POP();
     ir_cast L4; (push)
     ir_load [L3 . 1] POP();
@@ -409,12 +405,12 @@ func cb__Ngameoflife__NmakeAutomaton__Aptr__TAutomaton__Aptr__Tslice__Tpure__Tui
     local #0 height: int;
     local #1 width: int;
     local #2 a: Automaton;
-    local #3 f: slice__Tslice__Tuint8;
+    local #3 f: slice__Tslice__Tpure__Tuint8;
     local #4 field: Field2D;
     local #5 newfield: Field2D;
     local #6 $cbT19: slice__Tpure__Tuint8;
     local #7 $cbT20: slice__Tpure__Tuint8;
-    local #8 $cbT21: slice__Tslice__Tuint8;
+    local #8 $cbT21: slice__Tslice__Tpure__Tuint8;
     local #9 $foriter: tuple__Tint__Tusize;
     local #10 y: int;
     local #11 $foriter: tuple__Tint__Tint;
@@ -430,31 +426,31 @@ func cb__Ngameoflife__NmakeAutomaton__Aptr__TAutomaton__Aptr__Tslice__Tpure__Tui
     ir_load_addr L3; (push)
     ir_load_addr L6; (push)
     ir_load_addr L7; (push)
-    ir_call cb__Ngameoflife__Nsplit__Aptr__Tslice__Tslice__Tuint8__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8 POP() POP() POP(); (push)
+    ir_call cb__Ngameoflife__Nsplit__Aptr__Tslice__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8 POP() POP() POP(); (push)
     ir_cast [L3 . 1]; (push)
     ir_load L0 POP();
     ir_load L1 0;
     ir_load [L9 . 0] 0;
     ir_load [L9 . 1] [L3 . 1];
     ir_load L10 [L9 . 0];
-    ir_make_label cb__Ngameoflife__NmakeAutomaton__Aptr__TAutomaton__Aptr__Tslice__Tpure__Tuint8$f839$cond;
+    ir_make_label cb__Ngameoflife__NmakeAutomaton__Aptr__TAutomaton__Aptr__Tslice__Tpure__Tuint8$f789$cond;
     ir_cast L10; (push)
-    ir_jmp_gte POP() [L9 . 1] cb__Ngameoflife__NmakeAutomaton__Aptr__TAutomaton__Aptr__Tslice__Tpure__Tuint8$f839$end;
-    ir_make_label cb__Ngameoflife__NmakeAutomaton__Aptr__TAutomaton__Aptr__Tslice__Tpure__Tuint8$f839$body;
+    ir_jmp_gte POP() [L9 . 1] cb__Ngameoflife__NmakeAutomaton__Aptr__TAutomaton__Aptr__Tslice__Tpure__Tuint8$f789$end;
+    ir_make_label cb__Ngameoflife__NmakeAutomaton__Aptr__TAutomaton__Aptr__Tslice__Tpure__Tuint8$f789$body;
     ir_cast L1; (push)
     ir_deref [L3 . 0]; (push)
     ir_index POP() L10; (push)
-    ir_jmp_gte POP() [POP() . 1] cb__Ngameoflife__NmakeAutomaton__Aptr__TAutomaton__Aptr__Tslice__Tpure__Tuint8$if836$else;
-    ir_make_label cb__Ngameoflife__NmakeAutomaton__Aptr__TAutomaton__Aptr__Tslice__Tpure__Tuint8$if836$body;
+    ir_jmp_gte POP() [POP() . 1] cb__Ngameoflife__NmakeAutomaton__Aptr__TAutomaton__Aptr__Tslice__Tpure__Tuint8$if786$else;
+    ir_make_label cb__Ngameoflife__NmakeAutomaton__Aptr__TAutomaton__Aptr__Tslice__Tpure__Tuint8$if786$body;
     ir_deref [L3 . 0]; (push)
     ir_index POP() L10; (push)
     ir_cast [POP() . 1]; (push)
     ir_load L1 POP();
-    ir_make_label cb__Ngameoflife__NmakeAutomaton__Aptr__TAutomaton__Aptr__Tslice__Tpure__Tuint8$if836$else;
+    ir_make_label cb__Ngameoflife__NmakeAutomaton__Aptr__TAutomaton__Aptr__Tslice__Tpure__Tuint8$if786$else;
     ir_add L10 1; (push)
     ir_load L10 POP();
-    ir_jmp cb__Ngameoflife__NmakeAutomaton__Aptr__TAutomaton__Aptr__Tslice__Tpure__Tuint8$f839$cond;
-    ir_make_label cb__Ngameoflife__NmakeAutomaton__Aptr__TAutomaton__Aptr__Tslice__Tpure__Tuint8$f839$end;
+    ir_jmp cb__Ngameoflife__NmakeAutomaton__Aptr__TAutomaton__Aptr__Tslice__Tpure__Tuint8$f789$cond;
+    ir_make_label cb__Ngameoflife__NmakeAutomaton__Aptr__TAutomaton__Aptr__Tslice__Tpure__Tuint8$f789$end;
     ir_call cb__Ngameoflife__Nprintln__Aint L1;
     ir_call cb__Ngameoflife__Nprintln__Aint L0;
     ir_load_addr L4; (push)
@@ -464,40 +460,40 @@ func cb__Ngameoflife__NmakeAutomaton__Aptr__TAutomaton__Aptr__Tslice__Tpure__Tui
     ir_load [L11 . 0] 0;
     ir_load [L11 . 1] [L4 . 2];
     ir_load L12 [L11 . 0];
-    ir_make_label cb__Ngameoflife__NmakeAutomaton__Aptr__TAutomaton__Aptr__Tslice__Tpure__Tuint8$f914$cond;
-    ir_jmp_gte L12 [L11 . 1] cb__Ngameoflife__NmakeAutomaton__Aptr__TAutomaton__Aptr__Tslice__Tpure__Tuint8$f914$end;
-    ir_make_label cb__Ngameoflife__NmakeAutomaton__Aptr__TAutomaton__Aptr__Tslice__Tpure__Tuint8$f914$body;
+    ir_make_label cb__Ngameoflife__NmakeAutomaton__Aptr__TAutomaton__Aptr__Tslice__Tpure__Tuint8$f864$cond;
+    ir_jmp_gte L12 [L11 . 1] cb__Ngameoflife__NmakeAutomaton__Aptr__TAutomaton__Aptr__Tslice__Tpure__Tuint8$f864$end;
+    ir_make_label cb__Ngameoflife__NmakeAutomaton__Aptr__TAutomaton__Aptr__Tslice__Tpure__Tuint8$f864$body;
     ir_load [L13 . 0] 0;
     ir_load [L13 . 1] [L4 . 1];
     ir_load L14 [L13 . 0];
-    ir_make_label cb__Ngameoflife__NmakeAutomaton__Aptr__TAutomaton__Aptr__Tslice__Tpure__Tuint8$f911$cond;
-    ir_jmp_gte L14 [L13 . 1] cb__Ngameoflife__NmakeAutomaton__Aptr__TAutomaton__Aptr__Tslice__Tpure__Tuint8$f911$end;
-    ir_make_label cb__Ngameoflife__NmakeAutomaton__Aptr__TAutomaton__Aptr__Tslice__Tpure__Tuint8$f911$body;
+    ir_make_label cb__Ngameoflife__NmakeAutomaton__Aptr__TAutomaton__Aptr__Tslice__Tpure__Tuint8$f861$cond;
+    ir_jmp_gte L14 [L13 . 1] cb__Ngameoflife__NmakeAutomaton__Aptr__TAutomaton__Aptr__Tslice__Tpure__Tuint8$f861$end;
+    ir_make_label cb__Ngameoflife__NmakeAutomaton__Aptr__TAutomaton__Aptr__Tslice__Tpure__Tuint8$f861$body;
     ir_load_addr L4; (push)
     ir_cast L14; (push)
     ir_deref [L3 . 0]; (push)
     ir_index POP() L12; (push)
-    ir_jmp_gte POP() [POP() . 1] cb__Ngameoflife__NmakeAutomaton__Aptr__TAutomaton__Aptr__Tslice__Tpure__Tuint8$if8443$else;
+    ir_jmp_gte POP() [POP() . 1] cb__Ngameoflife__NmakeAutomaton__Aptr__TAutomaton__Aptr__Tslice__Tpure__Tuint8$if8352$else;
     ir_deref [L3 . 0]; (push)
     ir_index POP() L12; (push)
     ir_deref [POP() . 0]; (push)
     ir_index POP() L14; (push)
-    ir_jmp_neq POP() #35 cb__Ngameoflife__NmakeAutomaton__Aptr__TAutomaton__Aptr__Tslice__Tpure__Tuint8$if8443$else;
-    ir_make_label cb__Ngameoflife__NmakeAutomaton__Aptr__TAutomaton__Aptr__Tslice__Tpure__Tuint8$if8443$body;
+    ir_jmp_neq POP() #35 cb__Ngameoflife__NmakeAutomaton__Aptr__TAutomaton__Aptr__Tslice__Tpure__Tuint8$if8352$else;
+    ir_make_label cb__Ngameoflife__NmakeAutomaton__Aptr__TAutomaton__Aptr__Tslice__Tpure__Tuint8$if8352$body;
     ir_load L15 1;
-    ir_jmp cb__Ngameoflife__NmakeAutomaton__Aptr__TAutomaton__Aptr__Tslice__Tpure__Tuint8$if8443$end;
-    ir_make_label cb__Ngameoflife__NmakeAutomaton__Aptr__TAutomaton__Aptr__Tslice__Tpure__Tuint8$if8443$else;
+    ir_jmp cb__Ngameoflife__NmakeAutomaton__Aptr__TAutomaton__Aptr__Tslice__Tpure__Tuint8$if8352$end;
+    ir_make_label cb__Ngameoflife__NmakeAutomaton__Aptr__TAutomaton__Aptr__Tslice__Tpure__Tuint8$if8352$else;
     ir_load L15 0;
-    ir_make_label cb__Ngameoflife__NmakeAutomaton__Aptr__TAutomaton__Aptr__Tslice__Tpure__Tuint8$if8443$end;
+    ir_make_label cb__Ngameoflife__NmakeAutomaton__Aptr__TAutomaton__Aptr__Tslice__Tpure__Tuint8$if8352$end;
     ir_call cb__Ngameoflife__Nset__Aptr__TField2D__Aint__Aint__Aint POP() L14 L12 L15;
     ir_add L14 1; (push)
     ir_load L14 POP();
-    ir_jmp cb__Ngameoflife__NmakeAutomaton__Aptr__TAutomaton__Aptr__Tslice__Tpure__Tuint8$f911$cond;
-    ir_make_label cb__Ngameoflife__NmakeAutomaton__Aptr__TAutomaton__Aptr__Tslice__Tpure__Tuint8$f911$end;
+    ir_jmp cb__Ngameoflife__NmakeAutomaton__Aptr__TAutomaton__Aptr__Tslice__Tpure__Tuint8$f861$cond;
+    ir_make_label cb__Ngameoflife__NmakeAutomaton__Aptr__TAutomaton__Aptr__Tslice__Tpure__Tuint8$f861$end;
     ir_add L12 1; (push)
     ir_load L12 POP();
-    ir_jmp cb__Ngameoflife__NmakeAutomaton__Aptr__TAutomaton__Aptr__Tslice__Tpure__Tuint8$f914$cond;
-    ir_make_label cb__Ngameoflife__NmakeAutomaton__Aptr__TAutomaton__Aptr__Tslice__Tpure__Tuint8$f914$end;
+    ir_jmp cb__Ngameoflife__NmakeAutomaton__Aptr__TAutomaton__Aptr__Tslice__Tpure__Tuint8$f864$cond;
+    ir_make_label cb__Ngameoflife__NmakeAutomaton__Aptr__TAutomaton__Aptr__Tslice__Tpure__Tuint8$f864$end;
     ir_copy [L2 . 0] L4 16;
     ir_copy [L2 . 1] L5 16;
     ir_deref A0; (push)
@@ -528,18 +524,18 @@ func cb__Ngameoflife__Nupdate__Aptr__TAutomaton -> void
     ir_sub [POP() . 2] 1; (push)
     ir_load [L1 . 1] POP();
     ir_load L2 [L1 . 0];
-    ir_make_label cb__Ngameoflife__Nupdate__Aptr__TAutomaton$f1135$cond;
-    ir_jmp_gte L2 [L1 . 1] cb__Ngameoflife__Nupdate__Aptr__TAutomaton$f1135$end;
-    ir_make_label cb__Ngameoflife__Nupdate__Aptr__TAutomaton$f1135$body;
+    ir_make_label cb__Ngameoflife__Nupdate__Aptr__TAutomaton$f1085$cond;
+    ir_jmp_gte L2 [L1 . 1] cb__Ngameoflife__Nupdate__Aptr__TAutomaton$f1085$end;
+    ir_make_label cb__Ngameoflife__Nupdate__Aptr__TAutomaton$f1085$body;
     ir_load [L3 . 0] 1;
     ir_deref A0; (push)
     ir_load_addr [POP() . 0]; (push)
     ir_sub [POP() . 1] 1; (push)
     ir_load [L3 . 1] POP();
     ir_load L4 [L3 . 0];
-    ir_make_label cb__Ngameoflife__Nupdate__Aptr__TAutomaton$f1132$cond;
-    ir_jmp_gte L4 [L3 . 1] cb__Ngameoflife__Nupdate__Aptr__TAutomaton$f1132$end;
-    ir_make_label cb__Ngameoflife__Nupdate__Aptr__TAutomaton$f1132$body;
+    ir_make_label cb__Ngameoflife__Nupdate__Aptr__TAutomaton$f1082$cond;
+    ir_jmp_gte L4 [L3 . 1] cb__Ngameoflife__Nupdate__Aptr__TAutomaton$f1082$end;
+    ir_make_label cb__Ngameoflife__Nupdate__Aptr__TAutomaton$f1082$body;
     ir_deref A0; (push)
     ir_load_addr [POP() . 0]; (push)
     ir_sub L4 1; (push)
@@ -549,24 +545,29 @@ func cb__Ngameoflife__Nupdate__Aptr__TAutomaton -> void
     ir_load_addr [POP() . 0]; (push)
     ir_sub L2 1; (push)
     ir_call cb__Ngameoflife__Nget__Aptr__Tpure__TField2D__Aint__Aint POP() L4 POP(); (push)
+    ir_add POP() POP(); (push)
     ir_deref A0; (push)
     ir_load_addr [POP() . 0]; (push)
     ir_add L4 1; (push)
     ir_sub L2 1; (push)
     ir_call cb__Ngameoflife__Nget__Aptr__Tpure__TField2D__Aint__Aint POP() POP() POP(); (push)
+    ir_add POP() POP(); (push)
     ir_deref A0; (push)
     ir_load_addr [POP() . 0]; (push)
     ir_add L4 1; (push)
     ir_call cb__Ngameoflife__Nget__Aptr__Tpure__TField2D__Aint__Aint POP() POP() L2; (push)
+    ir_add POP() POP(); (push)
     ir_deref A0; (push)
     ir_load_addr [POP() . 0]; (push)
     ir_add L4 1; (push)
     ir_add L2 1; (push)
     ir_call cb__Ngameoflife__Nget__Aptr__Tpure__TField2D__Aint__Aint POP() POP() POP(); (push)
+    ir_add POP() POP(); (push)
     ir_deref A0; (push)
     ir_load_addr [POP() . 0]; (push)
     ir_add L2 1; (push)
     ir_call cb__Ngameoflife__Nget__Aptr__Tpure__TField2D__Aint__Aint POP() L4 POP(); (push)
+    ir_add POP() POP(); (push)
     ir_deref A0; (push)
     ir_load_addr [POP() . 0]; (push)
     ir_sub L4 1; (push)
@@ -577,55 +578,50 @@ func cb__Ngameoflife__Nupdate__Aptr__TAutomaton -> void
     ir_load_addr [POP() . 0]; (push)
     ir_sub L4 1; (push)
     ir_call cb__Ngameoflife__Nget__Aptr__Tpure__TField2D__Aint__Aint POP() POP() L2; (push)
-    ir_add POP() POP(); (push)
-    ir_add POP() POP(); (push)
-    ir_add POP() POP(); (push)
-    ir_add POP() POP(); (push)
-    ir_add POP() POP(); (push)
     ir_add POP() POP(); (push)
     ir_load L5 POP();
     ir_deref A0; (push)
     ir_load_addr [POP() . 0]; (push)
     ir_call cb__Ngameoflife__Nget__Aptr__Tpure__TField2D__Aint__Aint POP() L4 L2; (push)
     ir_load L7 POP();
-    ir_jmp_neq L7 1 cb__Ngameoflife__Nupdate__Aptr__TAutomaton$if8449$else;
-    ir_make_label cb__Ngameoflife__Nupdate__Aptr__TAutomaton$if8449$body;
-    ir_jmp_eq L5 2 cb__Ngameoflife__Nupdate__Aptr__TAutomaton$if8456$body;
-    ir_jmp_neq L5 3 cb__Ngameoflife__Nupdate__Aptr__TAutomaton$if8456$else;
-    ir_make_label cb__Ngameoflife__Nupdate__Aptr__TAutomaton$if8456$body;
+    ir_jmp_neq L7 1 cb__Ngameoflife__Nupdate__Aptr__TAutomaton$if8358$else;
+    ir_make_label cb__Ngameoflife__Nupdate__Aptr__TAutomaton$if8358$body;
+    ir_jmp_eq L5 2 cb__Ngameoflife__Nupdate__Aptr__TAutomaton$if8365$body;
+    ir_jmp_neq L5 3 cb__Ngameoflife__Nupdate__Aptr__TAutomaton$if8365$else;
+    ir_make_label cb__Ngameoflife__Nupdate__Aptr__TAutomaton$if8365$body;
     ir_load L8 1;
-    ir_jmp cb__Ngameoflife__Nupdate__Aptr__TAutomaton$if8456$end;
-    ir_make_label cb__Ngameoflife__Nupdate__Aptr__TAutomaton$if8456$else;
+    ir_jmp cb__Ngameoflife__Nupdate__Aptr__TAutomaton$if8365$end;
+    ir_make_label cb__Ngameoflife__Nupdate__Aptr__TAutomaton$if8365$else;
     ir_load L8 0;
-    ir_make_label cb__Ngameoflife__Nupdate__Aptr__TAutomaton$if8456$end;
-    ir_jmp cb__Ngameoflife__Nupdate__Aptr__TAutomaton$if8449$end;
-    ir_make_label cb__Ngameoflife__Nupdate__Aptr__TAutomaton$if8449$else;
-    ir_jmp_neq L5 3 cb__Ngameoflife__Nupdate__Aptr__TAutomaton$if8463$else;
-    ir_make_label cb__Ngameoflife__Nupdate__Aptr__TAutomaton$if8463$body;
+    ir_make_label cb__Ngameoflife__Nupdate__Aptr__TAutomaton$if8365$end;
+    ir_jmp cb__Ngameoflife__Nupdate__Aptr__TAutomaton$if8358$end;
+    ir_make_label cb__Ngameoflife__Nupdate__Aptr__TAutomaton$if8358$else;
+    ir_jmp_neq L5 3 cb__Ngameoflife__Nupdate__Aptr__TAutomaton$if8372$else;
+    ir_make_label cb__Ngameoflife__Nupdate__Aptr__TAutomaton$if8372$body;
     ir_load L8 1;
-    ir_jmp cb__Ngameoflife__Nupdate__Aptr__TAutomaton$if8463$end;
-    ir_make_label cb__Ngameoflife__Nupdate__Aptr__TAutomaton$if8463$else;
+    ir_jmp cb__Ngameoflife__Nupdate__Aptr__TAutomaton$if8372$end;
+    ir_make_label cb__Ngameoflife__Nupdate__Aptr__TAutomaton$if8372$else;
     ir_load L8 0;
-    ir_make_label cb__Ngameoflife__Nupdate__Aptr__TAutomaton$if8463$end;
-    ir_make_label cb__Ngameoflife__Nupdate__Aptr__TAutomaton$if8449$end;
+    ir_make_label cb__Ngameoflife__Nupdate__Aptr__TAutomaton$if8372$end;
+    ir_make_label cb__Ngameoflife__Nupdate__Aptr__TAutomaton$if8358$end;
     ir_deref A0; (push)
     ir_load_addr [POP() . 1]; (push)
-    ir_jmp_eq L8 0 cb__Ngameoflife__Nupdate__Aptr__TAutomaton$if8478$else;
-    ir_make_label cb__Ngameoflife__Nupdate__Aptr__TAutomaton$if8478$body;
+    ir_jmp_eq L8 0 cb__Ngameoflife__Nupdate__Aptr__TAutomaton$if8387$else;
+    ir_make_label cb__Ngameoflife__Nupdate__Aptr__TAutomaton$if8387$body;
     ir_load L6 1;
-    ir_jmp cb__Ngameoflife__Nupdate__Aptr__TAutomaton$if8478$end;
-    ir_make_label cb__Ngameoflife__Nupdate__Aptr__TAutomaton$if8478$else;
+    ir_jmp cb__Ngameoflife__Nupdate__Aptr__TAutomaton$if8387$end;
+    ir_make_label cb__Ngameoflife__Nupdate__Aptr__TAutomaton$if8387$else;
     ir_load L6 0;
-    ir_make_label cb__Ngameoflife__Nupdate__Aptr__TAutomaton$if8478$end;
+    ir_make_label cb__Ngameoflife__Nupdate__Aptr__TAutomaton$if8387$end;
     ir_call cb__Ngameoflife__Nset__Aptr__TField2D__Aint__Aint__Aint POP() L4 L2 L6;
     ir_add L4 1; (push)
     ir_load L4 POP();
-    ir_jmp cb__Ngameoflife__Nupdate__Aptr__TAutomaton$f1132$cond;
-    ir_make_label cb__Ngameoflife__Nupdate__Aptr__TAutomaton$f1132$end;
+    ir_jmp cb__Ngameoflife__Nupdate__Aptr__TAutomaton$f1082$cond;
+    ir_make_label cb__Ngameoflife__Nupdate__Aptr__TAutomaton$f1082$end;
     ir_add L2 1; (push)
     ir_load L2 POP();
-    ir_jmp cb__Ngameoflife__Nupdate__Aptr__TAutomaton$f1135$cond;
-    ir_make_label cb__Ngameoflife__Nupdate__Aptr__TAutomaton$f1135$end;
+    ir_jmp cb__Ngameoflife__Nupdate__Aptr__TAutomaton$f1085$cond;
+    ir_make_label cb__Ngameoflife__Nupdate__Aptr__TAutomaton$f1085$end;
     ir_deref A0; (push)
     ir_copy L0 [POP() . 0] 16;
     ir_deref A0; (push)
@@ -661,9 +657,9 @@ func cb__Ngameoflife__Nprint__Aptr__TAutomaton -> void
     ir_load_addr [POP() . 0]; (push)
     ir_load [L2 . 1] [POP() . 2];
     ir_load L3 [L2 . 0];
-    ir_make_label cb__Ngameoflife__Nprint__Aptr__TAutomaton$f1295$cond;
-    ir_jmp_gte L3 [L2 . 1] cb__Ngameoflife__Nprint__Aptr__TAutomaton$f1295$end;
-    ir_make_label cb__Ngameoflife__Nprint__Aptr__TAutomaton$f1295$body;
+    ir_make_label cb__Ngameoflife__Nprint__Aptr__TAutomaton$f1242$cond;
+    ir_jmp_gte L3 [L2 . 1] cb__Ngameoflife__Nprint__Aptr__TAutomaton$f1242$end;
+    ir_make_label cb__Ngameoflife__Nprint__Aptr__TAutomaton$f1242$body;
     ir_deref A0; (push)
     ir_load_addr [POP() . 0]; (push)
     ir_deref A0; (push)
@@ -679,20 +675,20 @@ func cb__Ngameoflife__Nprint__Aptr__TAutomaton -> void
     ir_load_addr [POP() . 0]; (push)
     ir_load [L6 . 1] [POP() . 1];
     ir_load L7 [L6 . 0];
-    ir_make_label cb__Ngameoflife__Nprint__Aptr__TAutomaton$f1287$cond;
-    ir_jmp_gte L7 [L6 . 1] cb__Ngameoflife__Nprint__Aptr__TAutomaton$f1287$end;
-    ir_make_label cb__Ngameoflife__Nprint__Aptr__TAutomaton$f1287$body;
+    ir_make_label cb__Ngameoflife__Nprint__Aptr__TAutomaton$f1234$cond;
+    ir_jmp_gte L7 [L6 . 1] cb__Ngameoflife__Nprint__Aptr__TAutomaton$f1234$end;
+    ir_make_label cb__Ngameoflife__Nprint__Aptr__TAutomaton$f1234$body;
     ir_deref A0; (push)
     ir_load_addr [POP() . 0]; (push)
     ir_call cb__Ngameoflife__Nget__Aptr__Tpure__TField2D__Aint__Aint POP() L7 L3; (push)
     ir_load L8 POP();
-    ir_jmp_neq L8 1 cb__Ngameoflife__Nprint__Aptr__TAutomaton$if8486$else;
-    ir_make_label cb__Ngameoflife__Nprint__Aptr__TAutomaton$if8486$body;
+    ir_jmp_neq L8 1 cb__Ngameoflife__Nprint__Aptr__TAutomaton$if8395$else;
+    ir_make_label cb__Ngameoflife__Nprint__Aptr__TAutomaton$if8395$body;
     ir_load L9 #64;
-    ir_jmp cb__Ngameoflife__Nprint__Aptr__TAutomaton$if8486$end;
-    ir_make_label cb__Ngameoflife__Nprint__Aptr__TAutomaton$if8486$else;
+    ir_jmp cb__Ngameoflife__Nprint__Aptr__TAutomaton$if8395$end;
+    ir_make_label cb__Ngameoflife__Nprint__Aptr__TAutomaton$if8395$else;
     ir_load L9 #46;
-    ir_make_label cb__Ngameoflife__Nprint__Aptr__TAutomaton$if8486$end;
+    ir_make_label cb__Ngameoflife__Nprint__Aptr__TAutomaton$if8395$end;
     ir_deref [L4 . 0]; (push)
     ir_index POP() L7; (push)
     ir_load POP() L9;
@@ -700,15 +696,15 @@ func cb__Ngameoflife__Nprint__Aptr__TAutomaton -> void
     ir_load [L4 . 1] POP();
     ir_add L7 1; (push)
     ir_load L7 POP();
-    ir_jmp cb__Ngameoflife__Nprint__Aptr__TAutomaton$f1287$cond;
-    ir_make_label cb__Ngameoflife__Nprint__Aptr__TAutomaton$f1287$end;
+    ir_jmp cb__Ngameoflife__Nprint__Aptr__TAutomaton$f1234$cond;
+    ir_make_label cb__Ngameoflife__Nprint__Aptr__TAutomaton$f1234$end;
     ir_copy L5 L4 16;
     ir_load_addr L5; (push)
     ir_call cb__Ngameoflife__Nprintln__Aptr__Tslice__Tpure__Tuint8 POP();
     ir_add L3 1; (push)
     ir_load L3 POP();
-    ir_jmp cb__Ngameoflife__Nprint__Aptr__TAutomaton$f1295$cond;
-    ir_make_label cb__Ngameoflife__Nprint__Aptr__TAutomaton$f1295$end;
+    ir_jmp cb__Ngameoflife__Nprint__Aptr__TAutomaton$f1242$cond;
+    ir_make_label cb__Ngameoflife__Nprint__Aptr__TAutomaton$f1242$end;
     ir_load_addr STR2; (push)
     ir_load [L1 . 0] POP();
     ir_load [L1 . 1] 11;
@@ -743,9 +739,9 @@ func cb__Ngameoflife__NgameOfLife -> void
     ir_load [L1 . 0] 0;
     ir_load [L1 . 1] 150;
     ir_load L2 [L1 . 0];
-    ir_make_label cb__Ngameoflife__NgameOfLife$f1358$cond;
-    ir_jmp_gte L2 [L1 . 1] cb__Ngameoflife__NgameOfLife$f1358$end;
-    ir_make_label cb__Ngameoflife__NgameOfLife$f1358$body;
+    ir_make_label cb__Ngameoflife__NgameOfLife$f1305$cond;
+    ir_jmp_gte L2 [L1 . 1] cb__Ngameoflife__NgameOfLife$f1305$end;
+    ir_make_label cb__Ngameoflife__NgameOfLife$f1305$body;
     ir_load_addr L0; (push)
     ir_call cb__Ngameoflife__Nupdate__Aptr__TAutomaton POP();
     ir_load_addr L0; (push)
@@ -753,11 +749,11 @@ func cb__Ngameoflife__NgameOfLife -> void
     ir_call cb__Nstd__Nsystem__NsleepMs__Auint64 200;
     ir_add L2 1; (push)
     ir_load L2 POP();
-    ir_jmp cb__Ngameoflife__NgameOfLife$f1358$cond;
-    ir_make_label cb__Ngameoflife__NgameOfLife$f1358$end;
+    ir_jmp cb__Ngameoflife__NgameOfLife$f1305$cond;
+    ir_make_label cb__Ngameoflife__NgameOfLife$f1305$end;
 endf
 
-func GetCommandLineA -> nullableptr__Tpure__Tuint8
+func GetCommandLineA -> ptr__Tpure__Tuint8
 endf
 
 func GetStdHandle -> rawptr
@@ -840,40 +836,40 @@ func cb__Nstd__Nsystem__Nopen__Aptr__Ttuple__Trawptr__TSystemError__Aptr__Tslice
     ir_load L0 2147483648;
     ir_or 8 2;
     ir_and A2 POP();
-    ir_jmp_eq POP() 0 cb__Nstd__Nsystem__Nopen__Aptr__Ttuple__Trawptr__TSystemError__Aptr__Tslice__Tpure__Tuint8__AOpenFlags__Aint$if2173$else;
-    ir_make_label cb__Nstd__Nsystem__Nopen__Aptr__Ttuple__Trawptr__TSystemError__Aptr__Tslice__Tpure__Tuint8__AOpenFlags__Aint$if2173$body;
+    ir_jmp_eq POP() 0 cb__Nstd__Nsystem__Nopen__Aptr__Ttuple__Trawptr__TSystemError__Aptr__Tslice__Tpure__Tuint8__AOpenFlags__Aint$if2096$else;
+    ir_make_label cb__Nstd__Nsystem__Nopen__Aptr__Ttuple__Trawptr__TSystemError__Aptr__Tslice__Tpure__Tuint8__AOpenFlags__Aint$if2096$body;
     ir_or L0 1073741824;
     ir_load L0 POP();
-    ir_make_label cb__Nstd__Nsystem__Nopen__Aptr__Ttuple__Trawptr__TSystemError__Aptr__Tslice__Tpure__Tuint8__AOpenFlags__Aint$if2173$else;
+    ir_make_label cb__Nstd__Nsystem__Nopen__Aptr__Ttuple__Trawptr__TSystemError__Aptr__Tslice__Tpure__Tuint8__AOpenFlags__Aint$if2096$else;
     ir_or 1 2;
     ir_load L1 POP();
     ir_load L2 3;
     ir_and A2 1;
-    ir_jmp_eq POP() 0 cb__Nstd__Nsystem__Nopen__Aptr__Ttuple__Trawptr__TSystemError__Aptr__Tslice__Tpure__Tuint8__AOpenFlags__Aint$if2212$else;
-    ir_make_label cb__Nstd__Nsystem__Nopen__Aptr__Ttuple__Trawptr__TSystemError__Aptr__Tslice__Tpure__Tuint8__AOpenFlags__Aint$if2212$body;
+    ir_jmp_eq POP() 0 cb__Nstd__Nsystem__Nopen__Aptr__Ttuple__Trawptr__TSystemError__Aptr__Tslice__Tpure__Tuint8__AOpenFlags__Aint$if2135$else;
+    ir_make_label cb__Nstd__Nsystem__Nopen__Aptr__Ttuple__Trawptr__TSystemError__Aptr__Tslice__Tpure__Tuint8__AOpenFlags__Aint$if2135$body;
     ir_load L2 4;
-    ir_make_label cb__Nstd__Nsystem__Nopen__Aptr__Ttuple__Trawptr__TSystemError__Aptr__Tslice__Tpure__Tuint8__AOpenFlags__Aint$if2212$else;
+    ir_make_label cb__Nstd__Nsystem__Nopen__Aptr__Ttuple__Trawptr__TSystemError__Aptr__Tslice__Tpure__Tuint8__AOpenFlags__Aint$if2135$else;
     ir_load L3 128;
     ir_load L4 0;
     ir_deref A1; (push)
     ir_call CreateFileA [POP() . 0] L0 L1 0 L2 L3 0; (push)
     ir_load L5 POP();
     ir_cast -1; (push)
-    ir_jmp_neq L5 POP() cb__Nstd__Nsystem__Nopen__Aptr__Ttuple__Trawptr__TSystemError__Aptr__Tslice__Tpure__Tuint8__AOpenFlags__Aint$if2264$else;
-    ir_make_label cb__Nstd__Nsystem__Nopen__Aptr__Ttuple__Trawptr__TSystemError__Aptr__Tslice__Tpure__Tuint8__AOpenFlags__Aint$if2264$body;
+    ir_jmp_neq L5 POP() cb__Nstd__Nsystem__Nopen__Aptr__Ttuple__Trawptr__TSystemError__Aptr__Tslice__Tpure__Tuint8__AOpenFlags__Aint$if2187$else;
+    ir_make_label cb__Nstd__Nsystem__Nopen__Aptr__Ttuple__Trawptr__TSystemError__Aptr__Tslice__Tpure__Tuint8__AOpenFlags__Aint$if2187$body;
     ir_deref A0; (push)
     ir_load [POP() . 0] 0;
     ir_deref A0; (push)
     ir_call GetLastError; (push)
     ir_load [POP() . 1] POP();
     ir_return A0;
-    ir_make_label cb__Nstd__Nsystem__Nopen__Aptr__Ttuple__Trawptr__TSystemError__Aptr__Tslice__Tpure__Tuint8__AOpenFlags__Aint$if2264$else;
+    ir_make_label cb__Nstd__Nsystem__Nopen__Aptr__Ttuple__Trawptr__TSystemError__Aptr__Tslice__Tpure__Tuint8__AOpenFlags__Aint$if2187$else;
     ir_and A2 8;
-    ir_jmp_eq POP() 0 cb__Nstd__Nsystem__Nopen__Aptr__Ttuple__Trawptr__TSystemError__Aptr__Tslice__Tpure__Tuint8__AOpenFlags__Aint$if2280$else;
-    ir_make_label cb__Nstd__Nsystem__Nopen__Aptr__Ttuple__Trawptr__TSystemError__Aptr__Tslice__Tpure__Tuint8__AOpenFlags__Aint$if2280$body;
+    ir_jmp_eq POP() 0 cb__Nstd__Nsystem__Nopen__Aptr__Ttuple__Trawptr__TSystemError__Aptr__Tslice__Tpure__Tuint8__AOpenFlags__Aint$if2203$else;
+    ir_make_label cb__Nstd__Nsystem__Nopen__Aptr__Ttuple__Trawptr__TSystemError__Aptr__Tslice__Tpure__Tuint8__AOpenFlags__Aint$if2203$body;
     ir_call SetFilePointer L5 0 0 2; (push)
     ir_noop POP();
-    ir_make_label cb__Nstd__Nsystem__Nopen__Aptr__Ttuple__Trawptr__TSystemError__Aptr__Tslice__Tpure__Tuint8__AOpenFlags__Aint$if2280$else;
+    ir_make_label cb__Nstd__Nsystem__Nopen__Aptr__Ttuple__Trawptr__TSystemError__Aptr__Tslice__Tpure__Tuint8__AOpenFlags__Aint$if2203$else;
     ir_deref A0; (push)
     ir_load [POP() . 0] L5;
     ir_deref A0; (push)
@@ -906,11 +902,11 @@ func cb__Nstd__Nsystem__Nstat__Arawptr__Aptr__TStat -> SystemError
     ir_load [L0 . 9] 0;
     ir_load_addr L0; (push)
     ir_call GetFileInformationByHandle A0 POP(); (push)
-    ir_jmp_neq POP() 0 cb__Nstd__Nsystem__Nstat__Arawptr__Aptr__TStat$if2359$else;
-    ir_make_label cb__Nstd__Nsystem__Nstat__Arawptr__Aptr__TStat$if2359$body;
+    ir_jmp_neq POP() 0 cb__Nstd__Nsystem__Nstat__Arawptr__Aptr__TStat$if2282$else;
+    ir_make_label cb__Nstd__Nsystem__Nstat__Arawptr__Aptr__TStat$if2282$body;
     ir_call GetLastError; (push)
     ir_return POP();
-    ir_make_label cb__Nstd__Nsystem__Nstat__Arawptr__Aptr__TStat$if2359$else;
+    ir_make_label cb__Nstd__Nsystem__Nstat__Arawptr__Aptr__TStat$if2282$else;
     ir_deref A1; (push)
     ir_or [L0 . 5] [L0 . 6];
     ir_cast POP(); (push)
@@ -934,18 +930,18 @@ func cb__Nstd__Nsystem__Nstat__Aptr__Tslice__Tpure__Tuint8__Aptr__TStat -> Syste
     ir_call cb__Nstd__Nsystem__Nopen__Aptr__Ttuple__Trawptr__TSystemError__Aptr__Tslice__Tpure__Tuint8__AOpenFlags__Aint POP() A0 0 0; (push)
     ir_load L1 [L0 . 0];
     ir_load L2 [L0 . 1];
-    ir_jmp_eq L2 0 cb__Nstd__Nsystem__Nstat__Aptr__Tslice__Tpure__Tuint8__Aptr__TStat$if2438$else;
-    ir_make_label cb__Nstd__Nsystem__Nstat__Aptr__Tslice__Tpure__Tuint8__Aptr__TStat$if2438$body;
+    ir_jmp_eq L2 0 cb__Nstd__Nsystem__Nstat__Aptr__Tslice__Tpure__Tuint8__Aptr__TStat$if2361$else;
+    ir_make_label cb__Nstd__Nsystem__Nstat__Aptr__Tslice__Tpure__Tuint8__Aptr__TStat$if2361$body;
     ir_return L2;
-    ir_make_label cb__Nstd__Nsystem__Nstat__Aptr__Tslice__Tpure__Tuint8__Aptr__TStat$if2438$else;
+    ir_make_label cb__Nstd__Nsystem__Nstat__Aptr__Tslice__Tpure__Tuint8__Aptr__TStat$if2361$else;
     ir_call cb__Nstd__Nsystem__Nstat__Arawptr__Aptr__TStat L1 A1; (push)
     ir_load L0 POP();
-    ir_jmp_eq L2 0 cb__Nstd__Nsystem__Nstat__Aptr__Tslice__Tpure__Tuint8__Aptr__TStat$if2462$else;
-    ir_make_label cb__Nstd__Nsystem__Nstat__Aptr__Tslice__Tpure__Tuint8__Aptr__TStat$if2462$body;
+    ir_jmp_eq L2 0 cb__Nstd__Nsystem__Nstat__Aptr__Tslice__Tpure__Tuint8__Aptr__TStat$if2385$else;
+    ir_make_label cb__Nstd__Nsystem__Nstat__Aptr__Tslice__Tpure__Tuint8__Aptr__TStat$if2385$body;
     ir_call cb__Nstd__Nsystem__Nclose__Arawptr L1; (push)
     ir_noop POP();
     ir_return L2;
-    ir_make_label cb__Nstd__Nsystem__Nstat__Aptr__Tslice__Tpure__Tuint8__Aptr__TStat$if2462$else;
+    ir_make_label cb__Nstd__Nsystem__Nstat__Aptr__Tslice__Tpure__Tuint8__Aptr__TStat$if2385$else;
     ir_call cb__Nstd__Nsystem__Nclose__Arawptr L1; (push)
     ir_noop POP();
     ir_return 0;
@@ -976,11 +972,11 @@ func cb__Nstd__Nsystem__Nunlink__Aptr__Tslice__Tpure__Tuint8 -> SystemError
     arg #0 path: ptr__Tslice__Tpure__Tuint8;
     ir_deref A0; (push)
     ir_call DeleteFileA [POP() . 0]; (push)
-    ir_jmp_neq POP() 0 cb__Nstd__Nsystem__Nunlink__Aptr__Tslice__Tpure__Tuint8$if2568$else;
-    ir_make_label cb__Nstd__Nsystem__Nunlink__Aptr__Tslice__Tpure__Tuint8$if2568$body;
+    ir_jmp_neq POP() 0 cb__Nstd__Nsystem__Nunlink__Aptr__Tslice__Tpure__Tuint8$if2491$else;
+    ir_make_label cb__Nstd__Nsystem__Nunlink__Aptr__Tslice__Tpure__Tuint8$if2491$body;
     ir_call GetLastError; (push)
     ir_return POP();
-    ir_make_label cb__Nstd__Nsystem__Nunlink__Aptr__Tslice__Tpure__Tuint8$if2568$else;
+    ir_make_label cb__Nstd__Nsystem__Nunlink__Aptr__Tslice__Tpure__Tuint8$if2491$else;
     ir_return 0;
 endf
 
@@ -988,11 +984,11 @@ func cb__Nstd__Nsystem__Nremove__Aptr__Tslice__Tpure__Tuint8 -> SystemError
     arg #0 path: ptr__Tslice__Tpure__Tuint8;
     ir_deref A0; (push)
     ir_call RemoveDirectoryA [POP() . 0]; (push)
-    ir_jmp_neq POP() 0 cb__Nstd__Nsystem__Nremove__Aptr__Tslice__Tpure__Tuint8$if2603$else;
-    ir_make_label cb__Nstd__Nsystem__Nremove__Aptr__Tslice__Tpure__Tuint8$if2603$body;
+    ir_jmp_neq POP() 0 cb__Nstd__Nsystem__Nremove__Aptr__Tslice__Tpure__Tuint8$if2526$else;
+    ir_make_label cb__Nstd__Nsystem__Nremove__Aptr__Tslice__Tpure__Tuint8$if2526$body;
     ir_call GetLastError; (push)
     ir_return POP();
-    ir_make_label cb__Nstd__Nsystem__Nremove__Aptr__Tslice__Tpure__Tuint8$if2603$else;
+    ir_make_label cb__Nstd__Nsystem__Nremove__Aptr__Tslice__Tpure__Tuint8$if2526$else;
     ir_return 0;
 endf
 
@@ -1002,11 +998,11 @@ func cb__Nstd__Nsystem__Nrename__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpur
     ir_deref A0; (push)
     ir_deref A1; (push)
     ir_call MoveFileA [POP() . 0] [POP() . 0]; (push)
-    ir_jmp_neq POP() 0 cb__Nstd__Nsystem__Nrename__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8$if2649$else;
-    ir_make_label cb__Nstd__Nsystem__Nrename__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8$if2649$body;
+    ir_jmp_neq POP() 0 cb__Nstd__Nsystem__Nrename__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8$if2572$else;
+    ir_make_label cb__Nstd__Nsystem__Nrename__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8$if2572$body;
     ir_call GetLastError; (push)
     ir_return POP();
-    ir_make_label cb__Nstd__Nsystem__Nrename__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8$if2649$else;
+    ir_make_label cb__Nstd__Nsystem__Nrename__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8$if2572$else;
     ir_return 0;
 endf
 
@@ -1016,11 +1012,11 @@ func cb__Nstd__Nsystem__Ncopy__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure_
     ir_deref A0; (push)
     ir_deref A1; (push)
     ir_call CopyFileA [POP() . 0] [POP() . 0] 0; (push)
-    ir_jmp_neq POP() 0 cb__Nstd__Nsystem__Ncopy__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8$if2696$else;
-    ir_make_label cb__Nstd__Nsystem__Ncopy__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8$if2696$body;
+    ir_jmp_neq POP() 0 cb__Nstd__Nsystem__Ncopy__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8$if2619$else;
+    ir_make_label cb__Nstd__Nsystem__Ncopy__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8$if2619$body;
     ir_call GetLastError; (push)
     ir_return POP();
-    ir_make_label cb__Nstd__Nsystem__Ncopy__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8$if2696$else;
+    ir_make_label cb__Nstd__Nsystem__Ncopy__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8$if2619$else;
     ir_return 0;
 endf
 
@@ -1028,11 +1024,11 @@ func cb__Nstd__Nsystem__Nmkdir__Aptr__Tslice__Tpure__Tuint8 -> SystemError
     arg #0 path: ptr__Tslice__Tpure__Tuint8;
     ir_deref A0; (push)
     ir_call CreateDirectoryA [POP() . 0] 0; (push)
-    ir_jmp_neq POP() 0 cb__Nstd__Nsystem__Nmkdir__Aptr__Tslice__Tpure__Tuint8$if2732$else;
-    ir_make_label cb__Nstd__Nsystem__Nmkdir__Aptr__Tslice__Tpure__Tuint8$if2732$body;
+    ir_jmp_neq POP() 0 cb__Nstd__Nsystem__Nmkdir__Aptr__Tslice__Tpure__Tuint8$if2655$else;
+    ir_make_label cb__Nstd__Nsystem__Nmkdir__Aptr__Tslice__Tpure__Tuint8$if2655$body;
     ir_call GetLastError; (push)
     ir_return POP();
-    ir_make_label cb__Nstd__Nsystem__Nmkdir__Aptr__Tslice__Tpure__Tuint8$if2732$else;
+    ir_make_label cb__Nstd__Nsystem__Nmkdir__Aptr__Tslice__Tpure__Tuint8$if2655$else;
     ir_return 0;
 endf
 
@@ -1086,14 +1082,14 @@ func cb__Nstd__Nsystem__NreadProcessChar__Arawptr__Aptr__Tuint8 -> bool
     ir_load_addr L0; (push)
     ir_call ReadFile A0 A1 1 POP() 0; (push)
     ir_load L1 POP();
-    ir_jmp_eq L1 0 cb__Nstd__Nsystem__NreadProcessChar__Arawptr__Aptr__Tuint8$if8539$else;
-    ir_jmp_neq L0 1 cb__Nstd__Nsystem__NreadProcessChar__Arawptr__Aptr__Tuint8$if8539$else;
-    ir_make_label cb__Nstd__Nsystem__NreadProcessChar__Arawptr__Aptr__Tuint8$if8539$body;
+    ir_jmp_eq L1 0 cb__Nstd__Nsystem__NreadProcessChar__Arawptr__Aptr__Tuint8$if8448$else;
+    ir_jmp_neq L0 1 cb__Nstd__Nsystem__NreadProcessChar__Arawptr__Aptr__Tuint8$if8448$else;
+    ir_make_label cb__Nstd__Nsystem__NreadProcessChar__Arawptr__Aptr__Tuint8$if8448$body;
     ir_load L2 1;
-    ir_jmp cb__Nstd__Nsystem__NreadProcessChar__Arawptr__Aptr__Tuint8$if8539$end;
-    ir_make_label cb__Nstd__Nsystem__NreadProcessChar__Arawptr__Aptr__Tuint8$if8539$else;
+    ir_jmp cb__Nstd__Nsystem__NreadProcessChar__Arawptr__Aptr__Tuint8$if8448$end;
+    ir_make_label cb__Nstd__Nsystem__NreadProcessChar__Arawptr__Aptr__Tuint8$if8448$else;
     ir_load L2 0;
-    ir_make_label cb__Nstd__Nsystem__NreadProcessChar__Arawptr__Aptr__Tuint8$if8539$end;
+    ir_make_label cb__Nstd__Nsystem__NreadProcessChar__Arawptr__Aptr__Tuint8$if8448$end;
     ir_return L2;
 endf
 
@@ -1110,7 +1106,7 @@ func cb__Nstd__Nsystem__NexecProcess__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice_
     local #7 saAttr: SECURITY_ATTRIBUTES;
     local #8 success: bool;
     local #9 err: SystemError;
-    local #10 $cbT28: nullableptr__Tuint8;
+    local #10 $cbT28: ptr__Tuint8;
     local #11 $cbT29: slice__Tpure__Tuint8;
     ir_load L0 0;
     ir_load L1 0;
@@ -1126,20 +1122,20 @@ func cb__Nstd__Nsystem__NexecProcess__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice_
     ir_load_addr L1; (push)
     ir_load_addr L7; (push)
     ir_call CreatePipe POP() POP() POP() 0; (push)
-    ir_jmp_neq POP() 0 cb__Nstd__Nsystem__NexecProcess__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8$if3316$else;
-    ir_make_label cb__Nstd__Nsystem__NexecProcess__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8$if3316$body;
+    ir_jmp_neq POP() 0 cb__Nstd__Nsystem__NexecProcess__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8$if3239$else;
+    ir_make_label cb__Nstd__Nsystem__NexecProcess__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8$if3239$body;
     ir_call GetLastError; (push)
     ir_return POP();
-    ir_make_label cb__Nstd__Nsystem__NexecProcess__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8$if3316$else;
+    ir_make_label cb__Nstd__Nsystem__NexecProcess__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8$if3239$else;
     ir_load_addr L2; (push)
     ir_load_addr L3; (push)
     ir_load_addr L7; (push)
     ir_call CreatePipe POP() POP() POP() 0; (push)
-    ir_jmp_neq POP() 0 cb__Nstd__Nsystem__NexecProcess__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8$if3338$else;
-    ir_make_label cb__Nstd__Nsystem__NexecProcess__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8$if3338$body;
+    ir_jmp_neq POP() 0 cb__Nstd__Nsystem__NexecProcess__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8$if3261$else;
+    ir_make_label cb__Nstd__Nsystem__NexecProcess__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8$if3261$body;
     ir_call GetLastError; (push)
     ir_return POP();
-    ir_make_label cb__Nstd__Nsystem__NexecProcess__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8$if3338$else;
+    ir_make_label cb__Nstd__Nsystem__NexecProcess__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8$if3261$else;
     ir_load [L4 . 0] 0;
     ir_load [L4 . 1] 0;
     ir_load [L4 . 2] 0;
@@ -1170,33 +1166,33 @@ func cb__Nstd__Nsystem__NexecProcess__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice_
     ir_load [L5 . 3] 0;
     ir_deref A0; (push)
     ir_deref A1; (push)
-    ir_jmp_lte [POP() . 1] 0 cb__Nstd__Nsystem__NexecProcess__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8$if8572$else;
-    ir_make_label cb__Nstd__Nsystem__NexecProcess__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8$if8572$body;
+    ir_jmp_lte [POP() . 1] 0 cb__Nstd__Nsystem__NexecProcess__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8$if8481$else;
+    ir_make_label cb__Nstd__Nsystem__NexecProcess__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8$if8481$body;
     ir_deref A1; (push)
     ir_load L10 [POP() . 0];
-    ir_jmp cb__Nstd__Nsystem__NexecProcess__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8$if8572$end;
-    ir_make_label cb__Nstd__Nsystem__NexecProcess__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8$if8572$else;
+    ir_jmp cb__Nstd__Nsystem__NexecProcess__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8$if8481$end;
+    ir_make_label cb__Nstd__Nsystem__NexecProcess__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8$if8481$else;
     ir_load L10 0;
-    ir_make_label cb__Nstd__Nsystem__NexecProcess__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8$if8572$end;
+    ir_make_label cb__Nstd__Nsystem__NexecProcess__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8$if8481$end;
     ir_load_addr L4; (push)
     ir_load_addr L5; (push)
     ir_call CreateProcessA 0 [POP() . 0] 0 0 1 134217728 0 L10 POP() POP(); (push)
     ir_load L8 POP();
-    ir_jmp_neq L8 0 cb__Nstd__Nsystem__NexecProcess__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8$if3433$else;
-    ir_make_label cb__Nstd__Nsystem__NexecProcess__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8$if3433$body;
+    ir_jmp_neq L8 0 cb__Nstd__Nsystem__NexecProcess__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8$if3356$else;
+    ir_make_label cb__Nstd__Nsystem__NexecProcess__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8$if3356$body;
     ir_call GetLastError; (push)
     ir_return POP();
-    ir_make_label cb__Nstd__Nsystem__NexecProcess__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8$if3433$else;
+    ir_make_label cb__Nstd__Nsystem__NexecProcess__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8$if3356$else;
     ir_call CloseHandle L1; (push)
     ir_noop POP();
     ir_call CloseHandle L2; (push)
     ir_noop POP();
     ir_load L6 0;
-    ir_make_label cb__Nstd__Nsystem__NexecProcess__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8$w3475$cond;
+    ir_make_label cb__Nstd__Nsystem__NexecProcess__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8$w3398$cond;
     ir_load_addr L6; (push)
     ir_call cb__Nstd__Nsystem__NreadProcessChar__Arawptr__Aptr__Tuint8 L0 POP(); (push)
-    ir_jmp_eq POP() 0 cb__Nstd__Nsystem__NexecProcess__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8$w3475$end;
-    ir_make_label cb__Nstd__Nsystem__NexecProcess__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8$w3475$body;
+    ir_jmp_eq POP() 0 cb__Nstd__Nsystem__NexecProcess__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8$w3398$end;
+    ir_make_label cb__Nstd__Nsystem__NexecProcess__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8$w3398$body;
     ir_load_addr L6; (push)
     ir_load [L11 . 0] POP();
     ir_load [L11 . 1] 1;
@@ -1204,15 +1200,15 @@ func cb__Nstd__Nsystem__NexecProcess__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice_
     ir_load_addr L11; (push)
     ir_call cb__Nstd__Nsystem__Nwrite__Arawptr__Aptr__Tslice__Tpure__Tuint8 POP() POP(); (push)
     ir_noop POP();
-    ir_jmp cb__Nstd__Nsystem__NexecProcess__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8$w3475$cond;
-    ir_make_label cb__Nstd__Nsystem__NexecProcess__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8$w3475$end;
+    ir_jmp cb__Nstd__Nsystem__NexecProcess__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8$w3398$cond;
+    ir_make_label cb__Nstd__Nsystem__NexecProcess__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8$w3398$end;
     ir_call GetLastError; (push)
     ir_load L9 POP();
-    ir_jmp_eq L9 0 cb__Nstd__Nsystem__NexecProcess__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8$if3501$else;
-    ir_jmp_eq L9 109 cb__Nstd__Nsystem__NexecProcess__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8$if3501$else;
-    ir_make_label cb__Nstd__Nsystem__NexecProcess__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8$if3501$body;
+    ir_jmp_eq L9 0 cb__Nstd__Nsystem__NexecProcess__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8$if3424$else;
+    ir_jmp_eq L9 109 cb__Nstd__Nsystem__NexecProcess__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8$if3424$else;
+    ir_make_label cb__Nstd__Nsystem__NexecProcess__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8$if3424$body;
     ir_return L9;
-    ir_make_label cb__Nstd__Nsystem__NexecProcess__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8$if3501$else;
+    ir_make_label cb__Nstd__Nsystem__NexecProcess__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8$if3424$else;
     ir_call CloseHandle L3; (push)
     ir_noop POP();
     ir_call CloseHandle L0; (push)
@@ -1243,15 +1239,15 @@ func cb__Nstd__Nsystem__NcreateThread__Aptr__Ttuple__TThreadHandle__TSystemError
     ir_call CreateThread 0 0 A1 A2 0 POP(); (push)
     ir_load L1 POP();
     ir_cast -1; (push)
-    ir_jmp_neq L1 POP() cb__Nstd__Nsystem__NcreateThread__Aptr__Ttuple__TThreadHandle__TSystemError__Afuncptr__Trawptr__Tvoid__Arawptr$if6889$else;
-    ir_make_label cb__Nstd__Nsystem__NcreateThread__Aptr__Ttuple__TThreadHandle__TSystemError__Afuncptr__Trawptr__Tvoid__Arawptr$if6889$body;
+    ir_jmp_neq L1 POP() cb__Nstd__Nsystem__NcreateThread__Aptr__Ttuple__TThreadHandle__TSystemError__Afuncptr__Trawptr__Tvoid__Arawptr$if6800$else;
+    ir_make_label cb__Nstd__Nsystem__NcreateThread__Aptr__Ttuple__TThreadHandle__TSystemError__Afuncptr__Trawptr__Tvoid__Arawptr$if6800$body;
     ir_deref A0; (push)
     ir_load [POP() . 0] 0;
     ir_deref A0; (push)
     ir_call GetLastError; (push)
     ir_load [POP() . 1] POP();
     ir_return A0;
-    ir_make_label cb__Nstd__Nsystem__NcreateThread__Aptr__Ttuple__TThreadHandle__TSystemError__Afuncptr__Trawptr__Tvoid__Arawptr$if6889$else;
+    ir_make_label cb__Nstd__Nsystem__NcreateThread__Aptr__Ttuple__TThreadHandle__TSystemError__Afuncptr__Trawptr__Tvoid__Arawptr$if6800$else;
     ir_deref A0; (push)
     ir_load [POP() . 0] L1;
     ir_deref A0; (push)
@@ -1289,7 +1285,7 @@ endf
 
 func cb__Nstd__Nsystem__NcreateMutex__Aptr__Ttuple__TMutexHandle__TSystemError -> ptr__Ttuple__TMutexHandle__TSystemError
     arg #0 $cb_agg_ret: ptr__Ttuple__TMutexHandle__TSystemError;
-    local #0 cs: nullableptr__TCRITICAL_SECTION;
+    local #0 cs: ptr__TCRITICAL_SECTION;
     ir_call cb__Nstd__Nsystem__Nalloc__Ausize 48; (push)
     ir_load L0 POP();
     ir_call InitializeCriticalSection L0;
@@ -1312,7 +1308,7 @@ endf
 
 func cb__Nstd__Nsystem__Ndestroy__AMutexHandle -> void
     arg #0 m: MutexHandle;
-    local #0 cs: nullableptr__TCRITICAL_SECTION;
+    local #0 cs: ptr__TCRITICAL_SECTION;
     ir_load L0 A0;
     ir_call DeleteCriticalSection L0;
     ir_call cb__Nstd__Nsystem__Nfree__Arawptr L0;
@@ -1337,32 +1333,32 @@ func cb__Ntest__NstringEquals__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure_
     local #1 i: int;
     ir_deref A0; (push)
     ir_deref A1; (push)
-    ir_jmp_eq [POP() . 1] [POP() . 1] cb__Ntest__NstringEquals__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8$if4228$else;
-    ir_make_label cb__Ntest__NstringEquals__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8$if4228$body;
+    ir_jmp_eq [POP() . 1] [POP() . 1] cb__Ntest__NstringEquals__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8$if4151$else;
+    ir_make_label cb__Ntest__NstringEquals__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8$if4151$body;
     ir_return 0;
-    ir_make_label cb__Ntest__NstringEquals__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8$if4228$else;
+    ir_make_label cb__Ntest__NstringEquals__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8$if4151$else;
     ir_load [L0 . 0] 0;
     ir_deref A0; (push)
     ir_load [L0 . 1] [POP() . 1];
     ir_load L1 [L0 . 0];
-    ir_make_label cb__Ntest__NstringEquals__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8$f4252$cond;
+    ir_make_label cb__Ntest__NstringEquals__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8$f4175$cond;
     ir_cast L1; (push)
-    ir_jmp_gte POP() [L0 . 1] cb__Ntest__NstringEquals__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8$f4252$end;
-    ir_make_label cb__Ntest__NstringEquals__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8$f4252$body;
+    ir_jmp_gte POP() [L0 . 1] cb__Ntest__NstringEquals__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8$f4175$end;
+    ir_make_label cb__Ntest__NstringEquals__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8$f4175$body;
     ir_deref A0; (push)
     ir_deref [POP() . 0]; (push)
     ir_index POP() L1; (push)
     ir_deref A1; (push)
     ir_deref [POP() . 0]; (push)
     ir_index POP() L1; (push)
-    ir_jmp_eq POP() POP() cb__Ntest__NstringEquals__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8$if4249$else;
-    ir_make_label cb__Ntest__NstringEquals__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8$if4249$body;
+    ir_jmp_eq POP() POP() cb__Ntest__NstringEquals__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8$if4172$else;
+    ir_make_label cb__Ntest__NstringEquals__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8$if4172$body;
     ir_return 0;
-    ir_make_label cb__Ntest__NstringEquals__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8$if4249$else;
+    ir_make_label cb__Ntest__NstringEquals__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8$if4172$else;
     ir_add L1 1; (push)
     ir_load L1 POP();
-    ir_jmp cb__Ntest__NstringEquals__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8$f4252$cond;
-    ir_make_label cb__Ntest__NstringEquals__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8$f4252$end;
+    ir_jmp cb__Ntest__NstringEquals__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8$f4175$cond;
+    ir_make_label cb__Ntest__NstringEquals__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8$f4175$end;
     ir_return 1;
 endf
 
@@ -1378,11 +1374,11 @@ func cb__Ntest__NintToString__Aint__Aint__Aptr__Tslice__Tuint8 -> int
     local #5 ptr1: ptr__Tuint8;
     local #6 tmp_char: uint8;
     local #7 tpl_str: slice__Tpure__Tuint8;
-    ir_jmp_lt A1 2 cb__Ntest__NintToString__Aint__Aint__Aptr__Tslice__Tuint8$if4289$body;
-    ir_jmp_lte A1 36 cb__Ntest__NintToString__Aint__Aint__Aptr__Tslice__Tuint8$if4289$else;
-    ir_make_label cb__Ntest__NintToString__Aint__Aint__Aptr__Tslice__Tuint8$if4289$body;
+    ir_jmp_lt A1 2 cb__Ntest__NintToString__Aint__Aint__Aptr__Tslice__Tuint8$if4212$body;
+    ir_jmp_lte A1 36 cb__Ntest__NintToString__Aint__Aint__Aptr__Tslice__Tuint8$if4212$else;
+    ir_make_label cb__Ntest__NintToString__Aint__Aint__Aptr__Tslice__Tuint8$if4212$body;
     ir_return 0;
-    ir_make_label cb__Ntest__NintToString__Aint__Aint__Aptr__Tslice__Tuint8$if4289$else;
+    ir_make_label cb__Ntest__NintToString__Aint__Aint__Aptr__Tslice__Tuint8$if4212$else;
     ir_deref A2; (push)
     ir_copy L0 POP() 16;
     ir_load_addr STR4; (push)
@@ -1392,16 +1388,16 @@ func cb__Ntest__NintToString__Aint__Aint__Aptr__Tslice__Tuint8 -> int
     ir_load L2 0;
     ir_neg 1; (push)
     ir_load L3 POP();
-    ir_make_label cb__Ntest__NintToString__Aint__Aint__Aptr__Tslice__Tuint8$w4364$cond;
-    ir_jmp_eq L3 0 cb__Ntest__NintToString__Aint__Aint__Aptr__Tslice__Tuint8$w4364$end;
-    ir_make_label cb__Ntest__NintToString__Aint__Aint__Aptr__Tslice__Tuint8$w4364$body;
+    ir_make_label cb__Ntest__NintToString__Aint__Aint__Aptr__Tslice__Tuint8$w4287$cond;
+    ir_jmp_eq L3 0 cb__Ntest__NintToString__Aint__Aint__Aptr__Tslice__Tuint8$w4287$end;
+    ir_make_label cb__Ntest__NintToString__Aint__Aint__Aptr__Tslice__Tuint8$w4287$body;
     ir_cast L2; (push)
-    ir_jmp_lt POP() [L0 . 1] cb__Ntest__NintToString__Aint__Aint__Aptr__Tslice__Tuint8$if4329$else;
-    ir_make_label cb__Ntest__NintToString__Aint__Aint__Aptr__Tslice__Tuint8$if4329$body;
+    ir_jmp_lt POP() [L0 . 1] cb__Ntest__NintToString__Aint__Aint__Aptr__Tslice__Tuint8$if4252$else;
+    ir_make_label cb__Ntest__NintToString__Aint__Aint__Aptr__Tslice__Tuint8$if4252$body;
     ir_sub L2 1; (push)
     ir_load L2 POP();
-    ir_jmp cb__Ntest__NintToString__Aint__Aint__Aptr__Tslice__Tuint8$w4364$end;
-    ir_make_label cb__Ntest__NintToString__Aint__Aint__Aptr__Tslice__Tuint8$if4329$else;
+    ir_jmp cb__Ntest__NintToString__Aint__Aint__Aptr__Tslice__Tuint8$w4287$end;
+    ir_make_label cb__Ntest__NintToString__Aint__Aint__Aptr__Tslice__Tuint8$if4252$else;
     ir_load L1 A0;
     ir_div A0 A1; (push)
     ir_load A0 POP();
@@ -1416,8 +1412,8 @@ func cb__Ntest__NintToString__Aint__Aint__Aptr__Tslice__Tuint8 -> int
     ir_load POP() POP();
     ir_add L2 1; (push)
     ir_load L2 POP();
-    ir_jmp cb__Ntest__NintToString__Aint__Aint__Aptr__Tslice__Tuint8$w4364$cond;
-    ir_make_label cb__Ntest__NintToString__Aint__Aint__Aptr__Tslice__Tuint8$w4364$end;
+    ir_jmp cb__Ntest__NintToString__Aint__Aint__Aptr__Tslice__Tuint8$w4287$cond;
+    ir_make_label cb__Ntest__NintToString__Aint__Aint__Aptr__Tslice__Tuint8$w4287$end;
     ir_deref [L0 . 0]; (push)
     ir_index POP() L2; (push)
     ir_load_addr POP(); (push)
@@ -1426,21 +1422,21 @@ func cb__Ntest__NintToString__Aint__Aint__Aptr__Tslice__Tuint8 -> int
     ir_index POP() 0; (push)
     ir_load_addr POP(); (push)
     ir_load L5 POP();
-    ir_jmp_gte L1 0 cb__Ntest__NintToString__Aint__Aint__Aptr__Tslice__Tuint8$if4404$else;
-    ir_make_label cb__Ntest__NintToString__Aint__Aint__Aptr__Tslice__Tuint8$if4404$body;
+    ir_jmp_gte L1 0 cb__Ntest__NintToString__Aint__Aint__Aptr__Tslice__Tuint8$if4327$else;
+    ir_make_label cb__Ntest__NintToString__Aint__Aint__Aptr__Tslice__Tuint8$if4327$body;
     ir_deref L4; (push)
     ir_load POP() #45;
     ir_add L4 1; (push)
     ir_load L4 POP();
-    ir_make_label cb__Ntest__NintToString__Aint__Aint__Aptr__Tslice__Tuint8$if4404$else;
+    ir_make_label cb__Ntest__NintToString__Aint__Aint__Aptr__Tslice__Tuint8$if4327$else;
     ir_deref L4; (push)
     ir_load POP() #0;
     ir_sub L4 1; (push)
     ir_load L4 POP();
     ir_load L6 0;
-    ir_make_label cb__Ntest__NintToString__Aint__Aint__Aptr__Tslice__Tuint8$w4449$cond;
-    ir_jmp_gte L5 L4 cb__Ntest__NintToString__Aint__Aint__Aptr__Tslice__Tuint8$w4449$end;
-    ir_make_label cb__Ntest__NintToString__Aint__Aint__Aptr__Tslice__Tuint8$w4449$body;
+    ir_make_label cb__Ntest__NintToString__Aint__Aint__Aptr__Tslice__Tuint8$w4372$cond;
+    ir_jmp_gte L5 L4 cb__Ntest__NintToString__Aint__Aint__Aptr__Tslice__Tuint8$w4372$end;
+    ir_make_label cb__Ntest__NintToString__Aint__Aint__Aptr__Tslice__Tuint8$w4372$body;
     ir_deref L4; (push)
     ir_load L6 POP();
     ir_deref L4; (push)
@@ -1452,8 +1448,8 @@ func cb__Ntest__NintToString__Aint__Aint__Aptr__Tslice__Tuint8 -> int
     ir_load POP() L6;
     ir_add L5 1; (push)
     ir_load L5 POP();
-    ir_jmp cb__Ntest__NintToString__Aint__Aint__Aptr__Tslice__Tuint8$w4449$cond;
-    ir_make_label cb__Ntest__NintToString__Aint__Aint__Aptr__Tslice__Tuint8$w4449$end;
+    ir_jmp cb__Ntest__NintToString__Aint__Aint__Aptr__Tslice__Tuint8$w4372$cond;
+    ir_make_label cb__Ntest__NintToString__Aint__Aint__Aptr__Tslice__Tuint8$w4372$end;
     ir_return L2;
 endf
 
@@ -1577,13 +1573,13 @@ func cb__Ntest__NreadFile__Aptr__Tslice__Tuint8__Aptr__Tslice__Tpure__Tuint8 -> 
     ir_call cb__Nstd__Nsystem__Nopen__Aptr__Ttuple__Trawptr__TSystemError__Aptr__Tslice__Tpure__Tuint8__AOpenFlags__Aint POP() A1 0 0; (push)
     ir_load L4 [L3 . 0];
     ir_load L5 [L3 . 1];
-    ir_jmp_eq L5 0 cb__Ntest__NreadFile__Aptr__Tslice__Tuint8__Aptr__Tslice__Tpure__Tuint8$if4606$else;
-    ir_make_label cb__Ntest__NreadFile__Aptr__Tslice__Tuint8__Aptr__Tslice__Tpure__Tuint8$if4606$body;
+    ir_jmp_eq L5 0 cb__Ntest__NreadFile__Aptr__Tslice__Tuint8__Aptr__Tslice__Tpure__Tuint8$if4526$else;
+    ir_make_label cb__Ntest__NreadFile__Aptr__Tslice__Tuint8__Aptr__Tslice__Tpure__Tuint8$if4526$body;
     ir_load [L1 . 1] 0;
     ir_deref A0; (push)
     ir_copy POP() L1 16;
     ir_return A0;
-    ir_make_label cb__Ntest__NreadFile__Aptr__Tslice__Tuint8__Aptr__Tslice__Tpure__Tuint8$if4606$else;
+    ir_make_label cb__Ntest__NreadFile__Aptr__Tslice__Tuint8__Aptr__Tslice__Tpure__Tuint8$if4526$else;
     ir_copy L7 L1 16;
     ir_load_addr L7; (push)
     ir_call cb__Nstd__Nsystem__Nread__Arawptr__Aptr__Tslice__Tuint8 L4 POP(); (push)
@@ -1721,11 +1717,11 @@ func cb__Ntest__Ntest_file_move -> bool
     ir_load_addr L5; (push)
     ir_call cb__Nstd__Nsystem__Nrename__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8 POP() POP(); (push)
     ir_load L1 POP();
-    ir_jmp_eq L1 0 cb__Ntest__Ntest_file_move$if4803$else;
-    ir_make_label cb__Ntest__Ntest_file_move$if4803$body;
+    ir_jmp_eq L1 0 cb__Ntest__Ntest_file_move$if4720$else;
+    ir_make_label cb__Ntest__Ntest_file_move$if4720$body;
     ir_call cb__Nstd__Nsystem__Nfree__Arawptr [L0 . 0];
     ir_return 0;
-    ir_make_label cb__Ntest__Ntest_file_move$if4803$else;
+    ir_make_label cb__Ntest__Ntest_file_move$if4720$else;
     ir_load_addr STR9; (push)
     ir_load [L8 . 0] POP();
     ir_load [L8 . 1] 9;
@@ -1779,11 +1775,11 @@ func cb__Ntest__Ntest_file_copy -> bool
     ir_load_addr L5; (push)
     ir_call cb__Nstd__Nsystem__Ncopy__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8 POP() POP(); (push)
     ir_load L1 POP();
-    ir_jmp_eq L1 0 cb__Ntest__Ntest_file_copy$if4877$else;
-    ir_make_label cb__Ntest__Ntest_file_copy$if4877$body;
+    ir_jmp_eq L1 0 cb__Ntest__Ntest_file_copy$if4794$else;
+    ir_make_label cb__Ntest__Ntest_file_copy$if4794$body;
     ir_call cb__Nstd__Nsystem__Nfree__Arawptr [L0 . 0];
     ir_return 0;
-    ir_make_label cb__Ntest__Ntest_file_copy$if4877$else;
+    ir_make_label cb__Ntest__Ntest_file_copy$if4794$else;
     ir_load_addr STR10; (push)
     ir_load [L7 . 0] POP();
     ir_load [L7 . 1] 13;
@@ -1901,20 +1897,20 @@ func cb__Ntest__Ntest_file_unlink -> bool
     ir_load_addr L0; (push)
     ir_call cb__Nstd__Nsystem__Nstat__Aptr__Tslice__Tpure__Tuint8__Aptr__TStat POP() POP(); (push)
     ir_load L1 POP();
-    ir_jmp_eq L1 0 cb__Ntest__Ntest_file_unlink$if5051$else;
-    ir_make_label cb__Ntest__Ntest_file_unlink$if5051$body;
+    ir_jmp_eq L1 0 cb__Ntest__Ntest_file_unlink$if4965$else;
+    ir_make_label cb__Ntest__Ntest_file_unlink$if4965$body;
     ir_return 0;
-    ir_make_label cb__Ntest__Ntest_file_unlink$if5051$else;
+    ir_make_label cb__Ntest__Ntest_file_unlink$if4965$else;
     ir_load_addr STR7; (push)
     ir_load [L3 . 0] POP();
     ir_load [L3 . 1] 8;
     ir_load_addr L3; (push)
     ir_call cb__Nstd__Nsystem__Nunlink__Aptr__Tslice__Tpure__Tuint8 POP(); (push)
     ir_load L1 POP();
-    ir_jmp_eq L1 0 cb__Ntest__Ntest_file_unlink$if5067$else;
-    ir_make_label cb__Ntest__Ntest_file_unlink$if5067$body;
+    ir_jmp_eq L1 0 cb__Ntest__Ntest_file_unlink$if4981$else;
+    ir_make_label cb__Ntest__Ntest_file_unlink$if4981$body;
     ir_return 0;
-    ir_make_label cb__Ntest__Ntest_file_unlink$if5067$else;
+    ir_make_label cb__Ntest__Ntest_file_unlink$if4981$else;
     ir_load_addr STR7; (push)
     ir_load [L4 . 0] POP();
     ir_load [L4 . 1] 8;
@@ -1922,10 +1918,10 @@ func cb__Ntest__Ntest_file_unlink -> bool
     ir_load_addr L0; (push)
     ir_call cb__Nstd__Nsystem__Nstat__Aptr__Tslice__Tpure__Tuint8__Aptr__TStat POP() POP(); (push)
     ir_load L1 POP();
-    ir_jmp_eq L1 0 cb__Ntest__Ntest_file_unlink$if5084$else;
-    ir_make_label cb__Ntest__Ntest_file_unlink$if5084$body;
+    ir_jmp_eq L1 0 cb__Ntest__Ntest_file_unlink$if4998$else;
+    ir_make_label cb__Ntest__Ntest_file_unlink$if4998$body;
     ir_return 1;
-    ir_make_label cb__Ntest__Ntest_file_unlink$if5084$else;
+    ir_make_label cb__Ntest__Ntest_file_unlink$if4998$else;
     ir_return 0;
 endf
 
@@ -1947,10 +1943,10 @@ func cb__Ntest__Ntest_alloc_copy -> bool
     ir_load [L5 . 0] 0;
     ir_load [L5 . 1] [L1 . 1];
     ir_load L6 [L5 . 0];
-    ir_make_label cb__Ntest__Ntest_alloc_copy$f5144$cond;
+    ir_make_label cb__Ntest__Ntest_alloc_copy$f5055$cond;
     ir_cast L6; (push)
-    ir_jmp_gte POP() [L5 . 1] cb__Ntest__Ntest_alloc_copy$f5144$end;
-    ir_make_label cb__Ntest__Ntest_alloc_copy$f5144$body;
+    ir_jmp_gte POP() [L5 . 1] cb__Ntest__Ntest_alloc_copy$f5055$end;
+    ir_make_label cb__Ntest__Ntest_alloc_copy$f5055$body;
     ir_deref L0; (push)
     ir_index POP() L6; (push)
     ir_deref [L1 . 0]; (push)
@@ -1958,8 +1954,8 @@ func cb__Ntest__Ntest_alloc_copy -> bool
     ir_load POP() POP();
     ir_add L6 1; (push)
     ir_load L6 POP();
-    ir_jmp cb__Ntest__Ntest_alloc_copy$f5144$cond;
-    ir_make_label cb__Ntest__Ntest_alloc_copy$f5144$end;
+    ir_jmp cb__Ntest__Ntest_alloc_copy$f5055$cond;
+    ir_make_label cb__Ntest__Ntest_alloc_copy$f5055$end;
     ir_deref L0; (push)
     ir_index POP() [L1 . 1]; (push)
     ir_load POP() 0;
@@ -1984,10 +1980,10 @@ func cb__Ntest__Ntest_dir_create -> bool
     ir_load_addr L1; (push)
     ir_call cb__Nstd__Nsystem__Nmkdir__Aptr__Tslice__Tpure__Tuint8 POP(); (push)
     ir_load L0 POP();
-    ir_jmp_eq L0 0 cb__Ntest__Ntest_dir_create$if5190$else;
-    ir_make_label cb__Ntest__Ntest_dir_create$if5190$body;
+    ir_jmp_eq L0 0 cb__Ntest__Ntest_dir_create$if5101$else;
+    ir_make_label cb__Ntest__Ntest_dir_create$if5101$body;
     ir_return 0;
-    ir_make_label cb__Ntest__Ntest_dir_create$if5190$else;
+    ir_make_label cb__Ntest__Ntest_dir_create$if5101$else;
     ir_return 1;
 endf
 
@@ -2009,10 +2005,10 @@ func cb__Ntest__Ntest_dir_remove -> bool
     ir_call cb__Nstd__Nsystem__Nopen__Aptr__Ttuple__Trawptr__TSystemError__Aptr__Tslice__Tpure__Tuint8__AOpenFlags__Aint POP() POP() POP() 0; (push)
     ir_load L1 [L0 . 0];
     ir_load L2 [L0 . 1];
-    ir_jmp_eq L2 0 cb__Ntest__Ntest_dir_remove$if5219$else;
-    ir_make_label cb__Ntest__Ntest_dir_remove$if5219$body;
+    ir_jmp_eq L2 0 cb__Ntest__Ntest_dir_remove$if5130$else;
+    ir_make_label cb__Ntest__Ntest_dir_remove$if5130$body;
     ir_return 0;
-    ir_make_label cb__Ntest__Ntest_dir_remove$if5219$else;
+    ir_make_label cb__Ntest__Ntest_dir_remove$if5130$else;
     ir_load_addr STR15; (push)
     ir_load [L4 . 0] POP();
     ir_load [L4 . 1] 8;
@@ -2027,10 +2023,10 @@ func cb__Ntest__Ntest_dir_remove -> bool
     ir_load_addr L5; (push)
     ir_call cb__Nstd__Nsystem__Nremove__Aptr__Tslice__Tpure__Tuint8 POP(); (push)
     ir_load L2 POP();
-    ir_jmp_neq L2 0 cb__Ntest__Ntest_dir_remove$if5246$else;
-    ir_make_label cb__Ntest__Ntest_dir_remove$if5246$body;
+    ir_jmp_neq L2 0 cb__Ntest__Ntest_dir_remove$if5157$else;
+    ir_make_label cb__Ntest__Ntest_dir_remove$if5157$body;
     ir_return 0;
-    ir_make_label cb__Ntest__Ntest_dir_remove$if5246$else;
+    ir_make_label cb__Ntest__Ntest_dir_remove$if5157$else;
     ir_load_addr STR14; (push)
     ir_load [L6 . 0] POP();
     ir_load [L6 . 1] 28;
@@ -2043,10 +2039,10 @@ func cb__Ntest__Ntest_dir_remove -> bool
     ir_load_addr L7; (push)
     ir_call cb__Nstd__Nsystem__Nremove__Aptr__Tslice__Tpure__Tuint8 POP(); (push)
     ir_load L2 POP();
-    ir_jmp_eq L2 0 cb__Ntest__Ntest_dir_remove$if5267$else;
-    ir_make_label cb__Ntest__Ntest_dir_remove$if5267$body;
+    ir_jmp_eq L2 0 cb__Ntest__Ntest_dir_remove$if5178$else;
+    ir_make_label cb__Ntest__Ntest_dir_remove$if5178$body;
     ir_return 0;
-    ir_make_label cb__Ntest__Ntest_dir_remove$if5267$else;
+    ir_make_label cb__Ntest__Ntest_dir_remove$if5178$else;
     ir_return 1;
 endf
 
@@ -2120,15 +2116,15 @@ func cb__Ntest__NtestEnumValues -> bool
     ir_load_addr L5; (push)
     ir_call cb__Nstd__Nsystem__Nwrite__Arawptr__Aptr__Tslice__Tpure__Tuint8 POP() POP(); (push)
     ir_noop POP();
-    ir_jmp_neq 0 0 cb__Ntest__NtestEnumValues$if9340$else;
-    ir_jmp_neq 1 1 cb__Ntest__NtestEnumValues$if9340$else;
-    ir_jmp_neq 2 2 cb__Ntest__NtestEnumValues$if9340$else;
-    ir_make_label cb__Ntest__NtestEnumValues$if9340$body;
+    ir_jmp_neq 0 0 cb__Ntest__NtestEnumValues$if9249$else;
+    ir_jmp_neq 1 1 cb__Ntest__NtestEnumValues$if9249$else;
+    ir_jmp_neq 2 2 cb__Ntest__NtestEnumValues$if9249$else;
+    ir_make_label cb__Ntest__NtestEnumValues$if9249$body;
     ir_load L6 1;
-    ir_jmp cb__Ntest__NtestEnumValues$if9340$end;
-    ir_make_label cb__Ntest__NtestEnumValues$if9340$else;
+    ir_jmp cb__Ntest__NtestEnumValues$if9249$end;
+    ir_make_label cb__Ntest__NtestEnumValues$if9249$else;
     ir_load L6 0;
-    ir_make_label cb__Ntest__NtestEnumValues$if9340$end;
+    ir_make_label cb__Ntest__NtestEnumValues$if9249$end;
     ir_return L6;
 endf
 
@@ -2212,8 +2208,8 @@ func test_main -> int
     ir_load_addr L12; (push)
     ir_call cb__Nstd__Nsystem__Nwrite__Arawptr__Aptr__Tslice__Tpure__Tuint8 POP() POP(); (push)
     ir_noop POP();
-    ir_jmp_neq L4 48 test_main$if5483$else;
-    ir_make_label test_main$if5483$body;
+    ir_jmp_neq L4 48 test_main$if5394$else;
+    ir_make_label test_main$if5394$body;
     ir_load_addr STR21; (push)
     ir_load [L20 . 0] POP();
     ir_load [L20 . 1] 4;
@@ -2221,7 +2217,7 @@ func test_main -> int
     ir_load_addr L20; (push)
     ir_call cb__Nstd__Nsystem__Nwrite__Arawptr__Aptr__Tslice__Tpure__Tuint8 POP() POP(); (push)
     ir_noop POP();
-    ir_make_label test_main$if5483$else;
+    ir_make_label test_main$if5394$else;
     ir_load_addr STR0; (push)
     ir_load [L13 . 0] POP();
     ir_load [L13 . 1] 1;
@@ -2230,8 +2226,8 @@ func test_main -> int
     ir_call cb__Nstd__Nsystem__Nwrite__Arawptr__Aptr__Tslice__Tpure__Tuint8 POP() POP(); (push)
     ir_noop POP();
     ir_call cb__Ntest__Ntest_file_write; (push)
-    ir_jmp_eq POP() 0 test_main$if5519$else;
-    ir_make_label test_main$if5519$body;
+    ir_jmp_eq POP() 0 test_main$if5430$else;
+    ir_make_label test_main$if5430$body;
     ir_load_addr STR22; (push)
     ir_load [L21 . 0] POP();
     ir_load [L21 . 1] 20;
@@ -2239,8 +2235,8 @@ func test_main -> int
     ir_load_addr L21; (push)
     ir_call cb__Nstd__Nsystem__Nwrite__Arawptr__Aptr__Tslice__Tpure__Tuint8 POP() POP(); (push)
     ir_noop POP();
-    ir_jmp test_main$if5519$end;
-    ir_make_label test_main$if5519$else;
+    ir_jmp test_main$if5430$end;
+    ir_make_label test_main$if5430$else;
     ir_load_addr STR23; (push)
     ir_load [L22 . 0] POP();
     ir_load [L22 . 1] 21;
@@ -2248,10 +2244,10 @@ func test_main -> int
     ir_load_addr L22; (push)
     ir_call cb__Nstd__Nsystem__Nwrite__Arawptr__Aptr__Tslice__Tpure__Tuint8 POP() POP(); (push)
     ir_noop POP();
-    ir_make_label test_main$if5519$end;
+    ir_make_label test_main$if5430$end;
     ir_call cb__Ntest__Ntest_file_move; (push)
-    ir_jmp_eq POP() 0 test_main$if5542$else;
-    ir_make_label test_main$if5542$body;
+    ir_jmp_eq POP() 0 test_main$if5453$else;
+    ir_make_label test_main$if5453$body;
     ir_load_addr STR24; (push)
     ir_load [L23 . 0] POP();
     ir_load [L23 . 1] 19;
@@ -2259,8 +2255,8 @@ func test_main -> int
     ir_load_addr L23; (push)
     ir_call cb__Nstd__Nsystem__Nwrite__Arawptr__Aptr__Tslice__Tpure__Tuint8 POP() POP(); (push)
     ir_noop POP();
-    ir_jmp test_main$if5542$end;
-    ir_make_label test_main$if5542$else;
+    ir_jmp test_main$if5453$end;
+    ir_make_label test_main$if5453$else;
     ir_load_addr STR25; (push)
     ir_load [L24 . 0] POP();
     ir_load [L24 . 1] 20;
@@ -2268,10 +2264,10 @@ func test_main -> int
     ir_load_addr L24; (push)
     ir_call cb__Nstd__Nsystem__Nwrite__Arawptr__Aptr__Tslice__Tpure__Tuint8 POP() POP(); (push)
     ir_noop POP();
-    ir_make_label test_main$if5542$end;
+    ir_make_label test_main$if5453$end;
     ir_call cb__Ntest__Ntest_file_copy; (push)
-    ir_jmp_eq POP() 0 test_main$if5565$else;
-    ir_make_label test_main$if5565$body;
+    ir_jmp_eq POP() 0 test_main$if5476$else;
+    ir_make_label test_main$if5476$body;
     ir_load_addr STR26; (push)
     ir_load [L25 . 0] POP();
     ir_load [L25 . 1] 19;
@@ -2279,8 +2275,8 @@ func test_main -> int
     ir_load_addr L25; (push)
     ir_call cb__Nstd__Nsystem__Nwrite__Arawptr__Aptr__Tslice__Tpure__Tuint8 POP() POP(); (push)
     ir_noop POP();
-    ir_jmp test_main$if5565$end;
-    ir_make_label test_main$if5565$else;
+    ir_jmp test_main$if5476$end;
+    ir_make_label test_main$if5476$else;
     ir_load_addr STR27; (push)
     ir_load [L26 . 0] POP();
     ir_load [L26 . 1] 20;
@@ -2288,10 +2284,10 @@ func test_main -> int
     ir_load_addr L26; (push)
     ir_call cb__Nstd__Nsystem__Nwrite__Arawptr__Aptr__Tslice__Tpure__Tuint8 POP() POP(); (push)
     ir_noop POP();
-    ir_make_label test_main$if5565$end;
+    ir_make_label test_main$if5476$end;
     ir_call cb__Ntest__Ntest_file_append; (push)
-    ir_jmp_eq POP() 0 test_main$if5588$else;
-    ir_make_label test_main$if5588$body;
+    ir_jmp_eq POP() 0 test_main$if5499$else;
+    ir_make_label test_main$if5499$body;
     ir_load_addr STR28; (push)
     ir_load [L27 . 0] POP();
     ir_load [L27 . 1] 21;
@@ -2299,8 +2295,8 @@ func test_main -> int
     ir_load_addr L27; (push)
     ir_call cb__Nstd__Nsystem__Nwrite__Arawptr__Aptr__Tslice__Tpure__Tuint8 POP() POP(); (push)
     ir_noop POP();
-    ir_jmp test_main$if5588$end;
-    ir_make_label test_main$if5588$else;
+    ir_jmp test_main$if5499$end;
+    ir_make_label test_main$if5499$else;
     ir_load_addr STR29; (push)
     ir_load [L28 . 0] POP();
     ir_load [L28 . 1] 22;
@@ -2308,10 +2304,10 @@ func test_main -> int
     ir_load_addr L28; (push)
     ir_call cb__Nstd__Nsystem__Nwrite__Arawptr__Aptr__Tslice__Tpure__Tuint8 POP() POP(); (push)
     ir_noop POP();
-    ir_make_label test_main$if5588$end;
+    ir_make_label test_main$if5499$end;
     ir_call cb__Ntest__Ntest_alloc_copy; (push)
-    ir_jmp_eq POP() 0 test_main$if5611$else;
-    ir_make_label test_main$if5611$body;
+    ir_jmp_eq POP() 0 test_main$if5522$else;
+    ir_make_label test_main$if5522$body;
     ir_load_addr STR30; (push)
     ir_load [L29 . 0] POP();
     ir_load [L29 . 1] 20;
@@ -2319,8 +2315,8 @@ func test_main -> int
     ir_load_addr L29; (push)
     ir_call cb__Nstd__Nsystem__Nwrite__Arawptr__Aptr__Tslice__Tpure__Tuint8 POP() POP(); (push)
     ir_noop POP();
-    ir_jmp test_main$if5611$end;
-    ir_make_label test_main$if5611$else;
+    ir_jmp test_main$if5522$end;
+    ir_make_label test_main$if5522$else;
     ir_load_addr STR31; (push)
     ir_load [L30 . 0] POP();
     ir_load [L30 . 1] 21;
@@ -2328,10 +2324,10 @@ func test_main -> int
     ir_load_addr L30; (push)
     ir_call cb__Nstd__Nsystem__Nwrite__Arawptr__Aptr__Tslice__Tpure__Tuint8 POP() POP(); (push)
     ir_noop POP();
-    ir_make_label test_main$if5611$end;
+    ir_make_label test_main$if5522$end;
     ir_call cb__Ntest__Ntest_file_unlink; (push)
-    ir_jmp_eq POP() 0 test_main$if5634$else;
-    ir_make_label test_main$if5634$body;
+    ir_jmp_eq POP() 0 test_main$if5545$else;
+    ir_make_label test_main$if5545$body;
     ir_load_addr STR32; (push)
     ir_load [L31 . 0] POP();
     ir_load [L31 . 1] 21;
@@ -2339,8 +2335,8 @@ func test_main -> int
     ir_load_addr L31; (push)
     ir_call cb__Nstd__Nsystem__Nwrite__Arawptr__Aptr__Tslice__Tpure__Tuint8 POP() POP(); (push)
     ir_noop POP();
-    ir_jmp test_main$if5634$end;
-    ir_make_label test_main$if5634$else;
+    ir_jmp test_main$if5545$end;
+    ir_make_label test_main$if5545$else;
     ir_load_addr STR33; (push)
     ir_load [L32 . 0] POP();
     ir_load [L32 . 1] 22;
@@ -2348,10 +2344,10 @@ func test_main -> int
     ir_load_addr L32; (push)
     ir_call cb__Nstd__Nsystem__Nwrite__Arawptr__Aptr__Tslice__Tpure__Tuint8 POP() POP(); (push)
     ir_noop POP();
-    ir_make_label test_main$if5634$end;
+    ir_make_label test_main$if5545$end;
     ir_call cb__Ntest__Ntest_dir_create; (push)
-    ir_jmp_eq POP() 0 test_main$if5657$else;
-    ir_make_label test_main$if5657$body;
+    ir_jmp_eq POP() 0 test_main$if5568$else;
+    ir_make_label test_main$if5568$body;
     ir_load_addr STR34; (push)
     ir_load [L33 . 0] POP();
     ir_load [L33 . 1] 20;
@@ -2359,8 +2355,8 @@ func test_main -> int
     ir_load_addr L33; (push)
     ir_call cb__Nstd__Nsystem__Nwrite__Arawptr__Aptr__Tslice__Tpure__Tuint8 POP() POP(); (push)
     ir_noop POP();
-    ir_jmp test_main$if5657$end;
-    ir_make_label test_main$if5657$else;
+    ir_jmp test_main$if5568$end;
+    ir_make_label test_main$if5568$else;
     ir_load_addr STR35; (push)
     ir_load [L34 . 0] POP();
     ir_load [L34 . 1] 21;
@@ -2368,10 +2364,10 @@ func test_main -> int
     ir_load_addr L34; (push)
     ir_call cb__Nstd__Nsystem__Nwrite__Arawptr__Aptr__Tslice__Tpure__Tuint8 POP() POP(); (push)
     ir_noop POP();
-    ir_make_label test_main$if5657$end;
+    ir_make_label test_main$if5568$end;
     ir_call cb__Ntest__Ntest_dir_remove; (push)
-    ir_jmp_eq POP() 0 test_main$if5680$else;
-    ir_make_label test_main$if5680$body;
+    ir_jmp_eq POP() 0 test_main$if5591$else;
+    ir_make_label test_main$if5591$body;
     ir_load_addr STR36; (push)
     ir_load [L35 . 0] POP();
     ir_load [L35 . 1] 20;
@@ -2379,8 +2375,8 @@ func test_main -> int
     ir_load_addr L35; (push)
     ir_call cb__Nstd__Nsystem__Nwrite__Arawptr__Aptr__Tslice__Tpure__Tuint8 POP() POP(); (push)
     ir_noop POP();
-    ir_jmp test_main$if5680$end;
-    ir_make_label test_main$if5680$else;
+    ir_jmp test_main$if5591$end;
+    ir_make_label test_main$if5591$else;
     ir_load_addr STR37; (push)
     ir_load [L36 . 0] POP();
     ir_load [L36 . 1] 21;
@@ -2388,7 +2384,7 @@ func test_main -> int
     ir_load_addr L36; (push)
     ir_call cb__Nstd__Nsystem__Nwrite__Arawptr__Aptr__Tslice__Tpure__Tuint8 POP() POP(); (push)
     ir_noop POP();
-    ir_make_label test_main$if5680$end;
+    ir_make_label test_main$if5591$end;
     ir_load L0 0;
     ir_load_addr STR38; (push)
     ir_load [L14 . 0] POP();
@@ -2400,8 +2396,8 @@ func test_main -> int
     ir_load_addr L15; (push)
     ir_call cb__Nstd__Nsystem__NexecProcess__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8 POP() POP(); (push)
     ir_load L5 POP();
-    ir_jmp_neq L5 0 test_main$if5725$else;
-    ir_make_label test_main$if5725$body;
+    ir_jmp_neq L5 0 test_main$if5636$else;
+    ir_make_label test_main$if5636$body;
     ir_load_addr STR39; (push)
     ir_load [L37 . 0] POP();
     ir_load [L37 . 1] 17;
@@ -2409,8 +2405,8 @@ func test_main -> int
     ir_load_addr L37; (push)
     ir_call cb__Nstd__Nsystem__Nwrite__Arawptr__Aptr__Tslice__Tpure__Tuint8 POP() POP(); (push)
     ir_noop POP();
-    ir_jmp test_main$if5725$end;
-    ir_make_label test_main$if5725$else;
+    ir_jmp test_main$if5636$end;
+    ir_make_label test_main$if5636$else;
     ir_load_addr STR40; (push)
     ir_load [L38 . 0] POP();
     ir_load [L38 . 1] 18;
@@ -2419,25 +2415,25 @@ func test_main -> int
     ir_call cb__Nstd__Nsystem__Nwrite__Arawptr__Aptr__Tslice__Tpure__Tuint8 POP() POP(); (push)
     ir_noop POP();
     ir_call cb__Nstd__Nsystem__Nexit__Aint L5;
-    ir_make_label test_main$if5725$end;
+    ir_make_label test_main$if5636$end;
     ir_load_addr L6; (push)
     ir_call cb__Nstd__Nsystem__NcreateMutex__Aptr__Ttuple__TMutexHandle__TSystemError POP(); (push)
     ir_load L7 [L6 . 0];
     ir_load L8 [L6 . 1];
-    ir_jmp_eq L8 0 test_main$if5744$else;
-    ir_make_label test_main$if5744$body;
+    ir_jmp_eq L8 0 test_main$if5655$else;
+    ir_make_label test_main$if5655$body;
     ir_call cb__Nstd__Nsystem__Nexit__Aint 1;
-    ir_make_label test_main$if5744$else;
+    ir_make_label test_main$if5655$else;
     ir_load  L7;
     ir_load_addr L9; (push)
     ir_load_addr func(cb__Ntest__NworkerThreadFunc__Arawptr); (push)
     ir_call cb__Nstd__Nsystem__NcreateThread__Aptr__Ttuple__TThreadHandle__TSystemError__Afuncptr__Trawptr__Tvoid__Arawptr POP() POP() 0; (push)
     ir_load L10 [L9 . 0];
     ir_load L11 [L9 . 1];
-    ir_jmp_eq L11 0 test_main$if5781$else;
-    ir_make_label test_main$if5781$body;
+    ir_jmp_eq L11 0 test_main$if5692$else;
+    ir_make_label test_main$if5692$body;
     ir_call cb__Nstd__Nsystem__Nexit__Aint 1;
-    ir_make_label test_main$if5781$else;
+    ir_make_label test_main$if5692$else;
     ir_call cb__Nstd__Nsystem__Nlock__AMutexHandle ; (push)
     ir_noop POP();
     ir_load_addr STR41; (push)
@@ -2462,13 +2458,13 @@ func test_main -> int
     ir_call cb__Nstd__Nsystem__Nunlock__AMutexHandle ; (push)
     ir_noop POP();
     ir_load L1 0;
-    ir_make_label test_main$w5840$cond;
-    ir_jmp_gte L1 20000000 test_main$w5840$end;
-    ir_make_label test_main$w5840$body;
+    ir_make_label test_main$w5751$cond;
+    ir_jmp_gte L1 20000000 test_main$w5751$end;
+    ir_make_label test_main$w5751$body;
     ir_add L1 1; (push)
     ir_load L1 POP();
-    ir_jmp test_main$w5840$cond;
-    ir_make_label test_main$w5840$end;
+    ir_jmp test_main$w5751$cond;
+    ir_make_label test_main$w5751$end;
     ir_call cb__Nstd__Nsystem__Nlock__AMutexHandle ; (push)
     ir_noop POP();
     ir_load_addr STR42; (push)
@@ -2492,8 +2488,8 @@ func test_main -> int
     ir_call cb__Nstd__Nsystem__Njoin__AThreadHandle L10; (push)
     ir_noop POP();
     ir_call cb__Ntest__NtestEnumValues; (push)
-    ir_jmp_eq POP() 0 test_main$if5902$else;
-    ir_make_label test_main$if5902$body;
+    ir_jmp_eq POP() 0 test_main$if5813$else;
+    ir_make_label test_main$if5813$body;
     ir_load_addr STR43; (push)
     ir_load [L39 . 0] POP();
     ir_load [L39 . 1] 19;
@@ -2501,8 +2497,8 @@ func test_main -> int
     ir_load_addr L39; (push)
     ir_call cb__Nstd__Nsystem__Nwrite__Arawptr__Aptr__Tslice__Tpure__Tuint8 POP() POP(); (push)
     ir_noop POP();
-    ir_jmp test_main$if5902$end;
-    ir_make_label test_main$if5902$else;
+    ir_jmp test_main$if5813$end;
+    ir_make_label test_main$if5813$else;
     ir_load_addr STR44; (push)
     ir_load [L40 . 0] POP();
     ir_load [L40 . 1] 20;
@@ -2510,7 +2506,7 @@ func test_main -> int
     ir_load_addr L40; (push)
     ir_call cb__Nstd__Nsystem__Nwrite__Arawptr__Aptr__Tslice__Tpure__Tuint8 POP() POP(); (push)
     ir_noop POP();
-    ir_make_label test_main$if5902$end;
+    ir_make_label test_main$if5813$end;
     ir_call cb__Ngameoflife__NgameOfLife;
     ir_call cb__Nstd__Nsystem__Ndestroy__AMutexHandle L7;
     ir_call cb__Ntest__Ntest_defer;

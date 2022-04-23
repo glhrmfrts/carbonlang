@@ -43,8 +43,8 @@ arena_ptr<ast_node> copy_node_helper(type_system& ts, ast_node& node) {
         ident->lvalue = node.lvalue;
         return ident;
     }
-    else if (node.type == ast_type::nullptr_) {
-        return make_nullpointer_node(*ts.ast_arena, node.pos);
+    else if (node.type == ast_type::nil_literal) {
+        return make_nil_node(*ts.ast_arena, node.pos);
     }
     else if (node.type == ast_type::bool_literal) {
         return make_bool_literal_node(*ts.ast_arena, node.pos, (bool)node.int_value);
