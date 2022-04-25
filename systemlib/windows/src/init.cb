@@ -7,7 +7,7 @@ extern(C) func carbon_main(): int {
     let cmd_line_args_buf = [1][]pure uint8{ "" }
     let cmdline = (GetCommandLineA())
     let args = [][]pure uint8{ &cmd_line_args_buf[0], 1 }
-    args[0] = []pure uint8{ (cast(&uint8)(cast(rawptr)(cmdline))), cmdline->length() }
+    args[0] = []pure uint8{ (cast(&uint8)(cast(&opaque)(cmdline))), cmdline->length() }
 
     import main
     return main(args)

@@ -1,6 +1,6 @@
 import std::system;
-extern(C) func HeapAlloc(:int, :int, :usize):rawptr;
-extern(C) func HeapFree(:int, :int, :rawptr):bool;
+extern(C) func HeapAlloc(:int, :int, :usize):&opaque;
+extern(C) func HeapFree(:int, :int, :&opaque):bool;
 extern(C) func GetProcessHeap():int;
-extern func alloc(:usize):rawptr;
-extern func free(:rawptr):{};
+extern func alloc(:usize):{&opaque, syserror};
+extern func free(:&opaque):{};

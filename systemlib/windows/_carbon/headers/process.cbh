@@ -1,9 +1,9 @@
 import std::system;
 import io;
 extern(C) func ExitProcess(:uint):{};
-extern(C) func CreatePipe(:&rawptr, :&rawptr, :&SECURITY_ATTRIBUTES, :int):bool;
-extern(C) func TerminateProcess(:rawptr, :uint):bool;
-extern(C) func CreateProcessA(:&pure uint8, :&pure uint8, :&pure SECURITY_ATTRIBUTES, :&pure SECURITY_ATTRIBUTES, :bool, :int32, :rawptr, :&uint8, :&pure STARTUPINFOA, :&PROCESS_INFORMATION):bool;
+extern(C) func CreatePipe(:&&opaque, :&&opaque, :&SECURITY_ATTRIBUTES, :int):bool;
+extern(C) func TerminateProcess(:&opaque, :uint):bool;
+extern(C) func CreateProcessA(:&pure uint8, :&pure uint8, :&pure SECURITY_ATTRIBUTES, :&pure SECURITY_ATTRIBUTES, :bool, :int32, :&opaque, :&uint8, :&pure STARTUPINFOA, :&PROCESS_INFORMATION):bool;
 extern func exit(:int):{};
-extern func readProcessChar(:rawptr, :&uint8):bool;
-extern func execProcess(:[]pure uint8, :[]pure uint8):SystemError;
+extern func readProcessChar(:&opaque, :&uint8):bool;
+extern func process(:[]pure uint8, :[]pure uint8):syserror;

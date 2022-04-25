@@ -1,5 +1,5 @@
 extern func alloc(:usize):memory;
-extern func alloc2(:usize, :rawptr):memory;
+extern func alloc2(:usize, :&opaque):memory;
 extern func free(:&memory):{};
 extern func write(:int, :[]pure uint8):isize;
 extern func read(:int, :[]uint8):isize;

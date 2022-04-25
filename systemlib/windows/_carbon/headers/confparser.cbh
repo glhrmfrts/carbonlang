@@ -1,0 +1,3 @@
+import std::system;
+extern func parseconf(:[]pure uint8):{Conf, syserror};
+extern func readconf(:[]pure uint8):{Conf, syserror};

@@ -5,23 +5,23 @@ func HeapAlloc(
     hHeap:   int,
     dwFlags: int,
     dwBytes: usize
-): rawptr
+): &opaque
 
 func HeapFree(
     hHeap:   int,
     dwFlags: int,
-    lpMem:   rawptr
+    lpMem:   &opaque
 ): bool
 
 func GetProcessHeap(): int
 }
 
 extern(carbon, std::system) {
-func alloc(size: usize): rawptr {
-    return HeapAlloc(GetProcessHeap(), 0, size)
+func alloc(size: usize): {&opaque, syserror} {
+    return HeapAlloc(GetProcessHeap(), 0, size), NOERROR
 }
 
-func free(ptr: rawptr) {
+func free(ptr: &opaque) {
     HeapFree(GetProcessHeap(), 0, ptr)
 }
 }

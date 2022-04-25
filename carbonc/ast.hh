@@ -133,7 +133,7 @@ struct ast_node {
     std::vector<std::string> id_parts{};
     std::vector<arena_ptr<ast_node>> pre_children{};
     std::vector<arena_ptr<ast_node>> children{};
-    std::vector<arena_ptr<ast_node>> children_to_add{};
+    std::vector<std::pair<int, arena_ptr<ast_node>>> children_to_add{};
     std::vector<arena_ptr<ast_node>> temps{};
     arena_ptr<ast_node> sizeof_type_expr{nullptr, nullptr};
     ast_node* parent = nullptr;

@@ -2,7 +2,7 @@ import std::system
 import io
 
 type CRITICAL_SECTION = struct {
-    DebugInfo: rawptr;
+    DebugInfo: &opaque;
 
     //
     // The following three fields control entering and exiting the critical
@@ -11,16 +11,16 @@ type CRITICAL_SECTION = struct {
 
     LockCount: int64;
     RecursionCount: int64;
-    OwningThread: rawptr;        // from the thread's ClientId->UniqueThread
-    LockSemaphore: rawptr;
+    OwningThread: &opaque;        // from the thread's ClientId->UniqueThread
+    LockSemaphore: &opaque;
     SpinCount: &uint64;        // force size on 64-bit systems when packed
 }
 
 type SYSTEM_INFO = struct {
     unused:   int32;
     dwPageSize: int32;
-    lpMinimumApplicationAddress: rawptr;
-    lpMaximumApplicationAddress: rawptr;
+    lpMinimumApplicationAddress: &opaque;
+    lpMaximumApplicationAddress: &opaque;
     dwActiveProcessorMask: &int32;
     dwNumberOfProcessors: int32;
     dwProcessorType: int32;
@@ -44,26 +44,26 @@ extern(C) func GetSystemInfo(si: &SYSTEM_INFO)
 extern(C) func CreateThread(
     lpSecurityAttributes: &pure SECURITY_ATTRIBUTES,
     cbStack: int,
-    lpStartAddr: {rawptr} -> {},
-    lpParam: rawptr,
+    lpStartAddr: {&opaque} -> {},
+    lpParam: &opaque,
     fdwCreate: int,
     threadId: &int32
-): rawptr
+): &opaque
 
-extern(C) func WaitForSingleObject(handle: rawptr, dwMilliseconds: int): int
+extern(C) func WaitForSingleObject(handle: &opaque, dwMilliseconds: int): int
 
 extern(C) func Sleep(ms: int)
 
 extern(carbon, std::system) {
-func createThread(fn: {rawptr} -> {}, arg: rawptr): {ThreadHandle, SystemError} {
+func makethread(fn: {&opaque} -> {}, arg: &opaque): {ThreadHandle, syserror} {
     let threadId : int32
 
     let th = CreateThread(nil, 0, fn, arg, 0, &threadId)
-    if (th == cast(rawptr)(cast(uintptr)INVALID_HANDLE_VALUE)) {
-        return nil, cast(SystemError)GetLastError()
+    if (th == cast(&opaque)(cast(uintptr)INVALID_HANDLE_VALUE)) {
+        return nil, cast(syserror)GetLastError()
     }
 
-    return th, NoError
+    return th, NOERROR
 }
 
 const INFINITE_TIMEOUT = 0xFFFFFFFF
@@ -72,20 +72,20 @@ func join(th: ThreadHandle) {
     WaitForSingleObject(th, INFINITE_TIMEOUT)
 }
 
-func getThreadId(): int {
+func threadid(): int {
     return GetCurrentThreadId()
 }
 
-func getCoreCount(): int {
+func cpucount(): int {
     let si : SYSTEM_INFO
     GetSystemInfo(&si)
     return si.dwNumberOfProcessors
 }
 
-func createMutex(): {MutexHandle, SystemError} {
-    let cs = cast(&CRITICAL_SECTION)(alloc(sizeof(CRITICAL_SECTION)))
+func makemutex(): {MutexHandle, syserror} {
+    let cs = cast(&CRITICAL_SECTION)(alloc(sizeof(CRITICAL_SECTION)).first)
     InitializeCriticalSection(cs)
-    return cast(MutexHandle)cs, NoError
+    return cast(MutexHandle)cs, NOERROR
 }
 
 func lock(m: MutexHandle) {
@@ -100,10 +100,10 @@ func destroy(m: MutexHandle) {
     let cs = cast(&CRITICAL_SECTION)(m)
     DeleteCriticalSection(cs)
     // TODO: free(memoryFromPointer((cs)))
-    free(cast(rawptr)cs)
+    free(cast(&opaque)cs)
 }
 
-func sleepMs(ms: uint64) {
+func sleepms(ms: uint64) {
     Sleep(cast(int) ms)
 }
 }

@@ -4,17 +4,17 @@ code_unit{
     import_decl{ std::system}
     import_decl{ io}
     type_decl{CRITICAL_SECTION = type_expr{struct_type{decl_list{
-            var_decl{(DebugInfo): type_expr{rawptr}}
+            var_decl{(DebugInfo): type_expr{type_qualifier{ptr, opaque}}}
             var_decl{(LockCount): type_expr{int64}}
             var_decl{(RecursionCount): type_expr{int64}}
-            var_decl{(OwningThread): type_expr{rawptr}}
-            var_decl{(LockSemaphore): type_expr{rawptr}}
+            var_decl{(OwningThread): type_expr{type_qualifier{ptr, opaque}}}
+            var_decl{(LockSemaphore): type_expr{type_qualifier{ptr, opaque}}}
             var_decl{(SpinCount): type_expr{type_qualifier{ptr, uint64}}}}}}}
     type_decl{SYSTEM_INFO = type_expr{struct_type{decl_list{
             var_decl{(unused): type_expr{int32}}
             var_decl{(dwPageSize): type_expr{int32}}
-            var_decl{(lpMinimumApplicationAddress): type_expr{rawptr}}
-            var_decl{(lpMaximumApplicationAddress): type_expr{rawptr}}
+            var_decl{(lpMinimumApplicationAddress): type_expr{type_qualifier{ptr, opaque}}}
+            var_decl{(lpMaximumApplicationAddress): type_expr{type_qualifier{ptr, opaque}}}
             var_decl{(dwActiveProcessorMask): type_expr{type_qualifier{ptr, int32}}}
             var_decl{(dwNumberOfProcessors): type_expr{int32}}
             var_decl{(dwProcessorType): type_expr{int32}}

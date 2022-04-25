@@ -1,20 +1,21 @@
 code_unit{
   std/system.cb
   decl_list{
-    type_decl{SystemError = type_expr{(NoError, PathNotFound, InvalidHandle)}}
+    type_decl{syserror = type_expr{(NOERROR, PATHNOTFOUND, INVALIDHANDLE)}}
+    linkage_specifier{ extern}
+    linkage_specifier{ extern}
+    linkage_specifier{ extern}
+    type_decl{FileHandle = type_expr{type_qualifier{ptr, opaque}}}
+    linkage_specifier{ extern}
+    linkage_specifier{ extern}
+    type_decl{OpenFlags = type_expr{(CREATE, WRITE, READ, APPEND)}}
     linkage_specifier{ extern}
     linkage_specifier{ extern}
     linkage_specifier{ extern}
     linkage_specifier{ extern}
     linkage_specifier{ extern}
-    type_decl{OpenFlags = type_expr{(Create, Write, Read, Append)}}
     linkage_specifier{ extern}
-    linkage_specifier{ extern}
-    linkage_specifier{ extern}
-    linkage_specifier{ extern}
-    linkage_specifier{ extern}
-    linkage_specifier{ extern}
-    type_decl{Whence = type_expr{(SeekSet, SeekCurrent, SeekEnd, SeekData, SeekHole)}}
+    type_decl{Whence = type_expr{(SEEKSET, SEEKCURRENT, SEEKEND, SEEKDATA, SEEKHOLE)}}
     linkage_specifier{ extern}
     type_decl{Stat = type_expr{struct_type{decl_list{
             var_decl{(size): type_expr{usize}}
@@ -31,8 +32,8 @@ code_unit{
     linkage_specifier{ extern}
     linkage_specifier{ extern}
     linkage_specifier{ extern}
-    type_decl{ThreadHandle = type_expr{rawptr}}
-    type_decl{MutexHandle = type_expr{rawptr}}
+    type_decl{ThreadHandle = type_expr{type_qualifier{ptr, opaque}}}
+    type_decl{MutexHandle = type_expr{type_qualifier{ptr, opaque}}}
     linkage_specifier{ extern}
     linkage_specifier{ extern}
     linkage_specifier{ extern}

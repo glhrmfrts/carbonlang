@@ -426,10 +426,6 @@ type_id get_ptr_type_to(type_system& ts, type_id elem_type) {
     return execute_type_constructor(ts, ts.builtin_scope->scope, *ts.ptr_type_constructor, { elem_type });
 }
 
-type_id get_nullableptr_type_to(type_system& ts, type_id elem_type) {
-    return execute_type_constructor(ts, ts.builtin_scope->scope, *ts.nullableptr_type_constructor, { elem_type });
-}
-
 type_id get_pure_type_to(type_system& ts, type_id elem_type) {
     return execute_type_constructor(ts, ts.builtin_scope->scope, *ts.pure_type_constructor, { elem_type });
 }
@@ -549,10 +545,15 @@ bool is_assignable_to(type_system& ts, type_id a, type_id b) {
     }
 
     if (ta.kind == type_kind::ptr && tb.kind == type_kind::ptr) {
-        if (get_alias_root(ts, ta.id) == ts.raw_ptr_type) {
+        if (get_alias_root(ts, ta.id) == ts.opaque_ptr_type) {
             return true;
         }
-        if (get_alias_root(ts, tb.id) == ts.raw_ptr_type) {
+
+        if (get_alias_root(ts, ta.id) == ts.pure_opaque_ptr_type) {
+            return tb.elem_type.get().flags & type_flags::is_pure;
+        }
+
+        if (get_alias_root(ts, tb.id) == ts.opaque_ptr_type || get_alias_root(ts, tb.id) == ts.pure_opaque_ptr_type) {
             return true;
         }
 
@@ -691,6 +692,20 @@ arena_ptr<ast_node> get_zero_value_node_for_type(type_system& ts, type_id id) {
     else if (id.get().kind == type_kind::enum_) {
         symbol_info* sym = id.get().enumtype.symbols.front();
         return make_identifier_node(*ts.ast_arena, {}, { sym->id.str });
+    }
+    else if (id.get().kind == type_kind::slice) {
+        auto ptr = make_nil_node(*ts.ast_arena, {});
+        auto len = get_zero_value_node_for_type(ts, ts.usize_type);
+        auto typ = make_type_resolver_node(*ts.ast_arena, id);
+
+        std::vector<arena_ptr<ast_node>> args;
+        args.push_back(std::move(ptr));
+        args.push_back(std::move(len));
+        auto arglist = make_arg_list_node(*ts.ast_arena, {}, std::move(args));
+
+        auto typexpr = make_type_expr_node(*ts.ast_arena, {}, std::move(typ));
+
+        return make_init_expr_node(*ts.ast_arena, {}, std::move(typexpr), std::move(arglist));
     }
     return { nullptr, nullptr };
 }
@@ -955,32 +970,13 @@ void transform_slice_expr_to_init_expr(type_system& ts, ast_node& node, bool mut
 using cast_check_func = std::function<bool(type_system&, type_def&, type_def&)>;
 
 bool can_pointer_be_cast_from(type_system& ts, type_def& self, type_def& from) {
-    if (self.id == ts.raw_ptr_type) {
+    if (get_alias_root(ts, self.id) == ts.opaque_ptr_type || get_alias_root(ts, self.id) == ts.pure_opaque_ptr_type) {
         if (from.kind == type_kind::ptr) {
             return true;
         }
         if (from.kind == type_kind::integral) {
             return from.id == ts.uintptr_type;
         }
-    }
-
-    if (from.kind == type_kind::ptr) {
-        return is_castable_to(ts, from.elem_type, self.elem_type);
-    }
-    return false;
-}
-
-bool can_nullableptr_be_cast_from(type_system& ts, type_def& self, type_def& from) {
-    if (get_alias_root(ts, self.id) == ts.raw_ptr_type) {
-        if (from.kind == type_kind::ptr) {
-            return true;
-        }
-        if (from.kind == type_kind::integral) {
-            return from.id == ts.uintptr_type;
-        }
-    }
-    else if (get_alias_root(ts, from.id) == ts.raw_ptr_type) {
-        return true;
     }
 
     if (from.kind == type_kind::ptr) {
@@ -992,7 +988,7 @@ bool can_nullableptr_be_cast_from(type_system& ts, type_def& self, type_def& fro
 bool can_integral_be_cast_from(type_system& ts, type_def& self, type_def& from) {
     if (self.id == ts.uintptr_type) {
         if (from.kind == type_kind::ptr) {
-            return from.id == ts.raw_ptr_type;
+            return get_alias_root(ts, from.id) == ts.opaque_ptr_type || get_alias_root(ts, from.id) == ts.pure_opaque_ptr_type;
         }
         return false;
     }
@@ -1018,7 +1014,6 @@ bool can_enum_be_cast_from(type_system& ts, type_def& self, type_def& from) {
 
 static std::unordered_map<type_kind, cast_check_func> cast_check_funcs = {
     {type_kind::ptr, can_pointer_be_cast_from},
-    //{type_kind::nullableptr, can_nullableptr_be_cast_from},
     {type_kind::integral, can_integral_be_cast_from},
     {type_kind::enum_, can_enum_be_cast_from},
     {type_kind::enumflags, can_enum_be_cast_from},
@@ -1366,8 +1361,8 @@ type_id get_type_expr_node_type(type_system& ts, ast_node& node) {
 
                 // if name is not empty it means this is the result of a type constructor
                 if (td.name.str.empty()) {
-                    td.name = string_hash{ "anonymous struct" };
-                    td.mangled_name = string_hash{ "anonymous$struct" };
+                    td.name = string_hash{ "anonymous struct " + std::to_string(node.node_id) };
+                    td.mangled_name = string_hash{ "anonymous$struct$" + std::to_string(node.node_id) };
                     auto fd = find_type_by_value(ts, ts.builtin_scope->scope, td);
                     if (fd.valid()) {
                         node.type_id = fd;
@@ -2105,33 +2100,57 @@ arena_ptr<ast_node> generate_func_for_call(type_system& ts, ast_node& gnode, ast
 }
 
 void generate_unpacking_operations(type_system& ts, ast_node& node) {
-    auto valuecopy = copy_node(ts, node.var_value());
+    auto thisidx = find_child_index(node.parent, &node);
+
+    type_id aggtype{};
+    ast_node* mainvalue = nullptr;
+    if (node.type == ast_type::var_decl) {
+        mainvalue = node.var_value();
+        aggtype = node.type_id;
+    }
+    else {
+        // assignment value
+        mainvalue = node.children[1].get();
+        aggtype = mainvalue->type_id;
+    }
+
+    auto valuecopy = copy_node(ts, mainvalue);
     auto tempname = generate_temp_name();
     auto tempdecl = make_var_decl_with_value(*ts.ast_arena, tempname, std::move(valuecopy));
     tempdecl->pos = node.pos;
     resolve_node_type(ts, tempdecl.get());
-    node.parent->children_to_add.push_back(std::move(tempdecl));
+    node.parent->children_to_add.push_back({ *thisidx, std::move(tempdecl) });
 
-    auto tempref = make_identifier_node(*ts.ast_arena, node.var_value()->pos, { tempname });
+    auto tempref = make_identifier_node(*ts.ast_arena, mainvalue->pos, { tempname });
 
-    if (node.type_id.get().kind == type_kind::structure || node.type_id.get().kind == type_kind::tuple) {
-        const auto& fields = get_type_fields(node.type_id);
+    if (aggtype.get().kind == type_kind::structure || aggtype.get().kind == type_kind::tuple) {
+        const auto& fields = get_type_fields(aggtype);
         int index = 0;
-        for (auto& idnode : node.var_decl_ids()) {
+
+        std::vector<arena_ptr<ast_node>>* idlist;
+        if (node.type == ast_type::var_decl) {
+            idlist = &node.var_decl_ids();
+        }
+        else {
+            // assignment->initexpr->arglist->children
+            idlist = &node.children[0]->children[1]->children;
+        }
+
+        for (auto& idnode : *idlist) {
             auto id = string_hash{ idnode->id_parts.back() };
             auto sym = find_symbol_in_current_scope(ts, id);
 
             auto dest = make_identifier_node(*ts.ast_arena, idnode->pos, idnode->id_parts);
             auto value = make_struct_field_access(*ts.ast_arena, copy_node(ts, tempref.get()), fields[index].names.front());
 
-            if (sym) {
+            if (sym || (node.type != ast_type::var_decl)) {
                 // Symbol exists, generate assignment
                 auto assign = make_assignment(*ts.ast_arena, std::move(dest), std::move(value));
 
                 resolve_node_type(ts, assign.get());
-                node.parent->children_to_add.push_back(std::move(assign));
+                node.parent->children_to_add.push_back({ *thisidx + index + 1, std::move(assign) });
             }
-            else {
+            else if (node.type == ast_type::var_decl) {
                 // Symbol does not exist yet, generate declaration
                 auto newdecl_type = make_type_expr_node(*ts.ast_arena, idnode->pos, make_type_resolver_node(*ts.ast_arena, fields[index].type));
 
@@ -2139,7 +2158,7 @@ void generate_unpacking_operations(type_system& ts, ast_node& node) {
                     std::move(dest), std::move(newdecl_type), std::move(value), node.var_modifiers);
 
                 resolve_node_type(ts, newdecl.get());
-                node.parent->children_to_add.push_back(std::move(newdecl));
+                node.parent->children_to_add.push_back({ *thisidx + index + 1, std::move(newdecl) });
             }
             index++;
         }
@@ -2246,8 +2265,19 @@ void register_var_declaration_node(type_system& ts, ast_node& node) {
     resolve_and_declare_local_variables(ts, node);
 }
 
+bool is_assignment(const ast_node& node) {
+    return (node.type == ast_type::binary_expr) && node.op == token_from_char('=');
+}
+
 void resolve_assignment_type(type_system& ts, ast_node& node) {
     node.type_error = (node.children[0]->type_error || node.children[1]->type_error);
+
+    if (node.children[0]->type == ast_type::init_expr && node.children[1]->type_id.valid() && !node.desugar_flags) {
+        generate_unpacking_operations(ts, node);
+        node.disabled = true;
+        node.desugar_flags |= desugar_flag::var_decl_unpacked;
+        return;
+    }
 
     // Check the left type is resolved
     if ((!node.children[0]->type_id.valid() || node.children[0]->type_error)) {
@@ -2624,7 +2654,7 @@ void resolve_call_funcdef(type_system& ts, ast_node& node) {
                         node.call.func_type_id = genfunc->type_id;
                         node.call.funcdef = &genfunc->func;
                         node.type_error = false;
-                        func->self->parent->children_to_add.push_back(std::move(genfunc));
+                        func->self->parent->children_to_add.push_back({ -1, std::move(genfunc) });
                         break;
                     }
                 }
@@ -2684,8 +2714,14 @@ void visit_children(type_system& ts, ast_node& node) {
             visit_tree(ts, *child);
         }
     }
-    for (auto& child : node.children_to_add) {
-        node.children.push_back(std::move(child));
+    for (auto& [idx, child] : node.children_to_add) {
+        child->parent = &node;
+        if (idx == -1) {
+            node.children.push_back(std::move(child));
+        }
+        else {
+            node.children.insert(node.children.begin() + idx, std::move(child));
+        }
     }
     node.children_to_add.clear();
 }
@@ -3176,7 +3212,7 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
             std::move(node.children[1]), std::move(node.children[2]), std::move(node.children[3]), func_linkage::local_carbon
         );
         auto new_func_decl_ptr = new_func_decl.get();
-        encfunc->parent->children_to_add.push_back(std::move(new_func_decl));
+        encfunc->parent->children_to_add.push_back({ -1, std::move(new_func_decl) });
 
         // Transform into a overload selector to get the function pointer as a result
         node.children.clear();
@@ -3336,7 +3372,7 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
         }
 
         bool is_parent_var_decl = node.parent->type == ast_type::var_decl;
-        if (!is_parent_var_decl && is_aggregate(get_alias_root(ts, node.type_id))) {
+        if (!is_parent_var_decl && !is_assignment(*node.parent) && is_aggregate(get_alias_root(ts, node.type_id))) {
             auto ref = generate_temp_for_call_expr(ts, node, node.type_id);
             auto idx = find_child_index(node.parent, &node);
             if (idx) {
@@ -3524,6 +3560,8 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
     case ast_type::identifier: {
         //if (ts.pass != type_system_pass::perform_checks && node.type_id != invalid_type) return node.type_id;
 
+        visit_pre_children(ts, node);
+
         if (node.lvalue.symbol && node.lvalue.symbol->kind == symbol_kind::overloaded_func_base) {
             check_for_unresolved = false;
             break;
@@ -3546,9 +3584,6 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
 
         if (token_to_char(node.op) == '=') {
             resolve_assignment_type(ts, node);
-        }
-        else if (node.op == token_type::dotdot) {
-            resolve_range_expr(ts, node);
         }
         else {
             if (is_logic_binary_op(node)) {
@@ -4281,13 +4316,40 @@ type_system::type_system(memory_arena& arena) {
         auto node = make_in_arena<ast_node>(*ast_arena);
 
         type_def& tf = node->type_def;
+        tf.kind = type_kind::void_;
+        tf.name = string_hash{ "opaque" };
+        tf.mangled_name = string_hash{ "opaque" };
+        tf.size = 0;
+        tf.alignment = 0;
+        opaque_type = register_builtin_type(*this, std::move(node));
+    }
+
+    // void*
+    {
+        auto node = make_in_arena<ast_node>(*ast_arena);
+
+        type_def& tf = node->type_def;
         tf.kind = type_kind::ptr;
-        tf.name = string_hash{ "rawptr" };
-        tf.mangled_name = string_hash{ "rawptr" };
+        tf.name = string_hash{ "&opaque" };
+        tf.mangled_name = string_hash{ "ptr__Topaque" };
         tf.size = sizeof(void*);
         tf.alignment = alignof(void*);
-        tf.elem_type = void_type;
-        raw_ptr_type = register_builtin_type(*this, std::move(node));
+        tf.elem_type = opaque_type;
+        opaque_ptr_type = register_builtin_type(*this, std::move(node));
+    }
+
+    // const void*
+    {
+        auto node = make_in_arena<ast_node>(*ast_arena);
+
+        type_def& tf = node->type_def;
+        tf.kind = type_kind::ptr;
+        tf.name = string_hash{ "&pure opaque" };
+        tf.mangled_name = string_hash{ "ptr__Tpure__Topaque" };
+        tf.size = sizeof(void*);
+        tf.alignment = alignof(void*);
+        tf.elem_type = get_pure_type_to(*this, opaque_type);
+        pure_opaque_ptr_type = register_builtin_type(*this, std::move(node));
     }
 
     raw_string_type = register_pointer_type(*this, "$rawstring", "uint8");

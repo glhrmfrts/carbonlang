@@ -336,7 +336,9 @@ struct type_system {
     type_id type_type{};
     type_id void_type{};
     type_id nil_type{};
-    type_id raw_ptr_type{};
+    type_id opaque_type{};
+    type_id opaque_ptr_type{};
+    type_id pure_opaque_ptr_type{};
     type_id uintptr_type{};
     type_id ptrdiff_type{};
     type_id bool_type{};
@@ -355,7 +357,6 @@ struct type_system {
     type_id raw_string_type{}; // only used internally
 
     type_constructor* ptr_type_constructor;
-    type_constructor* nullableptr_type_constructor;
     type_constructor* pure_type_constructor;
     type_constructor* tuple_type_constructor;
     type_constructor* arr_type_constructor;

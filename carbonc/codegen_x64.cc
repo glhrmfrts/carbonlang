@@ -1060,7 +1060,7 @@ struct generator {
             auto [a, atype] = transform_ir_operand(instr.operands[0]);
             auto dest = instr_dest_to_gen_dest(idata.dest);
 
-            move(reg_intermediate, ts->raw_ptr_type, b, btype);
+            move(reg_intermediate, ts->opaque_ptr_type, b, btype);
 
             std::size_t elem_size = instr.result_type.get().size;
             std::size_t esize_offs = elem_size > 8 ? 1 : elem_size;
@@ -1073,7 +1073,7 @@ struct generator {
                 auto offset_expr = gen_offset{ elem_size, std::vector<gen_offset_expr>{
                     std::get<gen_register>(a), '+', reg_intermediate, '*', int_type(esize_offs)
                 } };
-                load_address(dest, offset_expr, ts->raw_ptr_type);
+                load_address(dest, offset_expr, ts->opaque_ptr_type);
             }
             else if (is_mem(a)) {
                 auto& offs = std::get<gen_offset>(a);
@@ -1081,7 +1081,7 @@ struct generator {
                 offs.expr.push_back(reg_intermediate);
                 offs.expr.push_back('*');
                 offs.expr.push_back(int_type(esize_offs));
-                load_address(dest, todest(a), ts->raw_ptr_type);
+                load_address(dest, todest(a), ts->opaque_ptr_type);
             }
 
             gen_operand result;
@@ -1152,14 +1152,14 @@ struct generator {
                 load_address(rdi, todest(a), atype);
             }
             else {
-                move(rdi, ts->raw_ptr_type, a, atype);
+                move(rdi, ts->opaque_ptr_type, a, atype);
             }
 
             if (is_mem(b)) {
                 load_address(rsi, todest(b), btype);
             }
             else {
-                move(rsi, ts->raw_ptr_type, b, btype);
+                move(rsi, ts->opaque_ptr_type, b, btype);
             }
 
             move(rcx, ts->uintptr_type, c, ctype);

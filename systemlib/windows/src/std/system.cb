@@ -1,59 +1,56 @@
 // Low-level system provided layer
 
-type SystemError = enum {
-    NoError
-    PathNotFound
-    InvalidHandle
+type syserror = enum {
+    NOERROR
+    PATHNOTFOUND
+    INVALIDHANDLE
 }
-
-/*
-typealias SystemError = int
-const NoError : SystemError = 0
-*/
 
 // memory.cb
 
-extern func alloc(sz: usize): rawptr
+extern func alloc(sz: usize): {&opaque, syserror}
 
-extern func alloc(sz: usize, extra: rawptr): rawptr
+extern func alloc(sz: usize, extra: &opaque): {&opaque, syserror}
 
-extern func free(m: rawptr)
+extern func free(m: &opaque)
 
 
 // io.cb
 
-extern func write(fd: rawptr, data: []pure uint8): isize
+typealias FileHandle = &opaque
 
-extern func read(fd: rawptr, data: []uint8): isize
+extern func write(fd: FileHandle, data: []pure uint8): isize
+
+extern func read(fd: FileHandle, data: []uint8): isize
 
 type OpenFlags = enumflags {
-    Create
-    Write
-    Read
-    Append
+    CREATE
+    WRITE
+    READ
+    APPEND
 }
 
-extern func open(path: []pure uint8, flags: OpenFlags, mode: int): {rawptr, SystemError}
+extern func open(path: []pure uint8, flags: OpenFlags, mode: int): {FileHandle, syserror}
 
-extern func getStdoutFd(): rawptr
+extern func stdout(): FileHandle
 
-extern func getStderrFd(): rawptr
+extern func stderr(): FileHandle
 
-extern func getStdinFd(): rawptr
+extern func stdin(): FileHandle
 
-extern func getFdFlags(fd: rawptr): int
+extern func fdflags(fd: FileHandle): int
 
-extern func close(fd: rawptr): SystemError
+extern func close(fd: FileHandle): syserror
 
 type Whence = enum {
-    SeekSet
-    SeekCurrent
-    SeekEnd
-    SeekData
-    SeekHole
+    SEEKSET
+    SEEKCURRENT
+    SEEKEND
+    SEEKDATA
+    SEEKHOLE
 }
 
-extern func seek(fd: rawptr, offset: int64, whence: Whence)
+extern func seek(fd: FileHandle, offset: int64, w: Whence)
 
 type Stat = struct {
     size: usize
@@ -63,48 +60,48 @@ type Stat = struct {
     mode: int
 }
 
-extern func stat(filename: []pure uint8, buf: &Stat): SystemError
+extern func stat(filename: []pure uint8, buf: &Stat): syserror
 
-extern func stat(fd: rawptr, buf: &Stat): SystemError
+extern func stat(fd: FileHandle, buf: &Stat): syserror
 
-extern func unlink(path: []pure uint8): SystemError
+extern func unlink(path: []pure uint8): syserror
 
-extern func remove(path: []pure uint8): SystemError
+extern func remove(path: []pure uint8): syserror
 
-extern func rename(path: []pure uint8, dest: []pure uint8): SystemError
+extern func rename(path: []pure uint8, dest: []pure uint8): syserror
 
-extern func copy(path: []pure uint8, dest: []pure uint8): SystemError
+extern func copy(path: []pure uint8, dest: []pure uint8): syserror
 
-extern func mkdir(path: []pure uint8): SystemError
+extern func mkdir(path: []pure uint8): syserror
 
 
 // process.cb
 
 extern func exit(code: int)
 
-extern func execProcess(cmdline: []pure uint8, pwd: []pure uint8): SystemError
+extern func process(cmdline: []pure uint8, pwd: []pure uint8): syserror
 
 
 // thread.cb
 
-typealias ThreadHandle = rawptr
+typealias ThreadHandle = &opaque
 
-typealias MutexHandle = rawptr
+typealias MutexHandle = &opaque
 
-extern func createThread(fn: {rawptr} -> {}, arg: rawptr): {ThreadHandle, SystemError}
+extern func makethread(fn: {&opaque} -> {}, arg: &opaque): {ThreadHandle, syserror}
 
-extern func join(th: ThreadHandle): SystemError
+extern func join(th: ThreadHandle): syserror
 
-extern func getThreadId(): int
+extern func threadid(): int
 
-extern func getCoreCount(): int
+extern func cpucount(): int
 
-extern func createMutex(): {MutexHandle, SystemError}
+extern func makemutex(): {MutexHandle, syserror}
 
-extern func lock(m: MutexHandle): SystemError
+extern func lock(m: MutexHandle): syserror
 
-extern func unlock(m: MutexHandle): SystemError
+extern func unlock(m: MutexHandle): syserror
 
 extern func destroy(m: MutexHandle)
 
-extern func sleepMs(ms: uint64)
+extern func sleepms(ms: uint64)

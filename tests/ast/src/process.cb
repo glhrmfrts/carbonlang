@@ -21,12 +21,12 @@ code_unit{
             var_decl{(wShowWindow): type_expr{int16}}
             var_decl{(cbReserved2): type_expr{int16}}
             var_decl{(lpReserved2): type_expr{type_qualifier{ptr, uint8}}}
-            var_decl{(hStdInput): type_expr{rawptr}}
-            var_decl{(hStdOutput): type_expr{rawptr}}
-            var_decl{(hStdError): type_expr{rawptr}}}}}}
+            var_decl{(hStdInput): type_expr{type_qualifier{ptr, opaque}}}
+            var_decl{(hStdOutput): type_expr{type_qualifier{ptr, opaque}}}
+            var_decl{(hStdError): type_expr{type_qualifier{ptr, opaque}}}}}}}
     type_decl{PROCESS_INFORMATION = type_expr{struct_type{decl_list{
-            var_decl{(hProcess): type_expr{rawptr}}
-            var_decl{(hThread): type_expr{rawptr}}
+            var_decl{(hProcess): type_expr{type_qualifier{ptr, opaque}}}
+            var_decl{(hThread): type_expr{type_qualifier{ptr, opaque}}}
             var_decl{(dwProcessId): type_expr{int}}
             var_decl{(dwThreadId): type_expr{int}}}}}}
     linkage_specifier{ extern(C)}

@@ -13,24 +13,24 @@ type Automaton = struct {
 }
 
 func print(str: []pure uint8) {
-    system::write(system::getStdoutFd(), str)
+    system::write(system::stdout(), str)
 }
 
 func println(str: []pure uint8) {
-    system::write(system::getStdoutFd(), str)
-    system::write(system::getStdoutFd(), "\n")
+    system::write(system::stdout(), str)
+    system::write(system::stdout(), "\n")
 }
 
 func print(i: int) {
-    t::writeInt(system::getStdoutFd(), i)
+    t::writeint(system::stdout(), i)
 }
 
 func println(i: int) {
-    t::writeInt(system::getStdoutFd(), i)
-    system::write(system::getStdoutFd(), "\n")
+    t::writeint(system::stdout(), i)
+    system::write(system::stdout(), "\n")
 }
 
-func memcopy(dest: rawptr, src: rawptr, size: usize) {
+func memcopy(dest: &opaque, src: &pure opaque, size: usize) {
     asm%{
 push rdi
 push rsi
@@ -45,7 +45,7 @@ pop rdi
     }%asm
 }
 
-func memset(dest: rawptr, value: uint8, count: usize) {
+func memset(dest: &opaque, value: uint8, count: usize) {
     asm%{
 push rdi
 
@@ -59,7 +59,7 @@ pop rdi
 }
 
 func allocString(sz: usize): []uint8 {
-    let data = system::alloc(sz + 1)
+    let data, err = system::alloc(sz + 1)
     memset(data, 0, sz + 1)
     return []uint8{ (cast(&uint8)data), sz }
 }
@@ -67,7 +67,7 @@ func allocString(sz: usize): []uint8 {
 func copySubstr(s: []pure uint8, start: usize, end: usize): []pure uint8 {
     let size = end - start
     let newstr = allocString(size)
-    memcopy(cast(rawptr)newstr.ptr, cast(rawptr)(&s[start]), size)
+    memcopy(cast(&opaque)newstr.ptr, cast(&opaque)(&s[start]), size)
     return newstr
 }
 
@@ -94,7 +94,7 @@ func split(s: []pure uint8, ned: []pure uint8): [][]pure uint8 {
     }
 
     // TODO(feature): let list : Array([]pure uint8)
-    let listbuf = system::alloc(16 * cast(usize)100)
+    let listbuf, err = system::alloc(16 * cast(usize)100)
     let list = [][]pure uint8{ (cast(&[]pure uint8)listbuf), 0 }
     let listsize = 0
 
@@ -105,10 +105,7 @@ func split(s: []pure uint8, ned: []pure uint8): [][]pure uint8 {
         list[listsize] = prefix
         listsize += 1
 
-        // TODO(feature): index, ok = find(suffix, ned[0])
-        let newfind = find(suffix, ned[0])
-        index = newfind.first
-        ok = newfind.second
+        index, ok = find(suffix, ned[0])
     }
 
     list.len = listsize
@@ -116,14 +113,14 @@ func split(s: []pure uint8, ned: []pure uint8): [][]pure uint8 {
     return list
 }
 
-func makeField(sx: int, sy: int): Field2D {
-    // TODO(bug): let data = system::alloc(sizeof(int)*sx*sy)
+func makefield(sx: int, sy: int): Field2D {
+    // TODO(bug): let data = system::alloc(sizeof(int)*sx*sy)    
     print("makeField: ")
     print(sx)
     print(", ")
     print(sy)
-    println("")
-    let data = system::alloc(sizeof(int)*(cast(usize)sx)*(cast(usize)sy))
+    println("")    
+    let data, err = system::alloc(sizeof(int)*(cast(usize)sx)*(cast(usize)sy))
     return Field2D{ (cast(&int)data), sx, sy }
 }
 
@@ -139,7 +136,7 @@ func clear(f: &Field2D) {
     memset(f.data, 0, f.width*f.height*sizeof(int))
 }
 
-func makeAutomaton(ftext: []pure uint8): Automaton {
+func makeautomaton(ftext: []pure uint8): Automaton {
     let f = ftext->split("\n")
     defer freeListOfStrings(f)
 
@@ -152,8 +149,8 @@ func makeAutomaton(ftext: []pure uint8): Automaton {
         }
     }
 
-    let field    = makeField(width, height)
-    let newfield = makeField(width, height)
+    let field    = makefield(width, height)
+    let newfield = makefield(width, height)
 
     for (y in 0,field.height) {
         for (x in 0,field.width) {
@@ -192,7 +189,7 @@ func update(a: &Automaton) {
 }
 
 func print(a: &Automaton) {
-    let buf = system::alloc(a.field.width * a.field.height + 256)
+    let buf, err = system::alloc(a.field.width * a.field.height + 256)
     defer system::free(buf)
 
     print(a.field.width)
@@ -216,7 +213,7 @@ func print(a: &Automaton) {
 	println("print ended")
 }
 
-func makeGun(): Automaton {
+func makegun(): Automaton {
     let gunfield = "*******************************************
 *                                         *
 *  A shooting gun:                        *
@@ -231,14 +228,14 @@ func makeGun(): Automaton {
 *                                         *
 *                                         *
 *******************************************"
-    return makeAutomaton(gunfield)
+    return makeautomaton(gunfield)
 }
 
-func gameOfLife() {
-    let a = makeGun()
+func gameoflife() {
+    let a = makegun()
     for (i in 0,150) {
         a->update()
         a->print()
-        system::sleepMs(200)
+        system::sleepms(200)
     }
 }

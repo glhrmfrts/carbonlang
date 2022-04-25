@@ -1,0 +1,45 @@
+import std::system
+
+type KeyVal = struct {
+    key: []pure uint8
+    value: []pure uint8
+}
+
+type ConfSection = struct {
+    name: []pure uint8
+    keyvalues: []KeyVal
+}
+
+type Conf = struct {
+    sections: []ConfSection
+}
+
+func parseconf(src: []pure uint8): {Conf, syserror} {
+    return Conf{}, NOERROR
+}
+
+func readconf(filename: []pure uint8): {Conf, syserror} {
+    let conf : Conf
+    let statbuf : Stat
+
+    let err = stat(filename, &statbuf)
+    if (err!=NOERROR) { return conf, err }
+
+    let filebuf, err = alloc(statbuf.size + 1)
+    if (err!=NOERROR) { return conf, err }
+    defer free(filebuf)
+
+    import gameoflife
+    memset(filebuf, 0, statbuf.size + 1)
+
+    let filedata = []uint8{ cast(&uint8)filebuf, statbuf.size }
+    
+    let handle, err = open(filename, READ, 0)
+    if (err!=NOERROR) { return conf, err }
+    defer close(handle)
+
+    read(handle, filedata)
+
+    conf, err = parseconf(filedata)
+    return conf, err
+}

@@ -22,14 +22,14 @@ type STARTUPINFOA = struct {
     wShowWindow: int16;
     cbReserved2: int16;
     lpReserved2: &uint8;
-    hStdInput: rawptr;
-    hStdOutput: rawptr;
-    hStdError: rawptr;
+    hStdInput: &opaque;
+    hStdOutput: &opaque;
+    hStdError: &opaque;
 }
 
 type PROCESS_INFORMATION = struct {
-    hProcess: rawptr;
-    hThread: rawptr;
+    hProcess: &opaque;
+    hThread: &opaque;
     dwProcessId: int;
     dwThreadId: int;
 }
@@ -37,13 +37,13 @@ type PROCESS_INFORMATION = struct {
 extern(C) func ExitProcess(uExitCode: uint)
 
 extern(C) func CreatePipe(
-    hReadPipe: &rawptr,
-    hWritePipe: &rawptr,
+    hReadPipe: & &opaque,
+    hWritePipe: & &opaque,
     lpPipeAttributes: &SECURITY_ATTRIBUTES,
     nSize: int
 ): bool
 
-extern(C) func TerminateProcess(handle: rawptr, exitCode: uint): bool
+extern(C) func TerminateProcess(handle: &opaque, exitCode: uint): bool
 
 extern(C) func CreateProcessA(
     lpApplicationName: &pure uint8,
@@ -52,7 +52,7 @@ extern(C) func CreateProcessA(
     lpThreadAttributes: &pure SECURITY_ATTRIBUTES,
     bInheritHandles: bool,
     dwCreationFlags: int32,
-    lpEnvironment: rawptr,
+    lpEnvironment: &opaque,
     lpCurrentDirectory: &uint8,
     lpStartupInfo: &pure STARTUPINFOA,
     lpProcessInformation: &PROCESS_INFORMATION
@@ -63,17 +63,17 @@ func exit(code: int) {
     ExitProcess(code)
 }
 
-func readProcessChar(handle: rawptr, c: &uint8): bool {
+func readProcessChar(handle: &opaque, c: &uint8): bool {
     let dwRead : int
-    let bSuccess = ReadFile( handle, cast(rawptr)c, 1, &dwRead, nil )
+    let bSuccess = ReadFile( handle, cast(&opaque)c, 1, &dwRead, nil )
     return bSuccess && (dwRead == 1)
 }
 
-func execProcess(cmdline: []pure uint8, pwd: []pure uint8): SystemError {
-    let outputHandleRead  : rawptr
-    let outputHandleWrite : rawptr
-    let inputHandleRead   : rawptr
-    let inputHandleWrite  : rawptr
+func process(cmdline: []pure uint8, pwd: []pure uint8): syserror {
+    let outputHandleRead  : &opaque
+    let outputHandleWrite : &opaque
+    let inputHandleRead   : &opaque
+    let inputHandleWrite  : &opaque
 
     let saAttr : SECURITY_ATTRIBUTES
     saAttr.nLength = sizeof(SECURITY_ATTRIBUTES)
@@ -81,10 +81,10 @@ func execProcess(cmdline: []pure uint8, pwd: []pure uint8): SystemError {
     saAttr.lpSecurityDescriptor = nil
 
     if (!CreatePipe(&outputHandleRead, &outputHandleWrite, &saAttr, 0)) {
-        return cast(SystemError)GetLastError()
+        return cast(syserror)GetLastError()
     }
     if (!CreatePipe(&inputHandleRead, &inputHandleWrite, &saAttr, 0)) {
-        return cast(SystemError)GetLastError()
+        return cast(syserror)GetLastError()
     }
 
     let si : STARTUPINFOA
@@ -108,7 +108,7 @@ func execProcess(cmdline: []pure uint8, pwd: []pure uint8): SystemError {
         &pi
     )
     if (!success) {
-        return cast(SystemError)GetLastError()
+        return cast(syserror)GetLastError()
     }
 
     // Close handles to the stdin and stdout pipes no longer needed by the child process.
@@ -118,10 +118,10 @@ func execProcess(cmdline: []pure uint8, pwd: []pure uint8): SystemError {
 
     let c : uint8
     while (readProcessChar(outputHandleRead, &c)) {
-        write(getStdoutFd(), []pure uint8{&c, 1})
+        write(stdout(), []pure uint8{&c, 1})
     }
-    let err = cast(SystemError)GetLastError()
-    if (err != NoError && (cast(int)err) != 109) {
+    let err = cast(syserror)GetLastError()
+    if (err != NOERROR && (cast(int)err) != 109) {
         return err 
     }
 
@@ -133,6 +133,6 @@ func execProcess(cmdline: []pure uint8, pwd: []pure uint8): SystemError {
     CloseHandle(pi.hProcess)
     CloseHandle(pi.hThread)
 
-    return NoError
+    return NOERROR
 }
 }

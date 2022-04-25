@@ -605,9 +605,9 @@ void generate_ir_call_expr(ast_node& node) {
     }
 
     bool pushes = node.type_id != ts->void_type;
-    //if (node.call.flags & call_flag::is_aggregate_return) {
-      //  pushes = false;
-    //}
+    if (node.call.flags & call_flag::is_aggregate_return) {
+        pushes = false;
+    }
 
     if (pushes) {
         emitops(ir_call, node.type_id, args);
