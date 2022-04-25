@@ -230,15 +230,15 @@ arena_ptr<ast_node> transform_bool_op_into_if_statement(type_system& ts, arena_p
     return make_if_stmt_node(*ts.ast_arena, bop->pos, std::move(bop), std::move(assign_true), std::move(assign_false));
 }
 
-arena_ptr<ast_node> transform_ternary_expr_into_if_statement(type_system& ts, arena_ptr<ast_node> texpr, ast_node& destvar) {
-    auto true_node = std::move(texpr->children[ast_node::child_if_body]);
-    auto false_node = std::move(texpr->children[ast_node::child_if_else]);
+arena_ptr<ast_node> transform_ternary_expr_into_if_statement(type_system& ts, ast_node& texpr, ast_node& destvar) {
+    auto true_node = std::move(texpr.children[ast_node::child_if_body]);
+    auto false_node = std::move(texpr.children[ast_node::child_if_else]);
     auto assign_true = make_binary_expr_node(*ts.ast_arena, {}, token_from_char('='), copy_node(ts, &destvar), std::move(true_node));
     auto assign_false = make_binary_expr_node(*ts.ast_arena, {}, token_from_char('='), copy_node(ts, &destvar), std::move(false_node));
     return make_if_stmt_node(
         *ts.ast_arena,
-        texpr->pos,
-        std::move(texpr->children[ast_node::child_if_cond]),
+        texpr.pos,
+        std::move(texpr.children[ast_node::child_if_cond]),
         std::move(assign_true),
         std::move(assign_false)
     );
@@ -335,7 +335,7 @@ std::pair<arena_ptr<ast_node>, arena_ptr<ast_node>> make_temp_variable_for_terna
     resolve_node_type_post(ts, ref.get());
 
     // Make the if statement
-    auto ifstmt = transform_ternary_expr_into_if_statement(ts, std::move(expr), *ref);
+    auto ifstmt = transform_ternary_expr_into_if_statement(ts, *expr, *ref);
     resolve_node_type_post(ts, ifstmt.get());
 
     ifstmt->temps.push_back(std::move(decl));
@@ -345,7 +345,7 @@ std::pair<arena_ptr<ast_node>, arena_ptr<ast_node>> make_temp_variable_for_terna
 
 arena_ptr<ast_node> make_temp_variable_for_ternary_expr_resolved(type_system& ts, arena_ptr<ast_node> expr, arena_ptr<ast_node> receiver) {
     // Make the if statement
-    auto ifstmt = transform_ternary_expr_into_if_statement(ts, std::move(expr), *receiver);
+    auto ifstmt = transform_ternary_expr_into_if_statement(ts, *expr, *receiver);
     resolve_node_type_post(ts, ifstmt.get());
 
     return std::move(ifstmt);

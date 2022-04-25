@@ -9,7 +9,6 @@ extern func memset(:rawptr, :uint8, :usize):{};
 extern func allocString(:usize):[]uint8;
 extern func copySubstr(:[]pure uint8, :usize, :usize):[]pure uint8;
 extern func freeListOfStrings(:[][]pure uint8):{};
-extern func append(:[]pure uint8, :uint8):[]pure uint8;
 extern func find(:[]pure uint8, :uint8):{int, bool};
 extern func split(:[]pure uint8, :[]pure uint8):[][]pure uint8;
 extern func makeField(:int, :int):Field2D;

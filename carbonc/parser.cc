@@ -318,7 +318,18 @@ struct parser_impl {
             return parse_defer_stmt();
         }
 
-        return parse_expr();
+        return parse_assignment_stmt();
+    }
+
+    arena_ptr<ast_node> parse_assignment_stmt() {
+        auto pos = lex->pos();
+        auto lhs = parse_braceless_tuple_expr();
+        if (TOK_CHAR == '=') {
+            lex->next();
+            auto rhs = parse_braceless_tuple_expr();
+            return make_binary_expr_node(*ast_arena, pos, token_from_char('='), std::move(lhs), std::move(rhs));
+        }
+        return lhs;
     }
 
     arena_ptr<ast_node> parse_break_stmt() {

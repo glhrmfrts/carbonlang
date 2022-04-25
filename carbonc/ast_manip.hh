@@ -27,6 +27,8 @@ std::string generate_temp_name();
 
 arena_ptr<ast_node> transform_bool_op_into_if_statement(type_system& ts, arena_ptr<ast_node> bop, ast_node& destvar);
 
+arena_ptr<ast_node> transform_ternary_expr_into_if_statement(type_system& ts, ast_node& texpr, ast_node& destvar);
+
 std::pair<arena_ptr<ast_node>, arena_ptr<ast_node>> make_temp_variable_for_call_resolved(type_system& ts, ast_node& call);
 
 std::pair<arena_ptr<ast_node>, arena_ptr<ast_node>> make_temp_variable_for_index_expr_resolved(type_system& ts, arena_ptr<ast_node> lhs);

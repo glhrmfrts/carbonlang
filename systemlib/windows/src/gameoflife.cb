@@ -74,10 +74,6 @@ func copySubstr(s: []pure uint8, start: usize, end: usize): []pure uint8 {
 func freeListOfStrings(list: [][]pure uint8) {
 }
 
-func append(s: []pure uint8, c: uint8): []pure uint8 {
-    return ""
-}
-
 func find(s: []pure uint8, ned: uint8): {int, bool} {
     for (i in 0,s.len) {
         if (s[i] == ned) {
@@ -210,10 +206,7 @@ func print(a: &Automaton) {
 
         for (x in 0,a.field.width) {
             let cell = a.field->get(x,y)
-
-            // TODO(bug): s[y*a.field.width+x] = cell == 1 then '@' else '.'
             s[x] = cell == 1 then '@' else '.'
-
             s.len += 1
         }
 

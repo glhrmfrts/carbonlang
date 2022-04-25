@@ -2268,38 +2268,6 @@ void resolve_assignment_type(type_system& ts, ast_node& node) {
             return;
         }
     }
-    /*
-    else if (node.children[0]->type == ast_type::unary_expr && node.children[0]->op == token_from_char('*')) {
-        if (node.children[0]->type_id.get().kind == type_kind::ptr) {
-            add_type_error(ts, node.pos, "cannot dereference and assign to the pointer type '%s', did you mean to use a reference instead?",
-                type_to_string(node.children[0]->type_id).c_str());
-            node.type_error = true;
-            return;
-        }
-    }
-    else if (node.children[0]->type == ast_type::field_expr && node.children[0]->children[0]->type_id.get().kind == type_kind::ptr) {
-        add_type_error(ts, node.pos, "cannot assign to field of pointer type '%s', did you mean to use a reference instead?",
-            type_to_string(node.children[0]->children[0]->type_id).c_str());
-        node.type_error = true;
-        return;
-    }
-    else if (node.children[0]->type == ast_type::index_expr && node.children[0]->children[0]->type == ast_type::field_expr) {
-        if (node.children[0]->children[0]->children[0]->type_id.get().kind == type_kind::slice &&
-            node.children[0]->children[0]->children[0]->type_id.get().constructor_type == ts.slice_type_constructor->self->type_def.id) {
-            
-            add_type_error(ts, node.pos, "cannot assign to index of slice type '%s', did you mean to use a mutable slice instead?",
-                type_to_string(node.children[0]->children[0]->children[0]->type_id).c_str());
-            node.type_error = true;
-            return;
-        }
-    }
-    else if (node.children[0]->type == ast_type::index_expr && node.children[0]->children[0]->type_id.get().kind == type_kind::ptr) {
-        add_type_error(ts, node.pos, "cannot assign to index of pointer type '%s', did you mean to use a reference instead?",
-            type_to_string(node.children[0]->children[0]->type_id).c_str());
-        node.type_error = true;
-        return;
-    }
-    */
 
     if (node.children[1]->type == ast_type::init_expr) {
         if (!node.children[1]->initlist.receiver) {
@@ -2841,6 +2809,25 @@ arena_ptr<ast_node> generate_temp_for_call_expr(type_system& ts, ast_node& node,
 
     node.temps.push_back(std::move(temp));
 
+    return ref;
+}
+
+arena_ptr<ast_node> generate_temp_for_ternary_expr(type_system& ts, ast_node& node) {
+    auto tempname = generate_temp_name();
+    auto temp = make_var_decl_node_single(*ts.ast_arena, node.pos, token_type::let,
+        make_identifier_node(*ts.ast_arena, node.pos, { tempname }), // id
+        make_type_expr_node(*ts.ast_arena, node.pos, make_type_resolver_node(*ts.ast_arena, node.type_id)), // type
+        make_init_tag_node(*ts.ast_arena, {}, token_type::noinit), {}); // value
+    resolve_node_type(ts, temp.get());
+
+    auto ref = make_identifier_node(*ts.ast_arena, temp->pos, { tempname });
+    resolve_node_type(ts, ref.get());
+
+    auto ifstmt = transform_ternary_expr_into_if_statement(ts, node, *ref);
+    resolve_node_type(ts, ifstmt.get());
+
+    ifstmt->temps.push_back(std::move(temp));
+    ref->pre_children.push_back(std::move(ifstmt));
     return ref;
 }
 
@@ -3696,6 +3683,17 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
         }
 
         node.type_id = node.if_body()->type_id;
+
+        bool is_parent_var_decl = node.parent->type == ast_type::var_decl;
+        if (!is_parent_var_decl) {
+            auto ref = generate_temp_for_ternary_expr(ts, node);
+            auto idx = find_child_index(node.parent, &node);
+            if (idx) {
+                auto parent = node.parent;
+                //ref->pre_children.push_back(std::move(parent->children[*idx]));
+                parent->children[*idx] = std::move(ref);
+            }
+        }
         break;
     }
     case ast_type::cast_expr:
