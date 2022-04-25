@@ -88,27 +88,28 @@ func find(s: []pure uint8, ned: uint8): {int, bool} {
 }
 
 func split(s: []pure uint8, ned: []pure uint8): [][]pure uint8 {
-    let arr = [1][]uint8{}
-
     let prefix = s
     let suffix = s
 
     let index, ok = find(suffix, ned[0])
     if (!ok) {
-        return [][]uint8{ &arr[0], 0 }
+        // TODO(feature): return nil
+        return [][]pure uint8{}
     }
 
+    // TODO(feature): let list : Array([]pure uint8)
     let listbuf = system::alloc(16 * cast(usize)100)
     let list = [][]pure uint8{ (cast(&[]pure uint8)listbuf), 0 }
     let listsize = 0
 
     while (ok) {
         prefix = copySubstr(suffix, 0, index)
-        suffix = copySubstr(suffix, index + 1, s.len)
+        suffix = copySubstr(suffix, index + 1, suffix.len)
 
         list[listsize] = prefix
         listsize += 1
 
+        // TODO(feature): index, ok = find(suffix, ned[0])
         let newfind = find(suffix, ned[0])
         index = newfind.first
         ok = newfind.second
@@ -120,7 +121,12 @@ func split(s: []pure uint8, ned: []pure uint8): [][]pure uint8 {
 }
 
 func makeField(sx: int, sy: int): Field2D {
-    // TODO: let data = system::alloc(sizeof(int)*sx*sy)
+    // TODO(bug): let data = system::alloc(sizeof(int)*sx*sy)
+    print("makeField: ")
+    print(sx)
+    print(", ")
+    print(sy)
+    println("")
     let data = system::alloc(sizeof(int)*(cast(usize)sx)*(cast(usize)sy))
     return Field2D{ (cast(&int)data), sx, sy }
 }
@@ -150,9 +156,6 @@ func makeAutomaton(ftext: []pure uint8): Automaton {
         }
     }
 
-    println(width)
-    println(height)
-
     let field    = makeField(width, height)
     let newfield = makeField(width, height)
 
@@ -172,9 +175,6 @@ func update(a: &Automaton) {
     a.new_field->clear()
     for (y in 1,a.field.height - 1) {
         for (x in 1,a.field.width - 1) {
-            //print(x)
-            //print(", ")
-            //println(y)
             let moore_sum = (
                 a.field->get(x-1, y-1)
                 + a.field->get(x, y-1)
@@ -199,6 +199,11 @@ func print(a: &Automaton) {
     let buf = system::alloc(a.field.width * a.field.height + 256)
     defer system::free(buf)
 
+    print(a.field.width)
+    print(", ")
+    print(a.field.height)
+    println("")
+
     for (y in 0,a.field.height) {
         memset(buf, 0, a.field.width * a.field.height + 256)
         let s = []uint8{ (cast(&uint8)buf), 0 }
@@ -206,9 +211,8 @@ func print(a: &Automaton) {
         for (x in 0,a.field.width) {
             let cell = a.field->get(x,y)
 
-            // TODO: s[y*a.field.width+x] = cell == 1 then '@' else '.'
-            let val = (cell == 1 then '@' else '.')
-            s[x] = val
+            // TODO(bug): s[y*a.field.width+x] = cell == 1 then '@' else '.'
+            s[x] = cell == 1 then '@' else '.'
 
             s.len += 1
         }
@@ -234,9 +238,7 @@ func makeGun(): Automaton {
 *                                         *
 *                                         *
 *******************************************"
-    // TODO: return makeAutomaton(gunfield)
-    let a = makeAutomaton(gunfield)
-    return a
+    return makeAutomaton(gunfield)
 }
 
 func gameOfLife() {

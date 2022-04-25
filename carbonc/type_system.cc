@@ -2807,6 +2807,43 @@ void generate_temp_for_field_expr(type_system& ts, ast_node& node, type_id ltype
     node.desugar_flags |= 1;
 }
 
+void transform_aggregate_call_into_pointer_argument_helper_ts(type_system& ts, ast_node& receiver, ast_node* call) {
+    assert(call->type_id.valid());
+
+    auto ref = copy_node(ts, &receiver);
+    ref->type_id = call->type_id;
+
+    auto addr = make_address_of_expr(ts, std::move(ref));
+    addr->type_id = get_ptr_type_to(ts, call->type_id);
+
+    call->call_args().insert(call->call_args().begin(), std::move(addr));
+
+    //call->type_id = get_ptr_type_to(ts, call->type_id);
+    call->type_id = ts.void_type;
+
+    call->call.flags |= call_flag::is_aggregate_return;
+}
+
+// Generates a temp variable for a call with aggregate return type, returns a ref to the temp variable
+arena_ptr<ast_node> generate_temp_for_call_expr(type_system& ts, ast_node& node, type_id ltype) {
+    auto tempname = generate_temp_name();
+    auto temp = make_var_decl_node_single(*ts.ast_arena, node.pos, token_type::let,
+        make_identifier_node(*ts.ast_arena, node.pos, { tempname }), // id
+        make_type_expr_node(*ts.ast_arena, node.pos, make_type_resolver_node(*ts.ast_arena, node.type_id)), // type
+        make_init_tag_node(*ts.ast_arena, {}, token_type::noinit), {}); // value
+
+    resolve_node_type(ts, temp.get());
+
+    auto ref = make_identifier_node(*ts.ast_arena, temp->pos, { tempname });
+    resolve_node_type(ts, ref.get());
+
+    transform_aggregate_call_into_pointer_argument_helper_ts(ts, *ref.get(), &node);
+
+    node.temps.push_back(std::move(temp));
+
+    return ref;
+}
+
 static bool g_inside_loop;
 
 type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
@@ -3309,6 +3346,17 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
             node.type_id = node.call_func()->type_id.get().func.ret_type;
             node.call.func_type_id = node.call_func()->type_id;
             node.type_error = false;
+        }
+
+        bool is_parent_var_decl = node.parent->type == ast_type::var_decl;
+        if (!is_parent_var_decl && is_aggregate(get_alias_root(ts, node.type_id))) {
+            auto ref = generate_temp_for_call_expr(ts, node, node.type_id);
+            auto idx = find_child_index(node.parent, &node);
+            if (idx) {
+                auto parent = node.parent;
+                ref->pre_children.push_back(std::move(parent->children[*idx]));
+                parent->children[*idx] = std::move(ref);
+            }
         }
 
         //report_type_error(node.type_id, node.pos, "cannot resolve type of function call %s", node_to_string(node));

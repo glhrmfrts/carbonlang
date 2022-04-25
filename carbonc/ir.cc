@@ -45,6 +45,7 @@ static type_system* ts;
 static std::stack<ir_operand> operand_stack;
 static std::unordered_map<std::string, int> string_map;
 
+// The target labels for any continue or break statements
 struct control_labels {
     std::string continue_label;
     std::string break_label;
@@ -627,7 +628,7 @@ void generate_ir_assignment(ast_node& node) {
         if (is_aggregate_type(node.type_id) && node.children[1]->type == ast_type::init_expr) {
             generate_ir_node(*node.children[1]);
         }
-        else if (is_aggregate_type(node.type_id) && node.type_id.get().size > 8) {
+        else if (is_aggregate_type(node.type_id) && node.type_id.get().size > sizeof(std::size_t)) {
             generate_ir_node(*node.children[0]);
             auto dest = pop();
 

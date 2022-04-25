@@ -227,6 +227,9 @@ arena_ptr<ast_node> make_var_decl_node(memory_arena& arena, const position& pos,
     ptr->pos = pos;
     ptr->op = kind;
     ptr->var_modifiers = mods;
+    id->parent = ptr.get();
+    if (decl_type) { decl_type->parent = ptr.get(); }
+    if (decl_val) { decl_val->parent = ptr.get(); }
     ptr->children.push_back(std::move(id));
     ptr->children.push_back(std::move(decl_type));
     ptr->children.push_back(std::move(decl_val));
@@ -246,6 +249,10 @@ arena_ptr<ast_node> make_var_decl_node_single(memory_arena& arena, const positio
     std::vector<arena_ptr<ast_node>> idlist;
     idlist.push_back(std::move(id));
     auto arg_list = make_arg_list_node(arena, idpos, std::move(idlist));
+
+    arg_list->parent = ptr.get();
+    if (decl_type) { decl_type->parent = ptr.get(); }
+    if (decl_val) { decl_val->parent = ptr.get(); }
 
     ptr->children.push_back(std::move(arg_list));
     ptr->children.push_back(std::move(decl_type));
