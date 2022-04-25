@@ -1,21 +1,78 @@
 import std::system
+import string
 
 type KeyVal = struct {
     key: []pure uint8
-    value: []pure uint8
+    val: []pure uint8
+    next: &KeyVal
 }
 
 type ConfSection = struct {
     name: []pure uint8
-    keyvalues: []KeyVal
+    keyvals: &KeyVal
+    next: &ConfSection
 }
 
 type Conf = struct {
-    sections: []ConfSection
+    sections: &ConfSection
+}
+
+func addsection(conf: &Conf, name: []pure uint8): &ConfSection {
+    let newsection = cast(&ConfSection) (alloc(sizeof(ConfSection)).first)
+    newsection.name = name
+    newsection.keyvals = nil
+    newsection.next = conf.sections
+    conf.sections = newsection
+    return newsection
+}
+
+func addkeyval(sec: &ConfSection, key: []pure uint8, val: []pure uint8) {
+    let kv = cast(&KeyVal) (alloc(sizeof(KeyVal)).first)
+    kv.key = key
+    kv.val = val
+    kv.next = sec.keyvals
+    sec.keyvals = kv
 }
 
 func parseconf(src: []pure uint8): {Conf, syserror} {
-    return Conf{}, NOERROR
+    let conf : Conf
+    let lines = split(src, "\n")
+
+    let currentsection : &ConfSection
+
+    // TODO: trim strings
+
+    for (i in 0,lines.len) {
+        let line = trim(lines[i])
+
+        // TODO(bug): fix continue jump
+        //if (line.len == 0) { continue }
+
+        if (line.len > 0) {
+            if (line[0] == '[') {
+                let end, ok = find(line, ']')
+                if (ok) {
+                    let secname = copyrange(line, 1, end)
+                    //print("section: ")
+                    //println(secname)
+                    currentsection = conf->addsection(secname)
+                }
+            }
+            // TODO(feature): else if (let eq,ok = find(line, '='); ok)
+            else {
+                let eqpos, ok = find(line, '=')
+                if (ok) {
+                    let key = copyrange(line, 0, eqpos)
+                    let value = copyrange(line, eqpos + 1, line.len)
+                    //print(key) print(" = ") print(value) print("\n")
+                    if (currentsection != nil) {
+                        currentsection->addkeyval(trim(key), trim(value))
+                    }
+                }
+            }
+        }
+    }
+    return conf, NOERROR
 }
 
 func readconf(filename: []pure uint8): {Conf, syserror} {

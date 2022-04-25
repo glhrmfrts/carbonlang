@@ -1,16 +1,6 @@
 import std::system as system;
 import test as t;
-extern func print(:[]pure uint8):{};
-extern func println(:[]pure uint8):{};
-extern func print(:int):{};
-extern func println(:int):{};
-extern func memcopy(:&opaque, :&pure opaque, :usize):{};
-extern func memset(:&opaque, :uint8, :usize):{};
-extern func allocString(:usize):[]uint8;
-extern func copySubstr(:[]pure uint8, :usize, :usize):[]pure uint8;
-extern func freeListOfStrings(:[][]pure uint8):{};
-extern func find(:[]pure uint8, :uint8):{int, bool};
-extern func split(:[]pure uint8, :[]pure uint8):[][]pure uint8;
+import string;
 extern func makefield(:int, :int):Field2D;
 extern func set(:&Field2D, :int, :int, :int):{};
 extern func get(:&pure Field2D, :int, :int):int;

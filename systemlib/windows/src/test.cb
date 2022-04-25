@@ -427,8 +427,31 @@ extern(C) func test_main(): int {
         write(stdout(), "testEnumValues: NOK\n")
     }
 
-    import gameoflife
-    gameoflife()
+    //import gameoflife
+    //gameoflife()
+
+    import confparser
+    let conf, err = readconf("carbon.conf")
+
+    import string
+    println(cast(int)err)
+
+    let confsec = conf.sections
+    while (confsec != nil) {
+        print("section: ")
+        println(confsec.name)
+
+        let kv = confsec.keyvals
+        while (kv != nil) {
+            print("keyval: ")
+            print(kv.key)
+            print("=")
+            println(kv.val)
+            kv = kv.next
+        }
+
+        confsec = confsec.next
+    }
 
     return 0
 }

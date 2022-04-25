@@ -1,0 +1,106 @@
+import std::system as system
+import test as t
+
+func memcopy(dest: &opaque, src: &pure opaque, size: usize) {
+    asm%{
+push rdi
+push rsi
+
+mov rdi,rcx
+mov rsi,rdx
+mov rcx,r8
+rep movsb
+
+pop rsi
+pop rdi
+    }%asm
+}
+
+func memset(dest: &opaque, value: uint8, count: usize) {
+    asm%{
+push rdi
+
+mov rdi,rcx
+mov rax,rdx
+mov rcx,r8
+rep stosb
+
+pop rdi
+    }%asm
+}
+
+func print(str: []pure uint8) {
+    system::write(system::stdout(), str)
+}
+
+func println(str: []pure uint8) {
+    system::write(system::stdout(), str)
+    system::write(system::stdout(), "\n")
+}
+
+func print(i: int) {
+    t::writeint(system::stdout(), i)
+}
+
+func println(i: int) {
+    t::writeint(system::stdout(), i)
+    system::write(system::stdout(), "\n")
+}
+
+func allocstring(sz: usize): []uint8 {
+    let data, err = system::alloc(sz + 1)
+    memset(data, 0, sz + 1)
+    return []uint8{ (cast(&uint8)data), sz }
+}
+
+func copyrange(s: []pure uint8, start: usize, end: usize): []pure uint8 {
+    let size = end - start
+    let newstr = allocstring(size)
+    memcopy(cast(&opaque)newstr.ptr, cast(&opaque)(&s[start]), size)
+    return newstr
+}
+
+func find(s: []pure uint8, ned: uint8): {int, bool} {
+    for (i in 0,s.len) {
+        if (s[i] == ned) {
+            return i, true
+        }
+    }
+    return -1, false
+}
+
+func split(s: []pure uint8, ned: []pure uint8): [][]pure uint8 {
+    let prefix = s
+    let suffix = s
+
+    let index, ok = find(suffix, ned[0])
+    if (!ok) {
+        // TODO(feature): return nil
+        return [][]pure uint8{}
+    }
+
+    // TODO(feature): let list : Array([]pure uint8)
+    let listbuf, err = system::alloc(16 * cast(usize)100)
+    let list = [][]pure uint8{ (cast(&[]pure uint8)listbuf), 0 }
+    let listsize = 0
+
+    while (ok) {
+        prefix = copyrange(suffix, 0, index)
+        suffix = copyrange(suffix, index + 1, suffix.len)
+
+        // TODO: free suffix temps
+
+        list[listsize] = prefix
+        listsize += 1
+
+        index, ok = find(suffix, ned[0])
+    }
+
+    list.len = listsize
+
+    return list
+}
+
+func trim(s: []pure uint8): []pure uint8 {
+    return s
+}

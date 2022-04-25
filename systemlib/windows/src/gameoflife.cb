@@ -1,5 +1,6 @@
 import std::system as system
 import test as t
+import string
 
 type Field2D = struct {
     data: &int
@@ -10,107 +11,6 @@ type Field2D = struct {
 type Automaton = struct {
     field:      Field2D
     new_field:  Field2D
-}
-
-func print(str: []pure uint8) {
-    system::write(system::stdout(), str)
-}
-
-func println(str: []pure uint8) {
-    system::write(system::stdout(), str)
-    system::write(system::stdout(), "\n")
-}
-
-func print(i: int) {
-    t::writeint(system::stdout(), i)
-}
-
-func println(i: int) {
-    t::writeint(system::stdout(), i)
-    system::write(system::stdout(), "\n")
-}
-
-func memcopy(dest: &opaque, src: &pure opaque, size: usize) {
-    asm%{
-push rdi
-push rsi
-
-mov rdi,rcx
-mov rsi,rdx
-mov rcx,r8
-rep movsb
-
-pop rsi
-pop rdi
-    }%asm
-}
-
-func memset(dest: &opaque, value: uint8, count: usize) {
-    asm%{
-push rdi
-
-mov rdi,rcx
-mov rax,rdx
-mov rcx,r8
-rep stosb
-
-pop rdi
-    }%asm
-}
-
-func allocString(sz: usize): []uint8 {
-    let data, err = system::alloc(sz + 1)
-    memset(data, 0, sz + 1)
-    return []uint8{ (cast(&uint8)data), sz }
-}
-
-func copySubstr(s: []pure uint8, start: usize, end: usize): []pure uint8 {
-    let size = end - start
-    let newstr = allocString(size)
-    memcopy(cast(&opaque)newstr.ptr, cast(&opaque)(&s[start]), size)
-    return newstr
-}
-
-func freeListOfStrings(list: [][]pure uint8) {
-}
-
-func find(s: []pure uint8, ned: uint8): {int, bool} {
-    for (i in 0,s.len) {
-        if (s[i] == ned) {
-            return i, true
-        }
-    }
-    return -1, false
-}
-
-func split(s: []pure uint8, ned: []pure uint8): [][]pure uint8 {
-    let prefix = s
-    let suffix = s
-
-    let index, ok = find(suffix, ned[0])
-    if (!ok) {
-        // TODO(feature): return nil
-        return [][]pure uint8{}
-    }
-
-    // TODO(feature): let list : Array([]pure uint8)
-    let listbuf, err = system::alloc(16 * cast(usize)100)
-    let list = [][]pure uint8{ (cast(&[]pure uint8)listbuf), 0 }
-    let listsize = 0
-
-    while (ok) {
-        prefix = copySubstr(suffix, 0, index)
-        suffix = copySubstr(suffix, index + 1, suffix.len)
-
-        list[listsize] = prefix
-        listsize += 1
-
-        index, ok = find(suffix, ned[0])
-    }
-
-    list.len = listsize
-
-    return list
 }
 
 func makefield(sx: int, sy: int): Field2D {
@@ -137,8 +37,8 @@ func clear(f: &Field2D) {
 }
 
 func makeautomaton(ftext: []pure uint8): Automaton {
-    let f = ftext->split("\n")
-    defer freeListOfStrings(f)
+    let f = split(ftext, "\n")
+    //defer freeListOfStrings(f)
 
     let height = cast(int) f.len
     let width  = 0
