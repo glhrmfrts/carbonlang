@@ -125,7 +125,7 @@ struct ast_node {
     position pos{};
     token_type op{};
     type_qualifier type_qual{};
-    type_id type_id{};
+    type_id tid{};
     std::string_view string_value{};
     //std::size_t id_hash{};
     float_type float_value{};
@@ -146,11 +146,10 @@ struct ast_node {
     scope_def scope;
     func_def func;
     local_def local;
-    type_def type_def;
-    lvalue lvalue;
+    type_def tdef;
+    lvalue_info lvalue;
     call_info call;
     func_overload_info func_overload;
-    global_data global_data;
     for_info forinfo;
     slice_info slice;
     field_access field;

@@ -142,10 +142,10 @@ bool declare_type_symbol(type_system& ts, scope_def& scope, const string_hash& h
     symbol_info info;
     info.kind = symbol_kind::type;
     info.scope = &scope;
-    info.type_index = scope.type_defs.size();
+    info.type_index = scope.tdefs.size();
     info.id = hash;
     scope.symbols[hash] = std::make_unique<symbol_info>(info);
-    scope.type_defs.push_back(&node.type_def);
+    scope.tdefs.push_back(&node.tdef);
     return true;
 }
 

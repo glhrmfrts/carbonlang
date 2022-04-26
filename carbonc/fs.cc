@@ -63,6 +63,10 @@ std::FILE* open_file(const char* path, const char* mode) {
 
 #else
 
+#include <unistd.h>
+#include <sys/stat.h>
+#include <dirent.h>
+
 std::string widen(const std::string& text)
 {
     return text;
@@ -71,6 +75,10 @@ std::string widen(const std::string& text)
 std::string narrow(const std::string& text)
 {
     return text;
+}
+
+std::FILE* open_file(const char* path, const char* mode) {
+    return std::fopen(path, mode);
 }
 
 #endif
@@ -101,15 +109,26 @@ bool exists(const std::string& filename)
 {
 #ifdef _WIN32
     return GetFileAttributesW(widen(filename).c_str()) != INVALID_FILE_ATTRIBUTES;
+#else
+    struct stat buf = { 0 };
+    return stat(filename.c_str(), &buf) == 0;
 #endif
 }
 
 bool is_directory(const std::string& filename) {
+#ifdef _Win32
     WIN32_FIND_DATAW data;
     HANDLE hFind = FindFirstFileW(widen(filename).c_str(), &data);
     bool res = (data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY);
     FindClose(hFind);
     return res;
+#else
+    struct stat buf = { 0 };
+    if (stat(filename.c_str(), &buf) != 0) {
+        return false;
+    }
+    return buf.st_mode & S_IFDIR;
+#endif
 }
 
 bool create(const std::string& path)
@@ -231,32 +250,6 @@ std::vector<std::string> list(const std::string& path) {
 
     /* POSIX-compliant Unix, Emscripten */
 #if defined(CORRADE_TARGET_UNIX) || defined(CORRADE_TARGET_EMSCRIPTEN)
-    DIR* directory = opendir(path.data());
-    if (!directory) return list;
-
-    dirent* entry;
-    while ((entry = readdir(directory)) != nullptr) {
-        if ((flags >= Flag::SkipDirectories) && entry->d_type == DT_DIR)
-            continue;
-#ifndef CORRADE_TARGET_EMSCRIPTEN
-        if ((flags >= Flag::SkipFiles) && entry->d_type == DT_REG)
-            continue;
-        if ((flags >= Flag::SkipSpecial) && entry->d_type != DT_DIR && entry->d_type != DT_REG)
-            continue;
-#else
-        if ((flags >= Flag::SkipFiles || flags >= Flag::SkipSpecial) && entry->d_type != DT_DIR)
-            continue;
-#endif
-
-        std::string file{ entry->d_name };
-        if ((flags >= Flag::SkipDotAndDotDot) && (file == "." || file == ".."))
-            continue;
-
-        list.push_back(std::move(file));
-    }
-
-    closedir(directory);
-
     /* Windows (not Store/Phone) */
 #elif defined(_WIN32)
     WIN32_FIND_DATAW data;
@@ -275,12 +268,33 @@ std::vector<std::string> list(const std::string& path) {
 
     /* Other not implemented */
 #else
-    Warning() << "Utility::Directory::list(): not implemented on this platform";
-    static_cast<void>(path);
+    DIR* directory = opendir(path.c_str());
+    if (!directory) return list;
+
+    dirent* entry;
+    while ((entry = readdir(directory)) != nullptr) {
+        std::string file{ entry->d_name };
+        if (file == "." || file == "..")
+            continue;
+
+        list.push_back(std::move(file));
+    }
+
+    closedir(directory);
 #endif
 
     std::sort(list.begin(), list.end());
     return list;
+}
+
+bool getworkingdir(size_t sz, char* buf)
+{
+#ifdef _WIN32
+    GetCurrentDirectory(sz, buf);
+#else
+    getcwd(buf, sz);
+#endif
+    return true;
 }
 
 }

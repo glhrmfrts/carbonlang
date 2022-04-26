@@ -23,4 +23,6 @@ std::vector<std::string> list(const std::string& path);
 
 bool split_extension(const std::string& filename, std::string& root, std::string& ext);
 
+bool getworkingdir(size_t sz, char* buf);
+
 }

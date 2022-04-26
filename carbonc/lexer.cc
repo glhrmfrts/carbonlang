@@ -1,5 +1,6 @@
 #include <array>
 #include <unordered_map>
+#include <cstring>
 #include "lexer.hh"
 
 #define STB_C_LEXER_IMPLEMENTATION

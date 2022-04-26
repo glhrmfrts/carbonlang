@@ -180,7 +180,7 @@ struct symbol_info {
     type_id cttype;
 };
 
-struct lvalue {
+struct lvalue_info {
     ast_node* self = nullptr;
     symbol_info* symbol;
 };
@@ -246,7 +246,7 @@ enum class scope_kind {
 struct scope_def {
     scope_kind kind{};
 
-    std::vector<type_def*> type_defs;
+    std::vector<type_def*> tdefs;
     std::vector<local_def*> local_defs;
     std::vector<scope_import> imports;
     string_hash self_module_key;

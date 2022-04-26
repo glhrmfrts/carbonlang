@@ -92,7 +92,7 @@ arena_ptr<ast_node> copy_node_helper(type_system& ts, ast_node& node) {
         return initexpr;
     }
     else if (node.type == ast_type::type_resolver) {
-        return make_type_resolver_node(*ts.ast_arena, node.type_id);
+        return make_type_resolver_node(*ts.ast_arena, node.tid);
     }
     else if (node.type == ast_type::type_expr) {
         return make_type_expr_node(*ts.ast_arena, node.pos, copy_node(ts, node.children[0].get()));
@@ -200,7 +200,7 @@ arena_ptr<ast_node> copy_node(type_system& ts, ast_node* node) {
         return { nullptr, nullptr };
     }
     auto cpy = copy_node_helper(ts, *node);
-    cpy->type_id = node->type_id;
+    cpy->tid = node->tid;
     for (auto& child : node->pre_children) {
         assert(child.get());
         cpy->pre_children.push_back(copy_node(ts, child.get()));
@@ -211,7 +211,7 @@ arena_ptr<ast_node> copy_node(type_system& ts, ast_node* node) {
 arena_ptr<ast_node> make_cast_to(type_system& ts, arena_ptr<ast_node> expr, type_id t) {
     auto type_expr = make_type_resolver_node(*ts.ast_arena, t);
     auto res = make_cast_expr_node(*ts.ast_arena, expr->pos, std::move(type_expr), std::move(expr));
-    res->type_id = t;
+    res->tid = t;
     return res;
 }
 
@@ -324,7 +324,7 @@ std::pair<arena_ptr<ast_node>, arena_ptr<ast_node>> make_temp_variable_for_terna
     // generate the temp ID
     std::string tempname = generate_temp_name();
     auto id_node = make_identifier_node(*ts.ast_arena, {}, { tempname });
-    auto type_node = make_type_resolver_node(*ts.ast_arena, expr->type_id);
+    auto type_node = make_type_resolver_node(*ts.ast_arena, expr->tid);
 
     // Generate and register the declaration of the temp
     auto decl = make_var_decl_node_single(*ts.ast_arena, {}, token_type::let, std::move(id_node), std::move(type_node), { nullptr, nullptr }, { token_type::auto_ });

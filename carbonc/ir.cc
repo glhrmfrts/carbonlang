@@ -132,7 +132,7 @@ ir_ref toref(const ir_operand& opr) {
 
 std::string generate_label_for_short_circuit(ast_node& node) {
     auto scope = ts->find_nearest_scope(scope_kind::func_body);
-    auto& funcname = scope->self->type_def.mangled_name.str;
+    auto& funcname = scope->self->tdef.mangled_name.str;
     node.ir.bin_self_label = funcname + "_short" + std::to_string(node.node_id);
     return node.ir.bin_self_label;
 }
@@ -222,7 +222,7 @@ void analyse_node(ast_node& node) {
     }
     case ast_type::for_stmt: {
         auto scope = ts->find_nearest_scope(scope_kind::func_body);
-        auto& funcname = scope->self->type_def.mangled_name.str;
+        auto& funcname = scope->self->tdef.mangled_name.str;
 
         node.ir.if_body_label = funcname + "$f" + std::to_string(node.node_id) + "$body";
         node.ir.if_end_label = funcname + "$f" + std::to_string(node.node_id) + "$end";
@@ -238,7 +238,7 @@ void analyse_node(ast_node& node) {
     }
     case ast_type::while_stmt: {
         auto scope = ts->find_nearest_scope(scope_kind::func_body);
-        auto& funcname = scope->self->type_def.mangled_name.str;
+        auto& funcname = scope->self->tdef.mangled_name.str;
 
         node.ir.if_body_label = funcname + "$w" + std::to_string(node.node_id) + "$body";
         node.ir.if_end_label = funcname + "$w" + std::to_string(node.node_id) + "$end";
@@ -254,7 +254,7 @@ void analyse_node(ast_node& node) {
     }
     case ast_type::if_stmt: {
         auto scope = ts->find_nearest_scope(scope_kind::func_body);
-        auto& funcname = scope->self->type_def.mangled_name.str;
+        auto& funcname = scope->self->tdef.mangled_name.str;
 
         node.ir.if_body_label = funcname + "$if" + std::to_string(node.node_id) + "$body";
         node.ir.if_else_label = funcname + "$if" + std::to_string(node.node_id) + "$else";
@@ -359,7 +359,7 @@ void generate_ir_children(ast_node& node) {
 void generate_ir_func(ast_node& node) {
     ir_func* funcptr = nullptr;
     for (auto& f : prog->funcs) {
-        if (f.name == node.type_def.mangled_name.str) {
+        if (f.name == node.tdef.mangled_name.str) {
             funcptr = &f;
         }
     }
@@ -371,12 +371,12 @@ void generate_ir_func(ast_node& node) {
 
     fn = &func;
 
-    auto mangled_name = node.type_def.mangled_name.str;
-    auto orig_name = node.type_def.name.str;
+    auto mangled_name = node.tdef.mangled_name.str;
+    auto orig_name = node.tdef.name.str;
 
     func.visibility = node.visibility;
     func.demangled_name = orig_name;
-    func.ret_type = node.type_def.func.ret_type;
+    func.ret_type = node.tdef.func.ret_type;
     func.name = mangled_name;
 
     if (!funcptr && !node.scope.body_node) {
@@ -394,7 +394,7 @@ void generate_ir_func(ast_node& node) {
 
     for (auto& arg : node.func_args()) {
         ir_arg_data iarg;
-        iarg.type = arg->type_id;
+        iarg.type = arg->tid;
         iarg.name = build_identifier_value(arg->var_id()->id_parts);
 
         arg->local.ir_index = func.args.size();
@@ -404,7 +404,7 @@ void generate_ir_func(ast_node& node) {
         if (local->flags & local_flag::is_argument) continue;
 
         ir_local_data ilocal;
-        ilocal.type = local->self->type_id;
+        ilocal.type = local->self->tid;
         ilocal.name = build_identifier_value(local->self->var_id()->id_parts);
 
         local->ir_index = func.locals.size();
@@ -530,11 +530,11 @@ void generate_ir_return_stmt(ast_node& node) {
         generate_ir_node(*expr);
         auto val = pop();
         for (auto s : defer_stmts) { generate_ir_defer_stmt(*s->children[0]); }
-        temit(ir_return, node.type_id, val);
+        temit(ir_return, node.tid, val);
     }
     else {
         for (auto s : defer_stmts) { generate_ir_defer_stmt(*s->children[0]); }
-        temit(ir_return, node.type_id, 0);
+        temit(ir_return, node.tid, 0);
     }
 }
 
@@ -548,14 +548,14 @@ void generate_ir_field_expr(ast_node& node) {
     generate_ir_node(*node.field_struct());
     auto a = pop();
     
-    if (is_pointer_type(node.field_struct()->type_id)) {
-        auto stype = node.field_struct()->type_id.get().elem_type;
+    if (is_pointer_type(node.field_struct()->tid)) {
+        auto stype = node.field_struct()->tid.get().elem_type;
         temit(ir_deref, stype, a);
         push(ir_field{ ir_stackpop{ stype }, node.field.field_index });
     }
     else if (std::holds_alternative<ir_field>(a)) {
-        auto stype = node.field_struct()->type_id;
-        temit(ir_load_addr, node.type_id, a);
+        auto stype = node.field_struct()->tid;
+        temit(ir_load_addr, node.tid, a);
         push(ir_field{ ir_stackpop{ stype }, node.field.field_index });
     }
     else {
@@ -567,8 +567,8 @@ void generate_ir_index_expr(ast_node& node) {
     generate_ir_node(*node.children[0]);
     auto a = pop();
 
-    if (is_pointer_type(node.children[0]->type_id)) {
-        auto ptype = node.children[0]->type_id.get().elem_type;
+    if (is_pointer_type(node.children[0]->tid)) {
+        auto ptype = node.children[0]->tid.get().elem_type;
         temit(ir_deref, ptype, a);
         a = ir_stackpop{ ptype };
     }
@@ -576,8 +576,8 @@ void generate_ir_index_expr(ast_node& node) {
     generate_ir_node(*node.children[1]);
     auto b = pop();
 
-    temit(ir_index, node.type_id, a, b);
-    push(ir_stackpop{ node.type_id });
+    temit(ir_index, node.tid, a, b);
+    push(ir_stackpop{ node.tid });
 }
 
 void generate_ir_call_expr(ast_node& node) {
@@ -604,14 +604,14 @@ void generate_ir_call_expr(ast_node& node) {
         args.push_back(pop());
     }
 
-    bool pushes = node.type_id != ts->void_type;
+    bool pushes = node.tid != ts->void_type;
     if (node.call.flags & call_flag::is_aggregate_return) {
         pushes = false;
     }
 
     if (pushes) {
-        emitops(ir_call, node.type_id, args);
-        push(ir_stackpop{ node.type_id });
+        emitops(ir_call, node.tid, args);
+        push(ir_stackpop{ node.tid });
     }
     else {
         emitops(ir_call, ts->void_type, args);
@@ -619,23 +619,23 @@ void generate_ir_call_expr(ast_node& node) {
 }
 
 void generate_ir_func_overload_selector_expr(ast_node& node) {
-    temit(ir_load_addr, node.type_id, ir_funclabel{ node.call.mangled_name.str, node.type_id });
-    push(ir_stackpop{ node.type_id });
+    temit(ir_load_addr, node.tid, ir_funclabel{ node.call.mangled_name.str, node.tid });
+    push(ir_stackpop{ node.tid });
 }
 
 void generate_ir_assignment(ast_node& node) {
     if (node.children[0] && node.children[1]) {
-        if (is_aggregate_type(node.type_id) && node.children[1]->type == ast_type::init_expr) {
+        if (is_aggregate_type(node.tid) && node.children[1]->type == ast_type::init_expr) {
             generate_ir_node(*node.children[1]);
         }
-        else if (is_aggregate_type(node.type_id) && node.type_id.get().size > sizeof(std::size_t)) {
+        else if (is_aggregate_type(node.tid) && node.tid.get().size > sizeof(std::size_t)) {
             generate_ir_node(*node.children[0]);
             auto dest = pop();
 
             generate_ir_node(*node.children[1]);
             auto src = pop();
 
-            emit(ir_copy, dest, src, ir_int{ int_type(node.type_id.get().size), ts->uintptr_type });
+            emit(ir_copy, dest, src, ir_int{ int_type(node.tid.get().size), ts->uintptr_type });
         }
         else {
             generate_ir_node(*node.children[0]);
@@ -673,20 +673,20 @@ void generate_ir_binary_expr(ast_node& node) {
     
     switch (token_to_char(node.op)) {
     case '+':
-        temit(ir_add, node.type_id, a, b);
-        push(ir_stackpop{ node.type_id });
+        temit(ir_add, node.tid, a, b);
+        push(ir_stackpop{ node.tid });
         break;
     case '-':
-        temit(ir_sub, node.type_id, a, b);
-        push(ir_stackpop{ node.type_id });
+        temit(ir_sub, node.tid, a, b);
+        push(ir_stackpop{ node.tid });
         break;
     case '*':
-        temit(ir_mul, node.type_id, a, b);
-        push(ir_stackpop{ node.type_id });
+        temit(ir_mul, node.tid, a, b);
+        push(ir_stackpop{ node.tid });
         break;
     case '/':
-        temit(ir_div, node.type_id, a, b);
-        push(ir_stackpop{ node.type_id });
+        temit(ir_div, node.tid, a, b);
+        push(ir_stackpop{ node.tid });
         break;
     case '<':
         emit((node.ir.bin_invert_jump) ? ir_jmp_gte : ir_jmp_lt, a, b, ir_label{node.ir.bin_target_label});
@@ -695,12 +695,12 @@ void generate_ir_binary_expr(ast_node& node) {
         emit((node.ir.bin_invert_jump) ? ir_jmp_lte : ir_jmp_gt, a, b, ir_label{node.ir.bin_target_label});
         break;
     case '&':
-        temit(ir_and, node.type_id, a, b);
-        push(ir_stackpop{ node.type_id });
+        temit(ir_and, node.tid, a, b);
+        push(ir_stackpop{ node.tid });
         break;
     case '|':
-        temit(ir_or, node.type_id, a, b);
-        push(ir_stackpop{ node.type_id });
+        temit(ir_or, node.tid, a, b);
+        push(ir_stackpop{ node.tid });
         break;
     }
 
@@ -718,12 +718,12 @@ void generate_ir_binary_expr(ast_node& node) {
         emit((node.ir.bin_invert_jump) ? ir_jmp_lt : ir_jmp_gte, a, b, ir_label{ node.ir.bin_target_label });
         break;
     case token_type::shr:
-        temit(ir_shr, node.type_id, a, b);
-        push(ir_stackpop{ node.type_id });
+        temit(ir_shr, node.tid, a, b);
+        push(ir_stackpop{ node.tid });
         break;
     case token_type::shl:
-        temit(ir_shl, node.type_id, a, b);
-        push(ir_stackpop{ node.type_id });
+        temit(ir_shl, node.tid, a, b);
+        push(ir_stackpop{ node.tid });
         break;
     }
 }
@@ -736,8 +736,8 @@ void generate_ir_deref_expr(ast_node& node) {
     }
 
     generate_ir_node(*node.children[0]);
-    temit(ir_deref, node.type_id, pop());
-    push(ir_stackpop{ node.type_id });
+    temit(ir_deref, node.tid, pop());
+    push(ir_stackpop{ node.tid });
 }
 
 void generate_ir_addr_expr(ast_node& node) {
@@ -750,8 +750,8 @@ void generate_ir_addr_expr(ast_node& node) {
     }
 
     generate_ir_node(*node.children[0]);
-    temit(ir_load_addr, node.type_id, pop());
-    push(ir_stackpop{ node.type_id });
+    temit(ir_load_addr, node.tid, pop());
+    push(ir_stackpop{ node.tid });
 }
 
 void generate_ir_unary_expr(ast_node& node) {
@@ -766,8 +766,8 @@ void generate_ir_unary_expr(ast_node& node) {
     }
     else if (token_to_char(node.op) == '-') {
         generate_ir_node(*node.children[0]);
-        temit(ir_neg, node.type_id, pop());
-        push(ir_stackpop{ node.type_id });
+        temit(ir_neg, node.tid, pop());
+        push(ir_stackpop{ node.tid });
     }
 }
 
@@ -777,7 +777,7 @@ void generate_ir_var(ast_node& node) {
     }
 
     if (node.func.linkage != func_linkage::local_carbon) {
-        prog->globals.push_back(ir_global_data{ node.local.mangled_name.str, node.type_id, {}, node.func.linkage });
+        prog->globals.push_back(ir_global_data{ node.local.mangled_name.str, node.tid, {}, node.func.linkage });
         return;
     }
 
@@ -788,11 +788,11 @@ void generate_ir_var(ast_node& node) {
         if (ts->current_scope->kind == scope_kind::code_unit && !node.local.mangled_name.str.empty()) {
             if (is_primary_expr(*node.var_value()) && node.var_value()->type != ast_type::identifier) {
                 // TODO: what if it's an identifier ?
-                prog->globals.push_back(ir_global_data{ node.local.mangled_name.str, node.type_id, pop(), func_linkage::local_carbon });
+                prog->globals.push_back(ir_global_data{ node.local.mangled_name.str, node.tid, pop(), func_linkage::local_carbon });
                 return;
             }
-            else if (node.type_id.get().kind == type_kind::ptr) {
-                prog->globals.push_back(ir_global_data{ node.local.mangled_name.str, node.type_id, pop(), func_linkage::local_carbon });
+            else if (node.tid.get().kind == type_kind::ptr) {
+                prog->globals.push_back(ir_global_data{ node.local.mangled_name.str, node.tid, pop(), func_linkage::local_carbon });
                 return;
             }
             assert(!"generate_ir_var: non primary global");
@@ -808,11 +808,11 @@ void generate_ir_var(ast_node& node) {
             return;
         }
 
-        if (is_aggregate_type(node.type_id) && node.type_id.get().size > 8) {
-            emit(ir_copy, ir_local{ node.local.ir_index, node.type_id }, pop(), ir_int{ int_type(node.type_id.get().size), ts->uintptr_type });
+        if (is_aggregate_type(node.tid) && node.tid.get().size > 8) {
+            emit(ir_copy, ir_local{ node.local.ir_index, node.tid }, pop(), ir_int{ int_type(node.tid.get().size), ts->uintptr_type });
         }
         else {
-            emit(ir_load, ir_local{ node.local.ir_index, node.type_id }, pop());
+            emit(ir_load, ir_local{ node.local.ir_index, node.tid }, pop());
         }
     }
 }
@@ -825,9 +825,9 @@ void generate_ir_init_expr(ast_node& node) {
 
 void generate_ir_cast_expr(ast_node& node) {
     generate_ir_node(*node.children[1]);
-    if (node.type_id.get().size != node.children[1]->type_id.get().size && node.children[1]->type != ast_type::int_literal) {
-        temit(ir_cast, node.type_id, pop());
-        push(ir_stackpop{ node.type_id });
+    if (node.tid.get().size != node.children[1]->tid.get().size && node.children[1]->type != ast_type::int_literal) {
+        temit(ir_cast, node.tid, pop());
+        push(ir_stackpop{ node.tid });
     }
 }
 
@@ -860,13 +860,13 @@ void generate_ir_identifier(ast_node& node) {
 
     auto local = node.lvalue.symbol->scope->local_defs[node.lvalue.symbol->local_index];
     if (local->flags & local_flag::is_argument) {
-        push(ir_arg{ local->ir_index, node.type_id });
+        push(ir_arg{ local->ir_index, node.tid });
     }
     else if (node.lvalue.symbol->kind == symbol_kind::global) {
-        push(ir_global{ local->mangled_name.str, node.type_id });
+        push(ir_global{ local->mangled_name.str, node.tid });
     }
     else {
-        push(ir_local{ local->ir_index, node.type_id });
+        push(ir_local{ local->ir_index, node.tid });
     }
 }
 
@@ -877,7 +877,7 @@ void generate_ir_string_literal(ast_node& node) {
 }
 
 void generate_ir_int_literal(ast_node& node) {
-    push(ir_int{ node.int_value, node.type_id });
+    push(ir_int{ node.int_value, node.tid });
 }
 
 void generate_ir_char_literal(ast_node& node) {

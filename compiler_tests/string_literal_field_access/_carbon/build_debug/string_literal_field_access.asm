@@ -1,53 +1,54 @@
-global carbon_main
-export carbon_main
-section .data
-$cbstr0: db 72,101,108,108,111,32,87,111,114,108,100,32,49,0
-$cbstr1: db 72,101,108,108,111,32,87,111,114,108,100,32,50,0
-section .code
+.global carbon_main
+.data
+.cbstr0:
+    .string "Hello World 1"
+.cbstr1:
+    .string "Hello World 2"
+.text
 carbon_main:
- ;func carbon_main(): int
- push rbp
- mov rbp,rsp
- sub rsp,48
- ;prolog end
+# func carbon_main(): int
+ push %rbp
+ mov %rsp,%rbp
+ sub %rsp,48
+# prolog end
 
- lea rax,[$cbstr0]
- ;ir_load_addr STR0; (push)
+ lea .cbstr0,%rax
+# ir_load_addr STR0; (push)
 
- mov qword [rbp-16],rax
- ;ir_load [L0 . 0] POP();
+ mov %rax, -16(%rbp)
+# ir_load [L0 . 0] POP();
 
- mov r10d,13
- mov qword [rbp-8],r10
- ;ir_load [L0 . 1] 13;
+ mov $13,%r10d
+ mov %r10,-8(%rbp)
+# ir_load [L0 . 1] 13;
 
- mov r10,qword [rbp-16]
- mov qword [rbp-24],r10
- ;ir_load L1 [L0 . 0];
+ mov  [rbp-16],%r10
+ mov %r10, [rbp-24]
+# ir_load L1 [L0 . 0];
 
- lea rax,[$cbstr1]
- ;ir_load_addr STR1; (push)
+ lea .cbstr1,%rax
+# ir_load_addr STR1; (push)
 
- mov qword [rbp-40],rax
- ;ir_load [L2 . 0] POP();
+ mov %rax, [rbp-40]
+# ir_load [L2 . 0] POP();
 
- mov r10d,13
- mov qword [rbp-32],r10
- ;ir_load [L2 . 1] 13;
+ mov 13,%r10d
+ mov %r10, [rbp-32]
+# ir_load [L2 . 1] 13;
 
- mov r10,qword [rbp-32]
- mov qword [rbp-48],r10
- ;ir_load L3 [L2 . 1];
+ mov  [rbp-32],%r10
+ mov %r10, [rbp-48]
+# ir_load L3 [L2 . 1];
 
- mov r10,qword [rbp-48]
- mov eax,r10d
- ;ir_cast L3; (push)
+ mov  [rbp-48],%r10
+ mov %r10d,%eax
+# ir_cast L3; (push)
 
- ;ir_return POP();
+# ir_return POP();
 
 carbon_main$end:
- add rsp,48
- pop rbp
+ add %rsp,48
+ pop %rbp
  ret
 
 

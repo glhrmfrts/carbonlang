@@ -52,7 +52,7 @@ func parseconf(src: []pure uint8): {Conf, syserror} {
             if (line[0] == '[') {
                 let end, ok = find(line, ']')
                 if (ok) {
-                    let secname = copyrange(line, 1, end)
+                    let secname = line->copyrange(1, end)
                     //print("section: ")
                     //println(secname)
                     currentsection = conf->addsection(secname)
@@ -62,8 +62,8 @@ func parseconf(src: []pure uint8): {Conf, syserror} {
             else {
                 let eqpos, ok = find(line, '=')
                 if (ok) {
-                    let key = copyrange(line, 0, eqpos)
-                    let value = copyrange(line, eqpos + 1, line.len)
+                    let key = line->copyrange(0, eqpos)
+                    let value = line->copyrange(eqpos + 1, line.len)
                     //print(key) print(" = ") print(value) print("\n")
                     if (currentsection != nil) {
                         currentsection->addkeyval(trim(key), trim(value))
@@ -72,6 +72,7 @@ func parseconf(src: []pure uint8): {Conf, syserror} {
             }
         }
     }
+
     return conf, NOERROR
 }
 

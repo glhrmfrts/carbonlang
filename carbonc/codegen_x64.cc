@@ -4,8 +4,11 @@
 #include <variant>
 #include "codegen.hh"
 #include "codegen_x64.hh"
+#include "codegen_x64_windows_nasm.hh"
+#include "codegen_x64_linux_gas.hh"
 #include "common.hh"
 #include "type_system.hh"
+#include "ast.hh"
 #include <stack>
 #include <optional>
 #include <set>
@@ -29,7 +32,7 @@ struct func_data {
     std::string end_label;
     std::vector<var_data> arg_data;
     std::vector<var_data> local_data;
-    std::vector<instr_data> instr_data;
+    std::vector<instr_data> instrdata;
     std::set<gen_register> used_temp_registers;
     int call_arg_size = 0;
 };
@@ -37,7 +40,7 @@ struct func_data {
 constexpr gen_register reg_result = rax;
 constexpr gen_register reg_intermediate = r10;
 
-static const char* register_names[] = {
+const char* register_names[65] = {
     "invalid",
     "rax",
     "rbx",
@@ -105,169 +108,6 @@ static const char* register_names[] = {
     "r15b",
 };
 
-static std::unordered_map<std::size_t, const char*> ptrsizes = {
-    {1, "byte"},
-    {2, "word"},
-    {4, "dword"},
-    {8, "qword"},
-};
-
-static const std::vector<gen_register> register_args = {
-    rcx, rdx, r8, r9,
-};
-
-static const std::vector<gen_register> register_temp = {
-    rbx, rdi, rsi, r12, r13, r14, r15,
-};
-
-template <class... Ts> struct overload : Ts... { using Ts::operator()...; };
-template <class... Ts> overload(Ts...)->overload<Ts...>;
-
-std::string tostr(const gen_destination& d) {
-    return std::visit(overload{
-        [](gen_register r) -> std::string {
-            return register_names[r];
-        },
-        [](gen_data_offset r) -> std::string {
-            std::string result = "OFFSET:";
-            result.append(r.label);
-            return result;
-        },
-        [](gen_offset r) -> std::string {
-            std::string result = "[";
-            for (const auto& it : r.expr) {
-                if (auto reg = std::get_if<gen_register>(&it); reg) {
-                    result.append(std::string{ register_names[*reg] });
-                }
-                if (auto ch = std::get_if<char>(&it); ch) {
-                    result.append(ch, 1);
-                }
-                if (auto off = std::get_if<int_type>(&it); off) {
-                    result.append(std::to_string(*off));
-                }
-                if (auto d = std::get_if<gen_data_offset>(&it); d) {
-                    result.append("OFFSET:");
-                    result.append(d->label);
-                }
-            }
-            return result + "]";
-        }
-    }, d);
-}
-
-std::string tostr(const gen_operand& d) {
-    return std::visit(overload{
-        [](gen_register r) -> std::string {
-            return register_names[r];
-        },
-        [](gen_data_offset r) -> std::string {
-            std::string result = "OFFSET:";
-            result.append(r.label);
-            return result;
-        },
-        [](gen_offset r) -> std::string {
-            std::string result = "[";
-            for (const auto& it : r.expr) {
-                if (auto reg = std::get_if<gen_register>(&it); reg) {
-                    result.append(std::string{ register_names[*reg] });
-                }
-                if (auto ch = std::get_if<char>(&it); ch) {
-                    result.append(ch, 1);
-                }
-                if (auto off = std::get_if<int_type>(&it); off) {
-                    result.append(std::to_string(*off));
-                }
-                if (auto d = std::get_if<gen_data_offset>(&it); d) {
-                    result.append("OFFSET:");
-                    result.append(d->label);
-                }
-            }
-            return result + "]";
-        },
-        [](int_type v) -> std::string {
-            return std::to_string(v);
-        },
-        [](char c) -> std::string {
-            return std::to_string(c);
-        }
-    }, d);
-}
-
-std::string tostr_sized(const gen_destination& d) {
-    return std::visit(overload{
-        [](gen_register r) -> std::string {
-            return register_names[r];
-        },
-        [](gen_data_offset r) -> std::string {
-            std::string result = "[";
-            result.append(r.label);
-            result.append("]");
-            return result;
-        },
-        [](gen_offset r) -> std::string {
-            // guard for struct types
-            std::size_t sz = std::min(r.op_size, std::size_t{8});
-            std::string result = std::string{ptrsizes[sz]} + " [";
-            for (const auto& it : r.expr) {
-                if (auto reg = std::get_if<gen_register>(&it); reg) {
-                    result.append(std::string{ register_names[*reg] });
-                }
-                if (auto ch = std::get_if<char>(&it); ch) {
-                    result.append(ch, 1);
-                }
-                if (auto off = std::get_if<int_type>(&it); off) {
-                    result.append(std::to_string(*off));
-                }
-                if (auto d = std::get_if<gen_data_offset>(&it); d) {
-                    result.append("OFFSET:");
-                    result.append(d->label);
-                }
-            }
-            return result + "]";
-        }
-    }, d);
-}
-
-std::string tostr_sized(const gen_operand& d) {
-    return std::visit(overload{
-        [](gen_register r) -> std::string {
-            return register_names[r];
-        },
-        [](gen_data_offset r) -> std::string {
-            std::string result = "[";
-            result.append(r.label);
-            result.append("]");
-            return result;
-        },
-        [](gen_offset r) -> std::string {
-            std::size_t sz = std::min(r.op_size, std::size_t{8});
-            std::string result = std::string{ptrsizes[sz]} + " [";
-            for (const auto& it : r.expr) {
-                if (auto reg = std::get_if<gen_register>(&it); reg) {
-                    result.append(std::string{ register_names[*reg] });
-                }
-                if (auto ch = std::get_if<char>(&it); ch) {
-                    result.append(ch, 1);
-                }
-                if (auto off = std::get_if<int_type>(&it); off) {
-                    result.append(std::to_string(*off));
-                }
-                if (auto d = std::get_if<gen_data_offset>(&it); d) {
-                    result.append("OFFSET:");
-                    result.append(d->label);
-                }
-            }
-            return result + "]";
-        },
-        [](int_type  v) -> std::string {
-            return std::to_string(v);
-        },
-        [](char c) -> std::string {
-            return std::to_string(c);
-        }
-    }, d);
-}
-
 std::size_t get_size(const gen_destination& v) {
     return std::visit(overload{
         [](gen_register r) -> std::size_t {
@@ -311,7 +151,7 @@ std::size_t get_size(const gen_operand& v) {
 }
 
 gen_destination adjust_for_type(gen_destination dest, type_id tid) {
-    auto tdef = tid.scope->type_defs[tid.type_index];
+    auto tdef = tid.scope->tdefs[tid.type_index];
     if (std::holds_alternative<gen_register>(dest)) {
         auto reg = std::get<gen_register>(dest);
         std::size_t sz = std::min(tdef->size, std::size_t{ 8 });
@@ -372,220 +212,14 @@ template <typename T> bool is_lit(const T& op) {
     return std::holds_alternative<int_type>(op) || std::holds_alternative<char>(op);
 }
 
-struct emitter {
-    std::string current_func;
-    std::ofstream out_file;
-
-    explicit emitter(std::string_view filename) {
-        out_file = std::ofstream{ std::string{filename} };
-    }
-
-    void add_global_func_decl(const char* name) {
-        out_file << "global " << name << "\n";
-    }
-
-    void add_export_func_decl(const char* name) {
-        out_file << "export " << name << "\n";
-    }
-
-    void add_extern_func_decl(const char* name) {
-        out_file << "extern " << name << "\n";
-    }
-
-    void end() {
-        //out_file << "END\n";
-    }
-
-    void begin_data_segment() {
-        out_file << "section .data\n";
-    }
-
-    void add_string_data(std::string_view label, std::string_view data) {
-        emit("%s: db ", label.data());
-        for (char c : data) {
-            emit("%d,", (int)c);
-        }
-        emitln("0");
-    }
-
-    void add_global_int16(std::string_view label, int16_t v) {
-        emitln("%s: dw 0x%x", label.data(), (int32_t)v);
-    }
-
-    void add_global_int32(std::string_view label, int32_t v) {
-        emitln("%s: dd 0x%x", label.data(), (int32_t)v);
-    }
-
-    void add_global_int64(std::string_view label, int64_t v) {
-        emitln("%s: dq 0x%llx", label.data(), v);
-    }
-
-    void begin_code_segment() {
-        out_file << "section .code\n";
-    }
-
-    void begin_func(const char* func_name) {
-        current_func = func_name;
-        out_file << func_name << ":\n";
-    }
-
-    void end_func() {
-
-    }
-
-    void ret() {
-        out_file << " ret\n";
-    }
-
-    void call(const char* func_name) {
-        emitln(" call %s", func_name);
-    }
-
-    void calldest(gen_destination dest) {
-        emitln(" call %s", tostr_sized(dest).c_str());
-    }
-
-    void push(gen_operand reg) {
-        emitln(" push %s", tostr_sized(reg).c_str());
-    }
-
-    void pop(gen_operand reg) {
-        emitln(" pop %s", tostr_sized(reg).c_str());
-    }
-
-    void lea(gen_destination reg, gen_destination src) {
-        emitln(" lea %s,%s", tostr_sized(reg).c_str(), tostr_sized(src).c_str());
-    }
-
-    void mov(gen_destination reg, gen_operand src) {
-#if 0
-        std::size_t sza = get_size(reg);
-        std::size_t szb = get_size(src);
-        if (sza != szb) {
-            printf(" mov %s,%s\n", tostr_sized(reg).c_str(), tostr_sized(src).c_str());
-            if (is_reg(src)) {
-                printf("AKJSHDKJAHSD\n");
-            }
-            printf("DIFFSIZE: %zu %zu\n", sza, szb);
-        }
-#endif
-        emitln(" mov %s,%s", tostr_sized(reg).c_str(), tostr_sized(src).c_str());
-    }
-
-    void movsx(gen_destination reg, gen_operand src) {
-        std::size_t as = get_size(reg);
-        std::size_t bs = get_size(src);
-
-        // TODO: handle more sizes
-        if ((as == 2 && bs == 1) || (as == 4 && bs == 1) || (as == 4 && bs == 2) || (as == 8 && bs == 1) || (as == 8 && bs == 2)) {
-            emitln(" movsx %s,%s", tostr_sized(reg).c_str(), tostr_sized(src).c_str());
-        }
-        else if (as == 8 && bs == 4) {
-            emitln(" movsxd %s,%s", tostr_sized(reg).c_str(), tostr_sized(src).c_str());
-        }
-        else {
-            mov(reg, src);
-        }
-    }
-
-    void movzx(gen_destination reg, gen_operand src) {
-        emitln(" movzx %s,%s", tostr_sized(reg).c_str(), tostr_sized(src).c_str());
-    }
-
-    void add(gen_destination a, gen_operand b) {
-        emitln(" add %s,%s", tostr_sized(a).c_str(), tostr_sized(b).c_str());
-    }
-
-    void sub(gen_destination a, gen_operand b) {
-        emitln(" sub %s,%s", tostr_sized(a).c_str(), tostr_sized(b).c_str());
-    }
-
-    void imul(gen_destination a, gen_operand b) {
-        emitln(" imul %s,%s", tostr_sized(a).c_str(), tostr_sized(b).c_str());
-    }
-
-    void idiv(gen_destination b) {
-        emitln(" idiv %s", tostr_sized(b).c_str());
-    }
-
-    void and_(gen_destination a, gen_operand b) {
-        emitln(" and %s,%s", tostr_sized(a).c_str(), tostr_sized(b).c_str());
-    }
-
-    void or_(gen_destination a, gen_operand b) {
-        emitln(" or %s,%s", tostr_sized(a).c_str(), tostr_sized(b).c_str());
-    }
-
-    void neg(gen_destination a) {
-        emitln(" neg %s", tostr_sized(a).c_str());
-    }
-
-    void sal(gen_destination a, gen_operand b) {
-        emitln(" sal %s,%s", tostr_sized(a).c_str(), tostr_sized(b).c_str());
-    }
-
-    void sar(gen_destination a, gen_operand b) {
-        emitln(" sar %s,%s", tostr_sized(a).c_str(), tostr_sized(b).c_str());
-    }
-
-    void cdq(type_id t) {
-        switch (t.get().size)
-        {
-        case 2:
-            emitln(" cwd");
-            break;
-        case 4:
-            emitln(" cdq");
-            break;
-        case 8:
-            emitln(" cqo");
-            break;
-        default:
-            break;
-        }
-    }
-
-    void xor(gen_destination a, gen_operand b) {
-        emitln(" xor %s,%s", tostr_sized(a).c_str(), tostr_sized(b).c_str());
-    }
-
-    void jmp(const char* label) {
-        emitln(" jmp %s", label);
-    }
-
-    void cmp(gen_operand a, gen_operand b) {
-        emitln(" cmp %s,%s", tostr_sized(a).c_str(), tostr_sized(b).c_str());
-    }
-
-    void label(const char* label) {
-        emitln("%s:", label);
-    }
-
-    void emit(const char* fmt, ...) {
-        static char buffer[1024];
-        std::va_list args;
-        va_start(args, fmt);
-        std::vsnprintf(buffer, sizeof(buffer), fmt, args);
-        va_end(args);
-        out_file << buffer;
-    }
-
-    void emitln(const char* fmt, ...) {
-        static char buffer[1024];
-        std::va_list args;
-        va_start(args, fmt);
-        std::vsnprintf(buffer, sizeof(buffer), fmt, args);
-        va_end(args);
-        out_file << buffer << "\n";
-    }
-};
-
 struct generator {
     using finalizer_func = std::function<void(const gen_destination&, const gen_operand&)>;
 
     std::string_view filename;
-    std::unique_ptr<emitter> em;
+    std::unique_ptr<codegen_x64_emitter> em;
     std::vector<func_data> funcdata;
+    std::vector<gen_register> register_temp;
+    std::vector<gen_register> register_args;
     std::stack<gen_operand> opstack;
     std::int32_t current_temp_regs_offset = 0;
     type_system* ts;
@@ -597,10 +231,12 @@ struct generator {
     ir_func* fn;
     func_data* fndata;
 
-    explicit generator(std::unique_ptr<emitter>&& em, type_system* ts, std::string_view fn) {
-        this->em = std::move(em);
+    explicit generator(std::unique_ptr<codegen_x64_emitter>&& em, type_system* ts, std::string_view fn) {
         this->ts = ts;
         this->filename = fn;
+        this->register_args = em->args_registers();
+        this->register_temp = em->temp_registers();
+        this->em = std::move(em);
     }
 
     // Section: helpers
@@ -768,10 +404,10 @@ struct generator {
                 free_temp_destination();
             }
 
-            fndata->instr_data[instr.index].dest = reg_result;
+            fndata->instrdata[instr.index].dest = reg_result;
             if (next_instr) {
                 if (instr_pushes_to_stack(instr) && instr_opstack_consumption(*next_instr) == 0) {
-                    fndata->instr_data[instr.index].dest = use_temp_destination(instr.result_type);
+                    fndata->instrdata[instr.index].dest = use_temp_destination(instr.result_type);
                 }
             }
         }
@@ -862,7 +498,7 @@ struct generator {
     void generate_func_code(ir_func& func) {
         auto& fdata = funcdata[func.index];
         fdata.end_label = func.name + "$end";
-        fdata.instr_data.resize(func.instrs.size());
+        fdata.instrdata.resize(func.instrs.size());
         fdata.arg_data.resize(func.args.size());
         fdata.local_data.resize(func.locals.size());
 
@@ -873,7 +509,7 @@ struct generator {
         fdata.local_data.resize(func.locals.size()); // resize for any created temps
 
         em->begin_func(func.name.c_str());
-        em->emitln(" ;%s", func.demangled_name.c_str());
+        em->comment("%s", func.demangled_name.c_str());
 
         auto [local_size, call_arg_size, calls_ever_made] = get_func_stack_frame_size(func);
         std::int32_t stack_size = local_size + call_arg_size;
@@ -929,7 +565,7 @@ struct generator {
         if (needs_rbp) { em->mov(rbp, rsp); }
         if (stack_size > 0) { em->sub(rsp, (int_type)(stack_size)); }
 
-        em->emitln(" ;prolog end\n");
+        em->comment("prolog end\n");
 
         for (auto& instr : func.instrs) {
             generate_ir_instr(instr);
@@ -952,7 +588,7 @@ struct generator {
     }
 
     void generate_ir_instr(ir_instr& instr) {
-        auto& idata = fndata->instr_data[instr.index];
+        auto& idata = fndata->instrdata[instr.index];
 
         switch (instr.op) {
         case ir_asm: {
@@ -1276,7 +912,7 @@ struct generator {
         }
 
         if (instr.op != ir_asm) {
-            em->emitln(" ;%s", sprint_ir_instr(instr).c_str());
+            em->comment("%s", sprint_ir_instr(instr).c_str());
         }
     }
 
@@ -1362,6 +998,8 @@ struct generator {
             offs.expr[2] = std::get<int_type>(offs.expr[2]) - int_type(field.offset);
             return std::make_pair(op, field.type);
         }
+        assert(!"transform_ir_field_ref unhandled");
+        return {};
     }
 
     std::pair<gen_operand, type_id> transform_ir_operand(const ir_operand& opr) {
@@ -1405,6 +1043,7 @@ struct generator {
         else {
             assert(!"transform_ir_operand unhandled");
         }
+        return {};
     }
 
     type_id get_ir_field_type(const ir_field* arg) {
@@ -1430,6 +1069,8 @@ struct generator {
             auto& field = type.get().structure.fields[arg->field_index];
             return field.type;
         }
+        assert(!"get_ir_field_type unhandled");
+        return {};
     }
 
     type_id get_ir_operand_type(const ir_operand& opr) {
@@ -1466,6 +1107,7 @@ struct generator {
         else {
             assert(!"transform_ir_operand unhandled");
         }
+        return {};
     }
 
     gen_destination get_arg_destination(int index, type_id ttid) {
@@ -1533,7 +1175,11 @@ struct generator {
 };
 
 void codegen(ir_program& prog, type_system* ts, std::string_view filename) {
-    generator gen{std::make_unique<emitter>(filename), ts, filename};
+#ifdef _WIN32
+    generator gen{make_x64_windows_nasm_emitter(filename), ts, filename};
+#else
+    generator gen{make_x64_linux_gas_emitter(filename), ts, filename};
+#endif
     gen.pre_analysis(prog);
     gen.generate_program(prog);
 }

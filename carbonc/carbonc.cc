@@ -1,6 +1,7 @@
 #include <iostream>
 #include <fstream>
 #include <cstdio>
+#include <cstring>
 #include <chrono>
 #include "common.hh"
 #include "parser.hh"
@@ -11,8 +12,16 @@
 #include "codegen.hh"
 #include "ir.hh"
 
+#ifdef _WIN32
+
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
+
+#else
+
+#include <unistd.h>
+
+#endif
 
 namespace carbon {
 
@@ -200,8 +209,8 @@ void parse_options(project_info& p, int argc, const char* argv[]) {
 int run_project_mode(int argc, const char* argv[]) {
     auto timebegin = std::chrono::system_clock::now();
 
-    char dirnamebuf[_MAX_PATH];
-    GetCurrentDirectory(sizeof(dirnamebuf), dirnamebuf);
+    char dirnamebuf[260];
+    getworkingdir(sizeof(dirnamebuf), dirnamebuf);
 
     auto dirname = basename(from_native_path(std::string{ dirnamebuf }));
 
@@ -325,11 +334,12 @@ int run_project_mode(int argc, const char* argv[]) {
     if (!objonly) {
         auto ld_file = run_linker(p, obj_file);
         auto out_file = std::string{ "_carbon/out_debug/" } + basename(ld_file);
-        MoveFileExA(ld_file.c_str(), out_file.c_str(), MOVEFILE_REPLACE_EXISTING);
+        rename(ld_file.c_str(), out_file.c_str());
+        // MoveFileExA(ld_file.c_str(), out_file.c_str(), MOVEFILE_REPLACE_EXISTING);
 
         const char* outpath = find_arg("--output", "-o", argc, argv);
         if (outpath) {
-            CopyFileA(out_file.c_str(), outpath, false);
+            //CopyFileA(out_file.c_str(), outpath, false);
         }
         else {
             outpath = out_file.c_str();

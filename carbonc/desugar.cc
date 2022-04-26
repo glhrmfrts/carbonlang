@@ -59,7 +59,7 @@ void check_temp_bool_op(type_system& ts, ast_node& node) {
         node.desugar_flags |= desugar_flag::bool_op_desugared;
 
         node.type = ref->type;
-        node.type_id = ref->type_id;
+        node.tid = ref->tid;
         node.lvalue = ref->lvalue;
         node.id_parts = ref->id_parts;
         node.pre_children.push_back(std::move(temp));
@@ -72,7 +72,7 @@ void check_temp_ternary_expr(type_system& ts, ast_node& node) {
         auto [temp, ref] = make_temp_variable_for_ternary_expr_resolved(ts, std::move(cpy));
 
         node.type = ref->type;
-        node.type_id = ref->type_id;
+        node.tid = ref->tid;
         node.lvalue = ref->lvalue;
         node.id_parts = ref->id_parts;
         node.pre_children.push_back(std::move(temp));
@@ -82,14 +82,14 @@ void check_temp_ternary_expr(type_system& ts, ast_node& node) {
 // Section: aggregate arguments/return value
 
 void check_func_arg_aggregate_type(type_system& ts, ast_node& func, int idx) {
-    if (is_aggregate_type(func.func_args()[idx]->type_id) && !(func.func_args()[idx]->local.flags & local_flag::is_aggregate_argument)) {
+    if (is_aggregate_type(func.func_args()[idx]->tid) && !(func.func_args()[idx]->local.flags & local_flag::is_aggregate_argument)) {
         func.func_args()[idx]->local.flags |= local_flag::is_aggregate_argument;
         update_local_aggregate_argument(ts, *func.func_args()[idx]);
     }
 }
 
 void check_call_arg_aggregate_type(type_system &ts, ast_node& call, int idx) {
-    if (is_aggregate_type(call.call_args()[idx]->type_id)) {
+    if (is_aggregate_type(call.call_args()[idx]->tid)) {
         auto& arg = call.call_args()[idx];
         if (arg->lvalue.self && arg->lvalue.symbol) {
             auto local = arg->lvalue.symbol->scope->local_defs[arg->lvalue.symbol->local_index];
@@ -106,10 +106,10 @@ void check_call_arg_aggregate_type(type_system &ts, ast_node& call, int idx) {
 }
 
 void check_func_return_aggregate_type(type_system& ts, ast_node& func) {
-    if (is_aggregate_type(func.type_def.func.ret_type)) {
+    if (is_aggregate_type(func.tdef.func.ret_type)) {
         auto& args = func.func_args();
 
-        auto new_ret_type = get_ptr_type_to(ts, func.type_def.func.ret_type);
+        auto new_ret_type = get_ptr_type_to(ts, func.tdef.func.ret_type);
         func.children[ast_node::child_func_decl_ret_type] = make_type_resolver_node(*ts.ast_arena, new_ret_type);
 
         auto arg_decl = make_var_decl_of_type(ts, token_type::let, "$cb_agg_ret", new_ret_type);
@@ -145,17 +145,17 @@ void check_func_return_aggregate_type(type_system& ts, ast_node& func) {
 }
 
 void transform_aggregate_call_into_pointer_argument_helper(type_system& ts, ast_node& receiver, ast_node* call) {
-    assert(call->type_id.valid());
+    assert(call->tid.valid());
 
     auto ref = copy_node(ts, &receiver);
-    ref->type_id = call->type_id;
+    ref->tid = call->tid;
 
     auto addr = make_address_of_expr(ts, std::move(ref));
-    addr->type_id = get_ptr_type_to(ts, call->type_id);
+    addr->tid = get_ptr_type_to(ts, call->tid);
 
     call->call_args().insert(call->call_args().begin(), std::move(addr));
 
-    call->type_id = invalid_type;
+    call->tid = invalid_type;
     resolve_node_type_post(ts, call);
 
     call->call.flags |= call_flag::is_aggregate_return;
@@ -167,7 +167,7 @@ arena_ptr<ast_node> transform_aggregate_call_into_pointer_argument(type_system& 
 }
 
 void check_assignment_aggregate_call(type_system& ts, ast_node& node) {
-    if (node.bin_right() && is_aggregate_type(node.bin_right()->type_id) && node.bin_right()->type == ast_type::call_expr) {
+    if (node.bin_right() && is_aggregate_type(node.bin_right()->tid) && node.bin_right()->type == ast_type::call_expr) {
         if (node.bin_right()->call.flags & call_flag::is_aggregate_return) { return; }
 
         auto call = transform_aggregate_call_into_pointer_argument(ts, *node.bin_left(), std::move(node.children[1]));
@@ -176,7 +176,7 @@ void check_assignment_aggregate_call(type_system& ts, ast_node& node) {
 }
 
 void check_var_decl_aggregate_call(type_system& ts, ast_node& node) {
-    if (is_aggregate_type(node.type_id) && node.var_value() && node.var_value()->type == ast_type::call_expr) {
+    if (is_aggregate_type(node.tid) && node.var_value() && node.var_value()->type == ast_type::call_expr) {
         if (node.var_value()->call.flags & call_flag::is_aggregate_return) { return; }
 
         auto call = transform_aggregate_call_into_pointer_argument(ts, *node.var_id(), std::move(node.children[ast_node::child_var_decl_value]));
@@ -185,17 +185,17 @@ void check_var_decl_aggregate_call(type_system& ts, ast_node& node) {
 }
 
 void check_temp_aggregate_call(type_system& ts, ast_node& node) {
-    if (node.type == ast_type::call_expr && is_aggregate_type(node.type_id) && !(node.call.flags & call_flag::is_aggregate_return)) {
+    if (node.type == ast_type::call_expr && is_aggregate_type(node.tid) && !(node.call.flags & call_flag::is_aggregate_return)) {
         auto tempname = generate_temp_name();
         auto temp = make_var_decl_node_single(*ts.ast_arena, node.pos, token_type::let, 
             make_identifier_node(*ts.ast_arena, node.pos, { tempname }), // id
-            make_type_expr_node(*ts.ast_arena, node.pos, make_type_resolver_node(*ts.ast_arena, node.type_id)), // type
+            make_type_expr_node(*ts.ast_arena, node.pos, make_type_resolver_node(*ts.ast_arena, node.tid)), // type
             make_init_tag_node(*ts.ast_arena, {}, token_type::noinit), {}); // value
 
         resolve_node_type_post(ts, temp.get());
 
         auto ref = make_identifier_node(*ts.ast_arena, node.pos, { tempname });
-        ref->type_id = node.type_id;
+        ref->tid = node.tid;
 
         transform_aggregate_call_into_pointer_argument_helper(ts, *ref, &node);
 

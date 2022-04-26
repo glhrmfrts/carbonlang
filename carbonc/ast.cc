@@ -1,3 +1,4 @@
+#include <cstring>
 #include "ast.hh"
 
 namespace carbon {
@@ -519,7 +520,7 @@ arena_ptr<ast_node> make_type_resolver_node(memory_arena& arena, type_id tid) {
     auto ptr = make_in_arena<ast_node>(arena);
     ptr->node_id = node_id_gen++;
     ptr->type = ast_type::type_resolver;
-    ptr->type_id = tid;
+    ptr->tid = tid;
     return ptr;
 }
 
