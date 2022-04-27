@@ -87,14 +87,16 @@ struct gen_data_offset {
     }
 };
 
-using gen_offset_expr = std::variant<gen_register, gen_data_offset, int_type, char>;
+using gen_offset_expr = std::variant<gen_register, gen_data_offset, int_type>;
 
 struct gen_offset {
     std::size_t op_size;
-    std::vector<gen_offset_expr> expr;
+    gen_register base;
+    gen_offset_expr offset;
+    gen_offset_expr mult;
 
     bool operator ==(const gen_offset& other) const {
-        return expr == other.expr && op_size == other.op_size;
+        return base == other.base && offset == other.offset && mult == other.mult && op_size == other.op_size;
     }
 };
 
@@ -195,6 +197,8 @@ struct codegen_x64_emitter {
     virtual void label(const char* label) = 0;
 
     virtual void comment_prefix() = 0;
+
+    virtual std::string special_label(const std::string& label) = 0;
 
     void emit(const char* fmt, ...) {
         static char buffer[1024];

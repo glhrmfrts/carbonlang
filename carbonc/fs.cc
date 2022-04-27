@@ -90,6 +90,24 @@ std::size_t get_file_size(std::FILE* fh) {
     return size;
 }
 
+bool copyfile(const std::string& from, const std::string& to) {
+    auto fh = open_file(from.c_str(), "r");
+    if (fh) {
+        auto sz = get_file_size(fh);
+        auto tofh = open_file(to.c_str(), "w");
+
+        char* buffer = new char[sz];
+        std::fread(buffer, 1, sz, fh);
+        std::fwrite(buffer, 1, sz, tofh);
+
+        delete[] buffer;
+        std::fclose(fh);
+        std::fclose(tofh);
+        return true;
+    }
+    return false;
+}
+
 std::string get_directory(std::string filename)
 {
     /* If filename is already a path, return it */

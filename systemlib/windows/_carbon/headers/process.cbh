@@ -6,4 +6,4 @@ extern(C) func TerminateProcess(:&opaque, :uint):bool;
 extern(C) func CreateProcessA(:&pure uint8, :&pure uint8, :&pure SECURITY_ATTRIBUTES, :&pure SECURITY_ATTRIBUTES, :bool, :int32, :&opaque, :&uint8, :&pure STARTUPINFOA, :&PROCESS_INFORMATION):bool;
 extern func exit(:int):{};
 extern func readProcessChar(:&opaque, :&uint8):bool;
-extern func process(:[]pure uint8, :[]pure uint8):syserror;
+extern func process(:[]pure uint8, :[]pure uint8):error;

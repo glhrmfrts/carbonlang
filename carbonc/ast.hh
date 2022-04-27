@@ -38,6 +38,7 @@ enum class ast_type {
     var_decl,
     func_decl,
     import_decl,
+    error_decl,
 
     arg_list,
     decl_list,
@@ -249,6 +250,8 @@ arena_ptr<ast_node> make_var_decl_node(memory_arena& arena, const position& pos,
 arena_ptr<ast_node> make_var_decl_node_single(memory_arena& arena, const position& pos, token_type kind, arena_ptr<ast_node>&& id, arena_ptr<ast_node>&& decl_type, arena_ptr<ast_node>&& decl_val, const std::vector<token_type>& mods);
 
 arena_ptr<ast_node> make_func_decl_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& id, arena_ptr<ast_node>&& arg_list, arena_ptr<ast_node>&& ret_type, arena_ptr<ast_node>&& body, func_linkage linkage);
+
+arena_ptr<ast_node> make_error_decl_node(memory_arena& arena, const position& pos, std::vector<arena_ptr<ast_node>>&& children);
 
 arena_ptr<ast_node> make_init_tag_node(memory_arena& arena, const position& pos, token_type tok);
 

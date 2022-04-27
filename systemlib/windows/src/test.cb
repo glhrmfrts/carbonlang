@@ -95,7 +95,7 @@ func readfile(filename: []pure uint8): []uint8 {
     data[statdata.size] = 0
     
     let handle, err = open(filename, noflags, 0)
-    if (err != NOERROR) {
+    if (err != noerror) {
         data.len = 0
         return data
     }
@@ -143,8 +143,8 @@ func test_file_move() {
     write(stdout(), "HERE\n")
 
     let err = rename("file.txt", "file2.txt")
-    if (err != NOERROR) {
-        writeint(stdout(), cast(int)err)
+    if (err != noerror) {
+        writeint(stdout(), 1)
         return false
     }
     defer rename("file2.txt", "file.txt")
@@ -164,7 +164,7 @@ func test_file_copy() {
     defer free(cast(&opaque)filedata.ptr)
 
     let err = copy("file.txt", "file_copy.txt")
-    if (err != NOERROR) {
+    if (err != noerror) {
         return false
     }
     defer unlink("file_copy.txt")
@@ -202,19 +202,19 @@ func test_file_append() {
 func test_file_unlink() {
     let s : Stat
     let err = stat("file.txt", s)
-    if (err != NOERROR) {
+    if (err != noerror) {
         //write(stdout(), "ERROR\n")
         return false
     }
     //write(stdout(), "EXISTS\n")
 
     err = unlink("file.txt")
-    if (err != NOERROR) {
+    if (err != noerror) {
         return false
     }
 
     err = stat("file.txt", s)
-    if (err != NOERROR) {
+    if (err != noerror) {
         return true
     }
 
@@ -240,7 +240,7 @@ func test_alloc_copy() {
 
 func test_dir_create() {
     let err = mkdir("test_dir_create")
-    if (err != NOERROR) {
+    if (err != noerror) {
         return false
     }
     return true
@@ -248,7 +248,7 @@ func test_dir_create() {
 
 func test_dir_remove() {
     let handle, err = open("test_dir_create/testfile.txt", CREATE | WRITE, 0)
-    if (err != NOERROR) {
+    if (err != noerror) {
         return false
     }
     write(handle, "TESTFILE")
@@ -256,7 +256,7 @@ func test_dir_remove() {
 
     // Should not be able to remove non-empty dir
     err = remove("test_dir_create")
-    if (err == NOERROR) {
+    if (err == noerror) {
         return false
     }
 
@@ -264,7 +264,7 @@ func test_dir_remove() {
 
     // Should be able to remove empty dir
     err = remove("test_dir_create")
-    if (err != NOERROR) {
+    if (err != noerror) {
         return false
     }
 
@@ -275,22 +275,6 @@ func getValues() {
     return "GET_VALUES", 48
 }
 
-func testEnumValues() {
-    write(stdout(), "NOERROR: ")
-    writeint(stdout(), cast(int)NOERROR)
-    write(stdout(), "\n")
-
-    write(stdout(), "PATHNOTFOUND: ")
-    writeint(stdout(), cast(int)PATHNOTFOUND)
-    write(stdout(), "\n")
-
-    write(stdout(), "INVALIDHANDLE: ")
-    writeint(stdout(), cast(int)INVALIDHANDLE)
-    write(stdout(), "\n")
-
-    return (cast(int)NOERROR == 0) && (cast(int)PATHNOTFOUND == 1) && (cast(int)INVALIDHANDLE == 2)
-}
-
 let counter : int
 let mutex : MutexHandle
 
@@ -299,7 +283,7 @@ func workerThreadFunc(arg: &opaque) {
     defer unlock(mutex)
 
     write(stdout(), "worker_thread: ")
-    writeint(stdout(), threadid())
+    writeint(stdout(), threadId())
     write(stdout(), "\n")
 
     counter += 1
@@ -373,31 +357,31 @@ extern(C) func test_main(): int {
 
     let c : uint8
     let err = process("C:\\q2dev\\q2tools-220\\x64\\Release\\4rad.exe", "")
-    if (err == NOERROR) {
+    if (err == noerror) {
         write(stdout(), "exec_process: OK\n")
     }
     else {
         write(stdout(), "exec_process: NOK\n")
-        exit(cast(int)err)
+        exit(1)
     }
 
-    let mut, merr = makemutex()
-    if (merr != NOERROR) {
+    let mut, merr = makeMutex()
+    if (merr != noerror) {
         exit(1)
     }
     defer destroy(mut)
 
     mutex = mut
 
-    let th, terr = makethread(workerThreadFunc\{&opaque}, nil)
-    if (terr != NOERROR) {
+    let th, terr = makeThread(workerThreadFunc\{&opaque}, nil)
+    if (terr != noerror) {
         exit(1)
     }
 
     lock(mutex)
 
     write(stdout(), "main_thread: ")
-    writeint(stdout(), threadid())
+    writeint(stdout(), threadId())
     write(stdout(), "\n")
 
     counter += 1
@@ -420,21 +404,14 @@ extern(C) func test_main(): int {
 
     join(th)
 
-    if (testEnumValues()) {
-        write(stdout(), "testEnumValues: OK\n")
-    }
-    else {
-        write(stdout(), "testEnumValues: NOK\n")
-    }
-
     //import gameoflife
     //gameoflife()
 
     import confparser
-    let conf, err = readconf("carbon.conf")
+    let conf, err = readConf("carbon.conf")
 
     import string
-    println(cast(int)err)
+    //println(cast(int)err)
 
     let confsec = conf.sections
     while (confsec != nil) {

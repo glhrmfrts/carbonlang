@@ -91,6 +91,10 @@ struct parser_impl {
                 result = make_type_constructor_instance_node(*ast_arena, rpos, make_type_expr_node(*ast_arena, rpos, std::move(result)), std::move(arg_list));
             }
         }
+        else if (TOK == token_type::error) {
+            result = make_identifier_node(*ast_arena, lex->pos(), { "$error" });
+            lex->next();
+        }
 
         if (result) {
             if (!no_wrap) {
@@ -568,6 +572,8 @@ struct parser_impl {
             return parse_type_decl();
         case token_type::typealias:
             return parse_type_decl(true);
+        case token_type::error:
+            return parse_error_decl();
         case token_type::import_:
             return parse_import_decl();
         case token_type::asm_:
@@ -583,6 +589,29 @@ struct parser_impl {
         default:
             return arena_ptr<ast_node>{nullptr, nullptr};
         }
+    }
+
+    arena_ptr<ast_node> parse_error_decl() {
+        auto pos = lex->pos();
+        lex->next();
+
+        if (TOK_CHAR != '{') {
+            throw parse_error(filename, lex->pos(), "expecting '{' in error declaration");
+        }
+        lex->next();
+
+        std::vector<arena_ptr<ast_node>> ids;
+        while (TOK == token_type::identifier) {
+            ids.push_back(make_identifier_node(*ast_arena, lex->pos(), { lex->string_value() }));
+            lex->next();
+        }
+
+        if (TOK_CHAR != '}') {
+            throw parse_error(filename, lex->pos(), "expecting closing '}' in error declaration");
+        }
+        lex->next();
+
+        return make_error_decl_node(*ast_arena, pos, std::move(ids));
     }
 
     arena_ptr<ast_node> parse_visibility_specifier_decl() {

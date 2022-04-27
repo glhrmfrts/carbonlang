@@ -1,0 +1,134 @@
+  code_unit{
+    std/linux/io.cb
+    decl_list{
+      import_decl{ std::system}
+      import_decl{ std::linux::syscall syscall}
+      linkage_specifier{ extern decl_list{
+          func_decl{stdin (): type_expr{FileHandle} {
+              stmt_list{
+                return{cast_expr{type_expr{FileHandle} cast_expr{type_expr{uintptr} 0}}}}}}
+          func_decl{stdout (): type_expr{FileHandle} {
+              stmt_list{
+                return{cast_expr{type_expr{FileHandle} cast_expr{type_expr{uintptr} 1}}}}}}
+          func_decl{stderr (): type_expr{FileHandle} {
+              stmt_list{
+                return{cast_expr{type_expr{FileHandle} cast_expr{type_expr{uintptr} 2}}}}}}
+          func_decl{read (var_decl{(fd): type_expr{FileHandle}}, var_decl{(data): }) {
+              stmt_list{
+                call{syscall::read (cast_expr{type_expr{uint} cast_expr{type_expr{uintptr} fd}}, {@ data}.ptr, {@ data}.len)}}}}
+          func_decl{write (var_decl{(fd): type_expr{FileHandle}}, var_decl{(data): }) {
+              stmt_list{
+                call{syscall::write (cast_expr{type_expr{uint} cast_expr{type_expr{uintptr} fd}}, {@ data}.ptr, {@ data}.len)}}}}}}}}  code_unit{
+    std/linux/mem.cb
+    decl_list{
+      linkage_specifier{ extern decl_list{
+          func_decl{alloc (var_decl{($cb_agg_ret): }, var_decl{(sz): type_expr{usize}}):  {}}}}}}  code_unit{
+    std/linux/process.cb
+    decl_list{
+      import_decl{ std::linux::syscall syscall}
+      linkage_specifier{ extern decl_list{
+          func_decl{exit (var_decl{(code): type_expr{int}}) {
+              stmt_list{
+                call{syscall::exit (code)}}}}}}}}  code_unit{
+    std/linux/start.cb
+    decl_list{
+      import_decl{ std::system}
+      linkage_specifier{ extern(C) func_decl{__carbon_main (var_decl{(argc): type_expr{int}}, var_decl{(argv): type_expr{type_qualifier{ptr, type_qualifier{ptr, type_qualifier{ uint8}}}}}) {
+            stmt_list{
+              var_decl{($cbT0) = init{type=type_expr{} 
+                  {$cbT0.ptr = "Hello, world
+"}
+                  {$cbT0.len = cast_expr{ 13}}
+                  }}
+              call{write (call{stdout ()}, {& $cbT0})}}
+            stmt_list{
+              call{exit (argc)}}}}}}}  code_unit{
+    std/linux/syscall.cb
+    decl_list{
+      func_decl{write (var_decl{(fd): type_expr{uint}}, var_decl{(ptr): type_expr{type_qualifier{ptr, type_qualifier{ uint8}}}}, var_decl{(len): type_expr{usize}}) {
+          decl_list{
+            asm{
+    mov $1, %rax            # system call 1 is write
+                            # file handle is already in rdi
+                            # data is already in rsi
+                            # number of bytes is already in rdx
+    syscall
+
+}}}}
+      func_decl{read (var_decl{(fd): type_expr{uint}}, var_decl{(ptr): type_expr{type_qualifier{ptr, uint8}}}, var_decl{(len): type_expr{usize}}) {
+          decl_list{
+            asm{
+    mov $0, %rax            # system call 0 is read
+                            # file handle is already in rdi
+                            # data is already in rsi
+                            # number of bytes is already in rdx
+    syscall
+
+}}}}
+      func_decl{mmap (var_decl{(addr): type_expr{type_qualifier{ptr, opaque}}}, var_decl{(size): type_expr{usize}}, var_decl{(prot): type_expr{int}}, var_decl{(flags): type_expr{int}}, var_decl{(fd): type_expr{int}}, var_decl{(offs): type_expr{usize}}) {
+          decl_list{
+            asm{    mov $9, %rax
+    mov %rcx, %r10
+    syscall
+}}}}
+      func_decl{exit (var_decl{(code): type_expr{int}}) {
+          decl_list{
+            asm{    mov $60, %rax           # system call 60 is exit
+                            # code is already in rdi
+    syscall
+}}}}}}  code_unit{
+    std/memory/arena.cb
+    decl_list{
+      import_decl{ std::system}
+      type_decl{ArenaBlock = type_expr{struct_type{decl_list{
+              var_decl{(mem): type_expr{type_qualifier{ptr, opaque}}}
+              var_decl{(filled): type_expr{usize}}
+              var_decl{(prev): type_expr{type_qualifier{ptr, ArenaBlock}}}}}}}
+      type_decl{Arena = type_expr{struct_type{decl_list{
+              var_decl{(firstBlock): type_expr{type_qualifier{ptr, ArenaBlock}}}
+              var_decl{(alignment): type_expr{usize}}
+              var_decl{(blockSize): type_expr{usize}}}}}}}}  code_unit{
+    std/system.cb
+    decl_list{
+              PATH_NOT_FOUND        INVALID_HANDLE
+      linkage_specifier{ extern func_decl{alloc (var_decl{($cb_agg_ret): }, var_decl{(sz): type_expr{usize}}):  }}
+      linkage_specifier{ extern func_decl{alloc (var_decl{($cb_agg_ret): }, var_decl{(sz): type_expr{usize}}, var_decl{(extra): type_expr{type_qualifier{ptr, opaque}}}):  }}
+      linkage_specifier{ extern func_decl{free (var_decl{(m): type_expr{type_qualifier{ptr, opaque}}}) }}
+      type_decl{FileHandle = type_expr{type_qualifier{ptr, opaque}}}
+      linkage_specifier{ extern func_decl{write (var_decl{(fd): type_expr{FileHandle}}, var_decl{(data): }): type_expr{isize} }}
+      linkage_specifier{ extern func_decl{read (var_decl{(fd): type_expr{FileHandle}}, var_decl{(data): }): type_expr{isize} }}
+      type_decl{OpenFlags = type_expr{(CREATE, WRITE, READ, APPEND)}}
+      linkage_specifier{ extern func_decl{open (var_decl{($cb_agg_ret): }, var_decl{(path): }, var_decl{(flags): type_expr{OpenFlags}}, var_decl{(mode): type_expr{int}}):  }}
+      linkage_specifier{ extern func_decl{stdout (): type_expr{FileHandle} }}
+      linkage_specifier{ extern func_decl{stderr (): type_expr{FileHandle} }}
+      linkage_specifier{ extern func_decl{stdin (): type_expr{FileHandle} }}
+      linkage_specifier{ extern func_decl{fdflags (var_decl{(fd): type_expr{FileHandle}}): type_expr{int} }}
+      linkage_specifier{ extern func_decl{close (var_decl{(fd): type_expr{FileHandle}}): type_expr{$error} }}
+      type_decl{Whence = type_expr{(SeekSet, SeekCurrent, SeekEnd, SeekData, SeekHole)}}
+      linkage_specifier{ extern func_decl{seek (var_decl{(fd): type_expr{FileHandle}}, var_decl{(offset): type_expr{int64}}, var_decl{(w): type_expr{Whence}}) }}
+      type_decl{Stat = type_expr{struct_type{decl_list{
+              var_decl{(size): type_expr{usize}}
+              var_decl{(mtime): type_expr{int64}}
+              var_decl{(atime): type_expr{int64}}
+              var_decl{(ctime): type_expr{int64}}
+              var_decl{(mode): type_expr{int}}}}}}
+      linkage_specifier{ extern func_decl{stat (var_decl{(filename): }, var_decl{(buf): type_expr{type_qualifier{ptr, Stat}}}): type_expr{$error} }}
+      linkage_specifier{ extern func_decl{stat (var_decl{(fd): type_expr{FileHandle}}, var_decl{(buf): type_expr{type_qualifier{ptr, Stat}}}): type_expr{$error} }}
+      linkage_specifier{ extern func_decl{unlink (var_decl{(path): }): type_expr{$error} }}
+      linkage_specifier{ extern func_decl{remove (var_decl{(path): }): type_expr{$error} }}
+      linkage_specifier{ extern func_decl{rename (var_decl{(path): }, var_decl{(dest): }): type_expr{$error} }}
+      linkage_specifier{ extern func_decl{copy (var_decl{(path): }, var_decl{(dest): }): type_expr{$error} }}
+      linkage_specifier{ extern func_decl{mkdir (var_decl{(path): }): type_expr{$error} }}
+      linkage_specifier{ extern func_decl{exit (var_decl{(code): type_expr{int}}) }}
+      linkage_specifier{ extern func_decl{process (var_decl{(cmdline): }, var_decl{(pwd): }): type_expr{$error} }}
+      type_decl{ThreadHandle = type_expr{type_qualifier{ptr, opaque}}}
+      type_decl{MutexHandle = type_expr{type_qualifier{ptr, opaque}}}
+      linkage_specifier{ extern func_decl{makeThread (var_decl{($cb_agg_ret): }, var_decl{(fn): type_expr{(type_expr{type_qualifier{ptr, opaque}})type_expr{tuple_type{}}}}, var_decl{(arg): type_expr{type_qualifier{ptr, opaque}}}):  }}
+      linkage_specifier{ extern func_decl{join (var_decl{(th): type_expr{ThreadHandle}}): type_expr{$error} }}
+      linkage_specifier{ extern func_decl{threadId (): type_expr{int} }}
+      linkage_specifier{ extern func_decl{cpuCount (): type_expr{int} }}
+      linkage_specifier{ extern func_decl{makeMutex (var_decl{($cb_agg_ret): }):  }}
+      linkage_specifier{ extern func_decl{lock (var_decl{(m): type_expr{MutexHandle}}): type_expr{$error} }}
+      linkage_specifier{ extern func_decl{unlock (var_decl{(m): type_expr{MutexHandle}}): type_expr{$error} }}
+      linkage_specifier{ extern func_decl{destroy (var_decl{(m): type_expr{MutexHandle}}) }}
+      linkage_specifier{ extern func_decl{sleepMs (var_decl{(ms): type_expr{uint64}}) }}}}

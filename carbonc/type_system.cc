@@ -693,6 +693,9 @@ arena_ptr<ast_node> get_zero_value_node_for_type(type_system& ts, type_id id) {
         symbol_info* sym = id.get().enumtype.symbols.front();
         return make_identifier_node(*ts.ast_arena, {}, { sym->id.str });
     }
+    else if (id.get().kind == type_kind::error) {
+        return make_init_tag_node(*ts.ast_arena, {}, token_type::noerror);
+    }
     else if (id.get().kind == type_kind::slice) {
         auto ptr = make_nil_node(*ts.ast_arena, {});
         auto len = get_zero_value_node_for_type(ts, ts.usize_type);
@@ -1256,8 +1259,10 @@ type_id get_type_expr_node_type(type_system& ts, ast_node& node) {
     case ast_type::identifier: {
         node.type_error = true;
 
-        if (build_identifier_value(node.id_parts) == "T") {
-            //printf("T\n");
+        if (node.id_parts.front() == "$error") {
+            node.tid = ts.error_type;
+            node.type_error = false;
+            break;
         }
 
         auto sym = find_symbol(ts, separate_module_identifier(node.id_parts));
@@ -2896,6 +2901,20 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
         }
         break;
     }
+    case ast_type::error_decl: {
+        check_for_unresolved = false;
+        if (node.tid.valid()) { break; }
+
+        node.tid = ts.error_type;
+
+        for (auto& idnode : node.children) {
+            auto id = string_hash{ build_identifier_value(idnode->id_parts) };
+            uint32_t mmhash = murmur_hash2_32bit(MMHASH_SEED, id.str.c_str(), id.str.size());
+            comptime_value value = mmhash;
+            declare_comptime_symbol(ts, id, value, node.tid);
+        }
+        break;
+    }
     case ast_type::type_decl: {
         check_for_unresolved = false;
 
@@ -4085,7 +4104,6 @@ type_system::type_system(memory_arena& arena) {
     register_alias_to_type_name(*this, "float", "float32");
 
     error_type = register_integral_like_type<std::int32_t>(*this, "error", type_kind::error);
-    //noerror_type = register_alias_to_type_name(*this, "noerror", "error");
 
     noflags_type = register_integral_like_type<std::uint32_t>(*this, "noflags", type_kind::enumflags);
 
@@ -4405,7 +4423,7 @@ void type_system::resolve_and_check() {
             leave_scope();
         }
         if (this->unresolved_types) {
-            printf("unresolved types\n");
+            // printf("unresolved types\n");
         }
         else {
             break;

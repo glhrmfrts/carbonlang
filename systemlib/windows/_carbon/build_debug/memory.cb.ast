@@ -11,7 +11,7 @@ code_unit{
             stmt_list{
               {{@ $cb_agg_ret} = init{
                 {{@ $cb_agg_ret}.first = call{HeapAlloc (call{GetProcessHeap ()}, 0, size)}}
-                {{@ $cb_agg_ret}.second = NOERROR}
+                {{@ $cb_agg_ret}.second = 0}
                 }}
               return{$cb_agg_ret}}}}
         func_decl{free (var_decl{(ptr): type_expr{type_qualifier{ptr, opaque}}}) {

@@ -1,0 +1,8 @@
+code_unit{
+  std/linux/process.cb
+  decl_list{
+    import_decl{ std::linux::syscall syscall}
+    linkage_specifier{ extern decl_list{
+        func_decl{exit (var_decl{(code): type_expr{int}}) {
+            stmt_list{
+              call{syscall::exit (code)}}}}}}}}

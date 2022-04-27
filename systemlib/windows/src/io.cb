@@ -90,7 +90,7 @@ func read(handle: FileHandle, data: []uint8): isize {
     return bytes_read
 }
 
-func open(path: []pure uint8, flags: OpenFlags, mode: int): {FileHandle, syserror} {
+func open(path: []pure uint8, flags: OpenFlags, mode: int): {FileHandle, error} {
     const GENERIC_READ = 1<<31
     const GENERIC_WRITE = 1<<30
     
@@ -113,11 +113,11 @@ func open(path: []pure uint8, flags: OpenFlags, mode: int): {FileHandle, syserro
     const FILE_ATTRIBUTE_NORMAL = 128
     let attrs = FILE_ATTRIBUTE_NORMAL
 
-    let err : syserror
+    let err : error
     let handle = CreateFileA(path.ptr, access, sharemode, nil, creation, attrs, nil)
 
     if (handle == cast(&opaque)(cast(uintptr)INVALID_HANDLE_VALUE)) {
-        return nil, cast(syserror) GetLastError()
+        return nil, INVALID_HANDLE
     }
 
     if ((flags & APPEND) != noflags) {
@@ -132,39 +132,40 @@ func seek(fd: FileHandle, offset: int64, whence: Whence) {
     SetFilePointer(fd, cast(int) offset, nil, cast(int)whence)
 }
 
-func stat(fd: FileHandle, buf: &Stat): syserror {
+func stat(fd: FileHandle, buf: &Stat): error {
     let info : BY_HANDLE_FILE_INFORMATION
     if (!GetFileInformationByHandle(fd, info)) {
-        return cast(syserror)GetLastError()
+        return INVALID_HANDLE
     }
     buf.size = info.nFileSizeHigh | info.nFileSizeLow
     buf.mtime = info.ftLastWriteTime
     buf.atime = info.ftLastAccessTime
     buf.ctime = info.ftCreationTime
-    return NOERROR
+    return noerror
 }
 
-func stat(filename: []pure uint8, buf: &Stat): syserror {
+func stat(filename: []pure uint8, buf: &Stat): error {
     write(stdout(), "stat: ")
     write(stdout(), filename)
     write(stdout(), "\n")
     
     let handle, err = open(filename, noflags, 0)
-    if (err != NOERROR) {
+    if (err != noerror) {
         return err
     }
     defer close(handle)
 
-    // TODO: if (let err = stat(handle, buf); err != NoError)
+    // TODO: if (let err = stat(handle, buf); err != noerror)
     let err = stat(handle, buf)
-    if (err != NOERROR) {
+    if (err != noerror) {
         return err
     }
-    return NOERROR
+    return noerror
 }
 
-func close(fd: FileHandle): syserror {
-    return cast(syserror)CloseHandle(fd)
+func close(fd: FileHandle): error {
+    CloseHandle(fd)
+    return noerror
 }
 
 const STD_INPUT_HANDLE = -10
@@ -183,39 +184,39 @@ func stderr(): &opaque {
     return GetStdHandle(STD_ERROR_HANDLE)
 }
 
-func unlink(path: []pure uint8): syserror {
+func unlink(path: []pure uint8): error {
     if (!DeleteFileA(path.ptr)) {
-        return cast(syserror) GetLastError()
+        return INVALID_HANDLE
     }
-    return NOERROR
+    return noerror
 }
 
-func remove(path: []pure uint8): syserror {
+func remove(path: []pure uint8): error {
     if (!RemoveDirectoryA(path.ptr)) {
-        return cast(syserror) GetLastError()
+        return INVALID_HANDLE
     }
-    return NOERROR
+    return noerror
 }
 
-func rename(path: []pure uint8, dest: []pure uint8): syserror {
+func rename(path: []pure uint8, dest: []pure uint8): error {
     if (!MoveFileA(path.ptr, dest.ptr)) {
-        return cast(syserror) GetLastError()
+        return INVALID_HANDLE
     }
-    return NOERROR
+    return noerror
 }
 
-func copy(path: []pure uint8, dest: []pure uint8): syserror {
+func copy(path: []pure uint8, dest: []pure uint8): error {
     if (!CopyFileA(path.ptr, dest.ptr, false)) {
-        return cast(syserror) GetLastError()
+        return INVALID_HANDLE
     }
-    return NOERROR
+    return noerror
 }
 
-func mkdir(path: []pure uint8): syserror {
+func mkdir(path: []pure uint8): error {
     if (!CreateDirectoryA(path.ptr, nil)) {
-        return cast(syserror) GetLastError()
+        return INVALID_HANDLE
     }
-    return NOERROR
+    return noerror
 }
 
 }

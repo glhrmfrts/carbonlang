@@ -1,0 +1,63 @@
+code_unit{
+  std/linux/syscall.cb
+  decl_list{
+    var_decl{(MAP_SHARED) = 1}
+    var_decl{(MAP_PRIVATE) = 2}
+    var_decl{(MAP_SHARED_VALIDATE) = 3}
+    var_decl{(MAP_TYPE) = 15}
+    var_decl{(MAP_FIXED) = 16}
+    var_decl{(MAP_ANON) = 32}
+    var_decl{(MAP_ANONYMOUS) = MAP_ANON}
+    var_decl{(PROT_NONE) = 0}
+    var_decl{(PROT_READ) = 1}
+    var_decl{(PROT_WRITE) = 2}
+    var_decl{(PROT_EXEC) = 4}
+    var_decl{(PROT_GROWSDOWN) = 16777216}
+    var_decl{(PROT_GROWSUP) = 33554432}
+    func_decl{read (var_decl{(fd): type_expr{uint}}, var_decl{(ptr): type_expr{type_qualifier{ptr, uint8}}}, var_decl{(len): type_expr{usize}}) {
+        decl_list{
+          asm{
+    mov $0, %rax            # system call 0 is read
+                            # file handle is already in rdi
+                            # data is already in rsi
+                            # number of bytes is already in rdx
+    syscall
+
+}}}}
+    func_decl{write (var_decl{(fd): type_expr{uint}}, var_decl{(ptr): type_expr{type_qualifier{ptr, type_qualifier{ uint8}}}}, var_decl{(len): type_expr{usize}}) {
+        decl_list{
+          asm{
+    mov $1, %rax            # system call 1 is write
+                            # file handle is already in rdi
+                            # data is already in rsi
+                            # number of bytes is already in rdx
+    syscall
+
+}}}}
+    func_decl{open (var_decl{(filename): type_expr{type_qualifier{ptr, type_qualifier{ uint8}}}}, var_decl{(flags): type_expr{int}}, var_decl{(mode): type_expr{int16}}) {
+        decl_list{
+          asm{    mov $2, %rax
+    syscall
+}}}}
+    func_decl{close (var_decl{(fd): type_expr{uint}}) {
+        decl_list{
+          asm{    mov $3, %rax
+    syscall
+}}}}
+    func_decl{mmap (var_decl{(addr): type_expr{type_qualifier{ptr, opaque}}}, var_decl{(size): type_expr{usize}}, var_decl{(prot): type_expr{int}}, var_decl{(flags): type_expr{int}}, var_decl{(fd): type_expr{int}}, var_decl{(offs): type_expr{usize}}): type_expr{type_qualifier{ptr, opaque}} {
+        decl_list{
+          asm{    mov $9, %rax
+    mov %rcx, %r10
+    syscall
+}}}}
+    func_decl{munmap (var_decl{(addr): type_expr{type_qualifier{ptr, opaque}}}, var_decl{(size): type_expr{usize}}) {
+        decl_list{
+          asm{    mov $0xB, %rax
+    syscall
+}}}}
+    func_decl{exit (var_decl{(code): type_expr{int}}) {
+        decl_list{
+          asm{    mov $60, %rax           # system call 60 is exit
+                            # code is already in rdi
+    syscall
+}}}}}}

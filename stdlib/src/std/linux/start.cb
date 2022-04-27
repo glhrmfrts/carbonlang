@@ -1,0 +1,15 @@
+import std::system
+import std::linux::syscall
+
+const N = 10
+
+extern(C) func __carbon_main(argc: int, argv: & & pure uint8) {
+    //let buf : [1]uint8
+    //let c = []uint8{ &buf[0], sizeof(buf) }
+    //read(stdin(), c)
+
+    let ptr = mmap(nil, N*sizeof(int), PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, 0, 0)
+
+    write(stdout(), "Hello, world\n")
+    exit(argc)
+}

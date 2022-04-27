@@ -13,7 +13,7 @@ type Automaton = struct {
     new_field:  Field2D
 }
 
-func makefield(sx: int, sy: int): Field2D {
+func makeField(sx: int, sy: int): Field2D {
     // TODO(bug): let data = system::alloc(sizeof(int)*sx*sy)    
     print("makeField: ")
     print(sx)
@@ -36,7 +36,7 @@ func clear(f: &Field2D) {
     memset(f.data, 0, f.width*f.height*sizeof(int))
 }
 
-func makeautomaton(ftext: []pure uint8): Automaton {
+func makeAutomaton(ftext: []pure uint8): Automaton {
     let f = split(ftext, "\n")
     //defer freeListOfStrings(f)
 
@@ -49,8 +49,8 @@ func makeautomaton(ftext: []pure uint8): Automaton {
         }
     }
 
-    let field    = makefield(width, height)
-    let newfield = makefield(width, height)
+    let field    = makeField(width, height)
+    let newfield = makeField(width, height)
 
     for (y in 0,field.height) {
         for (x in 0,field.width) {
@@ -113,7 +113,7 @@ func print(a: &Automaton) {
 	println("print ended")
 }
 
-func makegun(): Automaton {
+func makeGun(): Automaton {
     let gunfield = "*******************************************
 *                                         *
 *  A shooting gun:                        *
@@ -128,14 +128,14 @@ func makegun(): Automaton {
 *                                         *
 *                                         *
 *******************************************"
-    return makeautomaton(gunfield)
+    return makeAutomaton(gunfield)
 }
 
-func gameoflife() {
-    let a = makegun()
+func gameOfLife() {
+    let a = makeGun()
     for (i in 0,150) {
         a->update()
         a->print()
-        system::sleepms(200)
+        system::sleepMs(200)
     }
 }

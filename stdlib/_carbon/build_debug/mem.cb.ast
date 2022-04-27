@@ -1,0 +1,5 @@
+code_unit{
+  std/linux/mem.cb
+  decl_list{
+    linkage_specifier{ extern decl_list{
+        func_decl{alloc (var_decl{(sz): type_expr{usize}}): type_expr{tuple_type{(type_expr{type_qualifier{ptr, opaque}}, type_expr{$error})}} {}}}}}}

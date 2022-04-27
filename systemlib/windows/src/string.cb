@@ -47,15 +47,15 @@ func println(i: int) {
     system::write(system::stdout(), "\n")
 }
 
-func allocstring(sz: usize): []uint8 {
+func allocString(sz: usize): []uint8 {
     let data, err = system::alloc(sz + 1)
     memset(data, 0, sz + 1)
     return []uint8{ (cast(&uint8)data), sz }
 }
 
-func copyrange(s: []pure uint8, start: usize, end: usize): []pure uint8 {
+func copyRange(s: []pure uint8, start: usize, end: usize): []pure uint8 {
     let size = end - start
-    let newstr = allocstring(size)
+    let newstr = allocString(size)
     memcopy(cast(&opaque)newstr.ptr, cast(&opaque)(&s[start]), size)
     return newstr
 }
@@ -85,8 +85,8 @@ func split(s: []pure uint8, ned: []pure uint8): [][]pure uint8 {
     let listsize = 0
 
     while (ok) {
-        prefix = copyrange(suffix, 0, index)
-        suffix = copyrange(suffix, index + 1, suffix.len)
+        prefix = copyRange(suffix, 0, index)
+        suffix = copyRange(suffix, index + 1, suffix.len)
 
         // TODO: free suffix temps
 

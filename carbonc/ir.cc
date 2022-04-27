@@ -899,6 +899,7 @@ void generate_ir_node(ast_node& node) {
     case ast_type::type_expr:
     case ast_type::type_constructor_decl:
     case ast_type::ternary_expr:
+    case ast_type::error_decl:
         break;
     case ast_type::func_decl:
         if (!node.func.is_generic) {

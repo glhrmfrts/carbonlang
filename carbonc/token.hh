@@ -31,6 +31,7 @@ enum class token_type : unsigned int {
     return_,
     extern_,
     const_,
+    error,
     pure,
     type,
     typealias,

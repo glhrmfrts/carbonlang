@@ -1,5 +1,0 @@
-extern(C) {
-
-func exit(status: int): {};
-
-}

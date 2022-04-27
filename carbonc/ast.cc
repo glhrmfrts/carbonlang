@@ -276,6 +276,15 @@ arena_ptr<ast_node> make_func_decl_node(memory_arena& arena, const position& pos
     return ptr;
 }
 
+arena_ptr<ast_node> make_error_decl_node(memory_arena& arena, const position& pos, std::vector<arena_ptr<ast_node>>&& children) {
+    auto ptr = make_in_arena<ast_node>(arena);
+    ptr->node_id = node_id_gen++;
+    ptr->type = ast_type::error_decl;
+    ptr->pos = pos;
+    ptr->children = std::move(children);
+    return ptr;
+}
+
 arena_ptr<ast_node> make_arg_list_node(memory_arena& arena, const position& pos, std::vector<arena_ptr<ast_node>>&& list) {
     auto ptr = make_in_arena<ast_node>(arena);
     ptr->node_id = node_id_gen++;

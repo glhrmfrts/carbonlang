@@ -28,7 +28,7 @@ code_unit{
             var_decl{(hProcess): type_expr{type_qualifier{ptr, opaque}}}
             var_decl{(hThread): type_expr{type_qualifier{ptr, opaque}}}
             var_decl{(dwProcessId): type_expr{int}}
-            var_decl{(dwThreadId): type_expr{int}}}}}}
+            var_decl{(dwthreadId): type_expr{int}}}}}}
     linkage_specifier{ extern(C)}
     linkage_specifier{ extern(C)}
     linkage_specifier{ extern(C)}

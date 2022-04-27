@@ -1,12 +1,12 @@
 import std::system as system;
 import test as t;
 import string;
-extern func makefield(:int, :int):Field2D;
+extern func makeField(:int, :int):Field2D;
 extern func set(:&Field2D, :int, :int, :int):{};
 extern func get(:&pure Field2D, :int, :int):int;
 extern func clear(:&Field2D):{};
-extern func makeautomaton(:[]pure uint8):Automaton;
+extern func makeAutomaton(:[]pure uint8):Automaton;
 extern func update(:&Automaton):{};
 extern func print(:&Automaton):{};
-extern func makegun():Automaton;
-extern func gameoflife():{};
+extern func makeGun():Automaton;
+extern func gameOfLife():{};

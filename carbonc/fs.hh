@@ -13,6 +13,8 @@ bool ensure_directory_exists(const std::string& path);
 
 std::string basename(const std::string& path);
 
+bool copyfile(const std::string& from, const std::string& to);
+
 std::string from_native_path(std::string path);
 
 bool exists(const std::string& filename);

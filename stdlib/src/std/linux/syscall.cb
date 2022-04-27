@@ -1,0 +1,78 @@
+const MAP_SHARED = 0x01
+const MAP_PRIVATE = 0x02
+const MAP_SHARED_VALIDATE = 0x03
+const MAP_TYPE = 0x0f
+const MAP_FIXED = 0x10
+const MAP_ANON = 0x20
+
+// TODO: allow this
+const MAP_ANONYMOUS = MAP_ANON
+
+const PROT_NONE      = 0
+const PROT_READ      = 1
+const PROT_WRITE     = 2
+const PROT_EXEC      = 4
+const PROT_GROWSDOWN = 0x01000000
+const PROT_GROWSUP   = 0x02000000
+
+func read(fd: uint, ptr: &uint8, len: usize) {
+asm%{
+
+    mov $0, %rax            # system call 0 is read
+                            # file handle is already in rdi
+                            # data is already in rsi
+                            # number of bytes is already in rdx
+    syscall
+
+}%asm   
+}
+
+func write(fd: uint, ptr: &pure uint8, len: usize) {
+asm%{
+
+    mov $1, %rax            # system call 1 is write
+                            # file handle is already in rdi
+                            # data is already in rsi
+                            # number of bytes is already in rdx
+    syscall
+
+}%asm
+}
+
+func open(filename: &pure uint8, flags: int, mode: int16) {
+asm%{
+    mov $2, %rax
+    syscall
+}%asm
+}
+
+func close(fd: uint) {
+asm%{
+    mov $3, %rax
+    syscall
+}%asm
+}
+
+// TODO: function attributes, attribute to signal ASM function (no need for return statements)
+func mmap(addr: &opaque, size: usize, prot: int, flags: int, fd: int, offs: usize): &opaque {
+asm%{
+    mov $9, %rax
+    mov %rcx, %r10
+    syscall
+}%asm
+}
+
+func munmap(addr: &opaque, size: usize) {
+asm%{
+    mov $0xB, %rax
+    syscall
+}%asm
+}
+
+func exit(code: int) {
+asm%{
+    mov $60, %rax           # system call 60 is exit
+                            # code is already in rdi
+    syscall
+}%asm
+}

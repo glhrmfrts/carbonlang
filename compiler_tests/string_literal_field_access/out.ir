@@ -1,19 +1,20 @@
-string #0: "Hello World 1";
-string #1: "Hello World 2";
-func carbon_main -> int
+string #0: "somestring";
+func cb__Nmain__Nexit__Aint -> void
+    arg #0 code: int;
+    ir_asm     mov $60, %rax           # system call 60 is exit
+                            # code is already in rdi
+    syscall
+;
+endf
+
+func carbon_main -> void
     local #0 $cbT0: slice__Tpure__Tuint8;
-    local #1 ptr: ptr__Tpure__Tuint8;
-    local #2 $cbT1: slice__Tpure__Tuint8;
-    local #3 len: usize;
+    local #1 code: usize;
     ir_load_addr STR0; (push)
     ir_load [L0 . 0] POP();
-    ir_load [L0 . 1] 13;
-    ir_load L1 [L0 . 0];
-    ir_load_addr STR1; (push)
-    ir_load [L2 . 0] POP();
-    ir_load [L2 . 1] 13;
-    ir_load L3 [L2 . 1];
-    ir_cast L3; (push)
-    ir_return POP();
+    ir_load [L0 . 1] 10;
+    ir_load L1 [L0 . 1];
+    ir_cast L1; (push)
+    ir_call cb__Nmain__Nexit__Aint POP();
 endf
 

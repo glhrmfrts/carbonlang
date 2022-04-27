@@ -1,0 +1,14 @@
+code_unit{
+  std/linux/start.cb
+  decl_list{
+    import_decl{ std::system}
+    import_decl{ std::linux::syscall}
+    var_decl{(N) = 10}
+    linkage_specifier{ extern(C) func_decl{__carbon_main (var_decl{(argc): type_expr{int}}, var_decl{(argv): type_expr{type_qualifier{ptr, type_qualifier{ptr, type_qualifier{ uint8}}}}}) {
+          decl_list{
+            var_decl{(ptr) = call{mmap (, cast_expr{ {N * 4}}, {PROT_READ | PROT_WRITE}, {MAP_PRIVATE | MAP_ANONYMOUS}, 0, cast_expr{ 0})}}}
+          stmt_list{
+            call{write (call{stdout ()}, init{type=type_expr{} ("Hello, world
+", 13)})}}
+          stmt_list{
+            call{exit (argc)}}}}}}}

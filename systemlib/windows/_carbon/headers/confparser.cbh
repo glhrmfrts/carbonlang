@@ -1,6 +1,6 @@
 import std::system;
 import string;
-extern func addsection(:&Conf, :[]pure uint8):&ConfSection;
-extern func addkeyval(:&ConfSection, :[]pure uint8, :[]pure uint8):{};
-extern func parseconf(:[]pure uint8):{Conf, syserror};
-extern func readconf(:[]pure uint8):{Conf, syserror};
+extern func addSection(:&Conf, :[]pure uint8):&ConfSection;
+extern func addKeyVal(:&ConfSection, :[]pure uint8, :[]pure uint8):{};
+extern func parseConf(:[]pure uint8):{Conf, error};
+extern func readConf(:[]pure uint8):{Conf, error};

@@ -1,4 +1,10 @@
 code_unit{
   main.cb
   decl_list{
+    func_decl{exit (var_decl{(code): type_expr{int}}) {
+        decl_list{
+          asm{    mov $60, %rax           # system call 60 is exit
+                            # code is already in rdi
+    syscall
+}}}}
     linkage_specifier{ extern(C)}}}

@@ -24,6 +24,37 @@ static const std::vector<gen_register> register_temp = {
     rbx, rdi, rsi, r12, r13, r14, r15,
 };
 
+static std::string offset_tostr(const gen_offset& r) {
+    // [base+offset*mult]
+
+    std::string result = "[";
+    result.append(register_names[r.base]);
+
+    if (auto reg = std::get_if<gen_register>(&r.offset); reg && (*reg != invalid)) {
+        result.append("+");
+        result.append(std::string{ register_names[*reg] });
+    }
+    else if (auto off = std::get_if<int_type>(&r.offset); off) {
+        if (*off < 0) {
+            result.append(std::to_string(*off));
+        }
+        else {
+            result.append("+");
+            result.append(std::to_string(*off));
+        }
+    }
+
+    if (auto mult = std::get_if<int_type>(&r.mult); mult) {
+        if (mult != 0) {
+            result.append("*");
+            result.append(std::to_string(*mult));
+        }
+    }
+
+    result.append("]");
+    return result;
+}
+
 static std::string tostr(const gen_destination& d) {
     return std::visit(overload{
         [](gen_register r) -> std::string {
@@ -35,23 +66,7 @@ static std::string tostr(const gen_destination& d) {
             return result;
         },
         [](gen_offset r) -> std::string {
-            std::string result = "[";
-            for (const auto& it : r.expr) {
-                if (auto reg = std::get_if<gen_register>(&it); reg) {
-                    result.append(std::string{ register_names[*reg] });
-                }
-                if (auto ch = std::get_if<char>(&it); ch) {
-                    result.append(ch, 1);
-                }
-                if (auto off = std::get_if<int_type>(&it); off) {
-                    result.append(std::to_string(*off));
-                }
-                if (auto d = std::get_if<gen_data_offset>(&it); d) {
-                    result.append("OFFSET:");
-                    result.append(d->label);
-                }
-            }
-            return result + "]";
+            return offset_tostr(r);
         }
     }, d);
 }
@@ -67,23 +82,7 @@ static std::string tostr(const gen_operand& d) {
             return result;
         },
         [](gen_offset r) -> std::string {
-            std::string result = "[";
-            for (const auto& it : r.expr) {
-                if (auto reg = std::get_if<gen_register>(&it); reg) {
-                    result.append(std::string{ register_names[*reg] });
-                }
-                if (auto ch = std::get_if<char>(&it); ch) {
-                    result.append(ch, 1);
-                }
-                if (auto off = std::get_if<int_type>(&it); off) {
-                    result.append(std::to_string(*off));
-                }
-                if (auto d = std::get_if<gen_data_offset>(&it); d) {
-                    result.append("OFFSET:");
-                    result.append(d->label);
-                }
-            }
-            return result + "]";
+            return offset_tostr(r);
         },
         [](int_type v) -> std::string {
             return std::to_string(v);
@@ -108,23 +107,8 @@ static std::string tostr_sized(const gen_destination& d) {
         [](gen_offset r) -> std::string {
             // guard for struct types
             std::size_t sz = std::min(r.op_size, std::size_t{8});
-            std::string result = std::string{ptrsizes[sz]} + " [";
-            for (const auto& it : r.expr) {
-                if (auto reg = std::get_if<gen_register>(&it); reg) {
-                    result.append(std::string{ register_names[*reg] });
-                }
-                if (auto ch = std::get_if<char>(&it); ch) {
-                    result.append(ch, 1);
-                }
-                if (auto off = std::get_if<int_type>(&it); off) {
-                    result.append(std::to_string(*off));
-                }
-                if (auto d = std::get_if<gen_data_offset>(&it); d) {
-                    result.append("OFFSET:");
-                    result.append(d->label);
-                }
-            }
-            return result + "]";
+            std::string result = std::string{ ptrsizes[sz] };
+            return result + offset_tostr(r);
         }
     }, d);
 }
@@ -141,24 +125,10 @@ static std::string tostr_sized(const gen_operand& d) {
             return result;
         },
         [](gen_offset r) -> std::string {
+            // guard for struct sizes
             std::size_t sz = std::min(r.op_size, std::size_t{8});
-            std::string result = std::string{ptrsizes[sz]} + " [";
-            for (const auto& it : r.expr) {
-                if (auto reg = std::get_if<gen_register>(&it); reg) {
-                    result.append(std::string{ register_names[*reg] });
-                }
-                if (auto ch = std::get_if<char>(&it); ch) {
-                    result.append(ch, 1);
-                }
-                if (auto off = std::get_if<int_type>(&it); off) {
-                    result.append(std::to_string(*off));
-                }
-                if (auto d = std::get_if<gen_data_offset>(&it); d) {
-                    result.append("OFFSET:");
-                    result.append(d->label);
-                }
-            }
-            return result + "]";
+            std::string result = std::string{ ptrsizes[sz] };
+            return result + offset_tostr(r);
         },
         [](int_type  v) -> std::string {
             return std::to_string(v);
@@ -374,6 +344,10 @@ struct codegen_x64_windows_nasm_emitter : public codegen_x64_emitter {
 
     virtual void comment_prefix() {
         out_file << ";";
+    }
+
+    virtual std::string special_label(const std::string& label) {
+        return std::string{"$"} + label;
     }
 };
 

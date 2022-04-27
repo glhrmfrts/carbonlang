@@ -1,0 +1,7 @@
+extern(carbon, std::system) {
+
+func alloc(sz: usize): {&opaque, error} {
+
+}
+
+}

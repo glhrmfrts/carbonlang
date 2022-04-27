@@ -1,1 +1,2 @@
-extern(C) func carbon_main():int;
+extern func exit(:int):{};
+extern(C) func carbon_main():{};

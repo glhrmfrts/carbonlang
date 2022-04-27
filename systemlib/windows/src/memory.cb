@@ -17,8 +17,8 @@ func GetProcessHeap(): int
 }
 
 extern(carbon, std::system) {
-func alloc(size: usize): {&opaque, syserror} {
-    return HeapAlloc(GetProcessHeap(), 0, size), NOERROR
+func alloc(size: usize): {&opaque, error} {
+    return HeapAlloc(GetProcessHeap(), 0, size), noerror
 }
 
 func free(ptr: &opaque) {

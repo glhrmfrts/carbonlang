@@ -17,7 +17,7 @@ type Conf = struct {
     sections: &ConfSection
 }
 
-func addsection(conf: &Conf, name: []pure uint8): &ConfSection {
+func addSection(conf: &Conf, name: []pure uint8): &ConfSection {
     let newsection = cast(&ConfSection) (alloc(sizeof(ConfSection)).first)
     newsection.name = name
     newsection.keyvals = nil
@@ -26,7 +26,7 @@ func addsection(conf: &Conf, name: []pure uint8): &ConfSection {
     return newsection
 }
 
-func addkeyval(sec: &ConfSection, key: []pure uint8, val: []pure uint8) {
+func addKeyVal(sec: &ConfSection, key: []pure uint8, val: []pure uint8) {
     let kv = cast(&KeyVal) (alloc(sizeof(KeyVal)).first)
     kv.key = key
     kv.val = val
@@ -34,7 +34,7 @@ func addkeyval(sec: &ConfSection, key: []pure uint8, val: []pure uint8) {
     sec.keyvals = kv
 }
 
-func parseconf(src: []pure uint8): {Conf, syserror} {
+func parseConf(src: []pure uint8): {Conf, error} {
     let conf : Conf
     let lines = split(src, "\n")
 
@@ -52,39 +52,39 @@ func parseconf(src: []pure uint8): {Conf, syserror} {
             if (line[0] == '[') {
                 let end, ok = find(line, ']')
                 if (ok) {
-                    let secname = line->copyrange(1, end)
+                    let secname = line->copyRange(1, end)
                     //print("section: ")
                     //println(secname)
-                    currentsection = conf->addsection(secname)
+                    currentsection = conf->addSection(secname)
                 }
             }
             // TODO(feature): else if (let eq,ok = find(line, '='); ok)
             else {
                 let eqpos, ok = find(line, '=')
                 if (ok) {
-                    let key = line->copyrange(0, eqpos)
-                    let value = line->copyrange(eqpos + 1, line.len)
+                    let key = line->copyRange(0, eqpos)
+                    let value = line->copyRange(eqpos + 1, line.len)
                     //print(key) print(" = ") print(value) print("\n")
                     if (currentsection != nil) {
-                        currentsection->addkeyval(trim(key), trim(value))
+                        currentsection->addKeyVal(trim(key), trim(value))
                     }
                 }
             }
         }
     }
 
-    return conf, NOERROR
+    return conf, noerror
 }
 
-func readconf(filename: []pure uint8): {Conf, syserror} {
+func readConf(filename: []pure uint8): {Conf, error} {
     let conf : Conf
     let statbuf : Stat
 
     let err = stat(filename, &statbuf)
-    if (err!=NOERROR) { return conf, err }
+    if (err!=noerror) { return conf, err }
 
     let filebuf, err = alloc(statbuf.size + 1)
-    if (err!=NOERROR) { return conf, err }
+    if (err!=noerror) { return conf, err }
     defer free(filebuf)
 
     import gameoflife
@@ -93,11 +93,11 @@ func readconf(filename: []pure uint8): {Conf, syserror} {
     let filedata = []uint8{ cast(&uint8)filebuf, statbuf.size }
     
     let handle, err = open(filename, READ, 0)
-    if (err!=NOERROR) { return conf, err }
+    if (err!=noerror) { return conf, err }
     defer close(handle)
 
     read(handle, filedata)
 
-    conf, err = parseconf(filedata)
+    conf, err = parseConf(filedata)
     return conf, err
 }

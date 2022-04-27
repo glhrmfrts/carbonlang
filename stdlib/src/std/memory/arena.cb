@@ -1,29 +1,29 @@
-import std::platform
-import std::memory
+import std::system
 
-type arena_block = struct {
-    mem: memory
+type ArenaBlock = struct {
+    mem: &opaque
     filled: usize
-    prev: *arena_block
+    prev: &ArenaBlock
 }
 
-type arena = struct {
+type Arena = struct {
     //allocator: I_allocator
-    first_block: *arena_block
-    alignment: usize
-    block_size: usize
+    firstBlock: &ArenaBlock
+    alignment:  usize
+    blockSize:  usize
 }
 
+/*
 func align(number: usize, alignment: usize) {
     // #TODO implement
     return number
 }
 
-func fits_in_block(b: &arena_block, size: usize) {
+func fits_in_block(b: &ArenaBlock, size: usize) {
     return b.filled + size <= b.mem.len
 }
 
-func allocate_in_block(b: &arena_block, size: usize) {
+func allocate_in_block(b: &ArenaBlock, size: usize) {
     let result = b.mem.ptr + b.filled
     b.filled += size
     return memory{cast(rawptr) result, size}
@@ -31,16 +31,16 @@ func allocate_in_block(b: &arena_block, size: usize) {
 
 func i_alloc(self: &I_allocator, sz: usize): memory {
     let rawself = cast(rawptr)self
-    //return alloc(nullcast(cast(*arena)rawself), sz)
-    let m = alloc(nullcast(cast(*arena)rawself), sz)
+    //return alloc(nullcast(cast(*Arena)rawself), sz)
+    let m = alloc(nullcast(cast(*Arena)rawself), sz)
     return m
 }
 
 func i_free(self: &I_allocator, m: &memory) {
 }
 
-func make_arena_allocator(block_size: usize): arena {
-    let a : arena
+func make_Arena_allocator(block_size: usize): Arena {
+    let a : Arena
     a.alignment = sizeof(rawptr)
     a.block_size = align(block_size, a.alignment)
     a.first_block = nullptr
@@ -49,7 +49,7 @@ func make_arena_allocator(block_size: usize): arena {
     return a
 }
 
-func free(a: &arena): {} {
+func free(a: &Arena): {} {
     let pblock = a.first_block
     while (pblock != nullptr) {
         let block = nullcast(pblock)
@@ -59,7 +59,7 @@ func free(a: &arena): {} {
     }
 }
 
-func alloc(a: &arena, user_size: usize): memory {
+func alloc(a: &Arena, user_size: usize): memory {
     let size = align(user_size, a.alignment)
     let pblock = a.first_block
     while (pblock != nullptr) {
@@ -70,11 +70,11 @@ func alloc(a: &arena, user_size: usize): memory {
         pblock = block.prev
     }
 
-    let new_block_memory = memory{alloc(sizeof(arena_block) + a.block_size), sizeof(arena_block) + a.block_size}
-    let new_block = nullcast(cast(*arena_block) new_block_memory.ptr)
+    let new_block_memory = memory{alloc(sizeof(ArenaBlock) + a.block_size), sizeof(ArenaBlock) + a.block_size}
+    let new_block = nullcast(cast(*ArenaBlock) new_block_memory.ptr)
     new_block.mem = memory{
-        new_block_memory.ptr + sizeof(arena_block),
-        new_block_memory.len - sizeof(arena_block)
+        new_block_memory.ptr + sizeof(ArenaBlock),
+        new_block_memory.len - sizeof(ArenaBlock)
     }
     new_block.filled = 0
     new_block.prev = a.first_block
@@ -82,3 +82,4 @@ func alloc(a: &arena, user_size: usize): memory {
     a.first_block = new_block
     return allocate_in_block(new_block, size)
 }
+*/

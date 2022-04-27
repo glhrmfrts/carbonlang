@@ -1,0 +1,26 @@
+import std::system
+import std::linux::syscall as syscall
+
+extern(carbon, std::system) {
+
+func stdin(): FileHandle {
+    return cast(FileHandle)(cast(uintptr)0)
+}
+
+func stdout(): FileHandle {
+    return cast(FileHandle)(cast(uintptr)1)
+}
+
+func stderr(): FileHandle {
+    return cast(FileHandle)(cast(uintptr)2)
+}
+
+func read(fd: FileHandle, data: []uint8) {
+    syscall::read(cast(uint)(cast(uintptr)fd), data.ptr, data.len)
+}
+
+func write(fd: FileHandle, data: []pure uint8) {
+    syscall::write(cast(uint)(cast(uintptr)fd), data.ptr, data.len)
+}
+
+}

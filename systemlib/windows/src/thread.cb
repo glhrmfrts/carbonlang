@@ -55,15 +55,15 @@ extern(C) func WaitForSingleObject(handle: &opaque, dwMilliseconds: int): int
 extern(C) func Sleep(ms: int)
 
 extern(carbon, std::system) {
-func makethread(fn: {&opaque} -> {}, arg: &opaque): {ThreadHandle, syserror} {
+func makeThread(fn: {&opaque} -> {}, arg: &opaque): {ThreadHandle, error} {
     let threadId : int32
 
     let th = CreateThread(nil, 0, fn, arg, 0, &threadId)
     if (th == cast(&opaque)(cast(uintptr)INVALID_HANDLE_VALUE)) {
-        return nil, cast(syserror)GetLastError()
+        return nil, INVALID_HANDLE
     }
 
-    return th, NOERROR
+    return th, noerror
 }
 
 const INFINITE_TIMEOUT = 0xFFFFFFFF
@@ -72,20 +72,20 @@ func join(th: ThreadHandle) {
     WaitForSingleObject(th, INFINITE_TIMEOUT)
 }
 
-func threadid(): int {
+func threadId(): int {
     return GetCurrentThreadId()
 }
 
-func cpucount(): int {
+func cpuCount(): int {
     let si : SYSTEM_INFO
     GetSystemInfo(&si)
     return si.dwNumberOfProcessors
 }
 
-func makemutex(): {MutexHandle, syserror} {
+func makeMutex(): {MutexHandle, error} {
     let cs = cast(&CRITICAL_SECTION)(alloc(sizeof(CRITICAL_SECTION)).first)
     InitializeCriticalSection(cs)
-    return cast(MutexHandle)cs, NOERROR
+    return cast(MutexHandle)cs, noerror
 }
 
 func lock(m: MutexHandle) {
@@ -103,7 +103,7 @@ func destroy(m: MutexHandle) {
     free(cast(&opaque)cs)
 }
 
-func sleepms(ms: uint64) {
+func sleepMs(ms: uint64) {
     Sleep(cast(int) ms)
 }
 }

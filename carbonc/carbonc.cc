@@ -12,6 +12,9 @@
 #include "codegen.hh"
 #include "ir.hh"
 
+// TODO: search for .s files and compile them as well as individual objects
+// TODO: look for a unit.cb file in a directory and treat that directory as a separate unit (?)
+
 #ifdef _WIN32
 
 #define WIN32_LEAN_AND_MEAN
@@ -33,6 +36,7 @@ struct project_info {
     target_type target;
     bool freestanding = false;
     bool embed_std = false;
+    bool link_libc = false;
     bool objonly = false;
     bool verbose = false;
 };
@@ -121,23 +125,46 @@ bool has_arg(const char* name, const char* shortname, int argc, const char* argv
 }
 
 std::string run_assembler(const project_info& p, const std::string& asm_file) {
+    std::string obj_file = asm_file;
+
 #ifdef _WIN32
+    replace(obj_file, ".asm", ".obj");
+
     auto nasm_cmd = p.cb_path + "/bin/win64/nasm.exe -fwin64 " + asm_file;
+    if (p.verbose) {
+        std::cout << "carbonc - running assembler: " << nasm_cmd << std::endl;
+    }
+
     FILE* ph = _popen(nasm_cmd.c_str(), "r");
     _pclose(ph);
     
-    std::string obj_file = asm_file;
-    replace(obj_file, ".asm", ".obj");
+    return obj_file;
+#else
+    replace(obj_file, ".asm", ".o");
+    replace(obj_file, ".s", ".o");
+
+    std::string as_cmd = "as " + asm_file;
+    as_cmd.append(" -o ");
+    as_cmd.append(obj_file);
+
+    if (p.verbose) {
+        std::cout << "carbonc - running assembler: " << as_cmd << std::endl;
+    }
+
+    FILE* ph = popen(as_cmd.c_str(), "r");
+    pclose(ph);
+
     return obj_file;
 #endif
 }
 
 std::string run_linker(
     const project_info& p,
-    const std::string& obj_file
+    const std::vector<std::string>& obj_files,
+    const std::string& out_file_in
 ) {
 #ifdef _WIN32
-    std::string out_file = obj_file;
+    std::string out_file = out_file_in;
 
     auto cmd = p.cb_path + "/bin/win64/GoLink.exe " + obj_file;
     if (p.target == target_type::executable) {
@@ -167,10 +194,49 @@ std::string run_linker(
     FILE* ph = _popen(cmd.c_str(), "r");
     while (!feof(ph)) {
         char buf[512];
+        memset(buf, 0, sizeof(buf));
         fgets(buf, 512, ph);
         std::cout << buf;
     }
     _pclose(ph);
+    
+    return out_file;
+#else
+    std::string out_file = out_file_in;
+
+    std::string cmd = "ld ";
+    if (p.target == target_type::executable) {
+        cmd.append(" -e "+ p.entrypoint);
+        replace(out_file, ".o", "");
+    }
+    else if (p.target == target_type::dynamic_library) {
+        cmd.append(" -shared ");
+        replace(out_file, ".obj", ".so");
+    }
+    else {
+        replace(out_file, ".obj", ".a");
+    }
+    cmd.append(" -o ");
+    cmd.append(out_file);
+
+    for (const auto& obj_file : obj_files) {
+        cmd.append(" ");
+        cmd.append(obj_file);
+    }
+
+    if (p.verbose) {
+        std::cout << "carbonc - running linker command: " << cmd << "\n";
+    }
+
+// Execute the command
+    FILE* ph = popen(cmd.c_str(), "r");
+    while (!feof(ph)) {
+        char buf[512];
+        memset(buf, 0, sizeof(buf));
+        fgets(buf, 512, ph);
+        std::cout << buf;
+    }
+    pclose(ph);
     
     return out_file;
 #endif
@@ -181,7 +247,11 @@ void parse_options(project_info& p, int argc, const char* argv[]) {
 
     const char* entrypoint = find_arg("--entrypoint", "-e", argc, argv);
     if (!entrypoint) {
+#ifdef _WIN32
         entrypoint = "carbon_main";
+#else
+        entrypoint = "_start";
+#endif
     }
 
     const char* output_type = find_arg("--type", "-t", argc, argv);
@@ -251,17 +321,21 @@ int run_project_mode(int argc, const char* argv[]) {
         process_source_directory(ts, *target_node, builtin_library_path);
     }
 
-    {
+    if (p.verbose) {
         auto cdur = std::chrono::system_clock::now() - timebegin;
         std::cout << "carbonc - parsing time: " << std::chrono::duration_cast<std::chrono::milliseconds>(cdur).count() << "ms\n\n";
     }
 
     {
         auto ctimebegin = std::chrono::system_clock::now();
-        std::cout << "carbonc - type checking " << "\n";
+        if (p.verbose) {
+            std::cout << "carbonc - type checking " << "\n";
+        }
         ts.resolve_and_check();
-        auto cdur = std::chrono::system_clock::now() - ctimebegin;
-        std::cout << "carbonc - type checking time: " << std::chrono::duration_cast<std::chrono::milliseconds>(cdur).count() << "ms\n\n";
+        if (p.verbose) {
+            auto cdur = std::chrono::system_clock::now() - ctimebegin;
+            std::cout << "carbonc - type checking time: " << std::chrono::duration_cast<std::chrono::milliseconds>(cdur).count() << "ms\n\n";
+        }
     }
 
     if (!ts.errors.empty()) {
@@ -312,27 +386,45 @@ int run_project_mode(int argc, const char* argv[]) {
     ir_program irprog;
     {
         auto ctimebegin = std::chrono::system_clock::now();
-        std::cout << "carbonc - generating IR " << "\n";
+        if (p.verbose) {
+            std::cout << "carbonc - generating IR " << "\n";
+        }
         irprog = generate_ir(ts, *target_node);
-        auto cdur = std::chrono::system_clock::now() - ctimebegin;
-        std::cout << "carbonc - IR generation time: " << std::chrono::duration_cast<std::chrono::milliseconds>(cdur).count() << "ms\n\n";
+        if (p.verbose) {
+            auto cdur = std::chrono::system_clock::now() - ctimebegin;
+            std::cout << "carbonc - IR generation time: " << std::chrono::duration_cast<std::chrono::milliseconds>(cdur).count() << "ms\n\n";
+        }
     }
 
     auto asm_file = "_carbon/build_debug/" + dirname + ".asm";
 
     {
         auto ctimebegin = std::chrono::system_clock::now();
-        std::cout << "carbonc - generating assembly " << "\n";
+        if (p.verbose) {
+            std::cout << "carbonc - generating assembly " << "\n";
+        }
         codegen(irprog, &ts, asm_file);
-        auto cdur = std::chrono::system_clock::now() - ctimebegin;
-        std::cout << "carbonc - assembly generation time: " << std::chrono::duration_cast<std::chrono::milliseconds>(cdur).count() << "ms\n\n";
+        if (p.verbose) {
+            auto cdur = std::chrono::system_clock::now() - ctimebegin;
+            std::cout << "carbonc - assembly generation time: " << std::chrono::duration_cast<std::chrono::milliseconds>(cdur).count() << "ms\n\n";
+        }
     }
 
-    auto obj_file = run_assembler(p, asm_file);
-    bool objonly = has_arg("--obj", "-obj", argc, argv);
+    std::vector<std::string> obj_files;
 
+    obj_files.push_back(run_assembler(p, asm_file));
+
+#ifndef _WIN32
+    if (!p.link_libc) {
+        copyfile("src/std/linux/x86_64/start.s", "_carbon/build_debug/__start.s");
+        obj_files.push_back(run_assembler(p, "_carbon/build_debug/__start.s"));
+    }
+#endif
+
+    bool objonly = has_arg("--obj", "-obj", argc, argv);
     if (!objonly) {
-        auto ld_file = run_linker(p, obj_file);
+        auto ld_file = run_linker(p, obj_files, obj_files.front());
+
         auto out_file = std::string{ "_carbon/out_debug/" } + basename(ld_file);
         rename(ld_file.c_str(), out_file.c_str());
         // MoveFileExA(ld_file.c_str(), out_file.c_str(), MOVEFILE_REPLACE_EXISTING);
@@ -351,8 +443,11 @@ int run_project_mode(int argc, const char* argv[]) {
     }
 
     auto dur = std::chrono::system_clock::now() - timebegin;
-    std::cout << "\ncarbonc - total lines parsed: " << total_lines_parsed;
-    std::cout << "\ncarbonc - total compilation time: " << std::chrono::duration_cast<std::chrono::milliseconds>(dur).count() << "ms\n";
+    
+    if (p.verbose) {
+        std::cout << "\ncarbonc - total lines parsed: " << total_lines_parsed;
+        std::cout << "\ncarbonc - total compilation time: " << std::chrono::duration_cast<std::chrono::milliseconds>(dur).count() << "ms\n";
+    }
 
     return 0;
 }
@@ -363,83 +458,6 @@ int main(int argc, const char* argv[]) {
     if (true) {
         return run_project_mode(argc, argv);
     }
-
-#if 0
-    auto parser_test_files = {
-        "parse-000-expression.cb", "parse-001-var_declaration.cb", "parse-002-func_declaration.cb",
-        "parse-003-type_declaration.cb", "parse-004-vecmath.cb", "parse-005-asm.cb", "parse-006-externfunc.cb",
-        "parse-007-import.cb"
-    };
-    for (const std::string& filename : parser_test_files) {
-        std::string src;
-        if (!read_file_text("tests/"+filename, src)) continue;
-
-        parser p{ ast_arena, src, "tests/" + filename, filename };
-        arena_ptr<ast_node> ast{ nullptr, nullptr };
-
-        try {
-            ast = p.parse_code_unit();
-        }
-        catch (const parse_error& e) {
-            std::cerr << "carbonc - parse error: " << e.what() << "\n";
-
-            auto upuntil = src.substr(0, e.pos.src_offs);
-            auto firstline = upuntil.find_last_of('\n');
-            auto line = src.substr(firstline, (src.find_first_of('\n', e.pos.src_offs) - firstline) + 20);
-
-            std::cerr << "                       " << line << "\n";
-            return 1;
-        }
-
-        std::ofstream ast_file{"tests/ast/"+filename};
-        prettyprint(*ast, ast_file);
-        ast_file << "\n";
-    }
-
-    auto compiler_test_files = {
-        "compile-000-main.cb", "compile-001-local_vars.cb", "compile-002-func_call.cb", "compile-003-strings.cb",
-        "compile-004-asm.cb", "compile-005-externfunc.cb"
-    };
-    for (const std::string& filename : compiler_test_files) {
-        std::string src;
-        if (!read_file_text("tests/" + filename, src)) continue;
-
-        auto timebegin = std::chrono::system_clock::now();
-        std::cout << "compiling file: " << filename << "\n";
-
-        parser p{ ast_arena, src, "tests/" + filename };
-        arena_ptr<ast_node> ast{ nullptr, nullptr };
-
-        try {
-            ast = p.parse_decl_list();
-        }
-        catch (const parse_error& e) {
-            std::cerr << "carbonc - parse error: " << e.what() << "\n";
-
-            auto upuntil = src.substr(0, e.pos.src_offs);
-            auto firstline = upuntil.find_last_of('\n');
-            auto line = src.substr(firstline, (src.find_first_of('\n', e.pos.src_offs) - firstline) + 20);
-
-            std::cerr << "                       " << line << "\n";
-            return 1;
-        }
-
-        type_system ts{ ast_arena };
-        ts.process_ast_node(*ast);
-        ts.resolve_and_check();
-
-        std::string fn{ filename.data() };
-        replace(fn, ".cb", ".asm");
-        codegen(*ast, &ts, "tests/asm/" + fn);
-
-        auto dur = std::chrono::system_clock::now() - timebegin;
-        std::cout << "compilation took " << std::chrono::duration_cast<std::chrono::milliseconds>(dur).count() << "ms\n\n";
-
-        //std::cout << ("ml64.exe tests/asm/" + fn + " /link /entry:main") << std::endl;
-        //std::FILE* assembler = _popen(("ml64.exe tests/asm/"+ fn + " /link /entry:main").c_str(), "r");
-        //_pclose(assembler);
-    }
-#endif
 
     return 0;
 }

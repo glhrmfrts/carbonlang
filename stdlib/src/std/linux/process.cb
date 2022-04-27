@@ -1,0 +1,9 @@
+import std::linux::syscall as syscall
+
+extern(carbon, std::system) {
+
+func exit(code: int) {
+    syscall::exit(code)
+}
+
+}
