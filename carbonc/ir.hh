@@ -34,59 +34,82 @@ enum ir_op {
     ir_jmp_gte,
     ir_jmp_lt,
     ir_jmp_lte,
+    ir_stack_dup,
     ir_noop,
 };
 
 struct ir_local_data {
     std::string name;
     type_id type;
+
+    inline bool operator ==(const ir_local_data& other) const { return name == other.name && type == other.type; }
 };
 
 struct ir_arg_data {
     std::string name;
     type_id type;
+
+    inline bool operator ==(const ir_arg_data& other) const { return name == other.name && type == other.type; }
 };
 
 struct ir_stackpop {
     type_id type;
+
+    inline bool operator ==(const ir_stackpop& other) const { return type == other.type; }
 };
 
 struct ir_global {
     std::string name;
     type_id type;
+
+    inline bool operator ==(const ir_global& other) const { return name == other.name && type == other.type; }
 };
 
 struct ir_local {
     int index;
     type_id type;
+
+    inline bool operator ==(const ir_local& other) const { return index == other.index && type == other.type; }
 };
 
 struct ir_arg {
     int index;
     type_id type;
+
+    inline bool operator ==(const ir_arg& other) const { return index == other.index && type == other.type; }
 };
 
 struct ir_string {
     int index;
+
+    inline bool operator ==(const ir_string& other) const { return index == other.index; }
 };
 
 struct ir_int {
     int_type val;
     type_id type;
+
+    inline bool operator ==(const ir_int& other) const { return val == other.val && type == other.type; }
 };
 
 struct ir_float {
     float_type val;
     type_id type;
+
+    inline bool operator ==(const ir_float& other) const { return val == other.val && type == other.type; }
 };
 
 struct ir_funclabel {
     std::string name;
     type_id type;
+
+    inline bool operator ==(const ir_funclabel& other) const { return name == other.name && type == other.type; }
 };
 
 struct ir_label {
     std::string name;
+
+    inline bool operator ==(const ir_label& other) const { return name == other.name; }
 };
 
 struct ir_field;
@@ -96,6 +119,10 @@ using ir_ref = std::variant<ir_global, ir_local, ir_arg, ir_stackpop, std::share
 struct ir_field {
     ir_ref ref;
     int field_index;
+
+    inline bool operator ==(const ir_field& other) const {
+        return ref == other.ref && field_index == other.field_index;
+    }
 };
 
 using ir_operand = std::variant<std::string, ir_field, ir_label, ir_funclabel, ir_global, ir_local, ir_arg, ir_stackpop, ir_string, ir_int, ir_float, char>;
@@ -105,6 +132,21 @@ struct ir_instr {
     type_id result_type;
     std::vector<ir_operand> operands;
     int index;
+
+    inline bool contents_equal(const ir_instr& other) const {
+        bool operands_equal = true;
+        if (operands.size() != other.operands.size()) {
+            return false;
+        }
+        for (size_t i = 0; i < operands.size(); i++) {
+            const auto& myop = operands[i];
+            const auto& otherop = other.operands[i];
+            if (!(myop == otherop)) {
+                return false;
+            }
+        }
+        return (op == other.op && result_type == other.result_type && operands_equal);
+    }
 };
 
 struct ir_global_data {

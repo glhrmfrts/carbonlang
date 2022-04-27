@@ -7,4 +7,6 @@ include_directories(${PROJECT_SOURCE_DIR}/deps/stb)
 
 set(CMAKE_CXX_STANDARD 17)
 
+add_compile_options(-g)
+
 add_executable(${TARGET_NAME} ${SRC_FILES} ${HEADER_FILES})

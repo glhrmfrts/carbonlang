@@ -1,0 +1,5 @@
+import std::system as sys;
+extern func memcopy(:&opaque, :&pure opaque, :usize):{};
+extern func memset(:&opaque, :uint8, :usize):{};
+extern func alloc(:usize):{&opaque, error};
+extern func free(:&opaque):{};

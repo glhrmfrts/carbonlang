@@ -1,7 +1,31 @@
+import std::linux::syscall
+import std::system
+
+type AllocParameters = struct {
+    prot: int
+    flags: int
+}
+
 extern(carbon, std::system) {
 
-func alloc(sz: usize): {&opaque, error} {
+func alloc(sz: usize, op: &opaque): {&opaque, error} {
+    let params = cast(&AllocParameters)op
+    let ptr = mmap(nil, sz, params.prot, params.flags, 0, 0)
+    if (ptr == cast(&opaque)(cast(uintptr)-1)) {
+        return nil, ALLOC_FAILED
+    }
+    return ptr, noerror
+}
 
+func alloc(sz: usize): {&opaque, error} {
+    let params : AllocParameters
+    params.prot = PROT_READ | PROT_WRITE
+    params.flags = MAP_PRIVATE | MAP_ANONYMOUS
+    return alloc(sz, &params)
+}
+
+func free(ptr: &opaque, sz: usize) {
+    munmap(ptr, sz)
 }
 
 }

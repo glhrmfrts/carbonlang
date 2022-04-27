@@ -1,0 +1,111 @@
+// The dumbest possible general-purpose allocator
+
+import std::system as sys
+
+private {
+
+const ALIGNMENT : usize = 16
+const PAGE_SIZE : usize = 4096
+
+type Block = struct {
+    size: usize
+    cap: usize
+    numAllocs: usize
+    prev: &Block
+}
+
+let lastBlock : &Block
+
+func allocInBlock(pblock: &Block, size: usize): &opaque {
+    let blockdata = (cast(&uint8)(cast(&opaque)pblock)) + sizeof(Block)
+    let ptr = blockdata + pblock.size
+    pblock.size += size
+    pblock.numAllocs += 1
+    return ptr
+}
+
+func align(size: usize, alignment: usize): usize {
+    return size + (-size & (PAGE_SIZE - cast(usize)1))
+}
+
+}
+
+func memcopy(dest: &opaque, src: &pure opaque, size: usize) {
+    asm%{
+mov %rdx,%rcx
+rep movsb
+    }%asm
+}
+
+func memset(dest: &opaque, value: uint8, count: usize) {
+    asm%{
+mov %rsi,%rax
+mov %rdx,%rcx
+rep stosb
+    }%asm
+}
+
+func alloc(sz: usize): {&opaque, error} {
+    lastBlock = nil // TODO
+
+    let asize = align(sz, ALIGNMENT)
+    let pblock = lastBlock
+
+    while (pblock != nil) {
+        if (pblock.size + asize < pblock.cap) {
+            break
+        }
+        pblock = pblock.prev
+    }
+
+    if (pblock != nil) {
+        return allocInBlock(pblock, asize), noerror
+    }
+
+    let memsize = align(sizeof(Block) + asize, PAGE_SIZE)
+    let newmem, err = sys::alloc(memsize)
+    if (err != noerror) {
+        return nil, err
+    }
+
+    memset(newmem, 0, sizeof(Block))
+
+    let newblock = cast(&Block)(newmem)
+    newblock.cap = memsize
+    newblock.numAllocs = 1
+    newblock.prev = lastBlock
+
+    sys::write(sys::stdout(), "Allocating block of ")
+    sys::writeInt(sys::stdout(), cast(int)newblock.cap)
+    sys::write(sys::stdout(), " bytes\n")
+
+    lastBlock = newblock
+
+    return allocInBlock(newblock, asize), noerror
+}
+
+func free(ptr: &opaque) {
+    let pblock = lastBlock
+    while (pblock != nil) {
+        let blockdata = (cast(&uint8)(cast(&opaque)pblock)) + sizeof(Block)
+        if (ptr >= blockdata && ptr < (blockdata + pblock.cap)) {
+            break
+        }
+        pblock = pblock.prev
+    }
+
+    if (pblock == nil) {
+        // This pointer did not come from here
+        return
+    }
+
+    pblock.numAllocs -= 1
+    if (pblock.numAllocs == 0) {
+        lastBlock = pblock.prev
+
+        sys::write(sys::stdout(), "Freeing block of ")
+        sys::writeInt(sys::stdout(), cast(int)pblock.cap)
+        sys::write(sys::stdout(), " bytes\n")
+        sys::free(pblock, pblock.cap)
+    }
+}

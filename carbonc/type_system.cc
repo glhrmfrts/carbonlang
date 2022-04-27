@@ -304,6 +304,22 @@ string_hash build_type_constructor_mangled_name(const std::string& mangled_name,
     return { result };
 }
 
+std::pair<string_hash, string_hash> separate_module_identifier(const std::vector<std::string>& parts) {
+    if (parts.empty()) return {};
+
+    std::string mod, id;
+    for (std::size_t i = 0; i < parts.size(); i++) {
+        if (i == parts.size() - 1) {
+            id.append(parts[i]);
+        }
+        else {
+            mod.append(parts[i]);
+        }
+    }
+
+    return std::make_pair(string_hash{ mod }, string_hash{ id });
+}
+
 std::pair<comptime_value, bool> node_to_comptime_value(type_system& ts, ast_node& node) {
     comptime_value arg = {};
     switch (node.type) {
@@ -330,12 +346,27 @@ std::pair<comptime_value, bool> node_to_comptime_value(type_system& ts, ast_node
             arg = tid;
         }
         else {
-            add_type_error(ts, node.pos, "invalid compile-time expression");
+            add_type_error(ts, node.pos, "invalid const expression");
+        }
+        break;
+    }
+    case ast_type::identifier: {
+        auto pair = separate_module_identifier(node.id_parts);
+        auto sym = find_symbol(ts, pair);
+        if (sym) {
+            if (sym->kind == symbol_kind::comptime) {
+                node.tid = sym->cttype;
+                arg = sym->ctvalue;
+            }
+            else if (sym->kind == symbol_kind::type) {
+                node.tid = ts.type_type;
+                arg = sym->scope->tdefs[sym->type_index]->id;
+            }
         }
         break;
     }
     default: {
-        add_type_error(ts, node.pos, "invalid compile-time expression: '%s'", node_to_string(node).c_str());
+        add_type_error(ts, node.pos, "invalid const expression: '%s'", node_to_string(node).c_str());
         break;
     }
     }
@@ -537,52 +568,47 @@ bool is_assignable_to(type_system& ts, type_id a, type_id b) {
         return true;
     }
 
-    auto& ta = get_type(ts, a);
-    auto& tb = get_type(ts, b);
+    // ta = from
+    // tb = target
 
-    if (ta.alias_to == b || tb.alias_to == a) {
+    auto& tsrc = get_type(ts, a);
+    auto& ttarget = get_type(ts, b);
+
+    if (tsrc.alias_to == b || ttarget.alias_to == a) {
         return true;
     }
 
-    if (ta.kind == type_kind::ptr && tb.kind == type_kind::ptr) {
-        if (get_alias_root(ts, ta.id) == ts.opaque_ptr_type) {
+    if (tsrc.kind == type_kind::ptr && ttarget.kind == type_kind::ptr) {
+        if (get_alias_root(ts, ttarget.id) == ts.opaque_ptr_type || get_alias_root(ts, ttarget.id) == ts.pure_opaque_ptr_type) {
             return true;
         }
 
-        if (get_alias_root(ts, ta.id) == ts.pure_opaque_ptr_type) {
-            return tb.elem_type.get().flags & type_flags::is_pure;
-        }
-
-        if (get_alias_root(ts, tb.id) == ts.opaque_ptr_type || get_alias_root(ts, tb.id) == ts.pure_opaque_ptr_type) {
-            return true;
-        }
-
-        return is_assignable_to(ts, ta.elem_type, tb.elem_type);
+        return is_assignable_to(ts, tsrc.elem_type, ttarget.elem_type);
     }
 
     // NIL = PTR
-    if (ta.kind == type_kind::ptr && tb.kind == type_kind::nil) {
+    if (tsrc.kind == type_kind::ptr && ttarget.kind == type_kind::nil) {
         return true;
     }
 
     // PTR = NIL
-    if (ta.kind == type_kind::nil && tb.kind == type_kind::ptr) {
+    if (tsrc.kind == type_kind::nil && ttarget.kind == type_kind::ptr) {
         return true;
     }
 
-    if (ta.kind == type_kind::slice && tb.kind == type_kind::slice) {
-        return is_assignable_to(ts, ta.elem_type, tb.elem_type);
+    if (tsrc.kind == type_kind::slice && ttarget.kind == type_kind::slice) {
+        return is_assignable_to(ts, tsrc.elem_type, ttarget.elem_type);
     }
 
-    if (ta.kind == type_kind::func_pointer && tb.kind == type_kind::func_pointer) {
+    if (tsrc.kind == type_kind::func_pointer && ttarget.kind == type_kind::func_pointer) {
         // TODO
         return true;
     }
 
     // Assigning a tuple to another tuple (or struct) that contains assignable types is OK.
-    if (ta.kind == type_kind::tuple && (tb.kind == type_kind::tuple || tb.kind == type_kind::structure)) {
-        const auto& afields = get_type_fields(ta.id);
-        const auto& bfields = get_type_fields(tb.id);
+    if (tsrc.kind == type_kind::tuple && (ttarget.kind == type_kind::tuple || ttarget.kind == type_kind::structure)) {
+        const auto& afields = get_type_fields(tsrc.id);
+        const auto& bfields = get_type_fields(ttarget.id);
         if (afields.size() != bfields.size()) { return false; }
 
         for (int i = 0; i < afields.size(); i++) {
@@ -595,7 +621,7 @@ bool is_assignable_to(type_system& ts, type_id a, type_id b) {
         return true;
     }
 
-    if (tb.kind == ta.kind && (tb.flags & type_flags::is_pure)) {
+    if (ttarget.kind == tsrc.kind && (ttarget.flags & type_flags::is_pure)) {
         return true;
     }
 
@@ -982,6 +1008,10 @@ bool can_pointer_be_cast_from(type_system& ts, type_def& self, type_def& from) {
         }
     }
 
+    if (get_alias_root(ts, from.id) == ts.opaque_ptr_type || get_alias_root(ts, from.id) == ts.opaque_ptr_type) {
+        return true;
+    }
+
     if (from.kind == type_kind::ptr) {
         return is_castable_to(ts, from.elem_type, self.elem_type);
     }
@@ -1236,22 +1266,6 @@ type_id get_value_node_type(type_system& ts, ast_node& node) {
     }
 
     return invalid_type;
-}
-
-std::pair<string_hash, string_hash> separate_module_identifier(const std::vector<std::string>& parts) {
-    if (parts.empty()) return {};
-
-    std::string mod, id;
-    for (std::size_t i = 0; i < parts.size(); i++) {
-        if (i == parts.size() - 1) {
-            id.append(parts[i]);
-        }
-        else {
-            mod.append(parts[i]);
-        }
-    }
-
-    return std::make_pair(string_hash{ mod }, string_hash{ id });
 }
 
 type_id get_type_expr_node_type(type_system& ts, ast_node& node) {
@@ -1774,8 +1788,33 @@ type_id deduce_func_return_type(type_system& ts, ast_node& f) {
                 ret_type = ret->tid;
             }
         }
+        else if (ret->children.empty() || !ret->children[0]) {
+            ret_type = ts.void_type;
+        }
     }
     return ret_type;
+}
+
+static void count_asm_statements(type_system& ts, ast_node& node, int* asmcount, int* nonasmcount) {
+    switch (node.type) {
+    case ast_type::decl_list:
+    case ast_type::stmt_list:
+    case ast_type::compound_stmt: {
+        for (auto& child : node.children) {
+            if (child) {
+                count_asm_statements(ts, *child, asmcount, nonasmcount);
+            }
+        }
+        break;
+    }
+    case ast_type::asm_stmt: {
+        *asmcount += 1;
+        break;
+    }
+    default:
+        *nonasmcount += 1;
+        break;
+    }
 }
 
 type_id resolve_func_type(type_system& ts, ast_node& f) {
@@ -1797,11 +1836,16 @@ type_id resolve_func_type(type_system& ts, ast_node& f) {
         }
 
         if (ret_type.valid()) {
-            if (f.func.return_statements.empty() && ret_type != ts.void_type && f.func.linkage == func_linkage::local_carbon) {
-                add_type_error(ts, f.func_ret_type()->pos,
-                    "function '%s' has return type '%s' but no return statements",
-                    funcname.c_str(),
-                    type_to_string(ret_type).c_str());
+            if (f.func.return_statements.empty() && ret_type != ts.void_type && f.func.linkage == func_linkage::local_carbon && f.func_body()) {
+                int asmcount = 0;
+                int nonasmcount = 0;
+                count_asm_statements(ts, *f.func_body(), &asmcount, &nonasmcount);
+                if (nonasmcount > 0 || asmcount == 0) {
+                    add_type_error(ts, f.func_ret_type()->pos,
+                        "function '%s' has return type '%s' but no return statements",
+                        funcname.c_str(),
+                        type_to_string(ret_type).c_str());
+                }
             }
             for (auto retst : f.func.return_statements) {
                 // TODO: check for needed casts
@@ -2704,7 +2748,7 @@ void clear_type_errors(type_system& ts, ast_node& node) {
 }
 
 void visit_pre_children(type_system& ts, ast_node& node) {
-    for (auto& child : node.pre_children) {
+    for (auto& child : node.pre_nodes) {
         if (child) {
             child->parent = &node;
             visit_tree(ts, *child);
@@ -2811,7 +2855,7 @@ void generate_temp_for_field_expr(type_system& ts, ast_node& node, type_id ltype
 
     node.children[0] = std::move(ref);
 
-    node.pre_children.push_back(std::move(temp));
+    node.pre_nodes.push_back(std::move(temp));
 
     node.desugar_flags |= 1;
 }
@@ -2868,7 +2912,7 @@ arena_ptr<ast_node> generate_temp_for_ternary_expr(type_system& ts, ast_node& no
     resolve_node_type(ts, ifstmt.get());
 
     ifstmt->temps.push_back(std::move(temp));
-    ref->pre_children.push_back(std::move(ifstmt));
+    ref->pre_nodes.push_back(std::move(ifstmt));
     return ref;
 }
 
@@ -3059,12 +3103,17 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
             node.type_error = true;
         }
 
-        node.tid = resolve_node_type(ts, node.children.front().get());
-        if (!node.tid.valid() || node.type_error) {
-            auto funcname = node_to_string(
-                *(find_nearest_scope_local(ts, scope_kind::func_body)->self->func_id())
-            );
-            complement_error(ts, node.pos, "in return statement of function '%s'", funcname.c_str());
+        if (!node.children.front()) {
+            node.tid = ts.void_type;
+        }
+        else {
+            node.tid = resolve_node_type(ts, node.children.front().get());
+            if (!node.tid.valid() || node.type_error) {
+                auto funcname = node_to_string(
+                    *(find_nearest_scope_local(ts, scope_kind::func_body)->self->func_id())
+                );
+                complement_error(ts, node.pos, "in return statement of function '%s'", funcname.c_str());
+            }
         }
 
         // TODO: check if scope / sanity check
@@ -3396,7 +3445,7 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
             auto idx = find_child_index(node.parent, &node);
             if (idx) {
                 auto parent = node.parent;
-                ref->pre_children.push_back(std::move(parent->children[*idx]));
+                ref->pre_nodes.push_back(std::move(parent->children[*idx]));
                 parent->children[*idx] = std::move(ref);
             }
         }
@@ -4516,13 +4565,13 @@ void type_system::create_temp_variable_for_binary_expr(ast_node& node) {
 void type_system::create_temp_variable_for_index_expr(ast_node& node) {
     auto [temp, ref] = make_temp_variable_for_index_expr_resolved(*this, std::move(node.children[0]));
     node.children[0] = std::move(ref);
-    node.pre_children.push_back(std::move(temp));
+    node.pre_nodes.push_back(std::move(temp));
 }
 
 void type_system::create_temp_variable_for_call_arg(ast_node& call, ast_node& arg, int idx) {
     auto [temp, ref] = make_temp_variable_for_call_resolved(*this, arg);
     call.children[ast_node::child_call_expr_arg_list]->children[idx] = std::move(ref);
-    call.pre_children.push_back(std::move(temp));
+    call.pre_nodes.push_back(std::move(temp));
 }
 
 scope_def* type_system::find_nearest_scope(scope_kind kind) {

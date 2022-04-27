@@ -16,7 +16,7 @@ void check_assignment_bool_op(type_system& ts, ast_node& node) {
         node.children[1]->desugar_flags |= desugar_flag::bool_op_desugared;
 
         auto temp = make_temp_variable_for_bool_op_resolved(ts, std::move(node.children[1]), std::move(node.children[0]));
-        node.pre_children.push_back(std::move(temp));
+        node.pre_nodes.push_back(std::move(temp));
     }
 }
 
@@ -25,7 +25,7 @@ void check_assignment_ternary_expr(type_system& ts, ast_node& node) {
         node.children[1]->desugar_flags |= desugar_flag::ternary_desugared;
 
         auto temp = make_temp_variable_for_ternary_expr_resolved(ts, std::move(node.children[1]), std::move(node.children[0]));
-        node.pre_children.push_back(std::move(temp));
+        node.pre_nodes.push_back(std::move(temp));
     }
 }
 
@@ -36,7 +36,7 @@ void check_var_decl_bool_op(type_system& ts, ast_node& node) {
 
         auto idref = make_identifier_node(*ts.ast_arena, {}, node.var_id()->id_parts);
         auto temp = make_temp_variable_for_bool_op_resolved(ts, std::move(node.children[ast_node::child_var_decl_value]), std::move(idref));        
-        node.pre_children.push_back(std::move(temp));
+        node.pre_nodes.push_back(std::move(temp));
     }
 }
 
@@ -48,7 +48,7 @@ void check_var_decl_ternary_expr(type_system& ts, ast_node& node) {
         auto idref = make_identifier_node(*ts.ast_arena, {}, node.var_id()->id_parts);
         auto temp = make_temp_variable_for_ternary_expr_resolved(ts, std::move(node.children[ast_node::child_var_decl_value]), std::move(idref));
         
-        node.pre_children.push_back(std::move(temp));
+        node.pre_nodes.push_back(std::move(temp));
     }
 }
 
@@ -62,7 +62,7 @@ void check_temp_bool_op(type_system& ts, ast_node& node) {
         node.tid = ref->tid;
         node.lvalue = ref->lvalue;
         node.id_parts = ref->id_parts;
-        node.pre_children.push_back(std::move(temp));
+        node.pre_nodes.push_back(std::move(temp));
     }
 }
 
@@ -75,7 +75,7 @@ void check_temp_ternary_expr(type_system& ts, ast_node& node) {
         node.tid = ref->tid;
         node.lvalue = ref->lvalue;
         node.id_parts = ref->id_parts;
-        node.pre_children.push_back(std::move(temp));
+        node.pre_nodes.push_back(std::move(temp));
     }
 }
 
@@ -101,7 +101,7 @@ void check_call_arg_aggregate_type(type_system &ts, ast_node& call, int idx) {
 
         auto [temp, ref] = make_temp_variable_for_aggregate_type_resolved(ts, std::move(call.children[ast_node::child_call_expr_arg_list]->children[idx]));
         call.children[ast_node::child_call_expr_arg_list]->children[idx] = std::move(ref);
-        call.pre_children.push_back(std::move(temp));
+        call.pre_nodes.push_back(std::move(temp));
     }
 }
 
@@ -127,12 +127,12 @@ void check_func_return_aggregate_type(type_system& ts, ast_node& func) {
             check_assignment_aggregate_call(ts, *agg_assign);
             if (!agg_assign->bin_right()) {
                 // if this happens then an aggregate is being made directly to $cb_agg_ret
-                ret->pre_children = std::move(agg_assign->pre_children);
+                ret->pre_nodes = std::move(agg_assign->pre_nodes);
                 ret->temps.push_back(std::move(agg_assign));
             }
             else {
                 resolve_node_type_post(ts, agg_assign.get());
-                ret->pre_children.push_back(std::move(agg_assign));
+                ret->pre_nodes.push_back(std::move(agg_assign));
             }
 
             ret->children[0] = make_identifier_node(*ts.ast_arena, ret->pos, { "$cb_agg_ret" });
@@ -171,7 +171,7 @@ void check_assignment_aggregate_call(type_system& ts, ast_node& node) {
         if (node.bin_right()->call.flags & call_flag::is_aggregate_return) { return; }
 
         auto call = transform_aggregate_call_into_pointer_argument(ts, *node.bin_left(), std::move(node.children[1]));
-        node.pre_children.push_back(std::move(call));
+        node.pre_nodes.push_back(std::move(call));
     }
 }
 
@@ -180,7 +180,7 @@ void check_var_decl_aggregate_call(type_system& ts, ast_node& node) {
         if (node.var_value()->call.flags & call_flag::is_aggregate_return) { return; }
 
         auto call = transform_aggregate_call_into_pointer_argument(ts, *node.var_id(), std::move(node.children[ast_node::child_var_decl_value]));
-        node.pre_children.push_back(std::move(call));
+        node.pre_nodes.push_back(std::move(call));
     }
 }
 

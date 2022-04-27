@@ -16,4 +16,5 @@ extern func test_dir_create():bool;
 extern func test_dir_remove():bool;
 extern func getValues():{[]pure uint8, int};
 extern func workerThreadFunc(:&opaque):{};
+extern func testArrayWrite():{};
 extern(C) func test_main():int;

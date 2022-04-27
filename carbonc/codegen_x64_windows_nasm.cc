@@ -21,20 +21,15 @@ static const std::vector<gen_register> register_args = {
 };
 
 static const std::vector<gen_register> register_temp = {
-    rbx, rdi, rsi, r12, r13, r14, r15,
+    rbx, r12, r13, r14, r15,
 };
 
-static std::string offset_tostr(const gen_offset& r) {
-    // [base+offset*mult]
-
-    std::string result = "[";
-    result.append(register_names[r.base]);
-
-    if (auto reg = std::get_if<gen_register>(&r.offset); reg && (*reg != invalid)) {
+static void append_offset(std::string& result, const gen_offset_expr& expr) {
+    if (auto reg = std::get_if<gen_register>(&expr); reg && (*reg != invalid)) {
         result.append("+");
         result.append(std::string{ register_names[*reg] });
     }
-    else if (auto off = std::get_if<int_type>(&r.offset); off) {
+    else if (auto off = std::get_if<int_type>(&expr); off) {
         if (*off < 0) {
             result.append(std::to_string(*off));
         }
@@ -43,6 +38,16 @@ static std::string offset_tostr(const gen_offset& r) {
             result.append(std::to_string(*off));
         }
     }
+}
+
+static std::string offset_tostr(const gen_offset& r) {
+    // [base+offset*mult]
+
+    std::string result = "[";
+    result.append(register_names[r.base]);
+
+    append_offset(result, r.offsets[0]);
+    append_offset(result, r.offsets[1]);
 
     if (auto mult = std::get_if<int_type>(&r.mult); mult) {
         if (mult != 0) {

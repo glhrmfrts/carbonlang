@@ -1,6 +1,7 @@
 #pragma once
 
 #include <variant>
+#include <array>
 #include <string_view>
 #include <iostream>
 #include <fstream>
@@ -92,11 +93,11 @@ using gen_offset_expr = std::variant<gen_register, gen_data_offset, int_type>;
 struct gen_offset {
     std::size_t op_size;
     gen_register base;
-    gen_offset_expr offset;
+    std::array<gen_offset_expr, 2> offsets;
     gen_offset_expr mult;
 
     bool operator ==(const gen_offset& other) const {
-        return base == other.base && offset == other.offset && mult == other.mult && op_size == other.op_size;
+        return base == other.base && offsets[0] == other.offsets[0] && offsets[1] == other.offsets[1] && mult == other.mult && op_size == other.op_size;
     }
 };
 

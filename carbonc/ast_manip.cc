@@ -201,9 +201,9 @@ arena_ptr<ast_node> copy_node(type_system& ts, ast_node* node) {
     }
     auto cpy = copy_node_helper(ts, *node);
     cpy->tid = node->tid;
-    for (auto& child : node->pre_children) {
+    for (auto& child : node->pre_nodes) {
         assert(child.get());
-        cpy->pre_children.push_back(copy_node(ts, child.get()));
+        cpy->pre_nodes.push_back(copy_node(ts, child.get()));
     }
     return cpy;
 }
@@ -251,7 +251,7 @@ std::pair<arena_ptr<ast_node>, arena_ptr<ast_node>> make_temp_variable_for_call_
 
     auto val_node = make_call_expr_node(*ts.ast_arena, {}, std::move(call.children[ast_node::child_call_expr_callee]), std::move(call.children[ast_node::child_call_expr_arg_list]));
     // The call might have a pre-children of itself
-    val_node->pre_children = std::move(call.pre_children);
+    val_node->pre_nodes = std::move(call.pre_nodes);
 
     // Generate and register the declaration of the temp
     auto decl = make_var_decl_node_single(*ts.ast_arena, {}, token_type::let, std::move(id_node), { nullptr, nullptr }, std::move(val_node), { token_type::auto_ });
@@ -386,7 +386,7 @@ std::optional<std::size_t> find_child_index(ast_node* parent, ast_node* child) {
 }
 
 void parent_tree(ast_node& node) {
-    for (auto& child : node.pre_children) {
+    for (auto& child : node.pre_nodes) {
         if (child) {
             child->parent = &node;
             parent_tree(*child);

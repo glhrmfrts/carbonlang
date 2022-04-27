@@ -1,5 +1,5 @@
 code_unit{
-  std/memory/arena.cb
+  std/mem/arena.cb
   decl_list{
     import_decl{ std::system}
     type_decl{ArenaBlock = type_expr{struct_type{decl_list{

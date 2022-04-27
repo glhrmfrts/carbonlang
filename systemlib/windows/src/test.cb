@@ -289,6 +289,23 @@ func workerThreadFunc(arg: &opaque) {
     counter += 1
 }
 
+func testArrayWrite() {
+    write(stdout(), "HERE\n")
+
+    let buf : [4]uint8
+
+    write(stdout(), "HERE\n")
+
+    writeint(stdout(), 41235123)
+    write(stdout(), "\n")
+    writeint(stdout(), 512415123)
+    write(stdout(), "\n")
+    writeint(stdout(), cast(int)buf[2])
+    write(stdout(), "\n")
+    writeint(stdout(), cast(int)buf[3])
+    write(stdout(), "\n")
+}
+
 extern(C) func test_main(): int {
     let a,b = getValues()
     write(stdout(), a)
@@ -355,6 +372,8 @@ extern(C) func test_main(): int {
         write(stdout(), "test_dir_remove: NOK\n")
     }
 
+    testArrayWrite()
+
     let c : uint8
     let err = process("C:\\q2dev\\q2tools-220\\x64\\Release\\4rad.exe", "")
     if (err == noerror) {
@@ -365,6 +384,10 @@ extern(C) func test_main(): int {
         exit(1)
     }
 
+    import gameoflife
+    gameOfLife()
+
+/*
     let mut, merr = makeMutex()
     if (merr != noerror) {
         exit(1)
@@ -404,9 +427,6 @@ extern(C) func test_main(): int {
 
     join(th)
 
-    //import gameoflife
-    //gameoflife()
-
     import confparser
     let conf, err = readConf("carbon.conf")
 
@@ -429,6 +449,7 @@ extern(C) func test_main(): int {
 
         confsec = confsec.next
     }
+*/
 
     return 0
 }

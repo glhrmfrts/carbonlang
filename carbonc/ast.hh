@@ -132,7 +132,7 @@ struct ast_node {
     float_type float_value{};
     int_type int_value{};
     std::vector<std::string> id_parts{};
-    std::vector<arena_ptr<ast_node>> pre_children{};
+    std::vector<arena_ptr<ast_node>> pre_nodes{};
     std::vector<arena_ptr<ast_node>> children{};
     std::vector<std::pair<int, arena_ptr<ast_node>>> children_to_add{};
     std::vector<arena_ptr<ast_node>> temps{};

@@ -1,15 +1,59 @@
 import std::system
+import std::mem as mem
 import std::linux::syscall
+
+func testAlloc() {
+    let m, err = mem::alloc(16)
+    if (err!=noerror) {
+        write(stdout(), "ALLOC_FAILED\n")
+        return
+    }
+    write(stdout(), "testAlloc: OK\n")
+    mem::free(m)
+}
 
 const N = 10
 
-extern(C) func __carbon_main(argc: int, argv: & & pure uint8) {
+extern(C) func __carbon_main(argc: int, argv: & &pure uint8) {
     //let buf : [1]uint8
     //let c = []uint8{ &buf[0], sizeof(buf) }
     //read(stdin(), c)
 
-    let ptr = mmap(nil, N*sizeof(int), PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, 0, 0)
+    let invalidMapValue = cast(&opaque)(cast(uintptr)-1)
 
-    write(stdout(), "Hello, world\n")
+    let ptr, err = mem::alloc(N*sizeof(int))
+    if (err != noerror) {
+        exit(1)
+    }
+
+    writeInt(stdout(), 1412312)
+    write(stdout(), "\n")
+    writeInt(stdout(), cast(int)(cast(uintptr)ptr))
+    write(stdout(), "\n")
+
+    let arr = []int{ cast(&int) ptr, N }
+    arr[0] = 0
+    arr[1] = 1
+
+    // Calculate fibbonaci numbers
+    for (i in 2,N) {
+        arr[i] = arr[i - 1] + arr[i - 2]
+    }
+
+    for (i in 0,N) {
+        writeInt(stdout(), arr[i])
+        write(stdout(), ",")
+    }
+    write(stdout(), "\n")
+    
+    testAlloc()
+
+    mem::free(ptr)
+
+    write(stdout(), "I'm going to segfault, ok?\n")
+
+    // Try to read from unmapped memory
+    let val = arr[0]
+
     exit(argc)
 }

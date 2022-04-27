@@ -1,3 +1,10 @@
+/**
+ * An IR that generates code for a imaginary Hybrid Stack-machine. Instruction results are
+ * not always pushed to the stack. Similarly, instruction operands are not always provided
+ * by the stack. Only complex instructions push their results to the stack.
+ */
+
+
 #include "ir.hh"
 #include "ast.hh"
 #include <cassert>
@@ -36,11 +43,12 @@ static const std::string opnames[] = {
     "ir_jmp_gte",
     "ir_jmp_lt",
     "ir_jmp_lte",
+    "ir_stack_dup",
     "ir_noop",
 };
 
 static ir_program* prog;
-static ir_func* fn;
+static ir_func* currentfunc;
 static type_system* ts;
 static std::stack<ir_operand> operand_stack;
 static std::unordered_map<std::string, int> string_map;
@@ -78,16 +86,19 @@ void pop_control_labels() {
     ctrl_labels.pop();
 }
 
-template <typename... Args> void emit(ir_op op, Args&&... args) {
-    fn->instrs.push_back({ op, {}, std::vector<ir_operand>{ std::forward<Args>(args)... }, (int)fn->instrs.size() });
+template <typename... Args> size_t emit(ir_op op, Args&&... args) {
+    currentfunc->instrs.push_back({ op, {}, std::vector<ir_operand>{ std::forward<Args>(args)... }, (int)currentfunc->instrs.size() });
+    return currentfunc->instrs.size() - 1;
 }
 
-template <typename... Args> void temit(ir_op op, type_id t, Args&&... args) {
-    fn->instrs.push_back({ op, t, std::vector<ir_operand>{ std::forward<Args>(args)... }, (int)fn->instrs.size() });
+template <typename... Args> size_t temit(ir_op op, type_id t, Args&&... args) {
+    currentfunc->instrs.push_back({ op, t, std::vector<ir_operand>{ std::forward<Args>(args)... }, (int)currentfunc->instrs.size() });
+    return currentfunc->instrs.size() - 1;
 }
 
-void emitops(ir_op op, type_id t, const std::vector<ir_operand>& args) {
-    fn->instrs.push_back({ op, t, args, (int)fn->instrs.size() });
+size_t emitops(ir_op op, type_id t, const std::vector<ir_operand>& args) {
+    currentfunc->instrs.push_back({ op, t, args, (int)currentfunc->instrs.size() });
+    return currentfunc->instrs.size() - 1;
 }
 
 void discard_opstack(std::size_t tosize) {
@@ -198,7 +209,7 @@ void send_locals_to_func_scope(ast_node& node) {
 }
 
 void analyse_children(ast_node& node) {
-    for (auto& child : node.pre_children) {
+    for (auto& child : node.pre_nodes) {
         if (child) { analyse_node(*child); }
     }
     for (auto& child : node.children) {
@@ -369,7 +380,7 @@ void generate_ir_func(ast_node& node) {
         func.index = prog->funcs.size() - 1;
     }
 
-    fn = &func;
+    currentfunc = &func;
 
     auto mangled_name = node.tdef.mangled_name.str;
     auto orig_name = node.tdef.name.str;
@@ -586,7 +597,7 @@ void generate_ir_call_expr(ast_node& node) {
     if (node.call.func_type_id.get().kind == type_kind::func) {
         auto func_node = node.call.func_type_id.get().self;
         if (func_node->func.linkage == func_linkage::external_c) {
-            fn->calls_extern_c = true;
+            currentfunc->calls_extern_c = true;
         }
         args.push_back(ir_label{ node.call.mangled_name.str });
     }
@@ -887,7 +898,7 @@ void generate_ir_char_literal(ast_node& node) {
 void generate_ir_node(ast_node& node) {
     if (node.disabled) return;
 
-    for (auto& child : node.pre_children) {
+    for (auto& child : node.pre_nodes) {
         if (child) {
             generate_ir_node(*child);
         }
@@ -1143,10 +1154,15 @@ bool instr_pushes_to_stack(const ir_instr& instr) {
     case ir_sub:
     case ir_mul:
     case ir_div:
+    case ir_and:
+    case ir_or:
+    case ir_shr:
+    case ir_shl:
     case ir_deref:
     case ir_index:
     case ir_load_addr:
     case ir_cast:
+    case ir_stack_dup:
     case ir_neg:
         return true;
     case ir_call:
@@ -1156,10 +1172,60 @@ bool instr_pushes_to_stack(const ir_instr& instr) {
     }
 }
 
+bool instr_has_side_effect(const ir_instr& instr) {
+    switch (instr.op) {
+    case ir_call:
+    case ir_stack_dup:
+        return true;
+    default:
+        return false;
+    }
+}
+
+bool instr_can_be_replaced(const ir_instr& instr) {
+    return instr_pushes_to_stack(instr) && (instr_opstack_consumption(instr) == 0) && !instr_has_side_effect(instr);
+}
+
 std::string sprint_ir_instr(const ir_instr& instr) {
     std::ostringstream s;
     print_instr(s, instr);
     return s.str();
+}
+
+static void opt_replace_duplicates(ir_func& func) {
+    for (size_t i = 0; i < func.instrs.size(); i++) {
+        auto& self = func.instrs[i];
+        int stack_effect = 0;
+
+        for (size_t j = i + 1; j < func.instrs.size(); j++) {
+            auto& next = func.instrs[j];
+
+            if (stack_effect != 0) { break; }
+
+            if (self.contents_equal(next) && instr_can_be_replaced(next)) {
+                auto newinstr = ir_instr{};
+                newinstr.op = ir_stack_dup;
+                newinstr.index = j;
+                newinstr.result_type = func.instrs[j].result_type;
+                func.instrs[j] = newinstr;
+            }
+            else {
+                stack_effect += instr_opstack_consumption(next);
+                stack_effect += instr_pushes_to_stack(next) ? 1 : 0;
+            }
+        }
+    }
+}
+
+static void optimize_func(ir_func& func) {
+    opt_replace_duplicates(func);
+}
+
+static void optimize() {
+    for (std::size_t i = 0; i < prog->funcs.size(); i++) {
+        auto& func = prog->funcs[i];
+        optimize_func(func);
+    }
 }
 
 ir_program generate_ir(type_system& tsystem, ast_node& program_node) {
@@ -1177,6 +1243,10 @@ ir_program generate_ir(type_system& tsystem, ast_node& program_node) {
         ts->enter_scope(*unit);
         generate_ir_node(*unit);
         ts->leave_scope();
+    }
+
+    if (true) {
+        optimize();
     }
 
     print_ir();

@@ -18,6 +18,21 @@ static const std::vector<gen_register> register_temp = {
     rbx, r12, r13, r14, r15,
 };
 
+static void append_offset(std::string& result, const gen_offset_expr& expr, bool comma) {
+    if (auto reg = std::get_if<gen_register>(&expr); reg && (*reg != invalid)) {
+        if (comma) {
+            result.append(",");
+        }
+        result.append(std::string{ "%" } + std::string{ register_names[*reg] });
+    }
+    else if (auto off = std::get_if<int_type>(&expr); off) {
+        if (comma) {
+            result.append(",");
+        }
+        result.append(std::to_string(*off));
+    }
+}
+
 static std::string offset_tostr(const gen_offset& r) {
     // offset(base) or (base, offset, mult) if mult != 0
 
@@ -30,33 +45,19 @@ static std::string offset_tostr(const gen_offset& r) {
         }
     }
 
+    append_offset(result, r.offsets[0], false);
+
+    result.append("(");
+    result.append(std::string{ "%" } + register_names[r.base]);
+
+    append_offset(result, r.offsets[1], true);
+
     if (mult != 0) {
-        result = "(";
-        result.append(std::string{"%"} + register_names[r.base]);
-        result.append(",");
-        
-        if (auto reg = std::get_if<gen_register>(&r.offset); reg && (*reg != invalid)) {
-            result.append(std::string{"%"} + std::string{ register_names[*reg] });
-        }
-        else if (auto off = std::get_if<int_type>(&r.offset); off) {
-            result.append(std::to_string(*off));
-        }
-        
         result.append(",");
         result.append(std::to_string(mult));
-        result.append(")");
     }
-    else {
-        if (auto reg = std::get_if<gen_register>(&r.offset); reg && (*reg != invalid)) {
-            result.append(std::string{"%"} + std::string{ register_names[*reg] });
-        }
-        else if (auto off = std::get_if<int_type>(&r.offset); off) {
-            result.append(std::to_string(*off));
-        }
-        result.append("(");
-        result.append(std::string{"%"} + register_names[r.base]);
-        result.append(")");
-    }
+
+    result.append(")");
 
     return result;
 }
@@ -94,7 +95,7 @@ static std::string tostr(const gen_operand& d) {
             return std::string{"$"} + std::to_string(v);
         },
         [](char c) -> std::string {
-            return std::to_string(c);
+            return std::string{"$"} + std::to_string(c);
         }
     }, d);
 }
@@ -132,7 +133,7 @@ static std::string tostr_sized(const gen_operand& d) {
             return std::string{"$"} + std::to_string(v);
         },
         [](char c) -> std::string {
-            return std::to_string(c);
+            return std::string{"$"} + std::to_string(c);
         }
     }, d);
 }
@@ -313,7 +314,21 @@ struct codegen_x64_linux_gas_emitter : public codegen_x64_emitter {
     }
 
     virtual void idiv(gen_destination b) {
-        emitln(" idiv %s", tostr_sized(b).c_str());
+        std::size_t sz = get_size(b);
+        switch (sz) {
+        case 1:
+            emitln(" idivb %s", tostr_sized(b).c_str());
+            break;
+        case 2:
+            emitln(" idivw %s", tostr_sized(b).c_str());
+            break;
+        case 4:
+            emitln(" idivl %s", tostr_sized(b).c_str());
+            break;
+        case 8:
+            emitln(" idivq %s", tostr_sized(b).c_str());
+            break;
+        }
     }
 
     virtual void and_(gen_destination a, gen_operand b) {

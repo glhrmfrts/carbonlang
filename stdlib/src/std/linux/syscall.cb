@@ -5,7 +5,6 @@ const MAP_TYPE = 0x0f
 const MAP_FIXED = 0x10
 const MAP_ANON = 0x20
 
-// TODO: allow this
 const MAP_ANONYMOUS = MAP_ANON
 
 const PROT_NONE      = 0
@@ -53,7 +52,6 @@ asm%{
 }%asm
 }
 
-// TODO: function attributes, attribute to signal ASM function (no need for return statements)
 func mmap(addr: &opaque, size: usize, prot: int, flags: int, fd: int, offs: usize): &opaque {
 asm%{
     mov $9, %rax

@@ -1,6 +1,6 @@
 extern func alloc(:usize):{&opaque, error};
 extern func alloc(:usize, :&opaque):{&opaque, error};
-extern func free(:&opaque):{};
+extern func free(:&opaque, :usize):{};
 extern func write(:FileHandle, :[]pure uint8):isize;
 extern func read(:FileHandle, :[]uint8):isize;
 extern func open(:[]pure uint8, :OpenFlags, :int):{FileHandle, error};
@@ -28,3 +28,5 @@ extern func lock(:MutexHandle):error;
 extern func unlock(:MutexHandle):error;
 extern func destroy(:MutexHandle):{};
 extern func sleepMs(:uint64):{};
+extern func intToString(:int, :int, :[]uint8):int;
+extern func writeInt(:FileHandle, :int):{};

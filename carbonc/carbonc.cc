@@ -166,7 +166,11 @@ std::string run_linker(
 #ifdef _WIN32
     std::string out_file = out_file_in;
 
-    auto cmd = p.cb_path + "/bin/win64/GoLink.exe " + obj_file;
+    auto cmd = p.cb_path + "/bin/win64/GoLink.exe ";
+    for (const auto& objfile : obj_files) {
+        cmd.append(" ");
+        cmd.append(objfile);
+    }
     if (p.target == target_type::executable) {
         cmd.append(" /console /entry "+ p.entrypoint);
         replace(out_file, ".obj", ".exe");
@@ -426,8 +430,13 @@ int run_project_mode(int argc, const char* argv[]) {
         auto ld_file = run_linker(p, obj_files, obj_files.front());
 
         auto out_file = std::string{ "_carbon/out_debug/" } + basename(ld_file);
+
+#ifdef _WIN32
+        MoveFileExA(ld_file.c_str(), out_file.c_str(), MOVEFILE_REPLACE_EXISTING);
+#else
         rename(ld_file.c_str(), out_file.c_str());
-        // MoveFileExA(ld_file.c_str(), out_file.c_str(), MOVEFILE_REPLACE_EXISTING);
+#endif
+        
 
         const char* outpath = find_arg("--output", "-o", argc, argv);
         if (outpath) {
