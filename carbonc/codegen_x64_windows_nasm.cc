@@ -40,20 +40,18 @@ static void append_offset(std::string& result, const gen_offset_expr& expr) {
     }
 }
 
-static std::string offset_tostr(const gen_offset& r) {
+static std::string offset_tostr(const gen_addr& r) {
     // [base+offset*mult]
 
     std::string result = "[";
     result.append(register_names[r.base]);
 
-    append_offset(result, r.offsets[0]);
-    append_offset(result, r.offsets[1]);
+    append_offset(result, r.offset);
+    append_offset(result, r.index);
 
-    if (auto mult = std::get_if<int_type>(&r.mult); mult) {
-        if (mult != 0) {
-            result.append("*");
-            result.append(std::to_string(*mult));
-        }
+    if (r.mult != 0) {
+        result.append("*");
+        result.append(std::to_string(r.mult));
     }
 
     result.append("]");
@@ -70,7 +68,7 @@ static std::string tostr(const gen_destination& d) {
             result.append(r.label);
             return result;
         },
-        [](gen_offset r) -> std::string {
+        [](gen_addr r) -> std::string {
             return offset_tostr(r);
         }
     }, d);
@@ -86,7 +84,7 @@ static std::string tostr(const gen_operand& d) {
             result.append(r.label);
             return result;
         },
-        [](gen_offset r) -> std::string {
+        [](gen_addr r) -> std::string {
             return offset_tostr(r);
         },
         [](int_type v) -> std::string {
@@ -109,7 +107,7 @@ static std::string tostr_sized(const gen_destination& d) {
             result.append("]");
             return result;
         },
-        [](gen_offset r) -> std::string {
+        [](gen_addr r) -> std::string {
             // guard for struct types
             std::size_t sz = std::min(r.op_size, std::size_t{8});
             std::string result = std::string{ ptrsizes[sz] };
@@ -129,7 +127,7 @@ static std::string tostr_sized(const gen_operand& d) {
             result.append("]");
             return result;
         },
-        [](gen_offset r) -> std::string {
+        [](gen_addr r) -> std::string {
             // guard for struct sizes
             std::size_t sz = std::min(r.op_size, std::size_t{8});
             std::string result = std::string{ ptrsizes[sz] };
@@ -170,13 +168,25 @@ struct codegen_x64_windows_nasm_emitter : public codegen_x64_emitter {
     virtual void add_extern_func_decl(const char* name) {
         out_file << "extern " << name << "\n";
     }
+    
+    virtual void add_extern_var_decl(const char* name) {
+        // out_file << "extern " << name << "\n";
+    }
 
     virtual void end() {
         //out_file << "END\n";
     }
 
+    virtual void begin_text_segment() {
+        // out_file << "section .text\n";
+    }
+
     virtual void begin_data_segment() {
         out_file << "section .data\n";
+    }
+
+    virtual void begin_readonly_data_segment() {
+        out_file << "section .rodata\n";
     }
 
     virtual void add_string_data(std::string_view label, std::string_view data) {
@@ -185,6 +195,14 @@ struct codegen_x64_windows_nasm_emitter : public codegen_x64_emitter {
             emit("%d,", (int)c);
         }
         emitln("0");
+    }
+
+    virtual void add_global(std::string_view label, type_id type, decl_visibility vis) {
+        
+    }
+
+    virtual void add_global_declaration(std::string_view label) {
+        
     }
 
     virtual void add_global_int16(std::string_view label, int16_t v) {

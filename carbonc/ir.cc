@@ -788,7 +788,9 @@ void generate_ir_var(ast_node& node) {
     }
 
     if (node.func.linkage != func_linkage::local_carbon) {
-        prog->globals.push_back(ir_global_data{ node.local.mangled_name.str, node.tid, {}, node.func.linkage });
+        prog->globals.push_back(ir_global_data{
+            node.local.mangled_name.str, node.tid, {}, node.func.linkage, node.visibility
+        });
         return;
     }
 
@@ -799,11 +801,15 @@ void generate_ir_var(ast_node& node) {
         if (ts->current_scope->kind == scope_kind::code_unit && !node.local.mangled_name.str.empty()) {
             if (is_primary_expr(*node.var_value()) && node.var_value()->type != ast_type::identifier) {
                 // TODO: what if it's an identifier ?
-                prog->globals.push_back(ir_global_data{ node.local.mangled_name.str, node.tid, pop(), func_linkage::local_carbon });
+                prog->globals.push_back(ir_global_data{
+                    node.local.mangled_name.str, node.tid, pop(), func_linkage::local_carbon, node.visibility
+                });
                 return;
             }
             else if (node.tid.get().kind == type_kind::ptr) {
-                prog->globals.push_back(ir_global_data{ node.local.mangled_name.str, node.tid, pop(), func_linkage::local_carbon });
+                prog->globals.push_back(ir_global_data{
+                    node.local.mangled_name.str, node.tid, pop(), func_linkage::local_carbon, node.visibility
+                });
                 return;
             }
             assert(!"generate_ir_var: non primary global");

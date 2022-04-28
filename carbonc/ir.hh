@@ -154,6 +154,7 @@ struct ir_global_data {
     type_id type;
     std::optional<ir_operand> value;
     func_linkage linkage;
+    decl_visibility visibility;
 };
 
 struct ir_func {

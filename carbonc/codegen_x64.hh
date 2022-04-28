@@ -90,20 +90,21 @@ struct gen_data_offset {
 
 using gen_offset_expr = std::variant<gen_register, gen_data_offset, int_type>;
 
-struct gen_offset {
+struct gen_addr {
     std::size_t op_size;
     gen_register base;
-    std::array<gen_offset_expr, 2> offsets;
-    gen_offset_expr mult;
+    gen_offset_expr offset;
+    gen_register index;
+    std::size_t mult;
 
-    bool operator ==(const gen_offset& other) const {
-        return base == other.base && offsets[0] == other.offsets[0] && offsets[1] == other.offsets[1] && mult == other.mult && op_size == other.op_size;
+    bool operator ==(const gen_addr& other) const {
+        return base == other.base && offset == other.offset && index == other.index && mult == other.mult && op_size == other.op_size;
     }
 };
 
-using gen_destination = std::variant<gen_register, gen_data_offset, gen_offset>;
+using gen_destination = std::variant<gen_register, gen_data_offset, gen_addr>;
 
-using gen_operand = std::variant<gen_register, gen_offset, gen_data_offset, int_type, char>;
+using gen_operand = std::variant<gen_register, gen_addr, gen_data_offset, int_type, char>;
 
 struct gen_register_sizes {
     gen_register r64;
@@ -133,11 +134,21 @@ struct codegen_x64_emitter {
 
     virtual void add_extern_func_decl(const char* name) = 0;
 
+    virtual void add_extern_var_decl(const char* name) = 0;
+
     virtual void end() = 0;
+
+    virtual void begin_text_segment() = 0;
 
     virtual void begin_data_segment() = 0;
 
+    virtual void begin_readonly_data_segment() = 0;
+
     virtual void add_string_data(std::string_view label, std::string_view data) = 0;
+
+    virtual void add_global(std::string_view label, type_id type, decl_visibility vis) = 0;
+
+    virtual void add_global_declaration(std::string_view label) = 0;
 
     virtual void add_global_int16(std::string_view label, int16_t v) = 0;
 

@@ -1,5 +1,28 @@
 	.file	"testas2.c"
 	.text
+	.comm	pointer_to_int,8,8
+	.data
+	.align 32
+	.type	some_data, @object
+	.size	some_data, 64
+some_data:
+	.value	0
+	.value	1
+	.value	2
+	.value	3
+	.zero	56
+	.globl	other_value
+	.align 4
+	.type	other_value, @object
+	.size	other_value, 4
+other_value:
+	.long	5
+	.local	nice_value
+	.comm	nice_value,4,4
+	.section	.rodata
+.LC0:
+	.string	"Hello"
+	.text
 	.globl	main
 	.type	main, @function
 main:
@@ -11,31 +34,14 @@ main:
 	.cfi_offset 6, -16
 	movq	%rsp, %rbp
 	.cfi_def_cfa_register 6
-	subq	$16, %rsp
-	movq	%fs:40, %rax
-	movq	%rax, -8(%rbp)
-	xorl	%eax, %eax
-	movl	$0, -16(%rbp)
-	jmp	.L2
-.L3:
-	movl	-16(%rbp), %eax
-	cltq
-	movb	$0, -11(%rbp,%rax)
-	addl	$1, -16(%rbp)
-.L2:
-	movl	-16(%rbp), %eax
-	cmpl	$2, %eax
-	jbe	.L3
-	leaq	-11(%rbp), %rax
-	movq	%rax, %rdi
+	movl	$32, other_value(%rip)
+	movl	$44, nice_value(%rip)
+	leaq	other_value(%rip), %rax
+	movq	%rax, pointer_to_int(%rip)
+	leaq	.LC0(%rip), %rdi
 	call	puts@PLT
 	movl	$0, %eax
-	movq	-8(%rbp), %rdx
-	xorq	%fs:40, %rdx
-	je	.L5
-	call	__stack_chk_fail@PLT
-.L5:
-	leave
+	popq	%rbp
 	.cfi_def_cfa 7, 8
 	ret
 	.cfi_endproc

@@ -25,7 +25,7 @@ static void append_offset(std::string& result, const gen_offset_expr& expr, bool
         }
         result.append(std::string{ "%" } + std::string{ register_names[*reg] });
     }
-    else if (auto off = std::get_if<int_type>(&expr); off) {
+    else if (auto off = std::get_if<int_type>(&expr); off && (off != 0)) {
         if (comma) {
             result.append(",");
         }
@@ -33,28 +33,21 @@ static void append_offset(std::string& result, const gen_offset_expr& expr, bool
     }
 }
 
-static std::string offset_tostr(const gen_offset& r) {
+static std::string offset_tostr(const gen_addr& r) {
     // offset(base) or (base, offset, mult) if mult != 0
 
     std::string result = "";
 
-    int_type mult = 0;
-    if (auto pmult = std::get_if<int_type>(&r.mult); pmult) {
-        if (pmult != 0) {
-            mult = *pmult;
-        }
-    }
-
-    append_offset(result, r.offsets[0], false);
+    append_offset(result, r.offset, false);
 
     result.append("(");
     result.append(std::string{ "%" } + register_names[r.base]);
 
-    append_offset(result, r.offsets[1], true);
+    append_offset(result, r.index, true);
 
-    if (mult != 0) {
+    if (r.mult != 0) {
         result.append(",");
-        result.append(std::to_string(mult));
+        result.append(std::to_string(r.mult));
     }
 
     result.append(")");
@@ -72,7 +65,7 @@ static std::string tostr(const gen_destination& d) {
             result.append(r.label);
             return result;
         },
-        [](gen_offset r) -> std::string {
+        [](gen_addr r) -> std::string {
             return offset_tostr(r);
         }
     }, d);
@@ -88,7 +81,7 @@ static std::string tostr(const gen_operand& d) {
             result.append(r.label);
             return result;
         },
-        [](gen_offset r) -> std::string {
+        [](gen_addr r) -> std::string {
             return offset_tostr(r);
         },
         [](int_type v) -> std::string {
@@ -110,7 +103,7 @@ static std::string tostr_sized(const gen_destination& d) {
             result.append(r.label);
             return result;
         },
-        [](gen_offset r) -> std::string {
+        [](gen_addr r) -> std::string {
             return offset_tostr(r);
         }
     }, d);
@@ -126,7 +119,7 @@ static std::string tostr_sized(const gen_operand& d) {
             result.append(r.label);
             return result;
         },
-        [](gen_offset r) -> std::string {
+        [](gen_addr r) -> std::string {
             return offset_tostr(r);
         },
         [](int_type  v) -> std::string {
@@ -183,12 +176,24 @@ struct codegen_x64_linux_gas_emitter : public codegen_x64_emitter {
         out_file << ".extern " << name << "\n";
     }
 
+    virtual void add_extern_var_decl(const char* name) {
+        // out_file << ".extern " << name << "\n";
+    }
+
     virtual void end() {
         //out_file << "END\n";
     }
 
+    virtual void begin_text_segment() {
+        out_file << ".text\n";
+    }
+
     virtual void begin_data_segment() {
         out_file << ".data\n";
+    }
+
+    virtual void begin_readonly_data_segment() {
+        out_file << ".section .rodata\n";
     }
 
     virtual void add_string_data(std::string_view label, std::string_view data) {
@@ -197,6 +202,17 @@ struct codegen_x64_linux_gas_emitter : public codegen_x64_emitter {
 
         auto escaped = escape(data);
         emitln("    .string \"%s\"", escaped.c_str());
+    }
+
+    virtual void add_global(std::string_view label, type_id type, decl_visibility vis) {
+        if (vis != decl_visibility::public_) {
+            emitln("    .local %s", label.data());
+        }
+        emitln("    .comm %s,%zu,%zu", label.data(), type.get().size, type.get().alignment);
+    }
+
+    virtual void add_global_declaration(std::string_view label) {
+        emitln("    .global %s", label.data());
     }
 
     virtual void add_global_int16(std::string_view label, int16_t v) {
@@ -214,8 +230,8 @@ struct codegen_x64_linux_gas_emitter : public codegen_x64_emitter {
     }
 
     virtual void add_global_int64(std::string_view label, int64_t v) {
-        emitln("    .align 4");
-        emitln("    .size %s, 4", label.data());
+        emitln("    .align 8");
+        emitln("    .size %s, 8", label.data());
         emitln("%s:", label.data());
         emitln("    .value %lld", v);
     }
@@ -238,11 +254,11 @@ struct codegen_x64_linux_gas_emitter : public codegen_x64_emitter {
     }
 
     virtual void call(const char* func_name) {
-        emitln(" callq %s", func_name);
+        emitln(" call %s", func_name);
     }
 
     virtual void calldest(gen_destination dest) {
-        emitln(" callq %s", tostr_sized(dest).c_str());
+        emitln(" call %s", tostr_sized(dest).c_str());
     }
 
     virtual void push(gen_operand reg) {

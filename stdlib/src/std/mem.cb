@@ -1,4 +1,25 @@
-// The dumbest possible general-purpose allocator
+/*
+
+The dumbest possible allocator:
+
+Memory is allocated in blocks with the minimum size being the page size:
+
+| ---------------------------------------- |
+|                                          |
+| ---------------------------------------- |
+^ size                                     ^ cap
+
+"size" grows as memory is being requested by the user
+
+| ---------------------------------------- |
+| XXXXXXXXXXXXXXXXXX                       |
+| ---------------------------------------- |
+                    ^ size                 ^ cap
+
+When user memory from a block is free'd, it will decrease an allocation counter,
+if that allocation counter reaches 0, the entire block is released.
+
+*/
 
 import std::system as sys
 
@@ -8,7 +29,7 @@ const ALIGNMENT : usize = 16
 const PAGE_SIZE : usize = 4096
 
 type Block = struct {
-    size: usize
+    filled: usize
     cap: usize
     numAllocs: usize
     prev: &Block
@@ -18,41 +39,44 @@ let lastBlock : &Block
 
 func allocInBlock(pblock: &Block, size: usize): &opaque {
     let blockdata = (cast(&uint8)(cast(&opaque)pblock)) + sizeof(Block)
-    let ptr = blockdata + pblock.size
-    pblock.size += size
+    let ptr = blockdata + pblock.filled
+    pblock.filled += size
     pblock.numAllocs += 1
+
+    sys::write(sys::stdout(), "Growing block fill to ")
+    sys::writeInt(sys::stdout(), cast(int)pblock.filled)
+    sys::write(sys::stdout(), " bytes\n")
+
     return ptr
 }
 
 func align(size: usize, alignment: usize): usize {
-    return size + (-size & (PAGE_SIZE - cast(usize)1))
+    return size + (-size & (alignment - cast(usize)1))
 }
 
 }
 
 func memcopy(dest: &opaque, src: &pure opaque, size: usize) {
-    asm%{
-mov %rdx,%rcx
-rep movsb
-    }%asm
+asm%{
+    mov %rdx,%rcx
+    rep movsb
+}%asm
 }
 
 func memset(dest: &opaque, value: uint8, count: usize) {
-    asm%{
-mov %rsi,%rax
-mov %rdx,%rcx
-rep stosb
-    }%asm
+asm%{
+    mov %rsi,%rax
+    mov %rdx,%rcx
+    rep stosb
+}%asm
 }
 
-func alloc(sz: usize): {&opaque, error} {
-    lastBlock = nil // TODO
+func alloc(usersize: usize): {&opaque, error} {
+    let asize = align(usersize, ALIGNMENT)
 
-    let asize = align(sz, ALIGNMENT)
     let pblock = lastBlock
-
     while (pblock != nil) {
-        if (pblock.size + asize < pblock.cap) {
+        if (pblock.filled + asize < pblock.cap) {
             break
         }
         pblock = pblock.prev
@@ -72,7 +96,6 @@ func alloc(sz: usize): {&opaque, error} {
 
     let newblock = cast(&Block)(newmem)
     newblock.cap = memsize
-    newblock.numAllocs = 1
     newblock.prev = lastBlock
 
     sys::write(sys::stdout(), "Allocating block of ")
@@ -106,6 +129,7 @@ func free(ptr: &opaque) {
         sys::write(sys::stdout(), "Freeing block of ")
         sys::writeInt(sys::stdout(), cast(int)pblock.cap)
         sys::write(sys::stdout(), " bytes\n")
+
         sys::free(pblock, pblock.cap)
     }
 }
