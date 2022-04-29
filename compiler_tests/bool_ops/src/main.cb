@@ -1,0 +1,9 @@
+extern(C) func carbon_main(): int {
+    let value = 3 < 2
+    let value2 = 3 > 5
+    let value3 = 3 >= 5
+    let value2 = 3 <= 5
+    let value2 = 3 == 5
+    let value2 = 8 != 10
+    return 0
+}

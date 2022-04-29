@@ -361,6 +361,10 @@ struct codegen_x64_windows_nasm_emitter : public codegen_x64_emitter {
         emitln(" cmp %s,%s", tostr_sized(a).c_str(), tostr_sized(b).c_str());
     }
 
+    virtual void set(const char* rel, gen_destination d) {
+        emitln(" set%s %s", rel, tostr_sized(d).c_str());
+    }
+
     virtual void label(const char* label) {
         emitln("%s:", label);
     }

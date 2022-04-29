@@ -36,6 +36,12 @@ static const std::string opnames[] = {
     "ir_load_addr",
     "ir_make_label",
     "ir_asm",
+    "ir_cmp_lt",
+    "ir_cmp_gt",
+    "ir_cmp_lteq",
+    "ir_cmp_gteq",
+    "ir_cmp_eq",
+    "ir_cmp_neq",
     "ir_jmp",
     "ir_jmp_eq",
     "ir_jmp_neq",
@@ -700,10 +706,22 @@ void generate_ir_binary_expr(ast_node& node) {
         push(ir_stackpop{ node.tid });
         break;
     case '<':
-        emit((node.ir.bin_invert_jump) ? ir_jmp_gte : ir_jmp_lt, a, b, ir_label{node.ir.bin_target_label});
+        if (!node.ir.bin_target_label.empty()) {
+            emit((node.ir.bin_invert_jump) ? ir_jmp_gte : ir_jmp_lt, a, b, ir_label{ node.ir.bin_target_label });
+        }
+        else {
+            temit(ir_cmp_lt, node.tid, a, b);
+            push(ir_stackpop{ node.tid });
+        }
         break;
     case '>':
-        emit((node.ir.bin_invert_jump) ? ir_jmp_lte : ir_jmp_gt, a, b, ir_label{node.ir.bin_target_label});
+        if (!node.ir.bin_target_label.empty()) {
+            emit((node.ir.bin_invert_jump) ? ir_jmp_lte : ir_jmp_gt, a, b, ir_label{ node.ir.bin_target_label });
+        }
+        else {
+            temit(ir_cmp_gt, node.tid, a, b);
+            push(ir_stackpop{ node.tid });
+        }
         break;
     case '&':
         temit(ir_and, node.tid, a, b);
@@ -717,16 +735,40 @@ void generate_ir_binary_expr(ast_node& node) {
 
     switch (node.op) {
     case token_type::eqeq:
-        emit((node.ir.bin_invert_jump) ? ir_jmp_neq : ir_jmp_eq, a, b, ir_label{ node.ir.bin_target_label });
+        if (!node.ir.bin_target_label.empty()) {
+            emit((node.ir.bin_invert_jump) ? ir_jmp_neq : ir_jmp_eq, a, b, ir_label{ node.ir.bin_target_label });
+        }
+        else {
+            temit(ir_cmp_eq, node.tid, a, b);
+            push(ir_stackpop{ node.tid });
+        }
         break;
     case token_type::neq:
-        emit((node.ir.bin_invert_jump) ? ir_jmp_eq : ir_jmp_neq, a, b, ir_label{ node.ir.bin_target_label });
+        if (!node.ir.bin_target_label.empty()) {
+            emit((node.ir.bin_invert_jump) ? ir_jmp_eq : ir_jmp_neq, a, b, ir_label{ node.ir.bin_target_label });
+        }
+        else {
+            temit(ir_cmp_neq, node.tid, a, b);
+            push(ir_stackpop{ node.tid });
+        }
         break;
     case token_type::lteq:
-        emit((node.ir.bin_invert_jump) ? ir_jmp_gt : ir_jmp_lte, a, b, ir_label{ node.ir.bin_target_label });
+        if (!node.ir.bin_target_label.empty()) {
+            emit((node.ir.bin_invert_jump) ? ir_jmp_gt : ir_jmp_lte, a, b, ir_label{ node.ir.bin_target_label });
+        }
+        else {
+            temit(ir_cmp_lteq, node.tid, a, b);
+            push(ir_stackpop{ node.tid });
+        }
         break;
     case token_type::gteq:
-        emit((node.ir.bin_invert_jump) ? ir_jmp_lt : ir_jmp_gte, a, b, ir_label{ node.ir.bin_target_label });
+        if (!node.ir.bin_target_label.empty()) {
+            emit((node.ir.bin_invert_jump) ? ir_jmp_lt : ir_jmp_gte, a, b, ir_label{ node.ir.bin_target_label });
+        }
+        else {
+            temit(ir_cmp_gteq, node.tid, a, b);
+            push(ir_stackpop{ node.tid });
+        }
         break;
     case token_type::shr:
         temit(ir_shr, node.tid, a, b);
@@ -1170,6 +1212,12 @@ bool instr_pushes_to_stack(const ir_instr& instr) {
     case ir_cast:
     case ir_stack_dup:
     case ir_neg:
+    case ir_cmp_gt:
+    case ir_cmp_lt:
+    case ir_cmp_lteq:
+    case ir_cmp_gteq:
+    case ir_cmp_eq:
+    case ir_cmp_neq:
         return true;
     case ir_call:
         return instr.result_type != ts->void_type;

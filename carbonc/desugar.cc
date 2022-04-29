@@ -11,8 +11,8 @@ void check_assignment_aggregate_call(type_system& ts, ast_node& node);
 
 // Section: temp for bool ops
 
-void check_assignment_bool_op(type_system& ts, ast_node& node) {
-    if (node.children[1] && is_bool_op(*node.children[1])) {
+void check_assignment_logic_op(type_system& ts, ast_node& node) {
+    if (node.children[1] && is_logic_op(*node.children[1])) {
         node.children[1]->desugar_flags |= desugar_flag::bool_op_desugared;
 
         auto temp = make_temp_variable_for_bool_op_resolved(ts, std::move(node.children[1]), std::move(node.children[0]));
@@ -29,8 +29,8 @@ void check_assignment_ternary_expr(type_system& ts, ast_node& node) {
     }
 }
 
-void check_var_decl_bool_op(type_system& ts, ast_node& node) {
-    if (node.var_value() && is_bool_op(*node.var_value())) {
+void check_var_decl_logic_op(type_system& ts, ast_node& node) {
+    if (node.var_value() && is_logic_op(*node.var_value())) {
         node.local.flags |= local_flag::is_temp;
         node.var_value()->desugar_flags |= desugar_flag::bool_op_desugared;
 
@@ -52,8 +52,8 @@ void check_var_decl_ternary_expr(type_system& ts, ast_node& node) {
     }
 }
 
-void check_temp_bool_op(type_system& ts, ast_node& node) {
-    if (is_bool_op(node) && !(node.desugar_flags & desugar_flag::bool_op_desugared)) {
+void check_temp_logic_op(type_system& ts, ast_node& node) {
+    if (is_logic_op(node) && !(node.desugar_flags & desugar_flag::bool_op_desugared)) {
         auto cpy = copy_node(ts, &node);
         auto [temp, ref] = make_temp_variable_for_bool_op_resolved(ts, std::move(cpy));
         node.desugar_flags |= desugar_flag::bool_op_desugared;
@@ -255,7 +255,7 @@ void desugar(type_system& ts, ast_node* nodeptr) {
 
         for (int i = 0; i < node.call_args().size(); i++) {
             check_call_arg_aggregate_type(ts, node, i);
-            check_temp_bool_op(ts, *(node.call_args()[i]));
+            check_temp_logic_op(ts, *(node.call_args()[i]));
             check_temp_ternary_expr(ts, *(node.call_args()[i]));
         }
 
@@ -280,14 +280,14 @@ void desugar(type_system& ts, ast_node* nodeptr) {
         if (ts.subpass < 1) { break; }
 
         if (token_to_char(node.op) == '=') {
-            check_assignment_bool_op(ts, node);
+            check_assignment_logic_op(ts, node);
             check_assignment_ternary_expr(ts, node);
         }
         else {
             for (int i = 0; i < 2; i++) {
                 check_temp_ternary_expr(ts, *node.children[i]);
                 if (!is_bool_op(node)) {
-                    check_temp_bool_op(ts, *node.children[i]);
+                    check_temp_logic_op(ts, *node.children[i]);
                 }
             }
         }
@@ -308,16 +308,16 @@ void desugar(type_system& ts, ast_node* nodeptr) {
     case ast_type::ternary_expr: {
         if (ts.subpass < 1) { break; }
         check_temp_ternary_expr(ts, *node.children[1]);
-        check_temp_bool_op(ts, *node.children[1]);
+        check_temp_logic_op(ts, *node.children[1]);
         check_temp_ternary_expr(ts, *node.children[2]);
-        check_temp_bool_op(ts, *node.children[2]);
+        check_temp_logic_op(ts, *node.children[2]);
         visit_pre_children(ts, node);
         visit_children(ts, node);
         break;
     }
     case ast_type::var_decl: {
         if (ts.subpass < 1) { break; }
-        check_var_decl_bool_op(ts, node);
+        check_var_decl_logic_op(ts, node);
         check_var_decl_ternary_expr(ts, node);
         visit_pre_children(ts, node);
         visit_children(ts, node);
@@ -327,7 +327,7 @@ void desugar(type_system& ts, ast_node* nodeptr) {
     case ast_type::return_stmt: {
         if (ts.subpass < 1) { break; }
         if (node.children[0]) { 
-            check_temp_bool_op(ts, *node.children[0]);
+            check_temp_logic_op(ts, *node.children[0]);
             check_temp_ternary_expr(ts, *node.children[0]);
         }
         visit_pre_children(ts, node);

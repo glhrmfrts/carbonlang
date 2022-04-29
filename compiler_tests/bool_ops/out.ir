@@ -1,0 +1,19 @@
+func carbon_main -> int
+    local #0 value: bool;
+    local #1 value2: bool;
+    local #2 value3: bool;
+    ir_cmp_lt 3 2; (push)
+    ir_load L0 POP();
+    ir_cmp_gt 3 5; (push)
+    ir_load L1 POP();
+    ir_cmp_gteq 3 5; (push)
+    ir_load L2 POP();
+    ir_cmp_lteq 3 5; (push)
+    ir_load L0 POP();
+    ir_cmp_eq 3 5; (push)
+    ir_load L0 POP();
+    ir_cmp_neq 8 10; (push)
+    ir_load L0 POP();
+    ir_return 0;
+endf
+

@@ -1,6 +1,7 @@
 import std::system
 import std::mem as mem
 import std::linux::syscall
+import aoc::aoc01
 
 func testAlloc() {
     let m, err = mem::alloc(16)
@@ -14,11 +15,7 @@ func testAlloc() {
 
 const N = 10
 
-extern(C) func __carbon_main(argc: int, argv: & &pure uint8) {
-    //let buf : [1]uint8
-    //let c = []uint8{ &buf[0], sizeof(buf) }
-    //read(stdin(), c)
-
+func testMain(argc : int) {
     let invalidMapValue = cast(&opaque)(cast(uintptr)-1)
 
     let ptr, err = mem::alloc(N*sizeof(int))
@@ -56,4 +53,22 @@ extern(C) func __carbon_main(argc: int, argv: & &pure uint8) {
     let val = arr[0]
 
     exit(argc)
+}
+
+func testBoolOp() {
+    let count = 0
+    let value = count > 0
+    return false
+}
+
+extern(C) func __carbon_main(argc: int, argv: & &pure uint8) {
+    //let buf : [1]uint8
+    //let c = []uint8{ &buf[0], sizeof(buf) }
+    //read(stdin(), c)
+    write(stdout(), "Running aoc01:\n")
+    aoc01()
+
+    exit(0)
+
+    // testMain(argc)
 }

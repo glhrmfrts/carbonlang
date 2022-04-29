@@ -281,6 +281,11 @@ arena_ptr<ast_node> make_error_decl_node(memory_arena& arena, const position& po
     ptr->node_id = node_id_gen++;
     ptr->type = ast_type::error_decl;
     ptr->pos = pos;
+    for (const auto& child : children) {
+        if (child) {
+            child->parent = ptr.get();
+        }
+    }
     ptr->children = std::move(children);
     return ptr;
 }
@@ -290,6 +295,11 @@ arena_ptr<ast_node> make_arg_list_node(memory_arena& arena, const position& pos,
     ptr->node_id = node_id_gen++;
     ptr->type = ast_type::arg_list;
     ptr->pos = pos;
+    for (const auto& child : list) {
+        if (child) {
+            child->parent = ptr.get();
+        }
+    }
     ptr->children = std::move(list);
     return ptr;
 }
@@ -566,6 +576,13 @@ bool is_logic_binary_op(ast_node& node) {
 bool is_cmp_binary_op(ast_node& node) {
     if (node.type == ast_type::binary_expr) {
         return is_cmp_binary_op(node.op);
+    }
+    return false;
+}
+
+bool is_logic_op(ast_node& node) {
+    if (node.type == ast_type::binary_expr) {
+        return is_logic_binary_op(node.op);
     }
     return false;
 }

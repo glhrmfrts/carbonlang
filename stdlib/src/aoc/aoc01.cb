@@ -1,0 +1,154 @@
+import std::system as sys
+import std::mem as mem
+//import std::fs as fs
+//import std::string
+
+func print(s : []pure uint8) {
+    sys::write(sys::stdout(), s)
+}
+
+func print(i : int) {
+    sys::writeInt(sys::stdout(), i)
+}
+
+func print(i : usize) {
+    print(cast(int)i)
+}
+
+func println(s : []pure uint8) {
+    sys::write(sys::stdout(), s)
+    sys::write(sys::stdout(), "\n")
+}
+
+func println(i : int) {
+    sys::writeInt(sys::stdout(), i)
+    sys::write(sys::stdout(), "\n")
+}
+
+func println(i : usize) {
+    println(cast(int)i)
+}
+
+func allocIntSlice(n : usize) : {[]int, error} {
+    let buf, err = mem::alloc(n * sizeof(int))
+    if (err != noerror) { return []int{}, err } // TODO: return nil, err
+
+    let slice = []int{ cast(&int)buf, n }
+    return slice, noerror
+}
+
+func free(s : []int) {
+    mem::free(s.ptr)
+}
+
+func countLines(s : []pure uint8) : usize {
+    let count : usize
+    for (i in 0,s.len) {
+        if (s[i] == '\n') {
+            count += 1
+        }
+    }
+    return count
+}
+
+func isNumeric(c : uint8) : bool {
+    return c >= '0' && c <= '9'
+}
+
+func trimNonNumeric(s : []pure uint8) : []pure uint8 {
+    let count : usize
+    for (i in 0, s.len) {
+        if (!isNumeric(s[i])) {
+            count += 1
+        }
+        else {
+            break
+        }
+    }
+    return []pure uint8{ s.ptr + count, s.len - count }
+}
+
+func parseIntRem(s : []pure uint8, radix : int) : {int, []pure uint8, bool} {
+    let value : int
+    let count : usize
+
+    for (i in 0,s.len) {
+        if (isNumeric(s[i])) {
+            // TODO: decide whether to error or to add (int + uint8)
+            value = value * radix + cast(int)(s[i] - '0')
+            count += 1
+        }
+        else {
+            break
+        }
+    }
+
+    return value, []pure uint8{ s.ptr + count, s.len - count }, count > 0
+}
+
+func aoc01() {
+    let input = "193
+195
+204
+208
+219
+230
+231
+233
+234
+241
+253
+260
+261
+265
+"
+    let buf = input
+
+    let numbers, err = allocIntSlice(countLines(input))
+    if (err != noerror) { sys::exit(1) }
+
+    defer free(numbers)
+
+    let numberCount = 0
+
+    while (buf.len > 0) {
+        buf = trimNonNumeric(buf)
+
+        // TODO: Warning about variable shadowing
+        let n, nbuf, ok = parseIntRem(buf, 10)
+        buf = nbuf
+
+        //print("end: ") println(end)
+        if (ok) {
+            //print("parsed number: ") println(n)
+            numbers[numberCount] = n
+            numberCount += 1
+        }
+        else {
+            //println("failed to parse number")
+            break
+        }
+    }
+
+    let incCount = 0
+
+    for (i in 1,numberCount) {
+        if (numbers[i] > numbers[i - 1]) {
+            incCount += 1
+        }
+    }
+    println("")
+
+    for (i in 0,numberCount) {
+        print(numbers[i]) print(", ")
+    }
+    println("")
+
+    print("increase count: ")
+    print(incCount)
+
+    println("")
+
+    //print("end: ")
+    //println(buf)
+}

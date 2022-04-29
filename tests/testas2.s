@@ -1,24 +1,5 @@
 	.file	"testas2.c"
 	.text
-	.comm	pointer_to_int,8,8
-	.data
-	.align 32
-	.type	some_data, @object
-	.size	some_data, 64
-some_data:
-	.value	0
-	.value	1
-	.value	2
-	.value	3
-	.zero	56
-	.globl	other_value
-	.align 4
-	.type	other_value, @object
-	.size	other_value, 4
-other_value:
-	.long	5
-	.local	nice_value
-	.comm	nice_value,4,4
 	.section	.rodata
 .LC0:
 	.string	"Hello"
@@ -34,12 +15,20 @@ main:
 	.cfi_offset 6, -16
 	movq	%rsp, %rbp
 	.cfi_def_cfa_register 6
-	movl	$32, other_value(%rip)
-	movl	$44, nice_value(%rip)
-	leaq	other_value(%rip), %rax
-	movq	%rax, pointer_to_int(%rip)
+	movl	count.2316(%rip), %eax
+	addl	$1, %eax
+	movl	%eax, count.2316(%rip)
+	movl	count.2316(%rip), %eax
+	testl	%eax, %eax
+	setg	%al
+	movzbl	%al, %eax
+	movl	%eax, is_true.2315(%rip)
+	movl	is_true.2315(%rip), %eax
+	testl	%eax, %eax
+	je	.L2
 	leaq	.LC0(%rip), %rdi
 	call	puts@PLT
+.L2:
 	movl	$0, %eax
 	popq	%rbp
 	.cfi_def_cfa 7, 8
@@ -47,6 +36,10 @@ main:
 	.cfi_endproc
 .LFE0:
 	.size	main, .-main
+	.local	count.2316
+	.comm	count.2316,4,4
+	.local	is_true.2315
+	.comm	is_true.2315,4,4
 	.ident	"GCC: (Ubuntu 9.3.0-10ubuntu2) 9.3.0"
 	.section	.note.GNU-stack,"",@progbits
 	.section	.note.gnu.property,"a"

@@ -311,6 +311,8 @@ bool is_logic_binary_op(ast_node& node);
 
 bool is_cmp_binary_op(ast_node& node);
 
+bool is_logic_op(ast_node& node);
+
 bool is_bool_op(ast_node& node);
 
 std::string build_identifier_value(const std::vector<std::string>& parts);

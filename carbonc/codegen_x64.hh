@@ -206,6 +206,8 @@ struct codegen_x64_emitter {
 
     virtual void cmp(gen_operand a, gen_operand b) = 0;
 
+    virtual void set(const char* rel, gen_destination d) = 0;
+
     virtual void label(const char* label) = 0;
 
     virtual void comment_prefix() = 0;

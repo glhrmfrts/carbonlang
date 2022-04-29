@@ -1,6 +1,6 @@
 /*
 
-The dumbest possible allocator:
+The dumbest allocator possible:
 
 Memory is allocated in blocks with the minimum size being the page size:
 

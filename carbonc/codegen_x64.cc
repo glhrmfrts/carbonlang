@@ -626,6 +626,24 @@ struct generator {
             emit_cmp_jmp(instr, "jge");
             break;
         }
+        case ir_cmp_gt:
+            emit_cmp_set(instr, idata, "g");
+            break;
+        case ir_cmp_lt:
+            emit_cmp_set(instr, idata, "l");
+            break;
+        case ir_cmp_lteq:
+            emit_cmp_set(instr, idata, "le");
+            break;
+        case ir_cmp_gteq:
+            emit_cmp_set(instr, idata, "ge");
+            break;
+        case ir_cmp_eq:
+            emit_cmp_set(instr, idata, "e");
+            break;
+        case ir_cmp_neq:
+            emit_cmp_set(instr, idata, "ne");
+            break;
         case ir_call: {
             bool is_fptr = !std::holds_alternative<ir_label>(instr.operands[0]);
 
@@ -945,6 +963,25 @@ struct generator {
         }
         em->cmp(a, b);
         em->emitln(" %s %s", j, label.name.c_str());
+    }
+
+    void emit_cmp_set(const ir_instr& instr, const instr_data& idata, const char* set) {
+        auto [b, btype] = transform_ir_operand(instr.operands[1]);
+        auto [a, atype] = transform_ir_operand(instr.operands[0]);
+        auto dest = instr_dest_to_gen_dest(idata.dest);
+        auto bytedest = adjust_for_type(dest, ts->uint8_type);
+        auto realdest = adjust_for_type(dest, instr.result_type);
+        if (!is_reg(a)) {
+            move(adjust_for_type(reg_intermediate, atype), atype, a, atype);
+            a = toop(adjust_for_type(reg_intermediate, atype));
+        }
+        em->cmp(a, b);
+        em->set(set, bytedest);
+        if (get_size(realdest) > get_size(bytedest)) {
+            // Just in case bool size is > 1
+            em->movzx(realdest, toop(bytedest));
+        }
+        push(toop(realdest));
     }
 
     void emit_binary_math_op(ir_op op, gen_destination a, gen_operand b) {
