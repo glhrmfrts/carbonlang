@@ -8,9 +8,9 @@
 #include "prettyprint.hh"
 #include "desugar.hh"
 #include "scope.hh"
-#include <fstream>
 #include <numeric>
 #include <fstream>
+#include <iostream>
 
 namespace carbon {
 
@@ -633,16 +633,22 @@ std::pair<bool, bool> is_convertible_to(type_system& ts, type_id a, type_id b) {
     if (a == invalid_type || b == invalid_type) return std::make_pair(false, false);
     if (is_assignable_to(ts, a, b)) return std::make_pair(true, false);
 
-    // any implicit conversions involving booleans are prohibited
+    auto& ta = get_type(ts, get_alias_root(ts, a));
+    auto& tb = get_type(ts, get_alias_root(ts, b));
+
+    if (ta.kind == type_kind::enumflags && tb.id == ts.bool_type) {
+        return std::make_pair(true, true);
+    }
+
     if (a == ts.bool_type || b == ts.bool_type) {
         return std::make_pair(false, false);
     }
 
-    auto& ta = get_type(ts, a);
-    auto& tb = get_type(ts, b);
-
-    if (ta.kind == tb.kind && tb.kind == type_kind::integral) {
+    if (ta.kind == tb.kind && (tb.kind == type_kind::integral)) {
         return std::make_pair(tb.size >= ta.size, true);
+    }
+    if (ta.kind == type_kind::integral && (tb.kind == type_kind::ptr)) {
+        return std::make_pair(tb.size == ta.size, false);
     }
 
     if (get_alias_root(ts, a) == ts.noflags_type && tb.kind == type_kind::enumflags) {
@@ -694,6 +700,11 @@ void try_coerce_to(type_system& ts, ast_node& from, type_id to) {
             if (from.type == ast_type::int_literal) {
                 from.tid = to;
             }
+        }
+    }
+    else if (ta.kind == type_kind::integral && tb.kind == type_kind::ptr) {
+        if (from.type == ast_type::int_literal) {
+            from.tid = to;
         }
     }
 }
@@ -1004,7 +1015,7 @@ bool can_pointer_be_cast_from(type_system& ts, type_def& self, type_def& from) {
             return true;
         }
         if (from.kind == type_kind::integral) {
-            return from.id == ts.uintptr_type;
+            return true;
         }
     }
 
@@ -1205,7 +1216,7 @@ type_id get_value_node_type(type_system& ts, ast_node& node) {
             return invalid_type;
         }
 
-        if (is_cmp_binary_op(node.op)) {
+        if (is_cmp_binary_op(node.op) || is_arith_binary_op(node.op)) {
             bool needcast = false;
             auto [comp, ncast, castidx] = is_comparable(ts, node.children[0]->tid, node.children[1]->tid);
             if (!comp) {
@@ -1215,9 +1226,16 @@ type_id get_value_node_type(type_system& ts, ast_node& node) {
                 auto [comp, ncast, castidx] = is_comparable(ts, node.children[0]->tid, node.children[1]->tid);
                 if (!comp) {
                     node.type_error = true;
-                    add_type_error(ts, node.pos, "cannot compare types '%s' and '%s'", 
-                        type_to_string(node.children[0]->tid).c_str(), type_to_string(node.children[1]->tid).c_str()
-                    );
+                    if (is_arith_binary_op(node.op)) {
+                        add_type_error(ts, node.pos, "cannot perform operation on types '%s' and '%s'",
+                            type_to_string(node.children[0]->tid).c_str(), type_to_string(node.children[1]->tid).c_str()
+                        );
+                    }
+                    else {
+                        add_type_error(ts, node.pos, "cannot compare types '%s' and '%s'",
+                            type_to_string(node.children[0]->tid).c_str(), type_to_string(node.children[1]->tid).c_str()
+                        );
+                    }
                     return invalid_type;
                 }
                 else if (ncast) {
@@ -1238,7 +1256,13 @@ type_id get_value_node_type(type_system& ts, ast_node& node) {
             }
 
             node.type_error = false;
-            return ts.bool_type;
+
+            if (is_cmp_binary_op(node.op)) {
+                return ts.bool_type;
+            }
+            else {
+                return node.children[0]->tid;
+            }
         }
 
         if (is_logic_binary_op(node.op)) {
@@ -2507,15 +2531,36 @@ void register_for_declarations(type_system& ts, ast_node& node) {
 }
 
 arena_ptr<ast_node> make_neq_false_node(type_system& ts, arena_ptr<ast_node>&& val) {
-    auto node = make_binary_expr_node(
-        *ts.ast_arena,
-        val->pos,
-        token_type::neq,
-        std::move(val),
-        make_bool_literal_node(*ts.ast_arena, val->pos, 0)
-    );
-    resolve_node_type(ts, val.get());
-    return node;
+    auto pos = val->pos;
+    if (val->tid == ts.bool_type) {
+        auto node = make_binary_expr_node(
+            *ts.ast_arena,
+            val->pos,
+            token_type::neq,
+            std::move(val),
+            make_bool_literal_node(*ts.ast_arena, pos, 0)
+        );
+        resolve_node_type(ts, val.get());
+        return node;
+    }
+    else if (val->tid.valid() && val->tid.get().kind == type_kind::enumflags) {
+        auto node = make_binary_expr_node(
+            *ts.ast_arena,
+            val->pos,
+            token_type::neq,
+            std::move(val),
+            make_init_tag_node(*ts.ast_arena, pos, token_type::noflags)
+        );
+        resolve_node_type(ts, val.get());
+        return node;
+    }
+    else if (val->tid.valid()) {
+        assert(!"make_neq_false_node unhandled");
+        return { nullptr, nullptr };
+    }
+    else {
+        return std::move(val);
+    }
 }
 
 void ensure_bool_op_is_comparison(type_system& ts, ast_node& node) {
@@ -3136,11 +3181,11 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
         check_for_unresolved = false;
         if (!g_inside_loop) {
             const char* stmt = (node.type == ast_type::continue_stmt) ? "continue" : "break";
-            add_type_error(ts, node.pos, "'%s' statement can only be used inside a loop statement (e.g. while, for)", stmt);
+            add_type_error(ts, node.pos, "'%s' statement can only be used inside a for statement", stmt);
         }
         break;
     }
-    case ast_type::for_stmt: {
+    case ast_type::for_numeric_stmt: {
         check_for_unresolved = false;
         visit_tree(ts, *node.children[1]);
 
@@ -3163,11 +3208,11 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
         break;
     }
     case ast_type::if_stmt:
-    case ast_type::while_stmt: {
+    case ast_type::for_cond_stmt: {
         check_for_unresolved = false;
 
         bool prevloop = g_inside_loop;
-        if (node.type == ast_type::while_stmt) {
+        if (node.type == ast_type::for_cond_stmt) {
             g_inside_loop = true;
         }
 
@@ -3181,13 +3226,13 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
 
         g_inside_loop = prevloop;
 
-        const char* stmt = (node.type == ast_type::if_stmt) ? "if" : "while";
+        const char* stmt = (node.type == ast_type::if_stmt) ? "if" : "for";
         if (!node.children[0]->tid.valid() || node.children[0]->type_error) {
             complement_error(ts, node.pos, "in %s statement condition", stmt);
             node.type_error = true;
         }
-        else if (!is_assignable_to(ts, node.children[0]->tid, ts.bool_type)) {
-            add_type_error(ts, node.pos, "%s statement condition must have 'bool' type", stmt);
+        else if (!is_assignable_to(ts, node.children[0]->tid, ts.bool_type) && (node.children[0]->tid.get().kind != type_kind::enumflags)) {
+            add_type_error(ts, node.pos, "%s statement condition must have 'bool' or 'enumflags' type", stmt);
             node.type_error = true;
         }
 
@@ -3880,7 +3925,7 @@ void remangle_names(type_system& ts, ast_node* nodeptr) {
 
     auto& node = *nodeptr;
     switch (node.type) {
-    case ast_type::for_stmt: {
+    case ast_type::for_numeric_stmt: {
         visit_tree(ts, *node.forinfo.declare_for_iter);
         visit_tree(ts, *node.forinfo.declare_elem_to_range_start);
         visit_tree(ts, *node.forinfo.compare_elem_to_range_end);
@@ -4425,6 +4470,8 @@ type_system::type_system(memory_arena& arena) {
 void type_system::process_code_unit(ast_node& node) {
     this->pass = type_system_pass::resolve_literals_and_register_declarations;
     this->code_units.push_back(&node);
+
+    std::cout << "process_code_unit: " << node.string_value << std::endl;
 
     for (int i = 0; i < 2; i++) {
         this->subpass = i;

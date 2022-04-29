@@ -14,7 +14,7 @@ func alloc(sz: usize, op: &opaque): {&opaque, error} {
     if (ptr == cast(&opaque)(cast(uintptr)-1)) {
         return nil, ALLOC_FAILED
     }
-    return ptr, noerror
+    return ptr, noerr
 }
 
 func alloc(sz: usize): {&opaque, error} {

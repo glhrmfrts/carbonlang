@@ -586,7 +586,7 @@ int stb_c_lexer_get_token(stb_lexer *lexer)
          }
       )
 
-      #ifdef STB__clex_discard_preprocessor
+      #ifdef STB__clex_discard_preprocessor_NOT
          // @TODO this discards everything after a '#', regardless
          // of where in the line the # is, rather than requiring it
          // be at the start. (because this parser doesn't otherwise

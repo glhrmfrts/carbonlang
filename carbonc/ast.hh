@@ -48,8 +48,8 @@ enum class ast_type {
     return_stmt,
     asm_stmt,
     if_stmt,
-    while_stmt,
-    for_stmt,
+    for_cond_stmt,
+    for_numeric_stmt,
     defer_stmt,
     continue_stmt,
     break_stmt,
@@ -267,9 +267,9 @@ arena_ptr<ast_node> make_return_stmt_node(memory_arena& arena, const position& p
 
 arena_ptr<ast_node> make_asm_stmt_node(memory_arena& arena, const position& pos, std::string&& value);
 
-arena_ptr<ast_node> make_while_stmt_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& cond, arena_ptr<ast_node>&& body);
+arena_ptr<ast_node> make_for_cond_stmt_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& cond, arena_ptr<ast_node>&& body);
 
-arena_ptr<ast_node> make_for_stmt_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& ids, arena_ptr<ast_node>&& iter, arena_ptr<ast_node>&& body);
+arena_ptr<ast_node> make_for_numeric_stmt_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& ids, arena_ptr<ast_node>&& iter, arena_ptr<ast_node>&& body);
 
 arena_ptr<ast_node> make_if_stmt_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& cond, arena_ptr<ast_node>&& body, arena_ptr<ast_node>&& elsebody);
 

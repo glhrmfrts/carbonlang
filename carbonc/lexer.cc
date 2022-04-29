@@ -216,6 +216,9 @@ struct lexer_impl {
             if (!std::strcmp("error", l.string)) {
                 return token_type::error;
             }
+            if (!std::strcmp("noerr", l.string)) {
+                return token_type::noerror;
+            }
             break;
         case 6:
             if (!std::strcmp("return", l.string)) {
@@ -246,9 +249,6 @@ struct lexer_impl {
             }
             if (!std::strcmp("noflags", l.string)) {
                 return token_type::noflags;
-            }
-            if (!std::strcmp("noerror", l.string)) {
-                return token_type::noerror;
             }
             break;
         case 8:

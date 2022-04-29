@@ -38,7 +38,7 @@ asm%{
 }%asm
 }
 
-func open(filename: &pure uint8, flags: int, mode: int16) {
+func open(filename: &pure uint8, flags: int, mode: int16): int {
 asm%{
     mov $2, %rax
     syscall

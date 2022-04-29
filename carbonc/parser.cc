@@ -6,6 +6,7 @@
 #include "exception.hh"
 #include <set>
 #include <optional>
+#include <iostream>
 
 namespace carbon {
 
@@ -26,6 +27,7 @@ struct parser_impl {
     std::stack<parse_context> ctx_stack;
     int func_body_level = 0;
     int lines_parsed = 0;
+    bool decl_retry = false;
 
     enum aggregate_mode { UNDEFINED, TUPLE, STRUCT };
 
@@ -306,8 +308,6 @@ struct parser_impl {
         switch (TOK) {
         case token_type::for_:
             return parse_for_stmt();
-        case token_type::while_:
-            return parse_while_stmt();
         case token_type::continue_:
             return parse_continue_stmt();
         case token_type::break_:
@@ -378,8 +378,12 @@ struct parser_impl {
         auto pos = lex->pos();
         std::vector<arena_ptr<ast_node>> decls;
         for (int i = 0; i < LIMIT; i++) {
+            decl_retry = false;
             auto decl = parse_decl();
-            if (!decl) break;
+            if (!decl) {
+                if (decl_retry) { continue; }
+                else { break; }
+            }
 
             decls.push_back(std::move(decl));
 
@@ -453,10 +457,6 @@ struct parser_impl {
                 }
             }
 
-            if (!iter) {
-                iter = std::move(expr);
-            }
-
             if (TOK_CHAR != ')') {
                 throw parse_error(filename, lex->pos(), "expected closing ')' in for statement");
             }
@@ -464,31 +464,15 @@ struct parser_impl {
 
             auto body = parse_stmt();
 
-            return make_for_stmt_node(*ast_arena, pos, std::move(ids), std::move(iter), std::move(body));
+            if (!iter) {
+                // iter = std::move(expr);
+                return make_for_cond_stmt_node(*ast_arena, pos, std::move(expr), std::move(body));
+            }
+
+            return make_for_numeric_stmt_node(*ast_arena, pos, std::move(ids), std::move(iter), std::move(body));
         }
 
         throw parse_error(filename, lex->pos(), "expected opening '(' in for statement condition");
-        return arena_ptr<ast_node>{nullptr, nullptr};
-    }
-
-    arena_ptr<ast_node> parse_while_stmt() {
-        auto pos = lex->pos();
-        lex->next(); // eat the 'while'
-
-        if (TOK_CHAR == '(') {
-            lex->next();
-            auto cond = parse_expr();
-            if (TOK_CHAR != ')') {
-                throw parse_error(filename, lex->pos(), "expected closing ')' in while statement condition");
-            }
-            lex->next();
-
-            auto body = parse_stmt();
-
-            return make_while_stmt_node(*ast_arena, pos, std::move(cond), std::move(body));
-        }
-
-        throw parse_error(filename, lex->pos(), "expected opening '(' in while statement condition");
         return arena_ptr<ast_node>{nullptr, nullptr};
     }
 
@@ -560,7 +544,14 @@ struct parser_impl {
     // Section: declarations
 
     arena_ptr<ast_node> parse_decl() {
+        auto pos = lex->pos();
         auto t = TOK;
+
+        if (TOK_CHAR == '#') {
+            lex->next();
+            return parse_tag_decl(pos);
+        }
+
         switch (t) {
         case token_type::const_:
         case token_type::let:
@@ -589,6 +580,37 @@ struct parser_impl {
         default:
             return arena_ptr<ast_node>{nullptr, nullptr};
         }
+    }
+
+    arena_ptr<ast_node> parse_tag_decl(const position& pos) {
+        if (TOK == token_type::identifier) {
+            if (lex->string_value() == "define") {
+                lex->next();
+                return parse_define_decl();
+            }
+            else {
+                auto p = parse_error(filename, pos, "unrecognized tag: #", lex->string_value().c_str());
+                std::cout << p.what() << std::endl;
+                lex->next();
+            }
+        }
+        decl_retry = true;
+        return { nullptr,nullptr };
+    }
+
+    arena_ptr<ast_node> parse_define_decl() {
+        auto pos = lex->pos();
+        if (TOK != token_type::identifier) {
+            throw parse_error(filename, lex->pos(), "expecting identifier in #define declaration");
+        }
+
+        auto id = make_identifier_node(*ast_arena, pos, { lex->string_value() });
+
+        lex->next();
+
+        auto value = parse_braceless_tuple_expr();
+        
+        return make_var_decl_node_single(*ast_arena, pos, token_type::const_, std::move(id), { nullptr,nullptr }, std::move(value), {});
     }
 
     arena_ptr<ast_node> parse_error_decl() {

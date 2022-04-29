@@ -1,13 +1,10 @@
 //Low-level system provided layer.
 
 error {
-    // Memory allocation failed.
     ALLOC_FAILED
 
-    // A file/directory path does not exist.
     PATH_NOT_FOUND
 
-    // Invalid file, socket, thread or mutex handle.
     INVALID_HANDLE
 }
 
@@ -28,12 +25,7 @@ extern func write(fd: FileHandle, data: []pure uint8): isize
 
 extern func read(fd: FileHandle, data: []uint8): isize
 
-type OpenFlags = enumflags {
-    CREATE
-    WRITE
-    READ
-    APPEND
-}
+type OpenFlags = enumflags { Create Write Read Append Truncate }
 
 extern func open(path: []pure uint8, flags: OpenFlags, mode: int): {FileHandle, error}
 
@@ -125,7 +117,7 @@ func intToString(value: int, base: int, dest: []uint8) {
     let offs : int
     let nvalue = -1
 
-    while (nvalue != 0) {
+    for (nvalue != 0) {
         if (offs >= result.len) {
             offs -= 1
             break
@@ -152,7 +144,7 @@ func intToString(value: int, base: int, dest: []uint8) {
     ptr -= 1
 
     let tmp_char : uint8
-    while (ptr1 < ptr) {
+    for (ptr1 < ptr) {
         tmp_char = @ptr
 
         @ptr = @ptr1

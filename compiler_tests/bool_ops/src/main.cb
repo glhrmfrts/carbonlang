@@ -1,9 +1,24 @@
+func isNumeric(c : uint8) : bool {
+    return c >= '0' && c <= '9'
+}
+
+func trimNonNumeric(s : []pure uint8) : []pure uint8 {
+    let count : usize
+    if (!isNumeric(s[0])) {
+        count += 1
+    }
+    return []pure uint8{ s.ptr + count, s.len - count }
+}
+
 extern(C) func carbon_main(): int {
-    let value = 3 < 2
-    let value2 = 3 > 5
-    let value3 = 3 >= 5
-    let value2 = 3 <= 5
-    let value2 = 3 == 5
-    let value2 = 8 != 10
+    let sz : usize
+    let ptr : &uint8
+    
+    let ok = ptr < sz
+
+    let newptr = ptr + 1
+
+    newptr += 1
+
     return 0
 }

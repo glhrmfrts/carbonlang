@@ -68,6 +68,31 @@ bool is_logic_binary_op(token_type t) {
     return (t == token_type::andand || t == token_type::oror);
 }
 
+bool is_arith_binary_op(token_type t) {
+    switch (token_to_char(t)) {
+    case '+':
+    case '-':
+    case '*':
+    case '/':
+    case '&':
+    case '|':
+    case '^':
+        return true;
+    default:
+        break;
+    }
+
+    switch (t) {
+    case token_type::shl:
+    case token_type::shr:
+        return true;
+    default:
+        break;
+    }
+
+    return false;
+}
+
 bool is_cmp_binary_op(token_type t) {
     switch (token_to_char(t)) {
     case '>':

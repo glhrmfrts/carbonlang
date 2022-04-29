@@ -43,7 +43,7 @@ func allocInBlock(pblock: &Block, size: usize): &opaque {
     pblock.filled += size
     pblock.numAllocs += 1
 
-    sys::write(sys::stdout(), "Growing block fill to ")
+    sys::write(sys::stdout(), "std::mem - Growing block fill to ")
     sys::writeInt(sys::stdout(), cast(int)pblock.filled)
     sys::write(sys::stdout(), " bytes\n")
 
@@ -75,7 +75,7 @@ func alloc(usersize: usize): {&opaque, error} {
     let asize = align(usersize, ALIGNMENT)
 
     let pblock = lastBlock
-    while (pblock != nil) {
+    for (pblock != nil) {
         if (pblock.filled + asize < pblock.cap) {
             break
         }
@@ -83,12 +83,12 @@ func alloc(usersize: usize): {&opaque, error} {
     }
 
     if (pblock != nil) {
-        return allocInBlock(pblock, asize), noerror
+        return allocInBlock(pblock, asize), noerr
     }
 
     let memsize = align(sizeof(Block) + asize, PAGE_SIZE)
     let newmem, err = sys::alloc(memsize)
-    if (err != noerror) {
+    if (err != noerr) {
         return nil, err
     }
 
@@ -98,18 +98,18 @@ func alloc(usersize: usize): {&opaque, error} {
     newblock.cap = memsize
     newblock.prev = lastBlock
 
-    sys::write(sys::stdout(), "Allocating block of ")
+    sys::write(sys::stdout(), "std::mem - Allocating block of ")
     sys::writeInt(sys::stdout(), cast(int)newblock.cap)
     sys::write(sys::stdout(), " bytes\n")
 
     lastBlock = newblock
 
-    return allocInBlock(newblock, asize), noerror
+    return allocInBlock(newblock, asize), noerr
 }
 
 func free(ptr: &opaque) {
     let pblock = lastBlock
-    while (pblock != nil) {
+    for (pblock != nil) {
         let blockdata = (cast(&uint8)(cast(&opaque)pblock)) + sizeof(Block)
         if (ptr >= blockdata && ptr < (blockdata + pblock.cap)) {
             break
@@ -126,7 +126,7 @@ func free(ptr: &opaque) {
     if (pblock.numAllocs == 0) {
         lastBlock = pblock.prev
 
-        sys::write(sys::stdout(), "Freeing block of ")
+        sys::write(sys::stdout(), "std::mem - Freeing block of ")
         sys::writeInt(sys::stdout(), cast(int)pblock.cap)
         sys::write(sys::stdout(), " bytes\n")
 

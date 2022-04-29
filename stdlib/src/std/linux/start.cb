@@ -5,7 +5,7 @@ import aoc::aoc01
 
 func testAlloc() {
     let m, err = mem::alloc(16)
-    if (err!=noerror) {
+    if (err!=noerr) {
         write(stdout(), "ALLOC_FAILED\n")
         return
     }
@@ -19,7 +19,7 @@ func testMain(argc : int) {
     let invalidMapValue = cast(&opaque)(cast(uintptr)-1)
 
     let ptr, err = mem::alloc(N*sizeof(int))
-    if (err != noerror) {
+    if (err != noerr) {
         exit(1)
     }
 
@@ -66,7 +66,10 @@ extern(C) func __carbon_main(argc: int, argv: & &pure uint8) {
     //let c = []uint8{ &buf[0], sizeof(buf) }
     //read(stdin(), c)
     write(stdout(), "Running aoc01:\n")
-    aoc01()
+    let res01 = aoc01()
+    if (res01 == 1832) {
+        println("AOC01: OK")
+    }
 
     exit(0)
 

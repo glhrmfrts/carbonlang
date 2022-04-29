@@ -34,7 +34,7 @@ code_unit{
     syscall
 
 }}}}
-    func_decl{open (var_decl{(filename): type_expr{type_qualifier{ptr, type_qualifier{ uint8}}}}, var_decl{(flags): type_expr{int}}, var_decl{(mode): type_expr{int16}}) {
+    func_decl{open (var_decl{(filename): type_expr{type_qualifier{ptr, type_qualifier{ uint8}}}}, var_decl{(flags): type_expr{int}}, var_decl{(mode): type_expr{int16}}): type_expr{int} {
         decl_list{
           asm{    mov $2, %rax
     syscall

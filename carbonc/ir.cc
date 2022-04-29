@@ -237,7 +237,7 @@ void analyse_node(ast_node& node) {
         }
         break;
     }
-    case ast_type::for_stmt: {
+    case ast_type::for_numeric_stmt: {
         auto scope = ts->find_nearest_scope(scope_kind::func_body);
         auto& funcname = scope->self->tdef.mangled_name.str;
 
@@ -253,7 +253,7 @@ void analyse_node(ast_node& node) {
         ts->leave_scope();
         break;
     }
-    case ast_type::while_stmt: {
+    case ast_type::for_cond_stmt: {
         auto scope = ts->find_nearest_scope(scope_kind::func_body);
         auto& funcname = scope->self->tdef.mangled_name.str;
 
@@ -710,7 +710,7 @@ void generate_ir_binary_expr(ast_node& node) {
             emit((node.ir.bin_invert_jump) ? ir_jmp_gte : ir_jmp_lt, a, b, ir_label{ node.ir.bin_target_label });
         }
         else {
-            temit(ir_cmp_lt, node.tid, a, b);
+            temit((node.ir.bin_invert_jump) ? ir_cmp_gteq : ir_cmp_lt, node.tid, a, b);
             push(ir_stackpop{ node.tid });
         }
         break;
@@ -719,7 +719,7 @@ void generate_ir_binary_expr(ast_node& node) {
             emit((node.ir.bin_invert_jump) ? ir_jmp_lte : ir_jmp_gt, a, b, ir_label{ node.ir.bin_target_label });
         }
         else {
-            temit(ir_cmp_gt, node.tid, a, b);
+            temit((node.ir.bin_invert_jump) ? ir_cmp_lteq : ir_cmp_gt, node.tid, a, b);
             push(ir_stackpop{ node.tid });
         }
         break;
@@ -739,7 +739,7 @@ void generate_ir_binary_expr(ast_node& node) {
             emit((node.ir.bin_invert_jump) ? ir_jmp_neq : ir_jmp_eq, a, b, ir_label{ node.ir.bin_target_label });
         }
         else {
-            temit(ir_cmp_eq, node.tid, a, b);
+            temit((node.ir.bin_invert_jump) ? ir_cmp_neq : ir_cmp_eq, node.tid, a, b);
             push(ir_stackpop{ node.tid });
         }
         break;
@@ -748,7 +748,7 @@ void generate_ir_binary_expr(ast_node& node) {
             emit((node.ir.bin_invert_jump) ? ir_jmp_eq : ir_jmp_neq, a, b, ir_label{ node.ir.bin_target_label });
         }
         else {
-            temit(ir_cmp_neq, node.tid, a, b);
+            temit((node.ir.bin_invert_jump) ? ir_cmp_eq : ir_cmp_neq, node.tid, a, b);
             push(ir_stackpop{ node.tid });
         }
         break;
@@ -757,7 +757,7 @@ void generate_ir_binary_expr(ast_node& node) {
             emit((node.ir.bin_invert_jump) ? ir_jmp_gt : ir_jmp_lte, a, b, ir_label{ node.ir.bin_target_label });
         }
         else {
-            temit(ir_cmp_lteq, node.tid, a, b);
+            temit((node.ir.bin_invert_jump) ? ir_cmp_gt : ir_cmp_lteq, node.tid, a, b);
             push(ir_stackpop{ node.tid });
         }
         break;
@@ -766,7 +766,7 @@ void generate_ir_binary_expr(ast_node& node) {
             emit((node.ir.bin_invert_jump) ? ir_jmp_lt : ir_jmp_gte, a, b, ir_label{ node.ir.bin_target_label });
         }
         else {
-            temit(ir_cmp_gteq, node.tid, a, b);
+            temit((node.ir.bin_invert_jump) ? ir_cmp_lt : ir_cmp_gteq, node.tid, a, b);
             push(ir_stackpop{ node.tid });
         }
         break;
@@ -815,6 +815,9 @@ void generate_ir_unary_expr(ast_node& node) {
         generate_ir_addr_expr(node);
     }
     else if (token_to_char(node.op) == '!') {
+        if (is_cmp_binary_op(*node.children[0]) && node.children[0]->ir.bin_target_label.empty()) {
+            node.children[0]->ir.bin_invert_jump = true;
+        }
         generate_ir_node(*node.children[0]);
     }
     else if (token_to_char(node.op) == '-') {
@@ -968,12 +971,12 @@ void generate_ir_node(ast_node& node) {
     case ast_type::var_decl:
         generate_ir_var(node);
         break;
-    case ast_type::for_stmt:
+    case ast_type::for_numeric_stmt:
         ts->enter_scope(node);
         generate_for_stmt(node);
         ts->leave_scope();
         break;
-    case ast_type::while_stmt:
+    case ast_type::for_cond_stmt:
         ts->enter_scope(node);
         generate_while_stmt(node);
         ts->leave_scope();

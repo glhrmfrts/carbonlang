@@ -89,6 +89,8 @@ bool is_binary_op(token_type t);
 
 bool is_logic_binary_op(token_type t);
 
+bool is_arith_binary_op(token_type t);
+
 bool is_cmp_binary_op(token_type t);
 
 bool is_right_assoc(token_type t);

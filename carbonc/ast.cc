@@ -367,20 +367,20 @@ arena_ptr<ast_node> make_if_stmt_node(memory_arena& arena, const position& pos, 
     return ptr;
 }
 
-arena_ptr<ast_node> make_while_stmt_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& cond, arena_ptr<ast_node>&& body) {
+arena_ptr<ast_node> make_for_cond_stmt_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& cond, arena_ptr<ast_node>&& body) {
     auto ptr = make_in_arena<ast_node>(arena);
     ptr->node_id = node_id_gen++;
-    ptr->type = ast_type::while_stmt;
+    ptr->type = ast_type::for_cond_stmt;
     ptr->pos = pos;
     ptr->children.push_back(std::move(cond));
     ptr->children.push_back(std::move(body));
     return ptr;
 }
 
-arena_ptr<ast_node> make_for_stmt_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& ids, arena_ptr<ast_node>&& iter, arena_ptr<ast_node>&& body) {
+arena_ptr<ast_node> make_for_numeric_stmt_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& ids, arena_ptr<ast_node>&& iter, arena_ptr<ast_node>&& body) {
     auto ptr = make_in_arena<ast_node>(arena);
     ptr->node_id = node_id_gen++;
-    ptr->type = ast_type::for_stmt;
+    ptr->type = ast_type::for_numeric_stmt;
     ptr->pos = pos;
     ptr->children.push_back(std::move(ids));
     ptr->children.push_back(std::move(iter));

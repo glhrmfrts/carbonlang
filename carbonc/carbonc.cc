@@ -33,6 +33,7 @@ struct project_info {
     std::string target_name;
     std::string cb_path;
     std::string entrypoint;
+    std::vector<std::string> asm_obj_files;
     target_type target;
     bool freestanding = false;
     bool embed_std = false;
@@ -40,6 +41,10 @@ struct project_info {
     bool objonly = false;
     bool verbose = false;
 };
+
+static project_info proj;
+
+std::string run_assembler(const project_info& p, const std::string& asm_file);
 
 std::string get_source_code_near(const std::string& src, const position& pos) {
     auto upuntil = src.substr(0, pos.src_offs);
@@ -94,6 +99,16 @@ void process_directory(type_system& ts, ast_node& target, const std::string& dir
         auto fullpath = join(dir, file);
         if (file.find(".cb") != std::string::npos) {
             compile_file(ts, target, fullpath, fullpath.substr(srcdir.size() + 1));
+        }
+
+        if ((file.find(".s") != std::string::npos) || (file.find(".asm") != std::string::npos)) {
+            auto modname = fullpath.substr(srcdir.size() + 1);
+            while (replace(modname, "/", "_"));
+            std::cout << "assembly file: " << modname << std::endl;
+
+            auto asm_file = "_carbon/build_debug/" + modname;
+            copyfile(fullpath, asm_file);
+            proj.asm_obj_files.push_back(run_assembler(proj, asm_file));
         }
 
         if (is_directory(join(dir, file))) {
@@ -290,7 +305,6 @@ int run_project_mode(int argc, const char* argv[]) {
 
     std::cout << "carbonc - compiling target: " << dirname << "\n\n";
 
-    project_info p;
     const char* cbpath = getenv("CARBON_PATH");
     if (!cbpath) {
         cbpath = find_arg("--carbon-path", "-p", argc, argv);
@@ -300,9 +314,9 @@ int run_project_mode(int argc, const char* argv[]) {
         std::cerr << "carbonc - error: environment variable CARBON_PATH or command-line argument --carbon-path are required to compile!\n";
         return 1;
     }
-    p.cb_path = cbpath;
-    p.target_name = dirname;
-    p.working_dir = from_native_path(std::string{ dirnamebuf });
+    proj.cb_path = cbpath;
+    proj.target_name = dirname;
+    proj.working_dir = from_native_path(std::string{ dirnamebuf });
 
     memory_arena ast_arena{ 1024 * 1024 };
     type_system ts{ ast_arena };
@@ -313,30 +327,30 @@ int run_project_mode(int argc, const char* argv[]) {
     auto builtin_library_path = join(join(std::string{ cbpath }, "builtin"), "src");
     auto std_library_path = join(join(std::string{ cbpath }, "std"), "src");
 
+    parse_options(proj, argc, argv);
+
     process_source_directory(ts, *target_node, "./src");
 
-    parse_options(p, argc, argv);
-
-    if (p.embed_std) {
+    if (proj.embed_std) {
         process_source_directory(ts, *target_node, std_library_path);
     }
 
-    if (!p.freestanding && (p.target == target_type::executable)) {
+    if (!proj.freestanding && (proj.target == target_type::executable)) {
         process_source_directory(ts, *target_node, builtin_library_path);
     }
 
-    if (p.verbose) {
+    if (proj.verbose) {
         auto cdur = std::chrono::system_clock::now() - timebegin;
         std::cout << "carbonc - parsing time: " << std::chrono::duration_cast<std::chrono::milliseconds>(cdur).count() << "ms\n\n";
     }
 
     {
         auto ctimebegin = std::chrono::system_clock::now();
-        if (p.verbose) {
+        if (proj.verbose) {
             std::cout << "carbonc - type checking " << "\n";
         }
         ts.resolve_and_check();
-        if (p.verbose) {
+        if (proj.verbose) {
             auto cdur = std::chrono::system_clock::now() - ctimebegin;
             std::cout << "carbonc - type checking time: " << std::chrono::duration_cast<std::chrono::milliseconds>(cdur).count() << "ms\n\n";
         }
@@ -390,11 +404,11 @@ int run_project_mode(int argc, const char* argv[]) {
     ir_program irprog;
     {
         auto ctimebegin = std::chrono::system_clock::now();
-        if (p.verbose) {
+        if (proj.verbose) {
             std::cout << "carbonc - generating IR " << "\n";
         }
         irprog = generate_ir(ts, *target_node);
-        if (p.verbose) {
+        if (proj.verbose) {
             auto cdur = std::chrono::system_clock::now() - ctimebegin;
             std::cout << "carbonc - IR generation time: " << std::chrono::duration_cast<std::chrono::milliseconds>(cdur).count() << "ms\n\n";
         }
@@ -404,11 +418,11 @@ int run_project_mode(int argc, const char* argv[]) {
 
     {
         auto ctimebegin = std::chrono::system_clock::now();
-        if (p.verbose) {
+        if (proj.verbose) {
             std::cout << "carbonc - generating assembly " << "\n";
         }
         codegen(irprog, &ts, asm_file);
-        if (p.verbose) {
+        if (proj.verbose) {
             auto cdur = std::chrono::system_clock::now() - ctimebegin;
             std::cout << "carbonc - assembly generation time: " << std::chrono::duration_cast<std::chrono::milliseconds>(cdur).count() << "ms\n\n";
         }
@@ -416,18 +430,24 @@ int run_project_mode(int argc, const char* argv[]) {
 
     std::vector<std::string> obj_files;
 
-    obj_files.push_back(run_assembler(p, asm_file));
+    obj_files.push_back(run_assembler(proj, asm_file));
 
+    /*
 #ifndef _WIN32
-    if (!p.link_libc) {
+    if (!proj.link_libc) {
         copyfile("src/std/linux/x86_64/start.s", "_carbon/build_debug/__start.s");
-        obj_files.push_back(run_assembler(p, "_carbon/build_debug/__start.s"));
+        obj_files.push_back(run_assembler(proj, "_carbon/build_debug/__start.s"));
     }
 #endif
+*/
+
+    for (const auto& asmobj : proj.asm_obj_files) {
+        obj_files.push_back(asmobj);
+    }
 
     bool objonly = has_arg("--obj", "-obj", argc, argv);
     if (!objonly) {
-        auto ld_file = run_linker(p, obj_files, obj_files.front());
+        auto ld_file = run_linker(proj, obj_files, obj_files.front());
 
         auto out_file = std::string{ "_carbon/out_debug/" } + basename(ld_file);
 
@@ -453,7 +473,7 @@ int run_project_mode(int argc, const char* argv[]) {
 
     auto dur = std::chrono::system_clock::now() - timebegin;
     
-    if (p.verbose) {
+    if (proj.verbose) {
         std::cout << "\ncarbonc - total lines parsed: " << total_lines_parsed;
         std::cout << "\ncarbonc - total compilation time: " << std::chrono::duration_cast<std::chrono::milliseconds>(dur).count() << "ms\n";
     }

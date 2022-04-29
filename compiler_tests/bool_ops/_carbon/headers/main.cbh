@@ -1,1 +1,3 @@
+extern func isNumeric(:uint8):bool;
+extern func trimNonNumeric(:[]pure uint8):[]pure uint8;
 extern(C) func carbon_main():int;

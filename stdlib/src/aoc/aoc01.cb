@@ -29,15 +29,21 @@ func println(i : usize) {
     println(cast(int)i)
 }
 
-func allocIntSlice(n : usize) : {[]int, error} {
-    let buf, err = mem::alloc(n * sizeof(int))
-    if (err != noerror) { return []int{}, err } // TODO: return nil, err
-
-    let slice = []int{ cast(&int)buf, n }
-    return slice, noerror
+func allocString(sz: usize): []uint8 {
+    let data, err = mem::alloc(sz + 1)
+    mem::memset(data, 0, sz + 1)
+    return []uint8{ (cast(&uint8)data), sz }
 }
 
-func free(s : []int) {
+func allocIntSlice(n : usize) : {[]int, error} {
+    let buf, err = mem::alloc(n * sizeof(int))
+    if (err != noerr) { return []int{}, err } // TODO: return nil, err
+
+    let slice = []int{ cast(&int)buf, n }
+    return slice, noerr
+}
+
+func free(s) {
     mem::free(s.ptr)
 }
 
@@ -75,7 +81,7 @@ func parseIntRem(s : []pure uint8, radix : int) : {int, []pure uint8, bool} {
     for (i in 0,s.len) {
         if (isNumeric(s[i])) {
             // TODO: decide whether to error or to add (int + uint8)
-            value = value * radix + cast(int)(s[i] - '0')
+            value = value * radix + (s[i] - '0')
             count += 1
         }
         else {
@@ -86,32 +92,30 @@ func parseIntRem(s : []pure uint8, radix : int) : {int, []pure uint8, bool} {
     return value, []pure uint8{ s.ptr + count, s.len - count }, count > 0
 }
 
-func aoc01() {
-    let input = "193
-195
-204
-208
-219
-230
-231
-233
-234
-241
-253
-260
-261
-265
-"
-    let buf = input
+func aoc01() : int {
+    let fd, err = sys::open("aoc01_part1.txt", sys::Read, 0)
+    if (err != noerr) {
+        println("OPEN ERROR")
+        sys::exit(1)
+    }
 
-    let numbers, err = allocIntSlice(countLines(input))
-    if (err != noerror) { sys::exit(1) }
+    let input = allocString(16*1024)
+    defer free(input)
+
+    input.len = sys::read(fd, input)
+
+    let buf = []pure uint8{ input.ptr, input.len }
+
+    // TODO: investigate allocIntSlice(countLines(input)) crashes
+
+    let numbers, err = allocIntSlice(countLines(buf))
+    if (err != noerr) { sys::exit(1) }
 
     defer free(numbers)
 
     let numberCount = 0
 
-    while (buf.len > 0) {
+    for (buf.len > 0) {
         buf = trimNonNumeric(buf)
 
         // TODO: Warning about variable shadowing
@@ -139,16 +143,17 @@ func aoc01() {
     }
     println("")
 
+/*
     for (i in 0,numberCount) {
         print(numbers[i]) print(", ")
     }
     println("")
+*/
 
     print("increase count: ")
     print(incCount)
 
     println("")
 
-    //print("end: ")
-    //println(buf)
+    return incCount
 }
