@@ -1,5 +1,5 @@
 code_unit{
-  main.cb
+  module.cb
   decl_list{
-    import_decl{ module mod}
+    import_decl{ main}
     linkage_specifier{ extern(C)}}}

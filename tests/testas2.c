@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdbool.h>
+#include <unistd.h>
 
 /*
 int* pointer_to_int;
@@ -19,5 +20,6 @@ int main() {
     }
 
     printf("sizeof(bool) = %zu\n", sizeof(bool));
+    printf("pagesize = %ld\n", sysconf(_SC_PAGESIZE));
     return 0;
 }

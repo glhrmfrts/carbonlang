@@ -184,6 +184,21 @@ type_id register_pointer_type(type_system& ts, const std::string& name, const st
 
 // Section: types
 
+type_id get_unsigned_type(type_system& ts, type_id tid) {
+    if (tid == ts.int8_type) {
+        return ts.uint8_type;
+    }
+    else if (tid == ts.int16_type) {
+        return ts.uint16_type;
+    }
+    else if (tid == ts.int32_type) {
+        return ts.uint32_type;
+    }
+    else if (tid == ts.int64_type) {
+        return ts.uint64_type;
+    }
+}
+
 type_id get_alias_root(type_system& ts, type_id tid) {
     if (!tid.valid()) {
         return tid;
@@ -3002,6 +3017,124 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
             comptime_value value = mmhash;
             declare_comptime_symbol(ts, id, value, node.tid);
         }
+        break;
+    }
+    case ast_type::c_struct_decl: {
+        check_for_unresolved = false;
+
+        node.tdef.name = string_hash{ build_identifier_value(node.children[0]->id_parts) };
+        node.tdef.mangled_name = string_hash{ build_identifier_value(node.children[0]->id_parts) };
+        node.tdef.size = 0;
+        node.tdef.is_opaque = true;
+
+        type_id new_type_id{};
+        if (!node.tdef.self) {
+            auto sym = find_symbol_in_current_scope(ts, node.tdef.mangled_name);
+            if (sym) {
+                add_type_error(ts, node.pos, "cannot re-declare type '%s'", node.tdef.mangled_name.str.c_str());
+                break;
+            }
+            new_type_id = register_user_type(ts, node);
+        }
+        else {
+            new_type_id = node.tdef.id;
+        }
+
+        node.tdef.self = &node;
+
+        bool all_resolved = true;
+        std::vector<struct_field> sfields;
+
+        for (auto& field : node.children[1]->children) {
+            assert(field->type == ast_type::c_struct_field);
+            resolve_node_type(ts, field.get());
+            if (field->tid.valid()) {
+                sfields.push_back(struct_field{ { std::string{field->id_parts.back()} }, field->tid, 0 });
+            }
+            else {
+                all_resolved = false;
+            }
+        }
+
+        if (all_resolved && !node.tid.valid()) {
+            auto& td = node.tdef;
+            td.kind = type_kind::structure;
+            td.structure.fields = sfields;
+            td.id = new_type_id;
+            td.self = &node;
+            td.is_opaque = false;
+
+            compute_struct_size_alignment_offsets(td);
+
+            node.type_error = false;
+        }
+        else {
+            node.type_error = true;
+        }
+        break;
+    }
+    case ast_type::c_struct_field: {
+        if (node.tid.valid()) {
+            break;
+        }
+
+        bool is_unsigned = false;
+        type_id our_type = ts.int32_type;
+        int pointer_level = 0;
+
+        for (int i = 0; i < node.id_parts.size() - 1; i++) {
+            const auto& part = node.id_parts[i];
+            if (part == "unsigned") {
+                is_unsigned = true;
+            }
+            else if (part == "*") {
+                pointer_level++;
+            }
+            else if (part == "long" || part == "int64_t") {
+                our_type = ts.int64_type;
+            }
+            else if (part == "int" || part == "int32_t") {
+                our_type = ts.int32_type;
+            }
+            else if (part == "short" || part == "int16_t") {
+                our_type = ts.int16_type;
+            }
+            else if (part == "char" || part == "int8_t") {
+                our_type = ts.int8_type;
+            }
+            else if (part == "uint64_t") {
+                is_unsigned = true;
+                our_type = ts.int64_type;
+            }
+            else if (part == "uint32_t") {
+                is_unsigned = true;
+                our_type = ts.int32_type;
+            }
+            else if (part == "uint16_t") {
+                is_unsigned = true;
+                our_type = ts.int16_type;
+            }
+            else if (part == "uint8_t") {
+                is_unsigned = true;
+                our_type = ts.int8_type;
+            }
+            else if (part == "size_t") {
+                our_type = ts.usize_type;
+            }
+            else {
+                auto sym = find_symbol(ts, { {""}, string_hash{part} });
+                if (sym && sym->kind == symbol_kind::type) {
+                    our_type = to_type_id(*sym);
+                }
+            }
+        }
+
+        type_id current_type = is_unsigned ? get_unsigned_type(ts, our_type) : our_type;
+        for (int i = 0; i < pointer_level; i++) {
+            current_type = get_ptr_type_to(ts, current_type);
+        }
+
+        node.tid = current_type;
         break;
     }
     case ast_type::type_decl: {

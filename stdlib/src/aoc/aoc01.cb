@@ -80,7 +80,6 @@ func parseIntRem(s : []pure uint8, radix : int) : {int, []pure uint8, bool} {
 
     for (i in 0,s.len) {
         if (isNumeric(s[i])) {
-            // TODO: decide whether to error or to add (int + uint8)
             value = value * radix + (s[i] - '0')
             count += 1
         }
@@ -93,13 +92,22 @@ func parseIntRem(s : []pure uint8, radix : int) : {int, []pure uint8, bool} {
 }
 
 func aoc01() : int {
+    let stat : sys::Stat
+
+    let err = sys::stat("aoc01_part1.txt", &stat)
+    if (err != noerr) {
+        println("STAT ERROR")
+        sys::exit(1)
+    }
+
     let fd, err = sys::open("aoc01_part1.txt", sys::Read, 0)
     if (err != noerr) {
         println("OPEN ERROR")
         sys::exit(1)
     }
+    defer sys::close(fd)
 
-    let input = allocString(16*1024)
+    let input = allocString(stat.size)
     defer free(input)
 
     input.len = sys::read(fd, input)

@@ -73,6 +73,25 @@ arena_ptr<ast_node> make_identifier_node(memory_arena& arena, const position& po
     return std::move(ptr);
 }
 
+arena_ptr<ast_node> make_c_struct_decl_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& name, arena_ptr<ast_node>&& fieldlist) {
+    auto ptr = make_in_arena<ast_node>(arena);
+    ptr->node_id = node_id_gen++;
+    ptr->type = ast_type::c_struct_decl;
+    ptr->pos = pos;
+    ptr->children.push_back(std::move(name));
+    ptr->children.push_back(std::move(fieldlist));
+    return std::move(ptr);
+}
+
+arena_ptr<ast_node> make_c_struct_field_node(memory_arena& arena, const position& pos, const std::vector<std::string>& values) {
+    auto ptr = make_in_arena<ast_node>(arena);
+    ptr->node_id = node_id_gen++;
+    ptr->type = ast_type::c_struct_field;
+    ptr->pos = pos;
+    ptr->id_parts = values;
+    return std::move(ptr);
+}
+
 arena_ptr<ast_node> make_unary_expr_node(memory_arena& arena, const position& pos, token_type op, arena_ptr<ast_node>&& right) {
     auto ptr = make_in_arena<ast_node>(arena);
     ptr->node_id = node_id_gen++;

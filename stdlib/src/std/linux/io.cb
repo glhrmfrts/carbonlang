@@ -23,4 +23,9 @@ func write(fd: FileHandle, data: []pure uint8) {
     syscall::write(cast(uint)(cast(uintptr)fd), data.ptr, data.len)
 }
 
+func close(fd: FileHandle) : error {
+    syscall::close(cast(uint)(cast(uintptr)fd))
+    return noerr
+}
+
 }

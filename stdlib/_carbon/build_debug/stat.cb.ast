@@ -1,0 +1,95 @@
+code_unit{
+  std/linux/stat.cb
+  decl_list{
+    import_decl{ std::system}
+    import_decl{ std::linux::syscall syscall}
+    linkage_specifier{ extern(C) decl_list{
+                  CStat          decl_list{
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            }}}
+    linkage_specifier{ extern decl_list{
+        func_decl{stat (var_decl{(filename): }, var_decl{(buf): type_expr{type_qualifier{ptr, Stat}}}): type_expr{$error} {
+            decl_list{
+              var_decl{(cstat): type_expr{CStat} = init{
+                  {cstat.st_dev = cast_expr{ 0}}
+                  {cstat.st_ino = cast_expr{ 0}}
+                  {cstat.st_mode = cast_expr{ 0}}
+                  {cstat.st_nlink = cast_expr{ 0}}
+                  {cstat.st_uid = cast_expr{ 0}}
+                  {cstat.st_gid = cast_expr{ 0}}
+                  {cstat.st_rdev = cast_expr{ 0}}
+                  {cstat.__pad1 = cast_expr{ 0}}
+                  {cstat.st_size = cast_expr{ 0}}
+                  {cstat.st_blksize = 0}
+                  {cstat.__pad2 = 0}
+                  {cstat.st_blocks = cast_expr{ 0}}
+                  {cstat.st_atime = cast_expr{ 0}}
+                  {cstat.st_atime_nsec = cast_expr{ 0}}
+                  {cstat.st_mtime = cast_expr{ 0}}
+                  {cstat.st_mtime_nsec = cast_expr{ 0}}
+                  {cstat.st_ctime = cast_expr{ 0}}
+                  {cstat.st_ctime_nsec = cast_expr{ 0}}
+                  {cstat.__unused3 = cast_expr{ 0}}
+                  {cstat.__unused4 = cast_expr{ 0}}
+                  {cstat.__unused5 = cast_expr{ 0}}
+                  }}}
+            stmt_list{
+              if{{call{syscall::stat ({@ filename}.ptr, {& cstat})} < 0} {
+                  stmt_list{
+                    return{UNKNOWN_ERROR}}}}}
+            stmt_list{
+              {buf.size = cast_expr{ cstat.st_size}}}
+            stmt_list{
+              return{0}}}}
+        func_decl{stat (var_decl{(fd): type_expr{FileHandle}}, var_decl{(buf): type_expr{type_qualifier{ptr, Stat}}}): type_expr{$error} {
+            decl_list{
+              var_decl{(cstat): type_expr{CStat} = init{
+                  {cstat.st_dev = cast_expr{ 0}}
+                  {cstat.st_ino = cast_expr{ 0}}
+                  {cstat.st_mode = cast_expr{ 0}}
+                  {cstat.st_nlink = cast_expr{ 0}}
+                  {cstat.st_uid = cast_expr{ 0}}
+                  {cstat.st_gid = cast_expr{ 0}}
+                  {cstat.st_rdev = cast_expr{ 0}}
+                  {cstat.__pad1 = cast_expr{ 0}}
+                  {cstat.st_size = cast_expr{ 0}}
+                  {cstat.st_blksize = 0}
+                  {cstat.__pad2 = 0}
+                  {cstat.st_blocks = cast_expr{ 0}}
+                  {cstat.st_atime = cast_expr{ 0}}
+                  {cstat.st_atime_nsec = cast_expr{ 0}}
+                  {cstat.st_mtime = cast_expr{ 0}}
+                  {cstat.st_mtime_nsec = cast_expr{ 0}}
+                  {cstat.st_ctime = cast_expr{ 0}}
+                  {cstat.st_ctime_nsec = cast_expr{ 0}}
+                  {cstat.__unused3 = cast_expr{ 0}}
+                  {cstat.__unused4 = cast_expr{ 0}}
+                  {cstat.__unused5 = cast_expr{ 0}}
+                  }}}
+            stmt_list{
+              if{{call{syscall::fstat (cast_expr{type_expr{int} cast_expr{type_expr{uintptr} fd}}, {& cstat})} < 0} {
+                  stmt_list{
+                    return{UNKNOWN_ERROR}}}}}
+            stmt_list{
+              {buf.size = cast_expr{ cstat.st_size}}}
+            stmt_list{
+              return{0}}}}}}}}

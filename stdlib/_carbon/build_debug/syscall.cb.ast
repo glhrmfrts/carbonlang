@@ -44,6 +44,16 @@ code_unit{
           asm{    mov $3, %rax
     syscall
 }}}}
+    func_decl{stat (var_decl{(filename): type_expr{type_qualifier{ptr, type_qualifier{ uint8}}}}, var_decl{(buf): type_expr{type_qualifier{ptr, opaque}}}): type_expr{int} {
+        decl_list{
+          asm{    mov $4, %rax
+    syscall
+}}}}
+    func_decl{fstat (var_decl{(fd): type_expr{int}}, var_decl{(buf): type_expr{type_qualifier{ptr, opaque}}}): type_expr{int} {
+        decl_list{
+          asm{    mov $5, %rax
+    syscall
+}}}}
     func_decl{mmap (var_decl{(addr): type_expr{type_qualifier{ptr, opaque}}}, var_decl{(size): type_expr{usize}}, var_decl{(prot): type_expr{int}}, var_decl{(flags): type_expr{int}}, var_decl{(fd): type_expr{int}}, var_decl{(offs): type_expr{usize}}): type_expr{type_qualifier{ptr, opaque}} {
         decl_list{
           asm{    mov $9, %rax
@@ -53,6 +63,26 @@ code_unit{
     func_decl{munmap (var_decl{(addr): type_expr{type_qualifier{ptr, opaque}}}, var_decl{(size): type_expr{usize}}) {
         decl_list{
           asm{    mov $0xB, %rax
+    syscall
+}}}}
+    func_decl{rename (var_decl{(oldname): type_expr{type_qualifier{ptr, type_qualifier{ uint8}}}}, var_decl{(newname): type_expr{type_qualifier{ptr, type_qualifier{ uint8}}}}) {
+        decl_list{
+          asm{    mov $0x52, %rax
+    syscall
+}}}}
+    func_decl{mkdir (var_decl{(pathname): type_expr{type_qualifier{ptr, type_qualifier{ uint8}}}}, var_decl{(mode): type_expr{int16}}) {
+        decl_list{
+          asm{    mov $0x53, %rax
+    syscall
+}}}}
+    func_decl{rmdir (var_decl{(pathname): type_expr{type_qualifier{ptr, type_qualifier{ uint8}}}}) {
+        decl_list{
+          asm{    mov $0x54, %rax
+    syscall
+}}}}
+    func_decl{unlink (var_decl{(pathname): type_expr{type_qualifier{ptr, type_qualifier{ uint8}}}}) {
+        decl_list{
+          asm{    mov $0x57, %rax
     syscall
 }}}}
     func_decl{exit (var_decl{(code): type_expr{int}}) {

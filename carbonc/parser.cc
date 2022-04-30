@@ -28,6 +28,7 @@ struct parser_impl {
     int func_body_level = 0;
     int lines_parsed = 0;
     bool decl_retry = false;
+    func_linkage current_linkage;
 
     enum aggregate_mode { UNDEFINED, TUPLE, STRUCT };
 
@@ -81,9 +82,8 @@ struct parser_impl {
             }
         }
         else if (TOK == token_type::identifier) {
-            result = make_identifier_node(*ast_arena, lex->pos(), { lex->string_value() });
+            result = parse_qualified_identifier();
 
-            lex->next();
             if (TOK_CHAR == '(') {
                 auto arg_list = parse_arg_list(')', [this]() {
                     return parse_type_expr();
@@ -577,9 +577,79 @@ struct parser_impl {
         case token_type::private_:
         case token_type::internal_:
             return parse_visibility_specifier_decl();
+        case token_type::struct_:
+            if (current_linkage == func_linkage::external_c) {
+                lex->next();
+                return parse_c_struct_decl();
+            }
+            return arena_ptr<ast_node>{nullptr, nullptr};
         default:
             return arena_ptr<ast_node>{nullptr, nullptr};
         }
+    }
+
+    arena_ptr<ast_node> parse_c_struct_decl() {
+        auto pos = lex->pos();
+
+        if (TOK != token_type::identifier) {
+            throw parse_error(filename, lex->pos(), "expecting identifier in C struct declaration");
+        }
+
+        auto name = make_identifier_node(*ast_arena, lex->pos(), { lex->string_value() });
+        lex->next();
+
+        if (TOK_CHAR != '{') {
+            throw parse_error(filename, lex->pos(), "expecting '{' in C struct declaration");
+        }
+        lex->next();
+
+        std::vector<arena_ptr<ast_node>> fields;
+
+        enum { LIMIT = 10000 };
+        int i = 0;
+        while (TOK_CHAR != '}') {
+            auto field = parse_c_struct_field();
+            if (field) {
+                fields.push_back(std::move(field));
+            }
+
+            if (TOK_CHAR == ';') {
+                lex->next();
+            }
+
+            if (i >= LIMIT) {
+                throw parse_error(filename, lex->pos(), "excedeed limit of struct fields");
+            }
+            i++;
+        }
+        lex->next();
+
+        auto field_list = make_decl_list_node(*ast_arena, pos, std::move(fields));
+        return make_c_struct_decl_node(*ast_arena, pos, std::move(name), std::move(field_list));
+    }
+
+    arena_ptr<ast_node> parse_c_struct_field() {
+        if (TOK != token_type::identifier) {
+            return { nullptr,nullptr };
+        }
+
+        auto pos = lex->pos();
+
+        std::vector<std::string> ids;
+        while (TOK == token_type::identifier || (TOK == token_type::const_) || (TOK_CHAR == '*')) {
+            if (TOK == token_type::identifier) {
+                ids.push_back(lex->string_value());
+            }
+            else if (TOK == token_type::const_) {
+                ids.push_back("const");
+            }
+            else if ((TOK_CHAR == '*')) {
+                ids.push_back("*");
+            }
+            lex->next();
+        }
+
+        return make_c_struct_field_node(*ast_arena, pos, std::move(ids));
     }
 
     arena_ptr<ast_node> parse_tag_decl(const position& pos) {
@@ -715,6 +785,10 @@ struct parser_impl {
             lex->next();
         }
 
+        auto prevlinkage = current_linkage;
+
+        current_linkage = linkage;
+
         auto content = arena_ptr<ast_node>{ nullptr, nullptr };
         if (TOK == token_type::func) {
             content = parse_func_decl();
@@ -735,6 +809,8 @@ struct parser_impl {
         else {
             throw parse_error(filename, lex->pos(), "invalid linkage specifier declaration");
         }
+
+        current_linkage = prevlinkage;
 
         return make_linkage_specifier_node(*ast_arena, pos, linkage, std::move(alias), std::move(content));
     }

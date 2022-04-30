@@ -52,6 +52,20 @@ asm%{
 }%asm
 }
 
+func stat(filename: &pure uint8, buf: &opaque): int {
+asm%{
+    mov $4, %rax
+    syscall
+}%asm
+}
+
+func fstat(fd: int, buf: &opaque): int {
+asm%{
+    mov $5, %rax
+    syscall
+}%asm
+}
+
 func mmap(addr: &opaque, size: usize, prot: int, flags: int, fd: int, offs: usize): &opaque {
 asm%{
     mov $9, %rax
@@ -63,6 +77,34 @@ asm%{
 func munmap(addr: &opaque, size: usize) {
 asm%{
     mov $0xB, %rax
+    syscall
+}%asm
+}
+
+func rename(oldname: &pure uint8, newname: &pure uint8) {
+asm%{
+    mov $0x52, %rax
+    syscall
+}%asm
+}
+
+func mkdir(pathname: &pure uint8, mode: int16) {
+asm%{
+    mov $0x53, %rax
+    syscall
+}%asm
+}
+
+func rmdir(pathname: &pure uint8) {
+asm%{
+    mov $0x54, %rax
+    syscall
+}%asm
+}
+
+func unlink(pathname: &pure uint8) {
+asm%{
+    mov $0x57, %rax
     syscall
 }%asm
 }

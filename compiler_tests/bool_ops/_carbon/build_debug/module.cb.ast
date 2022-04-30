@@ -1,0 +1,26 @@
+code_unit{
+  module.cb
+  decl_list{
+    import_decl{ main}
+    linkage_specifier{ extern(C) decl_list{
+                  Stat          decl_list{
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            }}}}}

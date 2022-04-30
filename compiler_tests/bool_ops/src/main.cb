@@ -1,24 +1,14 @@
-func isNumeric(c : uint8) : bool {
-    return c >= '0' && c <= '9'
-}
+import module as mod
 
-func trimNonNumeric(s : []pure uint8) : []pure uint8 {
-    let count : usize
-    if (!isNumeric(s[0])) {
-        count += 1
-    }
-    return []pure uint8{ s.ptr + count, s.len - count }
-}
-
-extern(C) func carbon_main(): int {
+extern(C) func carbon_main() : int {
     let sz : usize
     let ptr : &uint8
     
     let ok = ptr < sz
 
-    let newptr = ptr + 1
+    let stat : mod::Stat
 
-    newptr += 1
+    let newptr = ptr + stat.st_ctime_nsec
 
     return 0
 }

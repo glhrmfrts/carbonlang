@@ -18,4 +18,9 @@ code_unit{
               call{syscall::read (cast_expr{type_expr{uint} cast_expr{type_expr{uintptr} fd}}, {@ data}.ptr, {@ data}.len)}}}}
         func_decl{write (var_decl{(fd): type_expr{FileHandle}}, var_decl{(data): }) {
             stmt_list{
-              call{syscall::write (cast_expr{type_expr{uint} cast_expr{type_expr{uintptr} fd}}, {@ data}.ptr, {@ data}.len)}}}}}}}}
+              call{syscall::write (cast_expr{type_expr{uint} cast_expr{type_expr{uintptr} fd}}, {@ data}.ptr, {@ data}.len)}}}}
+        func_decl{close (var_decl{(fd): type_expr{FileHandle}}): type_expr{$error} {
+            stmt_list{
+              call{syscall::close (cast_expr{type_expr{uint} cast_expr{type_expr{uintptr} fd}})}}
+            stmt_list{
+              return{0}}}}}}}}

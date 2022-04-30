@@ -6,6 +6,8 @@ error {
     PATH_NOT_FOUND
 
     INVALID_HANDLE
+
+    UNKNOWN_ERROR
 }
 
 // memory.cb
@@ -43,8 +45,6 @@ type Whence = enum {
     SeekSet
     SeekCurrent
     SeekEnd
-    SeekData
-    SeekHole
 }
 
 extern func seek(fd: FileHandle, offset: int64, w: Whence)

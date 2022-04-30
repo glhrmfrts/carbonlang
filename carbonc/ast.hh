@@ -40,6 +40,9 @@ enum class ast_type {
     import_decl,
     error_decl,
 
+    c_struct_decl,
+    c_struct_field,
+
     arg_list,
     decl_list,
     stmt_list,
@@ -216,6 +219,10 @@ arena_ptr<ast_node> make_char_literal_node(memory_arena& arena, const position& 
 arena_ptr<ast_node> make_string_literal_node(memory_arena& arena, const position& pos, std::string&& value);
 
 arena_ptr<ast_node> make_identifier_node(memory_arena& arena, const position& pos, const std::vector<std::string>& values);
+
+arena_ptr<ast_node> make_c_struct_decl_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& name, arena_ptr<ast_node>&& fieldlist);
+
+arena_ptr<ast_node> make_c_struct_field_node(memory_arena& arena, const position& pos, const std::vector<std::string>& values);
 
 arena_ptr<ast_node> make_unary_expr_node(memory_arena& arena, const position& pos, token_type op, arena_ptr<ast_node>&& right);
 
