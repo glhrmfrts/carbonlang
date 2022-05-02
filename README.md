@@ -64,8 +64,8 @@ Currently, Linux x64 System V ABI is supported, Windows is not very solid but is
 
 ## Ideas for the future
 
-- Very slim error handling mechanism (no exceptions though).
-- Built-in vectorized math.
+- Very slim error handling mechanism.
+- Built-in vector math / linear algebra.
 - Closures.
 
 ## Some art
