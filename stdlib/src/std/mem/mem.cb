@@ -32,7 +32,7 @@ type Block = struct {
     filled: usize
     cap: usize
     numAllocs: usize
-    prev: &Block
+    next: &Block
 }
 
 let lastBlock : &Block
@@ -79,7 +79,7 @@ func alloc(usersize: usize): {&opaque, error} {
         if (pblock.filled + asize < pblock.cap) {
             break
         }
-        pblock = pblock.prev
+        pblock = pblock.next
     }
 
     if (pblock != nil) {
@@ -96,7 +96,7 @@ func alloc(usersize: usize): {&opaque, error} {
 
     let newblock = cast(&Block)(newmem)
     newblock.cap = memsize
-    newblock.prev = lastBlock
+    newblock.next = lastBlock
 
     sys::write(sys::stdout(), "std::mem - Allocating block of ")
     sys::writeInt(sys::stdout(), cast(int)newblock.cap)
@@ -109,12 +109,16 @@ func alloc(usersize: usize): {&opaque, error} {
 
 func free(ptr: &opaque) {
     let pblock = lastBlock
+    let prevblock : &Block
+
     for (pblock != nil) {
         let blockdata = (cast(&uint8)(cast(&opaque)pblock)) + sizeof(Block)
         if (ptr >= blockdata && ptr < (blockdata + pblock.cap)) {
             break
         }
-        pblock = pblock.prev
+
+        prevblock = pblock
+        pblock = pblock.next
     }
 
     if (pblock == nil) {
@@ -124,7 +128,12 @@ func free(ptr: &opaque) {
 
     pblock.numAllocs -= 1
     if (pblock.numAllocs == 0) {
-        lastBlock = pblock.prev
+        if (lastBlock == pblock) {
+            lastBlock = pblock.next
+        }
+        else {
+            prevblock.next = pblock.next
+        }
 
         sys::write(sys::stdout(), "std::mem - Freeing block of ")
         sys::writeInt(sys::stdout(), cast(int)pblock.cap)

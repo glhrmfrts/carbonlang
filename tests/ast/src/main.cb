@@ -1,5 +1,9 @@
-code_unit{
-  main.cb
-  decl_list{
-    import_decl{ module mod}
-    linkage_specifier{ extern(C)}}}
+code_unit ./src/main.cb
+  decl_list
+    import_decl{ identifier module}
+    var_decl{(identifier lastBlock): type_expr{type_qualifier{ptr, identifier opaque}}}
+    linkage_specifier{ extern(C)}
+  decl_list end
+
+code_unit ./src/main.cb end
+

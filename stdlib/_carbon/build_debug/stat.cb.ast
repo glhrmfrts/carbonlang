@@ -1,10 +1,9 @@
-code_unit{
-  std/linux/stat.cb
-  decl_list{
-    import_decl{ std::system}
-    import_decl{ std::linux::syscall syscall}
-    linkage_specifier{ extern(C) decl_list{
-                  CStat          decl_list{
+code_unit ./src/std/linux/stat.cb
+  decl_list
+    import_decl{ identifier std::system}
+    import_decl{ identifier std::linux::syscall identifier syscall}
+    linkage_specifier{ extern(C) decl_list
+                  identifier C_Stat          decl_list
             
             
             
@@ -25,71 +24,390 @@ code_unit{
             
             
             
-            }}}
-    linkage_specifier{ extern decl_list{
-        func_decl{stat (var_decl{(filename): }, var_decl{(buf): type_expr{type_qualifier{ptr, Stat}}}): type_expr{$error} {
-            decl_list{
-              var_decl{(cstat): type_expr{CStat} = init{
-                  {cstat.st_dev = cast_expr{ 0}}
-                  {cstat.st_ino = cast_expr{ 0}}
-                  {cstat.st_mode = cast_expr{ 0}}
-                  {cstat.st_nlink = cast_expr{ 0}}
-                  {cstat.st_uid = cast_expr{ 0}}
-                  {cstat.st_gid = cast_expr{ 0}}
-                  {cstat.st_rdev = cast_expr{ 0}}
-                  {cstat.__pad1 = cast_expr{ 0}}
-                  {cstat.st_size = cast_expr{ 0}}
-                  {cstat.st_blksize = 0}
-                  {cstat.__pad2 = 0}
-                  {cstat.st_blocks = cast_expr{ 0}}
-                  {cstat.st_atime = cast_expr{ 0}}
-                  {cstat.st_atime_nsec = cast_expr{ 0}}
-                  {cstat.st_mtime = cast_expr{ 0}}
-                  {cstat.st_mtime_nsec = cast_expr{ 0}}
-                  {cstat.st_ctime = cast_expr{ 0}}
-                  {cstat.st_ctime_nsec = cast_expr{ 0}}
-                  {cstat.__unused3 = cast_expr{ 0}}
-                  {cstat.__unused4 = cast_expr{ 0}}
-                  {cstat.__unused5 = cast_expr{ 0}}
-                  }}}
-            stmt_list{
-              if{{call{syscall::stat ({@ filename}.ptr, {& cstat})} < 0} {
-                  stmt_list{
-                    return{UNKNOWN_ERROR}}}}}
-            stmt_list{
-              {buf.size = cast_expr{ cstat.st_size}}}
-            stmt_list{
-              return{0}}}}
-        func_decl{stat (var_decl{(fd): type_expr{FileHandle}}, var_decl{(buf): type_expr{type_qualifier{ptr, Stat}}}): type_expr{$error} {
-            decl_list{
-              var_decl{(cstat): type_expr{CStat} = init{
-                  {cstat.st_dev = cast_expr{ 0}}
-                  {cstat.st_ino = cast_expr{ 0}}
-                  {cstat.st_mode = cast_expr{ 0}}
-                  {cstat.st_nlink = cast_expr{ 0}}
-                  {cstat.st_uid = cast_expr{ 0}}
-                  {cstat.st_gid = cast_expr{ 0}}
-                  {cstat.st_rdev = cast_expr{ 0}}
-                  {cstat.__pad1 = cast_expr{ 0}}
-                  {cstat.st_size = cast_expr{ 0}}
-                  {cstat.st_blksize = 0}
-                  {cstat.__pad2 = 0}
-                  {cstat.st_blocks = cast_expr{ 0}}
-                  {cstat.st_atime = cast_expr{ 0}}
-                  {cstat.st_atime_nsec = cast_expr{ 0}}
-                  {cstat.st_mtime = cast_expr{ 0}}
-                  {cstat.st_mtime_nsec = cast_expr{ 0}}
-                  {cstat.st_ctime = cast_expr{ 0}}
-                  {cstat.st_ctime_nsec = cast_expr{ 0}}
-                  {cstat.__unused3 = cast_expr{ 0}}
-                  {cstat.__unused4 = cast_expr{ 0}}
-                  {cstat.__unused5 = cast_expr{ 0}}
-                  }}}
-            stmt_list{
-              if{{call{syscall::fstat (cast_expr{type_expr{int} cast_expr{type_expr{uintptr} fd}}, {& cstat})} < 0} {
-                  stmt_list{
-                    return{UNKNOWN_ERROR}}}}}
-            stmt_list{
-              {buf.size = cast_expr{ cstat.st_size}}}
-            stmt_list{
-              return{0}}}}}}}}
+            
+          decl_list end
+
+      decl_list end
+}
+    linkage_specifier{ extern decl_list
+        func_decl{identifier stat (var_decl{(identifier filename): }, var_decl{(identifier buf): type_expr{type_qualifier{ptr, identifier Stat}}}): type_expr{identifier $error} compound_stmt
+            decl_list
+              var_decl{(identifier cstat): type_expr{identifier C_Stat} = init{
+                  binary =
+                    field_expr
+                      identifier cstat
+                      identifier st_dev
+                    cast_expr
+                      
+                      int_literal 0
+                  binary =
+                    field_expr
+                      identifier cstat
+                      identifier st_ino
+                    cast_expr
+                      
+                      int_literal 0
+                  binary =
+                    field_expr
+                      identifier cstat
+                      identifier st_mode
+                    cast_expr
+                      
+                      int_literal 0
+                  binary =
+                    field_expr
+                      identifier cstat
+                      identifier st_nlink
+                    cast_expr
+                      
+                      int_literal 0
+                  binary =
+                    field_expr
+                      identifier cstat
+                      identifier st_uid
+                    cast_expr
+                      
+                      int_literal 0
+                  binary =
+                    field_expr
+                      identifier cstat
+                      identifier st_gid
+                    cast_expr
+                      
+                      int_literal 0
+                  binary =
+                    field_expr
+                      identifier cstat
+                      identifier st_rdev
+                    cast_expr
+                      
+                      int_literal 0
+                  binary =
+                    field_expr
+                      identifier cstat
+                      identifier __pad1
+                    cast_expr
+                      
+                      int_literal 0
+                  binary =
+                    field_expr
+                      identifier cstat
+                      identifier st_size
+                    cast_expr
+                      
+                      int_literal 0
+                  binary =
+                    field_expr
+                      identifier cstat
+                      identifier st_blksize
+                    int_literal 0
+                  binary =
+                    field_expr
+                      identifier cstat
+                      identifier __pad2
+                    int_literal 0
+                  binary =
+                    field_expr
+                      identifier cstat
+                      identifier st_blocks
+                    cast_expr
+                      
+                      int_literal 0
+                  binary =
+                    field_expr
+                      identifier cstat
+                      identifier st_atime
+                    cast_expr
+                      
+                      int_literal 0
+                  binary =
+                    field_expr
+                      identifier cstat
+                      identifier st_atime_nsec
+                    cast_expr
+                      
+                      int_literal 0
+                  binary =
+                    field_expr
+                      identifier cstat
+                      identifier st_mtime
+                    cast_expr
+                      
+                      int_literal 0
+                  binary =
+                    field_expr
+                      identifier cstat
+                      identifier st_mtime_nsec
+                    cast_expr
+                      
+                      int_literal 0
+                  binary =
+                    field_expr
+                      identifier cstat
+                      identifier st_ctime
+                    cast_expr
+                      
+                      int_literal 0
+                  binary =
+                    field_expr
+                      identifier cstat
+                      identifier st_ctime_nsec
+                    cast_expr
+                      
+                      int_literal 0
+                  binary =
+                    field_expr
+                      identifier cstat
+                      identifier __unused3
+                    cast_expr
+                      
+                      int_literal 0
+                  binary =
+                    field_expr
+                      identifier cstat
+                      identifier __unused4
+                    cast_expr
+                      
+                      int_literal 0
+                  binary =
+                    field_expr
+                      identifier cstat
+                      identifier __unused5
+                    cast_expr
+                      
+                      int_literal 0
+                  }}
+            decl_list end
+
+            stmt_list
+              if{binary <
+                  call{identifier syscall::stat (field_expr
+                      unary @
+                        identifier filename
+                      identifier ptr, unary &
+                      identifier cstat)}
+                  int_literal 0 compound_stmt
+                  stmt_list
+                    return_stmt
+                      identifier UNKNOWN_ERROR
+
+                  stmt_list end
+
+                compound_stmt end
+}
+            stmt_list end
+
+            stmt_list
+              binary =
+                field_expr
+                  identifier buf
+                  identifier size
+                cast_expr
+                  
+                  field_expr
+                    identifier cstat
+                    identifier st_size
+            stmt_list end
+
+            stmt_list
+              return_stmt
+                int_literal 0
+
+            stmt_list end
+
+          compound_stmt end
+}
+        func_decl{identifier stat (var_decl{(identifier fd): type_expr{identifier FileHandle}}, var_decl{(identifier buf): type_expr{type_qualifier{ptr, identifier Stat}}}): type_expr{identifier $error} compound_stmt
+            decl_list
+              var_decl{(identifier cstat): type_expr{identifier C_Stat} = init{
+                  binary =
+                    field_expr
+                      identifier cstat
+                      identifier st_dev
+                    cast_expr
+                      
+                      int_literal 0
+                  binary =
+                    field_expr
+                      identifier cstat
+                      identifier st_ino
+                    cast_expr
+                      
+                      int_literal 0
+                  binary =
+                    field_expr
+                      identifier cstat
+                      identifier st_mode
+                    cast_expr
+                      
+                      int_literal 0
+                  binary =
+                    field_expr
+                      identifier cstat
+                      identifier st_nlink
+                    cast_expr
+                      
+                      int_literal 0
+                  binary =
+                    field_expr
+                      identifier cstat
+                      identifier st_uid
+                    cast_expr
+                      
+                      int_literal 0
+                  binary =
+                    field_expr
+                      identifier cstat
+                      identifier st_gid
+                    cast_expr
+                      
+                      int_literal 0
+                  binary =
+                    field_expr
+                      identifier cstat
+                      identifier st_rdev
+                    cast_expr
+                      
+                      int_literal 0
+                  binary =
+                    field_expr
+                      identifier cstat
+                      identifier __pad1
+                    cast_expr
+                      
+                      int_literal 0
+                  binary =
+                    field_expr
+                      identifier cstat
+                      identifier st_size
+                    cast_expr
+                      
+                      int_literal 0
+                  binary =
+                    field_expr
+                      identifier cstat
+                      identifier st_blksize
+                    int_literal 0
+                  binary =
+                    field_expr
+                      identifier cstat
+                      identifier __pad2
+                    int_literal 0
+                  binary =
+                    field_expr
+                      identifier cstat
+                      identifier st_blocks
+                    cast_expr
+                      
+                      int_literal 0
+                  binary =
+                    field_expr
+                      identifier cstat
+                      identifier st_atime
+                    cast_expr
+                      
+                      int_literal 0
+                  binary =
+                    field_expr
+                      identifier cstat
+                      identifier st_atime_nsec
+                    cast_expr
+                      
+                      int_literal 0
+                  binary =
+                    field_expr
+                      identifier cstat
+                      identifier st_mtime
+                    cast_expr
+                      
+                      int_literal 0
+                  binary =
+                    field_expr
+                      identifier cstat
+                      identifier st_mtime_nsec
+                    cast_expr
+                      
+                      int_literal 0
+                  binary =
+                    field_expr
+                      identifier cstat
+                      identifier st_ctime
+                    cast_expr
+                      
+                      int_literal 0
+                  binary =
+                    field_expr
+                      identifier cstat
+                      identifier st_ctime_nsec
+                    cast_expr
+                      
+                      int_literal 0
+                  binary =
+                    field_expr
+                      identifier cstat
+                      identifier __unused3
+                    cast_expr
+                      
+                      int_literal 0
+                  binary =
+                    field_expr
+                      identifier cstat
+                      identifier __unused4
+                    cast_expr
+                      
+                      int_literal 0
+                  binary =
+                    field_expr
+                      identifier cstat
+                      identifier __unused5
+                    cast_expr
+                      
+                      int_literal 0
+                  }}
+            decl_list end
+
+            stmt_list
+              if{binary <
+                  call{identifier syscall::fstat (cast_expr
+                      type_expr{identifier int}
+                      cast_expr
+                        type_expr{identifier uintptr}
+                        identifier fd, unary &
+                      identifier cstat)}
+                  int_literal 0 compound_stmt
+                  stmt_list
+                    return_stmt
+                      identifier UNKNOWN_ERROR
+
+                  stmt_list end
+
+                compound_stmt end
+}
+            stmt_list end
+
+            stmt_list
+              binary =
+                field_expr
+                  identifier buf
+                  identifier size
+                cast_expr
+                  
+                  field_expr
+                    identifier cstat
+                    identifier st_size
+            stmt_list end
+
+            stmt_list
+              return_stmt
+                int_literal 0
+
+            stmt_list end
+
+          compound_stmt end
+}
+      decl_list end
+}
+  decl_list end
+
+code_unit ./src/std/linux/stat.cb end
+

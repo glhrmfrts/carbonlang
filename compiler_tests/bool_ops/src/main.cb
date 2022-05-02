@@ -1,14 +1,25 @@
-import module as mod
+import module
+
+type Nice = struct {
+    a: int
+    b: int
+}
+
+let lastBlock : &opaque
 
 extern(C) func carbon_main() : int {
-    let sz : usize
-    let ptr : &uint8
+    // let haystack = "Hello world"
     
-    let ok = ptr < sz
+    // let hello = haystack[2, 5]
 
-    let stat : mod::Stat
+// TODO: fix name clash with function
+    // let cstat : Stat
+    // let size = cstat.st_atime
 
-    let newptr = ptr + stat.st_ctime_nsec
+    let val : {usize, bool}
+    let val2 : {usize, bool}
+
+    let eq = val == val2
 
     return 0
 }

@@ -3,6 +3,7 @@
 #include <cstdio>
 #include <cstring>
 #include <chrono>
+#include <deque>
 #include "common.hh"
 #include "parser.hh"
 #include "prettyprint.hh"
@@ -55,7 +56,7 @@ std::string get_source_code_near(const std::string& src, const position& pos) {
 
 static int total_lines_parsed;
 
-void compile_file(type_system& ts, ast_node& target, const std::string& filename, const std::string& modname) {
+void compile_file(type_system& ts, const std::string& filename, const std::string& modname) {
     std::string src;
     if (!read_file_text(filename, src)) return;
 
@@ -78,47 +79,65 @@ void compile_file(type_system& ts, ast_node& target, const std::string& filename
         exit(EXIT_FAILURE);
     }
 
-    if (true) {
-        ensure_directory_exists("../../tests/ast/" + filename);
-        std::ofstream ast_file{ "../../tests/ast/" + filename };
-        prettyprint(*ast, ast_file);
-        ast_file << "\n";
-    }
-
     total_lines_parsed += p.get_lines_parsed();
 
-    ts.process_code_unit(*ast);
-    target.children.push_back(std::move(ast));
+    ts.process_code_unit(std::move(ast));
 
     auto dur = std::chrono::system_clock::now() - timebegin;
     //std::cout << "carbonc - parsing time: " << std::chrono::duration_cast<std::chrono::milliseconds>(dur).count() << "ms\n\n";
 }
 
-void process_directory(type_system& ts, ast_node& target, const std::string& dir, const std::string& srcdir) {
+void process_directory(type_system& ts, const std::string& dir, const std::string& srcdir) {
+    auto modname = dir;
+    while (replace(modname, srcdir, ""));
+
+    if (!modname.empty()) {
+        while (modname.size() && modname[0] == '/') {
+            modname = modname.substr(1);
+        }
+        while (modname.size() && modname[modname.size() - 1] == '/') {
+            modname = modname.substr(0, modname.size() - 1);
+        }
+    }
+
+    if (modname.empty()) {
+        modname = "root";
+    }
+    ts.add_module(modname);
+
     for (const auto& file : list(dir)) {
         auto fullpath = join(dir, file);
-        if (file.find(".cb") != std::string::npos) {
-            compile_file(ts, target, fullpath, fullpath.substr(srcdir.size() + 1));
+
+        if (!is_directory(fullpath)) {
+            if (file.find(".cb") != std::string::npos) {
+                auto mname = fullpath.substr(srcdir.size() + 1);
+                compile_file(ts, fullpath, mname);
+            }
+
+            if ((file.find(".s") != std::string::npos) || (file.find(".asm") != std::string::npos)) {
+                auto modname = fullpath.substr(srcdir.size() + 1);
+                while (replace(modname, "/", "_"));
+                std::cout << "assembly file: " << modname << std::endl;
+
+                auto asm_file = "_carbon/build_debug/" + modname;
+                copyfile(fullpath, asm_file);
+                proj.asm_obj_files.push_back(run_assembler(proj, asm_file));
+            }
         }
+    }
+    ts.end_module();
 
-        if ((file.find(".s") != std::string::npos) || (file.find(".asm") != std::string::npos)) {
-            auto modname = fullpath.substr(srcdir.size() + 1);
-            while (replace(modname, "/", "_"));
-            std::cout << "assembly file: " << modname << std::endl;
+    for (const auto& file : list(dir)) {
+        auto fullpath = join(dir, file);
 
-            auto asm_file = "_carbon/build_debug/" + modname;
-            copyfile(fullpath, asm_file);
-            proj.asm_obj_files.push_back(run_assembler(proj, asm_file));
-        }
-
-        if (is_directory(join(dir, file))) {
-            process_directory(ts, target, fullpath, srcdir);
+        if (is_directory(fullpath)) {
+            process_directory(ts, fullpath, srcdir);
         }
     }
 }
 
-void process_source_directory(type_system& ts, ast_node& target, const std::string& srcdir) {
-    process_directory(ts, target, srcdir, srcdir);
+void process_source_directory(type_system& ts, const std::string& srcdir) {
+    process_directory(ts, srcdir, srcdir);
 }
 
 const char* find_arg(const char* name, const char* shortname, int argc, const char* argv[]) {
@@ -174,15 +193,13 @@ std::string run_assembler(const project_info& p, const std::string& asm_file) {
 }
 
 std::string run_linker(
-    const project_info& p,
-    const std::vector<std::string>& obj_files,
-    const std::string& out_file_in
+    const project_info& p
 ) {
 #ifdef _WIN32
-    std::string out_file = out_file_in;
+    std::string out_file = "_carbon/build_debug/" + p.target_name + ".exe";
 
     auto cmd = p.cb_path + "/bin/win64/GoLink.exe ";
-    for (const auto& objfile : obj_files) {
+    for (const auto& objfile : p.asm_obj_files) {
         cmd.append(" ");
         cmd.append(objfile);
     }
@@ -192,7 +209,7 @@ std::string run_linker(
     }
     else if (p.target == target_type::dynamic_library) {
         cmd.append(" /dll ");
-        replace(out_file, ".obj", ".dll");
+        replace(out_file, ".exe", ".dll");
     }
     else {
         fprintf(stderr, "Static library not supported in windows, for now!");
@@ -221,24 +238,23 @@ std::string run_linker(
     
     return out_file;
 #else
-    std::string out_file = out_file_in;
+    std::string out_file = "_carbon/build_debug/" + p.target_name;
 
     std::string cmd = "ld ";
     if (p.target == target_type::executable) {
         cmd.append(" -e "+ p.entrypoint);
-        replace(out_file, ".o", "");
     }
     else if (p.target == target_type::dynamic_library) {
         cmd.append(" -shared ");
-        replace(out_file, ".obj", ".so");
+        out_file = "_carbon/build_debug/" + p.target_name + ".so";
     }
     else {
-        replace(out_file, ".obj", ".a");
+        out_file = "_carbon/build_debug/" + p.target_name + ".a";
     }
     cmd.append(" -o ");
     cmd.append(out_file);
 
-    for (const auto& obj_file : obj_files) {
+    for (const auto& obj_file : p.asm_obj_files) {
         cmd.append(" ");
         cmd.append(obj_file);
     }
@@ -321,22 +337,19 @@ int run_project_mode(int argc, const char* argv[]) {
     memory_arena ast_arena{ 1024 * 1024 };
     type_system ts{ ast_arena };
 
-    auto target_node = make_in_arena<ast_node>(ast_arena);
-    target_node->type = ast_type::target;
-
     auto builtin_library_path = join(join(std::string{ cbpath }, "builtin"), "src");
     auto std_library_path = join(join(std::string{ cbpath }, "std"), "src");
 
     parse_options(proj, argc, argv);
 
-    process_source_directory(ts, *target_node, "./src");
+    process_source_directory(ts, "./src");
 
     if (proj.embed_std) {
-        process_source_directory(ts, *target_node, std_library_path);
+        process_source_directory(ts, std_library_path);
     }
 
     if (!proj.freestanding && (proj.target == target_type::executable)) {
-        process_source_directory(ts, *target_node, builtin_library_path);
+        process_source_directory(ts, builtin_library_path);
     }
 
     if (proj.verbose) {
@@ -395,59 +408,48 @@ int run_project_mode(int argc, const char* argv[]) {
     ensure_directory_exists("_carbon/build_debug/.");
     ensure_directory_exists("_carbon/out_debug/.");
 
-    {
-        std::ofstream ast_file{"_carbon/build_debug/" + dirname + ".ast" };
-        prettyprint(*target_node, ast_file);
-        ast_file << "\n";
-    }
-
-    ir_program irprog;
+    std::deque<ir_program> irprogs;
     {
         auto ctimebegin = std::chrono::system_clock::now();
         if (proj.verbose) {
             std::cout << "carbonc - generating IR " << "\n";
         }
-        irprog = generate_ir(ts, *target_node);
+
+        for (auto& mod : ts.root->children) {
+            irprogs.push_back(generate_ir(ts, *mod));
+        }
+
         if (proj.verbose) {
             auto cdur = std::chrono::system_clock::now() - ctimebegin;
             std::cout << "carbonc - IR generation time: " << std::chrono::duration_cast<std::chrono::milliseconds>(cdur).count() << "ms\n\n";
         }
     }
 
-    auto asm_file = "_carbon/build_debug/" + dirname + ".asm";
-
     {
         auto ctimebegin = std::chrono::system_clock::now();
         if (proj.verbose) {
             std::cout << "carbonc - generating assembly " << "\n";
         }
-        codegen(irprog, &ts, asm_file);
+
+        for (auto& mod : ts.root->children) {
+            std::string asm_alias = mod->modname;
+            while (replace(asm_alias, "/", "_"));
+
+            std::string asm_file = "_carbon/build_debug/" + asm_alias + ".asm";
+            codegen(irprogs.front(), &ts, asm_file);
+            irprogs.pop_front();
+            proj.asm_obj_files.push_back(run_assembler(proj, asm_file));
+        }
+
         if (proj.verbose) {
             auto cdur = std::chrono::system_clock::now() - ctimebegin;
             std::cout << "carbonc - assembly generation time: " << std::chrono::duration_cast<std::chrono::milliseconds>(cdur).count() << "ms\n\n";
         }
     }
 
-    std::vector<std::string> obj_files;
-
-    obj_files.push_back(run_assembler(proj, asm_file));
-
-    /*
-#ifndef _WIN32
-    if (!proj.link_libc) {
-        copyfile("src/std/linux/x86_64/start.s", "_carbon/build_debug/__start.s");
-        obj_files.push_back(run_assembler(proj, "_carbon/build_debug/__start.s"));
-    }
-#endif
-*/
-
-    for (const auto& asmobj : proj.asm_obj_files) {
-        obj_files.push_back(asmobj);
-    }
-
     bool objonly = has_arg("--obj", "-obj", argc, argv);
     if (!objonly) {
-        auto ld_file = run_linker(proj, obj_files, obj_files.front());
+        auto ld_file = run_linker(proj);
 
         auto out_file = std::string{ "_carbon/out_debug/" } + basename(ld_file);
 

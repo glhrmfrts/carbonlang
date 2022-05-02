@@ -18,8 +18,8 @@ void add_scope(type_system& ts, ast_node& node, scope_kind k) {
 
     ts.current_scope = &node.scope;
 
-    if (k == scope_kind::code_unit) {
-        auto fn = std::string{ node.string_value };
+    if (k == scope_kind::module_) {
+        auto fn = std::string{ node.modname };
 
         std::string obase, ext;
         split_extension(fn, obase, ext);
@@ -28,7 +28,7 @@ void add_scope(type_system& ts, ast_node& node, scope_kind k) {
         while (replace(base, "/", "::"));
         while (replace(base, "\\", "::"));
 
-        ts.modules[base] = ts.current_scope;
+        ts.module_scopes[base] = ts.current_scope;
 
         auto partstr = obase;
         while (replace(partstr, "\\", "/"));
@@ -198,7 +198,7 @@ symbol_info* find_symbol(type_system& ts, const std::pair<string_hash, string_ha
 
             for (const auto& imp : scope->imports) {
                 if (!imp.alias) {
-                    auto impscope = ts.modules[imp.qual_name];
+                    auto impscope = ts.module_scopes[imp.qual_name];
                     if (!impscope) break;
 
                     auto it = impscope->symbols.find(pair.second);
@@ -211,7 +211,7 @@ symbol_info* find_symbol(type_system& ts, const std::pair<string_hash, string_ha
         else {
             auto mod = scope->imports_map.find(pair.first);
             if (mod != scope->imports_map.end()) {
-                auto impscope = ts.modules[scope->imports[mod->second].qual_name];
+                auto impscope = ts.module_scopes[scope->imports[mod->second].qual_name];
                 if (impscope) {
                     auto it = impscope->symbols.find(pair.second);
                     if (it != impscope->symbols.end()) {

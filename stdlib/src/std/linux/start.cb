@@ -1,7 +1,7 @@
 import std::system
 import std::mem as mem
 import std::linux::syscall
-import aoc::aoc01
+import aoc
 
 func testAlloc() {
     let m, err = mem::alloc(16)
@@ -15,7 +15,7 @@ func testAlloc() {
 
 const N = 10
 
-func testMain(argc : int) {
+func testMain(argc: int) {
     let invalidMapValue = cast(&opaque)(cast(uintptr)-1)
 
     let ptr, err = mem::alloc(N*sizeof(int))

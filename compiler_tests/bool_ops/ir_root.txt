@@ -1,0 +1,13 @@
+func carbon_main -> int
+    local #0 val: tuple__Tusize__Tbool;
+    local #1 val2: tuple__Tusize__Tbool;
+    local #2 eq: bool;
+    ir_load [L0 . 0] 0;
+    ir_load [L0 . 1] 0;
+    ir_load [L1 . 0] 0;
+    ir_load [L1 . 1] 0;
+    ir_cmp_eq L0 L1; (push)
+    ir_load L2 POP();
+    ir_return 0;
+endf
+

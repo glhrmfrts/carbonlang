@@ -237,7 +237,7 @@ struct scope_import {
 enum class scope_kind {
     invalid,
     builtin,
-    code_unit,
+    module_,
     func_body,
     block,
     type,
@@ -325,9 +325,10 @@ struct type_system {
     int subpass = 0;
 
     memory_arena* ast_arena;
-    std::vector<ast_node*> code_units;
 
-    std::unordered_map<string_hash, scope_def*> modules;
+    arena_ptr<ast_node> root = { nullptr,nullptr };
+
+    std::unordered_map<string_hash, scope_def*> module_scopes;
     std::vector<type_error> errors;
     type_error current_error{};
 
@@ -365,13 +366,17 @@ struct type_system {
 
     explicit type_system(memory_arena&);
 
-    void process_code_unit(ast_node& node);
+    void process_code_unit(arena_ptr<ast_node> node);
 
     void resolve_and_check();
 
     void enter_scope(ast_node& node);
 
     void leave_scope();
+
+    void add_module(const std::string& name);
+
+    void end_module();
 
     scope_def* find_nearest_scope(scope_kind kind);
 
@@ -428,5 +433,7 @@ void visit_pre_children(type_system& ts, ast_node& node);
 void visit_children(type_system& ts, ast_node& node);
 
 type_id resolve_node_type(type_system& ts, ast_node* nodeptr);
+
+std::string type_to_string(type_id tid);
 
 }

@@ -40,8 +40,10 @@ struct func_data {
 constexpr gen_register reg_result = rax;
 constexpr gen_register reg_intermediate = r10;
 
-const char* register_names[65] = {
+const char* register_names[] = {
     "invalid",
+    "xmm0",
+    "xmm1",
     "rax",
     "rbx",
     "rcx",
@@ -212,6 +214,11 @@ template <typename T> bool is_lit(const T& op) {
     return std::holds_alternative<int_type>(op) || std::holds_alternative<char>(op);
 }
 
+struct tup {
+    size_t a;
+    bool b;
+};
+
 struct generator {
     using finalizer_func = std::function<void(const gen_destination&, const gen_operand&)>;
 
@@ -228,8 +235,8 @@ struct generator {
     int temp_locals_base = 0;
 
     // points to the current function being generated
-    ir_func* fn;
-    func_data* fndata;
+    ir_func* fn = nullptr;
+    func_data* fndata = nullptr;
 
     explicit generator(std::unique_ptr<codegen_x64_emitter>&& em, type_system* ts, std::string_view fn) {
         this->ts = ts;
@@ -294,7 +301,11 @@ struct generator {
         auto [call_arg_size, calls_ever_made] = find_max_call_arg_size(func);
 
         if (func.calls_extern_c) {
+#ifdef _WIN32
             call_arg_size = std::max(call_arg_size, 32);
+#else
+            call_arg_size = std::max(call_arg_size, 48);
+#endif
         }
 
         // NOTE: on windows, it seems arguments are always 8 bytes aligned, no matter their sizes
@@ -315,8 +326,15 @@ struct generator {
         for (auto& local : func.locals) {
             auto& tdef = local.type.get();
             //funcdata[func.index].local_data[li].frame_offset = -align(local_size + 8, std::int32_t(tdef.alignment)); // offset from rbp + space for pushed rbp
+
             local_size += std::int32_t(tdef.size);
-            local_size = align(local_size, std::int32_t(tdef.alignment));
+            if (tdef.size >= 16) {
+                local_size = align(local_size, 16);
+            }
+            else {
+                local_size = align(local_size, std::int32_t(tdef.alignment));
+            }
+
             funcdata[func.index].local_data[li].frame_offset = -local_size;
             li++;
         }
@@ -521,8 +539,12 @@ struct generator {
             num_pushes += 1;
         }
 
-        // +8 to re-align the stack because of the CALL made to us
-        stack_size += (num_pushes % 2 == 0) ? 8 : 0;
+        // +8 to re-align the stack because of the CALL made to us (see below why this is commented)
+        // stack_size += (num_pushes % 2 == 0) ? 8 : 0;
+
+        if (num_pushes % 2 == 0) {
+            temp_regs_offset += 8;
+        }
 
         if (!func.args.empty()) {
             if (calls_ever_made) {
@@ -559,8 +581,14 @@ struct generator {
             temp_regs.push_back(reg);
         }
 
-        if (needs_rbp) { em->mov(rbp, rsp); }
-        if (stack_size > 0) { em->sub(rsp, (int_type)(stack_size)); }
+        // instead of adding +8 to the stack_size, subtract from %rsp so we can have %rbp aligned
+        if (num_pushes % 2 == 0) { em->sub(rsp, int_type(8)); } 
+
+        if (needs_rbp)           { em->mov(rbp, rsp); }
+        if (stack_size > 0)      { em->sub(rsp, (int_type)(stack_size)); }
+
+        // now we add +8 to the stack_size so the epilogue is correct
+        if (num_pushes % 2 == 0) { stack_size += 8; }
 
         em->comment("prolog end\n");
 
@@ -957,9 +985,20 @@ struct generator {
         auto label = std::get<ir_label>(instr.operands.back());
         auto [b, btype] = transform_ir_operand(instr.operands[1]);
         auto [a, atype] = transform_ir_operand(instr.operands[0]);
-        if (!is_reg(a)) {
-            move(adjust_for_type(reg_intermediate, atype), atype, a, atype);
-            a = toop(adjust_for_type(reg_intermediate, atype));
+        if (is_aggregate_type(atype)) {
+            if (atype.get().size == 16) {
+                em->movdqa(xmm0, a);
+                em->psadbw(xmm0, b); // Compute the absolute difference between 2 128-bit values
+                em->movq(reg_intermediate, xmm0); // Store the difference in the intermediate register
+                a = toop(adjust_for_type(reg_intermediate, ts->uint16_type)); // The result is a 16-bit value
+                b = int_type(0); // Compare it to zero
+            }
+        }
+        else {
+            if (!is_reg(a)) {
+                move(adjust_for_type(reg_intermediate, atype), atype, a, atype);
+                a = toop(adjust_for_type(reg_intermediate, atype));
+            }
         }
         em->cmp(a, b);
         em->emitln(" %s %s", j, label.name.c_str());
@@ -968,13 +1007,27 @@ struct generator {
     void emit_cmp_set(const ir_instr& instr, const instr_data& idata, const char* set) {
         auto [b, btype] = transform_ir_operand(instr.operands[1]);
         auto [a, atype] = transform_ir_operand(instr.operands[0]);
+
         auto dest = instr_dest_to_gen_dest(idata.dest);
         auto bytedest = adjust_for_type(dest, ts->uint8_type);
         auto realdest = adjust_for_type(dest, instr.result_type);
-        if (!is_reg(a)) {
-            move(adjust_for_type(reg_intermediate, atype), atype, a, atype);
-            a = toop(adjust_for_type(reg_intermediate, atype));
+
+        if (is_aggregate_type(atype)) {
+            if (atype.get().size == 16) {
+                em->movdqa(xmm0, a);
+                em->psadbw(xmm0, b); // Compute the absolute difference between 2 128-bit values
+                em->movq(reg_intermediate, xmm0); // Store the difference in the intermediate register
+                a = toop(adjust_for_type(reg_intermediate, ts->uint16_type)); // The result is a 16-bit value
+                b = int_type(0); // Compare it to zero
+            }
         }
+        else {
+            if (!is_reg(a)) {
+                move(adjust_for_type(reg_intermediate, atype), atype, a, atype);
+                a = toop(adjust_for_type(reg_intermediate, atype));
+            }
+        }
+
         em->cmp(a, b);
         em->set(set, bytedest);
         if (get_size(realdest) > get_size(bytedest)) {

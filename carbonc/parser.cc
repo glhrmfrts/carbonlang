@@ -42,7 +42,7 @@ struct parser_impl {
         lines_parsed += lex->pos().line_number - pos.line_number;
 
         if (decls) {
-            return make_code_unit_node(*ast_arena, pos, modname, std::move(decls));
+            return make_code_unit_node(*ast_arena, pos, filename, modname, std::move(decls));
         }
         throw parse_error(pos.filename, pos, "Empty code unit");
     }

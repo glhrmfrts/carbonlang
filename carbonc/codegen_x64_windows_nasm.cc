@@ -14,6 +14,7 @@ static std::unordered_map<std::size_t, const char*> ptrsizes = {
     {2, "word"},
     {4, "dword"},
     {8, "qword"},
+    {16, ""},
 };
 
 static const std::vector<gen_register> register_args = {
@@ -109,7 +110,7 @@ static std::string tostr_sized(const gen_destination& d) {
         },
         [](gen_addr r) -> std::string {
             // guard for struct types
-            std::size_t sz = std::min(r.op_size, std::size_t{8});
+            std::size_t sz = std::min(r.op_size, std::size_t{16});
             std::string result = std::string{ ptrsizes[sz] };
             return result + offset_tostr(r);
         }
@@ -129,7 +130,7 @@ static std::string tostr_sized(const gen_operand& d) {
         },
         [](gen_addr r) -> std::string {
             // guard for struct sizes
-            std::size_t sz = std::min(r.op_size, std::size_t{8});
+            std::size_t sz = std::min(r.op_size, std::size_t{16});
             std::string result = std::string{ ptrsizes[sz] };
             return result + offset_tostr(r);
         },
@@ -294,6 +295,18 @@ struct codegen_x64_windows_nasm_emitter : public codegen_x64_emitter {
 
     virtual void movzx(gen_destination reg, gen_operand src) {
         emitln(" movzx %s,%s", tostr_sized(reg).c_str(), tostr_sized(src).c_str());
+    }
+
+    virtual void movq(gen_destination reg, gen_operand src) {
+        emitln(" movq %s,%s", tostr_sized(reg).c_str(), tostr_sized(src).c_str());
+    }
+
+    virtual void movdqa(gen_destination reg, gen_operand src) {
+        emitln(" movdqa %s,%s", tostr_sized(reg).c_str(), tostr_sized(src).c_str());
+    }
+
+    virtual void psadbw(gen_destination reg, gen_operand src) {
+        emitln(" psadbw %s,%s", tostr_sized(reg).c_str(), tostr_sized(src).c_str());
     }
 
     virtual void add(gen_destination a, gen_operand b) {

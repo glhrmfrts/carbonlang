@@ -1,8 +1,17 @@
-code_unit{
-  std/linux/process.cb
-  decl_list{
-    import_decl{ std::linux::syscall syscall}
-    linkage_specifier{ extern decl_list{
-        func_decl{exit (var_decl{(code): type_expr{int}}) {
-            stmt_list{
-              call{syscall::exit (code)}}}}}}}}
+code_unit ./src/std/linux/process.cb
+  decl_list
+    import_decl{ identifier std::linux::syscall identifier syscall}
+    linkage_specifier{ extern decl_list
+        func_decl{identifier exit (var_decl{(identifier code): type_expr{identifier int}}) compound_stmt
+            stmt_list
+              call{identifier syscall::exit (identifier code)}
+            stmt_list end
+
+          compound_stmt end
+}
+      decl_list end
+}
+  decl_list end
+
+code_unit ./src/std/linux/process.cb end
+

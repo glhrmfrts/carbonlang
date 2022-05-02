@@ -317,6 +317,18 @@ struct codegen_x64_linux_gas_emitter : public codegen_x64_emitter {
         emitln(" movzx %s,%s", tostr_sized(src).c_str(), tostr_sized(reg).c_str());
     }
 
+    virtual void movq(gen_destination reg, gen_operand src) {
+        emitln(" movq %s,%s", tostr_sized(src).c_str(), tostr_sized(reg).c_str());
+    }
+
+    virtual void movdqa(gen_destination reg, gen_operand src) {
+        emitln(" movdqa %s,%s", tostr_sized(src).c_str(), tostr_sized(reg).c_str());
+    }
+
+    virtual void psadbw(gen_destination reg, gen_operand src) {
+        emitln(" psadbw %s,%s", tostr_sized(src).c_str(), tostr_sized(reg).c_str());
+    }
+
     virtual void add(gen_destination a, gen_operand b) {
         emitln(" add %s,%s", tostr_sized(b).c_str(), tostr_sized(a).c_str());
     }

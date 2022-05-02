@@ -530,16 +530,13 @@ arena_ptr<ast_node> make_visibility_specifier_node(memory_arena& arena, const po
     return ptr;
 }
 
-arena_ptr<ast_node> make_code_unit_node(memory_arena& arena, const position& pos, const std::string& filename, arena_ptr<ast_node>&& decls) {
+arena_ptr<ast_node> make_code_unit_node(memory_arena& arena, const position& pos, const std::string& filename, const std::string& modname, arena_ptr<ast_node>&& decls) {
     auto ptr = make_in_arena<ast_node>(arena);
     ptr->node_id = node_id_gen++;
     ptr->type = ast_type::code_unit;
     ptr->pos = pos;
-    char* data = alloc_many<char>(arena, filename.size() + 1);
-    std::memcpy(data, filename.data(), filename.size());
-    data[filename.size()] = '\0';
-
-    ptr->string_value = std::string_view{ data, filename.size() };
+    ptr->filename = filename;
+    ptr->modname = modname;
     ptr->children.push_back(std::move(decls));
     return ptr;
 }

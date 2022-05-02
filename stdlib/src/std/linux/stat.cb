@@ -3,7 +3,7 @@ import std::linux::syscall as syscall
 
 extern(C) {
 
-struct CStat {
+struct C_Stat {
     unsigned long   st_dev;         /* Device.  */
     unsigned long   st_ino;         /* File serial number.  */
     unsigned int    st_mode;        /* File mode.  */
@@ -31,11 +31,11 @@ struct CStat {
 
 extern(carbon, std::system) {
 
-// TODO: get more info from CStat
+// TODO: get more info from C_Stat
 // TODO: return appropiate error codes
 
 func stat(filename: []pure uint8, buf: &Stat): error {
-    let cstat : CStat
+    let cstat : C_Stat
 
     if (syscall::stat(filename.ptr, &cstat) < 0) {
         return UNKNOWN_ERROR
@@ -47,7 +47,7 @@ func stat(filename: []pure uint8, buf: &Stat): error {
 }
 
 func stat(fd: FileHandle, buf: &Stat): error {
-    let cstat : CStat
+    let cstat : C_Stat
 
     if (syscall::fstat(cast(int)(cast(uintptr)fd), &cstat) < 0) {
         return UNKNOWN_ERROR

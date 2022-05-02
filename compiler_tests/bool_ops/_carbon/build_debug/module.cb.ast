@@ -1,9 +1,7 @@
-code_unit{
-  module.cb
-  decl_list{
-    import_decl{ main}
-    linkage_specifier{ extern(C) decl_list{
-                  Stat          decl_list{
+code_unit ./src/module/module.cb
+  decl_list
+    linkage_specifier{ extern(C) decl_list
+                  identifier Stat          decl_list
             
             
             
@@ -23,4 +21,12 @@ code_unit{
             
             
             
-            }}}}}
+            
+          decl_list end
+
+      decl_list end
+}
+  decl_list end
+
+code_unit ./src/module/module.cb end
+

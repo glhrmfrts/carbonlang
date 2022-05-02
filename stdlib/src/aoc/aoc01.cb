@@ -118,8 +118,11 @@ func aoc01() : int {
 
     let numbers, err = allocIntSlice(countLines(buf))
     if (err != noerr) { sys::exit(1) }
-
     defer free(numbers)
+
+    let sums, err = allocIntSlice(countLines(buf))
+    if (err != noerr) { sys::exit(1) }
+    defer free(sums)
 
     let numberCount = 0
 
@@ -143,6 +146,7 @@ func aoc01() : int {
     }
 
     let incCount = 0
+    let sumIncCount = 0
 
     for (i in 1,numberCount) {
         if (numbers[i] > numbers[i - 1]) {
@@ -151,17 +155,40 @@ func aoc01() : int {
     }
     println("")
 
-/*
     for (i in 0,numberCount) {
-        print(numbers[i]) print(", ")
+        if (i < numberCount - 2) {
+            sums[i] = numbers[i] + numbers[i + 1] + numbers[i + 2]
+        }
     }
-    println("")
-*/
+
+    for (i in 1,numberCount) {
+        if (sums[i] > sums[i - 1]) {
+            sumIncCount += 1
+        }
+    }
 
     print("increase count: ")
     print(incCount)
-
     println("")
+
+    print("sum increase count: ")
+    print(sumIncCount)
+    println("")
+
+    let helloworld = "hello world"
+    println(helloworld[1, 10])
+
+    let val : {usize, bool} = {0, false}
+    let val2 : {usize, bool} = {1, false}
+
+    println(cast(int)sizeof(val))
+
+    if (val == val2) {
+        println("Equal")
+    }
+    else {
+        println("Not Equal")
+    }
 
     return incCount
 }

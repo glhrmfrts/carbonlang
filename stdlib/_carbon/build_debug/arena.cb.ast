@@ -1,12 +1,19 @@
-code_unit{
-  std/mem/arena.cb
-  decl_list{
-    import_decl{ std::system}
-    type_decl{ArenaBlock = type_expr{struct_type{decl_list{
-            var_decl{(mem): type_expr{type_qualifier{ptr, opaque}}}
-            var_decl{(filled): type_expr{usize}}
-            var_decl{(prev): type_expr{type_qualifier{ptr, ArenaBlock}}}}}}}
-    type_decl{Arena = type_expr{struct_type{decl_list{
-            var_decl{(firstBlock): type_expr{type_qualifier{ptr, ArenaBlock}}}
-            var_decl{(alignment): type_expr{usize}}
-            var_decl{(blockSize): type_expr{usize}}}}}}}}
+code_unit ./src/std/mem/arena.cb
+  decl_list
+    import_decl{ identifier std::system}
+    type_decl{identifier ArenaBlock = type_expr{struct_type{decl_list
+            var_decl{(identifier mem): type_expr{type_qualifier{ptr, identifier opaque}}}
+            var_decl{(identifier filled): type_expr{identifier usize}}
+            var_decl{(identifier prev): type_expr{type_qualifier{ptr, identifier ArenaBlock}}}
+          decl_list end
+}}}
+    type_decl{identifier Arena = type_expr{struct_type{decl_list
+            var_decl{(identifier firstBlock): type_expr{type_qualifier{ptr, identifier ArenaBlock}}}
+            var_decl{(identifier alignment): type_expr{identifier usize}}
+            var_decl{(identifier blockSize): type_expr{identifier usize}}
+          decl_list end
+}}}
+  decl_list end
+
+code_unit ./src/std/mem/arena.cb end
+

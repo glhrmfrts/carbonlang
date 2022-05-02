@@ -1912,8 +1912,8 @@ type_id resolve_func_type(type_system& ts, ast_node& f) {
         f.tid = register_user_type(ts, f);
     }
 
-    assert(ts.current_scope->kind == scope_kind::code_unit);
-    if (f.tid != invalid_type && f.tdef.mangled_name.str.empty() && ts.current_scope->kind == scope_kind::code_unit) {
+    assert(ts.current_scope->kind == scope_kind::module_);
+    if (f.tid != invalid_type && f.tdef.mangled_name.str.empty() && ts.current_scope->kind == scope_kind::module_) {
         // this means the function type was resolved, so mangle the name and declare it
         f.tdef.mangled_name = mangle_func_name(ts, f.func_id()->id_parts, f.func.comptime_args, f.func_args(), f.func.linkage);
 
@@ -2286,7 +2286,7 @@ void resolve_and_declare_local_variables(type_system& ts, ast_node& node) {
 
     if (node.tid.valid()) {
         // Proceed with normal variable declaration (non-const, only 1 variable)
-        if (ts.current_scope->kind == scope_kind::code_unit) {
+        if (ts.current_scope->kind == scope_kind::module_) {
             declare_global_symbol(ts, id, node);
         }
         else {
@@ -4122,7 +4122,7 @@ void remangle_names(type_system& ts, ast_node* nodeptr) {
         }
         break;
     }
-    case ast_type::code_unit: {
+    case ast_type::module_: {
         for (auto& pair : node.scope.symbols) {
             if (pair.second->kind == symbol_kind::global) {
                 auto local = get_symbol_local(*pair.second);
@@ -4230,7 +4230,7 @@ void resolve_imports(type_system& ts, ast_node& node) {
                 continue;
             }
 
-            if (!ts.modules[imp.qual_name]) {
+            if (!ts.module_scopes[imp.qual_name]) {
                 // "TODO: look for interface file";
                 add_module_error(ts, node.pos, "cannot find module '%s'", imp.qual_name.str.c_str());
                 continue;
@@ -4598,37 +4598,50 @@ type_system::type_system(memory_arena& arena) {
     }
 
     raw_string_type = register_pointer_type(*this, "$rawstring", "uint8");
+
+    root = make_in_arena<ast_node>(*ast_arena);
+    root->type = ast_type::root;
 }
 
-void type_system::process_code_unit(ast_node& node) {
-    this->pass = type_system_pass::resolve_literals_and_register_declarations;
-    this->code_units.push_back(&node);
+void type_system::add_module(const std::string& name) {
+    auto modnode = make_in_arena<ast_node>(*ast_arena);
+    modnode->modname = name;
+    modnode->type = ast_type::module_;
 
-    std::cout << "process_code_unit: " << node.string_value << std::endl;
+    std::cout << "carbonc - compiling module: " << name << std::endl;
+
+    add_scope(*this, *modnode, scope_kind::module_);
+    
+    modnode->parent = root.get();
+    root->children.push_back(std::move(modnode));
+}
+
+void type_system::end_module() {
+    leave_scope();
+}
+
+void type_system::process_code_unit(arena_ptr<ast_node> node) {
+    this->pass = type_system_pass::resolve_literals_and_register_declarations;
+
+    current_scope->self->children.push_back(std::move(node));
+    auto& unit = current_scope->self->children.back();
+
+    std::cout << "    process_code_unit: " << unit->filename << std::endl;
 
     for (int i = 0; i < 2; i++) {
         this->subpass = i;
-        parent_tree(node);
-
-        if (i == 0) {
-            add_scope(*this, node, scope_kind::code_unit);
-        }
-        else {
-            enter_scope_local(*this, node);
-        }
-
-        node.scope.body_node = &node;
-        visit_tree(*this, node);
-        leave_scope();
+        parent_tree(*unit);
+        visit_tree(*this, *unit);
     }
 }
 
 void type_system::resolve_and_check() {
     this->pass = type_system_pass::resolve_imports;
     this->subpass = 0;
-    for (auto unit : this->code_units) {
-        enter_scope(*unit);
-        visit_tree(*this, *unit);
+
+    for (auto& mod : this->root->children) {
+        enter_scope(*mod);
+        visit_tree(*this, *mod);
         leave_scope();
     }
 
@@ -4645,10 +4658,10 @@ void type_system::resolve_and_check() {
     for (int i = 0; i < 100; i++) {
         this->subpass = i;
         this->unresolved_types = false;
-        for (auto unit : this->code_units) {
-            clear_type_errors(*this, *unit);
-            enter_scope(*unit);
-            visit_tree(*this, *unit);
+        for (auto& mod : this->root->children) {
+            clear_type_errors(*this, *mod);
+            enter_scope(*mod);
+            visit_tree(*this, *mod);
             leave_scope();
         }
         if (this->unresolved_types) {
@@ -4661,10 +4674,10 @@ void type_system::resolve_and_check() {
 
     this->pass = type_system_pass::perform_checks;
     this->subpass = 0;
-    for (auto unit : this->code_units) {
-        clear_type_errors(*this, *unit);
-        enter_scope(*unit);
-        visit_tree(*this, *unit);
+    for (auto& mod : this->root->children) {
+        clear_type_errors(*this, *mod);
+        enter_scope(*mod);
+        visit_tree(*this, *mod);
         leave_scope();
     }
 
@@ -4675,9 +4688,9 @@ void type_system::resolve_and_check() {
 
     this->pass = type_system_pass::create_header_files;
     this->subpass = 0;
-    for (auto unit : this->code_units) {
-        enter_scope(*unit);
-        visit_tree(*this, *unit);
+    for (auto& mod : this->root->children) {
+        enter_scope(*mod);
+        visit_tree(*this, *mod);
         leave_scope();
     }
 
@@ -4687,10 +4700,10 @@ void type_system::resolve_and_check() {
         for (int i = 0; i < 3; i++) {
             this->pass = type_system_pass::desugar;
             this->subpass = i;
-            for (auto unit : this->code_units) {
-                parent_tree(*unit);
-                enter_scope(*unit);
-                visit_tree(*this, *unit);
+            for (auto& mod : this->root->children) {
+                parent_tree(*mod);
+                enter_scope(*mod);
+                visit_tree(*this, *mod);
                 leave_scope();
             }
         }
@@ -4699,9 +4712,9 @@ void type_system::resolve_and_check() {
         for (int i = 0; i < 2; i++) {
             this->pass = type_system_pass::remangle_names;
             this->subpass = i;
-            for (auto unit : this->code_units) {
-                enter_scope(*unit);
-                visit_tree(*this, *unit);
+            for (auto& mod : this->root->children) {
+                enter_scope(*mod);
+                visit_tree(*this, *mod);
                 leave_scope();
             }
         }
@@ -4712,10 +4725,13 @@ void type_system::resolve_and_check() {
         errors.push_back(current_error);
     }
 
-    for (auto unit : this->code_units) {
-        ensure_directory_exists("_carbon/build_debug/" + basename(std::string{ unit->string_value }) + ".ast");
-        std::ofstream ast_file{ "_carbon/build_debug/" + basename(std::string{unit->string_value}) + ".ast" };
-        prettyprint(*unit, ast_file);
+    for (auto& mod : this->root->children) {
+        std::string astname = mod->modname;
+        while (replace(astname, "/", "_"));
+
+        ensure_directory_exists("_carbon/build_debug/" + basename(astname + ".ast"));
+        std::ofstream ast_file{ "_carbon/build_debug/" + basename(astname + ".ast") };
+        prettyprint(*mod, ast_file);
         ast_file << "\n";
     }
 

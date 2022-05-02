@@ -11,6 +11,7 @@
 #include <stack>
 #include <fstream>
 #include <sstream>
+#include <iostream>
 
 namespace carbon {
 
@@ -225,6 +226,12 @@ void analyse_children(ast_node& node) {
 
 void analyse_node(ast_node& node) {
     switch (node.type) {
+    case ast_type::module_: {
+        ts->enter_scope(node);
+        analyse_children(node);
+        ts->leave_scope();
+        break;
+    }
     case ast_type::func_decl: {
         if (node.scope.body_node) {
             ts->enter_scope(node);
@@ -843,7 +850,7 @@ void generate_ir_var(ast_node& node) {
         generate_ir_node(*node.var_value());
 
         // Check if global
-        if (ts->current_scope->kind == scope_kind::code_unit && !node.local.mangled_name.str.empty()) {
+        if (ts->current_scope->kind == scope_kind::module_ && !node.local.mangled_name.str.empty()) {
             if (is_primary_expr(*node.var_value()) && node.var_value()->type != ast_type::identifier) {
                 // TODO: what if it's an identifier ?
                 prog->globals.push_back(ir_global_data{
@@ -949,6 +956,8 @@ void generate_ir_char_literal(ast_node& node) {
 void generate_ir_node(ast_node& node) {
     if (node.disabled) return;
 
+    // std::cout << (int)node.type << " - " << node.pos.filename << ":" << node.pos.line_number << ":" << node.pos.col_offs << std::endl;
+
     for (auto& child : node.pre_nodes) {
         if (child) {
             generate_ir_node(*child);
@@ -964,6 +973,11 @@ void generate_ir_node(ast_node& node) {
     case ast_type::error_decl:
     case ast_type::c_struct_decl:
     case ast_type::c_struct_field:
+        break;
+    case ast_type::module_:
+        ts->enter_scope(node);
+        generate_ir_children(node);
+        ts->leave_scope();
         break;
     case ast_type::func_decl:
         if (!node.func.is_generic) {
@@ -1140,8 +1154,11 @@ void print_instr(std::ostream& f, const ir_instr& instr) {
     f << "\n";
 }
 
-void print_ir() {
-    std::ofstream f{ "out.ir" };
+void print_ir(const std::string& modname) {
+    std::string irmodname = modname;
+    while (replace(irmodname, "/", "_"));
+
+    std::ofstream f{ "ir_" + irmodname + ".txt" };
 
     for (std::size_t i = 0; i < prog->strings.size(); i++) {
         f << "string #" << i << ": \"" << prog->strings[i] << "\";\n";
@@ -1288,30 +1305,23 @@ static void optimize() {
 }
 
 ir_program generate_ir(type_system& tsystem, ast_node& program_node) {
-    ir_program p;
+    ir_program p = { };
     prog = &p;
     ts = &tsystem;
+    operand_stack = {};
+    string_map.clear();
+    currentfunc = nullptr;
 
-    for (auto& unit : program_node.children) {
-        ts->enter_scope(*unit);
-        analyse_node(*unit);
-        ts->leave_scope();
-    }
-    
-    for (auto& unit : program_node.children) {
-        ts->enter_scope(*unit);
-        generate_ir_node(*unit);
-        ts->leave_scope();
-    }
+    analyse_node(program_node);
+    generate_ir_node(program_node);
 
     if (true) {
         optimize();
     }
 
-    print_ir();
+    print_ir(program_node.modname);
 
     prog = nullptr;
-    //ts = nullptr;
     return p;
 }
 

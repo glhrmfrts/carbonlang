@@ -71,7 +71,8 @@ enum class ast_type {
     type_resolver,
 
     code_unit,
-    target,
+    module_,
+    root,
 
     init_tag,
 };
@@ -145,6 +146,8 @@ struct ast_node {
     std::vector<token_type> var_modifiers;
     decl_visibility visibility;
     bool disabled = false;
+    std::string filename;
+    std::string modname;
 
     // data filled by the type system
     scope_def scope;
@@ -308,7 +311,7 @@ arena_ptr<ast_node> make_linkage_specifier_node(memory_arena& arena, const posit
 
 arena_ptr<ast_node> make_visibility_specifier_node(memory_arena& arena, const position& pos, decl_visibility spec, arena_ptr<ast_node>&& content);
 
-arena_ptr<ast_node> make_code_unit_node(memory_arena& arena, const position& pos, const std::string& filename, arena_ptr<ast_node>&& decls);
+arena_ptr<ast_node> make_code_unit_node(memory_arena& arena, const position& pos, const std::string& filename, const std::string& modname, arena_ptr<ast_node>&& decls);
 
 arena_ptr<ast_node> make_type_resolver_node(memory_arena& arena, type_id tid);
 
