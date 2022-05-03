@@ -38,6 +38,12 @@ static std::string offset_tostr(const gen_addr& r) {
 
     std::string result = "";
 
+    if (r.base == invalid && std::holds_alternative<gen_data_offset>(r.offset)) {
+        result.append(std::get<gen_data_offset>(r.offset).label);
+        //result.append("(%rip)");
+        return result;
+    }
+
     append_offset(result, r.offset, false);
 
     result.append("(");
@@ -236,6 +242,14 @@ struct codegen_x64_linux_gas_emitter : public codegen_x64_emitter {
         emitln("    .value %lld", v);
     }
 
+    virtual void add_global_bytes(std::string_view label, const std::vector<std::uint8_t>& bytes) {
+        emitln("    .size %s, %zu", label.data(), bytes.size());
+        emitln("%s:", label.data());
+        for (auto b : bytes) {
+            emitln("    .byte 0x%x", (int)(b));
+        }
+    }
+
     virtual void begin_code_segment() {
         out_file << ".text\n";
     }
@@ -327,6 +341,10 @@ struct codegen_x64_linux_gas_emitter : public codegen_x64_emitter {
 
     virtual void psadbw(gen_destination reg, gen_operand src) {
         emitln(" psadbw %s,%s", tostr_sized(src).c_str(), tostr_sized(reg).c_str());
+    }
+
+    virtual void pshufb(gen_destination reg, gen_operand src) {
+        emitln(" pshufb %s,%s", tostr_sized(src).c_str(), tostr_sized(reg).c_str());
     }
 
     virtual void add(gen_destination a, gen_operand b) {

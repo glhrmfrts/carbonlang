@@ -2,6 +2,24 @@
 .global cb__Nstd__Nstring__Nfind__Aptr__Ttuple__Tusize__Tbool__Aptr__Tstring__Auint8
 .global cb__Nstd__Nstring__Nfind__Aptr__Ttuple__Tusize__Tbool__Aptr__Tstring__Aptr__Tstring
 .data
+    .size .cmp16selector, 16
+.cmp16selector:
+    .byte 0x0
+    .byte 0x1
+    .byte 0x8
+    .byte 0x9
+    .byte 0x80
+    .byte 0x80
+    .byte 0x80
+    .byte 0x80
+    .byte 0x80
+    .byte 0x80
+    .byte 0x80
+    .byte 0x80
+    .byte 0x80
+    .byte 0x80
+    .byte 0x80
+    .byte 0x80
 .section .rodata
 .text
 cb__Nstd__Nstring__Nequals__Aptr__Tstring__Aptr__Tstring:
@@ -42,7 +60,7 @@ cb__Nstd__Nstring__Nequals__Aptr__Tstring__Aptr__Tstring$if3687$else:
 # ir_deref A0; (push)
 
  mov 8(%rax),%r10
- mov %r10,-28(%rbp)
+ mov %r10,-24(%rbp)
 # ir_load [L1 . 1] [POP() . 1];
 
  mov -32(%rbp),%r10d
@@ -55,7 +73,7 @@ cb__Nstd__Nstring__Nequals__Aptr__Tstring__Aptr__Tstring$f3711$cond:
  movsxd -4(%rbp),%rax
 # ir_cast L0; (push)
 
- cmp -28(%rbp),%rax
+ cmp -24(%rbp),%rax
  jge cb__Nstd__Nstring__Nequals__Aptr__Tstring__Aptr__Tstring$f3711$end
 # ir_jmp_gte POP() [L1 . 1] cb__Nstd__Nstring__Nequals__Aptr__Tstring__Aptr__Tstring$f3711$end;
 
@@ -138,7 +156,7 @@ cb__Nstd__Nstring__Nfind__Aptr__Ttuple__Tusize__Tbool__Aptr__Tstring__Auint8:
 # ir_deref A1; (push)
 
  mov 8(%rax),%r10
- mov %r10,-28(%rbp)
+ mov %r10,-24(%rbp)
 # ir_load [L1 . 1] [POP() . 1];
 
  mov -32(%rbp),%r10d
@@ -151,7 +169,7 @@ cb__Nstd__Nstring__Nfind__Aptr__Ttuple__Tusize__Tbool__Aptr__Tstring__Auint8$f37
  movsxd -4(%rbp),%rax
 # ir_cast L0; (push)
 
- cmp -28(%rbp),%rax
+ cmp -24(%rbp),%rax
  jge cb__Nstd__Nstring__Nfind__Aptr__Ttuple__Tusize__Tbool__Aptr__Tstring__Auint8$f3765$end
 # ir_jmp_gte POP() [L1 . 1] cb__Nstd__Nstring__Nfind__Aptr__Ttuple__Tusize__Tbool__Aptr__Tstring__Auint8$f3765$end;
 
@@ -257,7 +275,7 @@ cb__Nstd__Nstring__Nfind__Aptr__Ttuple__Tusize__Tbool__Aptr__Tstring__Aptr__Tstr
 # ir_deref A1; (push)
 
  mov 8(%rax),%r10
- mov %r10,-28(%rbp)
+ mov %r10,-24(%rbp)
 # ir_load [L1 . 1] [POP() . 1];
 
  mov -32(%rbp),%r10d
@@ -270,7 +288,7 @@ cb__Nstd__Nstring__Nfind__Aptr__Ttuple__Tusize__Tbool__Aptr__Tstring__Aptr__Tstr
  movsxd -4(%rbp),%rax
 # ir_cast L0; (push)
 
- cmp -28(%rbp),%rax
+ cmp -24(%rbp),%rax
  jge cb__Nstd__Nstring__Nfind__Aptr__Ttuple__Tusize__Tbool__Aptr__Tstring__Aptr__Tstring$f3840$end
 # ir_jmp_gte POP() [L1 . 1] cb__Nstd__Nstring__Nfind__Aptr__Ttuple__Tusize__Tbool__Aptr__Tstring__Aptr__Tstring$f3840$end;
 

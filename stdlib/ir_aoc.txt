@@ -523,8 +523,8 @@ func cb__Naoc__Naoc01 -> int
     ir_call cb__Naoc__Nprintln__Aptr__Tslice__Tpure__Tuint8 POP();
     ir_load [L4 . 0] 0;
     ir_load [L4 . 1] 0;
-    ir_load [L5 . 0] 1;
-    ir_load [L5 . 1] 0;
+    ir_load [L5 . 0] 0;
+    ir_load [L5 . 1] 1;
     ir_call cb__Naoc__Nprintln__Aint 16;
     ir_jmp_neq L4 L5 cb__Naoc__Naoc01$if924$else;
     ir_make_label cb__Naoc__Naoc01$if924$body;

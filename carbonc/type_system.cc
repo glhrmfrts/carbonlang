@@ -785,6 +785,7 @@ bool is_aggregate(type_id id) {
     if (!id.valid()) return false;
 
     return id.get().kind == type_kind::structure ||
+           id.get().kind == type_kind::c_structure ||
            id.get().kind == type_kind::tuple ||
            id.get().kind == type_kind::static_array ||
            id.get().kind == type_kind::slice;
@@ -795,6 +796,7 @@ bool is_aggregate_root(type_id id) {
     if (id.get().flags) return false;
 
     return id.get().kind == type_kind::structure ||
+        id.get().kind == type_kind::c_structure ||
         id.get().kind == type_kind::tuple ||
         id.get().kind == type_kind::static_array ||
         id.get().kind == type_kind::slice;
@@ -825,7 +827,7 @@ bool check_type_allows_no_init(type_system& ts, const position& pos, type_id id)
                 add_type_error(ts, pos, "type '%s' does not allow declarations without initialization",
                     type_to_string(id).c_str());
 
-                if (is_type_kind(id, type_kind::structure) || is_type_kind(id, type_kind::slice)) {
+                if (is_type_kind(id, type_kind::structure) || is_type_kind(id, type_kind::c_structure) || is_type_kind(id, type_kind::slice)) {
                     complement_error(ts, pos, "struct member '%s' of type '%s' does not allow declarations without initialization",
                         field.names[0].c_str(),
                         type_to_string(field.type).c_str());
@@ -849,14 +851,21 @@ void compute_struct_size_alignment_offsets(type_def& td) {
 
     for (auto& f : td.structure.fields) {
         auto& ftype = f.type.get();
-        f.offset = offs;
+        f.offset = offs > 0 ? align(offs, ftype.alignment) : 0;
         offs += ftype.size;
         offs = align(offs, ftype.alignment);
         max_align = std::max(ftype.alignment, max_align);
     }
 
     td.size = align(offs, max_align);
-    td.alignment = max_align;
+
+    if (td.kind != type_kind::c_structure && td.size > 8) {
+        td.size = align(offs, (size_t)16);
+        td.alignment = 16;
+    }
+    else {
+        td.alignment = max_align;
+    }
 }
 
 int aggregate_find_field(type_id tid, const std::string& name) {
@@ -883,6 +892,11 @@ bool check_aggregate_types_match(type_system& ts, const position& pos, type_id s
         return false;
     }
 
+    if (a.get().kind == type_kind::c_structure && b.get().kind == type_kind::c_structure) {
+        add_type_error(ts, pos, "types '%s' and '%s' do not match", type_to_string(a).c_str(), type_to_string(b).c_str());
+        return false;
+    }
+
     auto& ffa = a.get().structure.fields;
     auto& ffb = b.get().structure.fields;
     if (ffa.size() != ffb.size()) {
@@ -901,7 +915,7 @@ bool check_aggregate_types_match(type_system& ts, const position& pos, type_id s
                     msg_already = true;
                 }
 
-                if (is_type_kind(a, type_kind::structure) || is_type_kind(a, type_kind::slice)) {
+                if (is_type_kind(a, type_kind::structure) || is_type_kind(a, type_kind::c_structure) || is_type_kind(a, type_kind::slice)) {
                     complement_error(ts, pos, "struct member '%s: %s' is not convertible to the type of receiver struct member '%s: %s'",
                         fa.names[0].c_str(),
                         type_to_string(fa.type).c_str(),
@@ -922,7 +936,7 @@ bool check_aggregate_types_match(type_system& ts, const position& pos, type_id s
 }
 
 arena_ptr<ast_node> make_assignment_for_init_list_item(type_system& ts, ast_node& node, ast_node& receiver, arena_ptr<ast_node>&& value, const struct_field& field, int idx) {
-    if (is_type_kind(node.tid, type_kind::structure) || is_type_kind(node.tid, type_kind::slice)) {
+    if (is_type_kind(node.tid, type_kind::structure) || is_type_kind(node.tid, type_kind::c_structure) || is_type_kind(node.tid, type_kind::slice)) {
         auto fieldexpr = make_struct_field_access(*ts.ast_arena, copy_node(ts, &receiver), field.names[0]);
         return make_assignment(*ts.ast_arena, std::move(fieldexpr), std::move(value));
     }
@@ -1232,6 +1246,19 @@ type_id get_value_node_type(type_system& ts, ast_node& node) {
         }
 
         if (is_cmp_binary_op(node.op) || is_arith_binary_op(node.op)) {
+            if (node.children[0]->tid.get().kind == type_kind::c_structure) {
+                add_type_error(ts, node.pos, "cannot perform value-comparison on C structure type '%s'",
+                    type_to_string(node.children[0]->tid).c_str()
+                );
+                return invalid_type;
+            }
+            else if (node.children[1]->tid.get().kind == type_kind::c_structure) {
+                add_type_error(ts, node.pos, "cannot perform value-comparison on C structure type '%s'",
+                    type_to_string(node.children[1]->tid).c_str()
+                );
+                return invalid_type;
+            }
+
             bool needcast = false;
             auto [comp, ncast, castidx] = is_comparable(ts, node.children[0]->tid, node.children[1]->tid);
             if (!comp) {
@@ -2211,7 +2238,7 @@ void generate_unpacking_operations(type_system& ts, ast_node& node) {
 
     auto tempref = make_identifier_node(*ts.ast_arena, mainvalue->pos, { tempname });
 
-    if (aggtype.get().kind == type_kind::structure || aggtype.get().kind == type_kind::tuple) {
+    if (aggtype.get().kind == type_kind::structure || aggtype.get().kind == type_kind::c_structure || aggtype.get().kind == type_kind::tuple) {
         const auto& fields = get_type_fields(aggtype);
         int index = 0;
 
@@ -3058,7 +3085,7 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
 
         if (all_resolved && !node.tid.valid()) {
             auto& td = node.tdef;
-            td.kind = type_kind::structure;
+            td.kind = type_kind::c_structure;
             td.structure.fields = sfields;
             td.id = new_type_id;
             td.self = &node;
@@ -4458,6 +4485,9 @@ type_system::type_system(memory_arena& arena) {
             tf.elem_type = std::get<type_id>(args[1]);
             tf.size = tf.array.length * tf.elem_type.get().size;
             tf.alignment = tf.elem_type.get().alignment;
+            if (tf.size > 8) {
+                tf.alignment = 16;
+            }
 
             for (int_type i = 0; i < tf.array.length; i++) {
                 tf.structure.fields.push_back({ {""}, tf.elem_type, 0 });

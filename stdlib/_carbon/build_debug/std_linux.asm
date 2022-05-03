@@ -17,6 +17,24 @@
 .global cb__Nstd__Nsystem__Nstat__Aptr__Tslice__Tpure__Tuint8__Aptr__TStat
 .global cb__Nstd__Nsystem__Nstat__AFileHandle__Aptr__TStat
 .data
+    .size .cmp16selector, 16
+.cmp16selector:
+    .byte 0x0
+    .byte 0x1
+    .byte 0x8
+    .byte 0x9
+    .byte 0x80
+    .byte 0x80
+    .byte 0x80
+    .byte 0x80
+    .byte 0x80
+    .byte 0x80
+    .byte 0x80
+    .byte 0x80
+    .byte 0x80
+    .byte 0x80
+    .byte 0x80
+    .byte 0x80
 .section .rodata
 .cbstr0:
     .string "ALLOC_FAILED\n"

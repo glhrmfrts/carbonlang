@@ -1834,12 +1834,12 @@ module aoc
                     identifier first
                   cast_expr
                     type_resolver usize
-                    int_literal 1
+                    int_literal 0
                 binary =
                   field_expr
                     identifier val2
                     identifier second
-                  bool_literal false
+                  bool_literal true
               init_expr end
           decl_list end
           stmt_list

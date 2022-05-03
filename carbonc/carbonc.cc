@@ -197,6 +197,8 @@ std::string run_linker(
 ) {
 #ifdef _WIN32
     std::string out_file = "_carbon/build_debug/" + p.target_name + ".exe";
+    std::string ld_file = p.asm_obj_files.front();
+    replace(ld_file, ".obj", ".exe");
 
     auto cmd = p.cb_path + "/bin/win64/GoLink.exe ";
     for (const auto& objfile : p.asm_obj_files) {
@@ -235,6 +237,8 @@ std::string run_linker(
         std::cout << buf;
     }
     _pclose(ph);
+
+    MoveFileExA(ld_file.c_str(), out_file.c_str(), MOVEFILE_REPLACE_EXISTING);
     
     return out_file;
 #else

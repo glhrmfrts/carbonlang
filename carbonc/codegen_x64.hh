@@ -14,8 +14,11 @@ template <class... Ts> overload(Ts...)->overload<Ts...>;
 
 enum gen_register {
     invalid,
+
     xmm0,
     xmm1,
+    rip,
+
     rax,
     rbx,
     rcx,
@@ -158,6 +161,8 @@ struct codegen_x64_emitter {
 
     virtual void add_global_int64(std::string_view label, int64_t v) = 0;
 
+    virtual void add_global_bytes(std::string_view label, const std::vector<std::uint8_t>& bytes) = 0;
+
     virtual void begin_code_segment() = 0;
 
     virtual void begin_func(const char* func_name) = 0;
@@ -187,6 +192,8 @@ struct codegen_x64_emitter {
     virtual void movdqa(gen_destination reg, gen_operand src) = 0;
 
     virtual void psadbw(gen_destination reg, gen_operand src) = 0;
+
+    virtual void pshufb(gen_destination reg, gen_operand src) = 0;
 
     virtual void add(gen_destination a, gen_operand b) = 0;
 

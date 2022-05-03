@@ -42,8 +42,11 @@ constexpr gen_register reg_intermediate = r10;
 
 const char* register_names[] = {
     "invalid",
+
     "xmm0",
     "xmm1",
+    "rip",
+
     "rax",
     "rbx",
     "rcx",
@@ -233,6 +236,7 @@ struct generator {
     int used_temp_registers = 0;
     int used_temp_locals = 0;
     int temp_locals_base = 0;
+    gen_addr cmp16selector_addr = {};
 
     // points to the current function being generated
     ir_func* fn = nullptr;
@@ -244,6 +248,10 @@ struct generator {
         this->register_args = em->args_registers();
         this->register_temp = em->temp_registers();
         this->em = std::move(em);
+
+        cmp16selector_addr.base = invalid;
+        cmp16selector_addr.offset = gen_data_offset{ this->em->special_label("cmp16selector") };
+        cmp16selector_addr.op_size = 16;
     }
 
     // Section: helpers
@@ -328,7 +336,7 @@ struct generator {
             //funcdata[func.index].local_data[li].frame_offset = -align(local_size + 8, std::int32_t(tdef.alignment)); // offset from rbp + space for pushed rbp
 
             local_size += std::int32_t(tdef.size);
-            if (tdef.size >= 16) {
+            if (tdef.size > 8) {
                 local_size = align(local_size, 16);
             }
             else {
@@ -447,6 +455,9 @@ struct generator {
         }
 
         em->begin_data_segment();
+
+        auto bytes = std::vector<std::uint8_t>{ 0, 1, 8, 9, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80 };
+        em->add_global_bytes(em->special_label("cmp16selector"), bytes);
 
         for (const auto& g : prog.globals) {
             generate_global_var(g);
@@ -989,8 +1000,9 @@ struct generator {
             if (atype.get().size == 16) {
                 em->movdqa(xmm0, a);
                 em->psadbw(xmm0, b); // Compute the absolute difference between 2 128-bit values
+                em->pshufb(xmm0, cmp16selector_addr); // Shuffle the bytes to get the 2 words together
                 em->movq(reg_intermediate, xmm0); // Store the difference in the intermediate register
-                a = toop(adjust_for_type(reg_intermediate, ts->uint16_type)); // The result is a 16-bit value
+                a = toop(adjust_for_type(reg_intermediate, ts->uint32_type)); // The result is a 32-bit value
                 b = int_type(0); // Compare it to zero
             }
         }
@@ -1016,8 +1028,9 @@ struct generator {
             if (atype.get().size == 16) {
                 em->movdqa(xmm0, a);
                 em->psadbw(xmm0, b); // Compute the absolute difference between 2 128-bit values
+                em->pshufb(xmm0, cmp16selector_addr); // Shuffle the bytes to get the 2 words together
                 em->movq(reg_intermediate, xmm0); // Store the difference in the intermediate register
-                a = toop(adjust_for_type(reg_intermediate, ts->uint16_type)); // The result is a 16-bit value
+                a = toop(adjust_for_type(reg_intermediate, ts->uint32_type)); // The result is a 32-bit value
                 b = int_type(0); // Compare it to zero
             }
         }

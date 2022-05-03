@@ -1,6 +1,8 @@
 global carbon_main
 export carbon_main
 section .data
+$cmp16selector: db 
+$cmp16selector: db 0x0,0x1,0x8,0x9,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80
 section .rodata
 section .code
 carbon_main:
@@ -22,14 +24,15 @@ carbon_main:
  mov qword[rbp-32],r10
 ;ir_load [L1 . 0] 0;
 
- xor r10b,r10b
+ mov r10b,1
  mov byte[rbp-24],r10b
-;ir_load [L1 . 1] 0;
+;ir_load [L1 . 1] 1;
 
  movdqa xmm0,[rbp-16]
  psadbw xmm0,[rbp-32]
+ pshufb xmm0,[$cmp16selector]
  movq r10,xmm0
- cmp r10w,0
+ cmp r10d,0
  sete al
 ;ir_cmp_eq L0 L1; (push)
 

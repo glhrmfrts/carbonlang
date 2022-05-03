@@ -16,8 +16,8 @@ extern(C) func carbon_main() : int {
     // let cstat : Stat
     // let size = cstat.st_atime
 
-    let val : {usize, bool}
-    let val2 : {usize, bool}
+    let val : {usize, bool} = {0, false}
+    let val2 : {usize, bool} = {0, true}
 
     let eq = val == val2
 

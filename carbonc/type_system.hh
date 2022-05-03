@@ -43,6 +43,7 @@ enum class type_kind {
     static_array,
     slice,
     structure,
+    c_structure,
     tuple,
     func,
     func_pointer,
