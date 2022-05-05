@@ -35,6 +35,7 @@ struct project_info {
     std::string cb_path;
     std::string entrypoint;
     std::vector<std::string> asm_obj_files;
+    std::vector<std::string> includes;
     target_type target;
     bool freestanding = false;
     bool embed_std = false;
@@ -88,44 +89,55 @@ void compile_file(type_system& ts, const std::string& filename, const std::strin
 }
 
 void process_directory(type_system& ts, const std::string& dir, const std::string& srcdir) {
-    auto modname = dir;
-    while (replace(modname, srcdir, ""));
-
-    if (!modname.empty()) {
-        while (modname.size() && modname[0] == '/') {
-            modname = modname.substr(1);
-        }
-        while (modname.size() && modname[modname.size() - 1] == '/') {
-            modname = modname.substr(0, modname.size() - 1);
-        }
-    }
-
-    if (modname.empty()) {
-        modname = "root";
-    }
-    ts.add_module(modname);
-
+    std::size_t filecount = 0;
     for (const auto& file : list(dir)) {
         auto fullpath = join(dir, file);
 
-        if (!is_directory(fullpath)) {
-            if (file.find(".cb") != std::string::npos) {
-                auto mname = fullpath.substr(srcdir.size() + 1);
-                compile_file(ts, fullpath, mname);
-            }
+        if (file.find(".cb") != std::string::npos) {
+            filecount++;
+        }
 
-            if ((file.find(".s") != std::string::npos) || (file.find(".asm") != std::string::npos)) {
-                auto modname = fullpath.substr(srcdir.size() + 1);
-                while (replace(modname, "/", "_"));
-                std::cout << "assembly file: " << modname << std::endl;
+        if ((file.find(".s") != std::string::npos) || (file.find(".asm") != std::string::npos)) {
+            auto modname = fullpath.substr(srcdir.size() + 1);
+            while (replace(modname, "/", "_"));
+            std::cout << "assembly file: " << modname << std::endl;
 
-                auto asm_file = "_carbon/build_debug/" + modname;
-                copyfile(fullpath, asm_file);
-                proj.asm_obj_files.push_back(run_assembler(proj, asm_file));
-            }
+            auto asm_file = "_carbon/build_debug/" + modname;
+            copyfile(fullpath, asm_file);
+            proj.asm_obj_files.push_back(run_assembler(proj, asm_file));
         }
     }
-    ts.end_module();
+
+    if (filecount > 0) {
+        auto modname = dir;
+        while (replace(modname, srcdir, ""));
+
+        if (!modname.empty()) {
+            while (modname.size() && modname[0] == '/') {
+                modname = modname.substr(1);
+            }
+            while (modname.size() && modname[modname.size() - 1] == '/') {
+                modname = modname.substr(0, modname.size() - 1);
+            }
+        }
+
+        if (modname.empty()) {
+            modname = "root";
+        }
+        ts.add_module(modname);
+
+        for (const auto& file : list(dir)) {
+            auto fullpath = join(dir, file);
+
+            if (!is_directory(fullpath)) {
+                if (file.find(".cb") != std::string::npos) {
+                    auto mname = fullpath.substr(srcdir.size() + 1);
+                    compile_file(ts, fullpath, mname);
+                }
+            }
+        }
+        ts.end_module();
+    }
 
     for (const auto& file : list(dir)) {
         auto fullpath = join(dir, file);
@@ -156,6 +168,17 @@ bool has_arg(const char* name, const char* shortname, int argc, const char* argv
         }
     }
     return false;
+}
+
+std::vector<std::string> get_all_args(const char* name, const char* shortname, int argc, const char* argv[]) {
+    std::vector<std::string> result;
+    for (int i = 1; i < argc; i++) {
+        if ((!strcmp(name, argv[i]) || !strcmp(shortname, argv[i])) && i < argc - 1) {
+            result.push_back(std::string{ argv[i + 1] });
+            i++;
+        }
+    }
+    return result;
 }
 
 std::string run_assembler(const project_info& p, const std::string& asm_file) {
@@ -219,10 +242,6 @@ std::string run_linker(
     }
 
     cmd.append(" kernel32.dll shell32.dll ucrtbase.dll ");
-
-    if (!p.freestanding && !p.embed_std) {
-        cmd.append(p.cb_path + "/std/_carbon/out_debug/std.dll ");
-    }
 
     if (p.verbose) {
         std::cout << "carbonc - running linker command: " << cmd << "\n";
@@ -313,6 +332,7 @@ void parse_options(project_info& p, int argc, const char* argv[]) {
     p.freestanding = freestanding;
     p.verbose = has_arg("--verbose", "-d", argc, argv);
     p.embed_std = embed_std_lib;
+    p.includes = get_all_args("--include", "-i", argc, argv);
 }
 
 int run_project_mode(int argc, const char* argv[]) {
@@ -346,14 +366,19 @@ int run_project_mode(int argc, const char* argv[]) {
 
     parse_options(proj, argc, argv);
 
+    ensure_directory_exists("_carbon/build_debug/.");
+    ensure_directory_exists("_carbon/out_debug/.");
+
     process_source_directory(ts, "./src");
 
     if (proj.embed_std) {
         process_source_directory(ts, std_library_path);
     }
 
-    if (!proj.freestanding && (proj.target == target_type::executable)) {
-        process_source_directory(ts, builtin_library_path);
+    for (const auto& inc : proj.includes) {
+        auto inc_path = join(std::string{ cbpath }, inc);
+        auto inc_src = join(inc_path, "src");
+        process_source_directory(ts, inc_src);
     }
 
     if (proj.verbose) {
@@ -408,9 +433,6 @@ int run_project_mode(int argc, const char* argv[]) {
         }
         return 1;
     }
-
-    ensure_directory_exists("_carbon/build_debug/.");
-    ensure_directory_exists("_carbon/out_debug/.");
 
     std::deque<ir_program> irprogs;
     {

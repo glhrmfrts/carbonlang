@@ -19,7 +19,9 @@ namespace {
 
 static const std::string opnames[] = {
     "ir_load",
+    "ir_load_ptr",
     "ir_copy",
+    "ir_store",
     "ir_cast",
     "ir_add",
     "ir_sub",
@@ -59,6 +61,24 @@ static ir_func* currentfunc;
 static type_system* ts;
 static std::stack<ir_operand> operand_stack;
 static std::unordered_map<std::string, int> string_map;
+static std::optional<ir_ref> init_receiver;
+
+std::optional<ir_ref> get_init_receiver() {
+    if (init_receiver) {
+        auto rec = init_receiver;
+        init_receiver = {};
+        return rec;
+    }
+    return {};
+}
+
+void set_init_receiver(ir_ref ref) {
+    init_receiver = ref;
+}
+
+void clear_init_receiver() {
+    init_receiver = {};
+}
 
 // The target labels for any continue or break statements
 struct control_labels {
@@ -108,6 +128,15 @@ size_t emitops(ir_op op, type_id t, const std::vector<ir_operand>& args) {
     return currentfunc->instrs.size() - 1;
 }
 
+size_t emit(ir_instr i) {
+    currentfunc->instrs.push_back(i);
+    return currentfunc->instrs.size() - 1;
+}
+
+static int emitindex() {
+    return currentfunc->instrs.size() - 1;
+}
+
 void discard_opstack(std::size_t tosize) {
     // discard any effect on the opstack
     if (operand_stack.size() > tosize) {
@@ -143,6 +172,21 @@ ir_ref toref(const ir_operand& opr) {
     }
     if (auto arg = std::get_if<ir_field>(&opr); arg) {
         return std::make_shared<ir_field>(*arg);
+    }
+}
+
+ir_operand fromref(const ir_ref& opr) {
+    if (auto arg = std::get_if<ir_arg>(&opr); arg) {
+        return *arg;
+    }
+    if (auto arg = std::get_if<ir_local>(&opr); arg) {
+        return *arg;
+    }
+    if (auto arg = std::get_if<ir_stackpop>(&opr); arg) {
+        return *arg;
+    }
+    if (auto arg = std::get_if<std::shared_ptr<ir_field>>(&opr); arg) {
+        return *(arg->get());
     }
 }
 
@@ -372,6 +416,25 @@ void analyse_node(ast_node& node) {
 
 // Section: generators
 
+void generate_store_zero(type_id agg_type, ir_operand dest) {
+    ir_int value = ir_int{ 0, ts->uint8_type };
+    if (agg_type.get().size % 8 == 0) {
+        value = ir_int{ 0, ts->uint64_type };
+    }
+    else if (agg_type.get().size % 4 == 0) {
+        value = ir_int{ 0, ts->uint32_type };
+    }
+    else if (agg_type.get().size % 2 == 0) {
+        value = ir_int{ 0, ts->uint16_type };
+    }
+    emit(ir_store,
+        dest,
+        value,
+        ir_int{ 0, ts->usize_type },
+        ir_int{ int_type(agg_type.get().size), ts->usize_type }
+    );
+}
+
 void generate_ir_children(ast_node& node) {
     for (auto& child : node.children) {
         if (child) {
@@ -450,6 +513,20 @@ void generate_ir_func(ast_node& node) {
     }
 
     ts->leave_scope();
+}
+
+ir_ref create_temp_receiver(type_id tid) {
+    static int counter;
+    auto name = "temp$receiver$" + std::to_string(counter);
+    counter++;
+
+    ir_local_data ilocal;
+    ilocal.type = tid;
+    ilocal.name = name;
+
+    int index = currentfunc->locals.size();
+    currentfunc->locals.push_back(ilocal);
+    return ir_local{ index, tid };
 }
 
 void generate_for_stmt(ast_node& node) {
@@ -575,12 +652,12 @@ void generate_ir_field_expr(ast_node& node) {
     if (is_pointer_type(node.field_struct()->tid)) {
         auto stype = node.field_struct()->tid.get().elem_type;
         temit(ir_deref, stype, a);
-        push(ir_field{ ir_stackpop{ stype }, node.field.field_index });
+        push(ir_field{ ir_stackpop{ stype, emitindex()  }, node.field.field_index });
     }
     else if (std::holds_alternative<ir_field>(a)) {
         auto stype = node.field_struct()->tid;
         temit(ir_load_addr, node.tid, a);
-        push(ir_field{ ir_stackpop{ stype }, node.field.field_index });
+        push(ir_field{ ir_stackpop{ stype, emitindex() }, node.field.field_index });
     }
     else {
         push(ir_field{ toref(a), node.field.field_index });
@@ -594,7 +671,7 @@ void generate_ir_index_expr(ast_node& node) {
     if (is_pointer_type(node.children[0]->tid)) {
         auto ptype = node.children[0]->tid.get().elem_type;
         temit(ir_deref, ptype, a);
-        a = ir_stackpop{ ptype };
+        a = ir_stackpop{ ptype, emitindex() };
     }
 
     generate_ir_node(*node.children[1]);
@@ -650,7 +727,18 @@ void generate_ir_func_overload_selector_expr(ast_node& node) {
 void generate_ir_assignment(ast_node& node) {
     if (node.children[0] && node.children[1]) {
         if (is_aggregate_type(node.tid) && node.children[1]->type == ast_type::init_expr) {
+            generate_ir_node(*node.children[0]);
+
+            auto dest = pop();
+            set_init_receiver(toref(dest));
             generate_ir_node(*node.children[1]);
+            clear_init_receiver();
+        }
+        else if (is_aggregate_type(node.tid) && node.children[1]->tid.get().kind == type_kind::nil) {
+            generate_ir_node(*node.children[0]);
+            auto dest = pop();
+
+            generate_store_zero(node.tid, dest);
         }
         else if (is_aggregate_type(node.tid) && node.tid.get().size > sizeof(std::size_t)) {
             generate_ir_node(*node.children[0]);
@@ -797,7 +885,7 @@ void generate_ir_deref_expr(ast_node& node) {
 
     generate_ir_node(*node.children[0]);
     temit(ir_deref, node.tid, pop());
-    push(ir_stackpop{ node.tid });
+    push(ir_stackpop{ node.tid, emitindex() });
 }
 
 void generate_ir_addr_expr(ast_node& node) {
@@ -834,38 +922,57 @@ void generate_ir_unary_expr(ast_node& node) {
     }
 }
 
+void generate_ir_global(ast_node& node) {
+    if (node.func.linkage != func_linkage::local_carbon) {
+        prog->globals.push_back(ir_global_data{
+            node.local.mangled_name.str, node.tid, {}, node.func.linkage, node.visibility
+            });
+        return;
+    }
+
+    if (node.var_value() && !node.local.mangled_name.str.empty()) {
+        generate_ir_node(*node.var_value());
+
+        if (is_primary_expr(*node.var_value()) && node.var_value()->type != ast_type::identifier) {
+            // TODO: what if it's an identifier ?
+            prog->globals.push_back(ir_global_data{
+                node.local.mangled_name.str, node.tid, pop(), func_linkage::local_carbon, node.visibility
+                });
+            return;
+        }
+        else if (node.tid.get().kind == type_kind::ptr) {
+            prog->globals.push_back(ir_global_data{
+                node.local.mangled_name.str, node.tid, pop(), func_linkage::local_carbon, node.visibility
+                });
+            return;
+        }
+        assert(!"generate_ir_var: non primary global");
+    }
+}
+
 void generate_ir_var(ast_node& node) {
     if (node.op != token_type::let) {
         return;
     }
 
-    if (node.func.linkage != func_linkage::local_carbon) {
-        prog->globals.push_back(ir_global_data{
-            node.local.mangled_name.str, node.tid, {}, node.func.linkage, node.visibility
-        });
+    if (ts->current_scope->kind == scope_kind::module_) {
+        generate_ir_global(node);
         return;
     }
 
     if (node.var_value()) {
-        generate_ir_node(*node.var_value());
-
-        // Check if global
-        if (ts->current_scope->kind == scope_kind::module_ && !node.local.mangled_name.str.empty()) {
-            if (is_primary_expr(*node.var_value()) && node.var_value()->type != ast_type::identifier) {
-                // TODO: what if it's an identifier ?
-                prog->globals.push_back(ir_global_data{
-                    node.local.mangled_name.str, node.tid, pop(), func_linkage::local_carbon, node.visibility
-                });
-                return;
-            }
-            else if (node.tid.get().kind == type_kind::ptr) {
-                prog->globals.push_back(ir_global_data{
-                    node.local.mangled_name.str, node.tid, pop(), func_linkage::local_carbon, node.visibility
-                });
-                return;
-            }
-            assert(!"generate_ir_var: non primary global");
+        if (node.var_value()->type == ast_type::init_tag && node.var_value()->op == token_type::noinit) {
+            return;
         }
+
+        if (node.var_value()->tid.get().kind == type_kind::nil) {
+            generate_store_zero(node.tid, ir_local{ node.local.ir_index, node.tid });
+            return;
+        }
+
+        set_init_receiver(ir_local{ node.local.ir_index, node.tid });
+        generate_ir_node(*node.var_value());
+        clear_init_receiver();
 
         // Check noop conditions.
         if (node.var_value()->type == ast_type::init_expr) {
@@ -884,12 +991,79 @@ void generate_ir_var(ast_node& node) {
             emit(ir_load, ir_local{ node.local.ir_index, node.tid }, pop());
         }
     }
+    else if (is_aggregate_type(node.tid)) {
+        generate_store_zero(node.tid, ir_local{ node.local.ir_index, node.tid });
+    }
 }
 
 void generate_ir_init_expr(ast_node& node) {
-    for (auto& assign : node.initlist.assignments) {
+    /*for (auto& assign : node.initlist.assignments) {
         generate_ir_node(*assign);
+    }*/
+
+    bool is_receiver_temp = false;
+    auto receiver = get_init_receiver();
+    bool needsderef = false;
+
+    if (receiver && std::holds_alternative<ir_stackpop>(*receiver)) {
+        auto stop = std::get<ir_stackpop>(*receiver);
+
+        ir_instr orginstr = currentfunc->instrs[stop.from_instr_index];
+        if (orginstr.op == ir_deref) {
+            auto derefop = orginstr.operands.front();
+
+            // Create a temp to hold the pointer
+            auto ptr_type = get_ptr_type_to(*ts, orginstr.result_type);
+            receiver = create_temp_receiver(ptr_type);
+            orginstr.operands = { fromref(*receiver), derefop };
+            orginstr.op = ir_load;
+            orginstr.result_type = ptr_type;
+            currentfunc->instrs[stop.from_instr_index] = orginstr;
+
+            needsderef = true;
+        }
     }
+    else if (receiver && std::holds_alternative<std::shared_ptr<ir_field>>(*receiver)) {
+        auto temp = create_temp_receiver(get_ptr_type_to(*ts, node.tid));
+        emit(ir_load_ptr, fromref(temp), fromref(*receiver));
+        receiver = temp;
+        needsderef = true;
+    }
+    else if (!receiver) {
+        receiver = create_temp_receiver(node.tid);
+        is_receiver_temp = true;
+    }
+
+    auto& fields = node.tid.get().structure.fields;
+    int field_index = 0;
+
+    for (auto& item : node.children[1]->children) {
+        auto field_receiver = *receiver;
+        if (needsderef) {
+            temit(ir_deref, node.tid, fromref(*receiver));
+            field_receiver = ir_stackpop{ node.tid, emitindex() };
+        }
+
+        auto fielddest = ir_field{ field_receiver, field_index };
+        if (item->type == ast_type::init_expr) {
+            set_init_receiver(toref(fielddest));
+            generate_ir_node(*item);
+            clear_init_receiver();
+        }
+        else if (item->tid.get().kind == type_kind::nil && is_aggregate_type(fields[field_index].type)) {
+            generate_store_zero(fields[field_index].type, fielddest);
+        }
+        else {
+            generate_ir_node(*item);
+            auto value = pop();
+            temit(ir_load, item->tid, fielddest, value);
+        }
+        field_index++;
+    }
+
+    // TODO: zero the rest of the aggregate
+
+    if (is_receiver_temp) { push(fromref(*receiver)); }
 }
 
 void generate_ir_cast_expr(ast_node& node) {

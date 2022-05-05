@@ -26,6 +26,8 @@ std::string type_to_string(type_id t);
 
 std::vector<struct_field>& get_type_fields(type_id id);
 
+bool is_aggregate(type_id id);
+
 // Section: errors
 
 template <typename... Args> void add_module_error(type_system& ts, const position& pos, const char* fmt, Args&&... args) {
@@ -593,6 +595,10 @@ bool is_assignable_to(type_system& ts, type_id a, type_id b) {
         return true;
     }
 
+    if (tsrc.kind == type_kind::nil && is_aggregate(ttarget.id)) {
+        return true;
+    }
+
     if (tsrc.kind == type_kind::ptr && ttarget.kind == type_kind::ptr) {
         if (get_alias_root(ts, ttarget.id) == ts.opaque_ptr_type || get_alias_root(ts, ttarget.id) == ts.pure_opaque_ptr_type) {
             return true;
@@ -748,19 +754,8 @@ arena_ptr<ast_node> get_zero_value_node_for_type(type_system& ts, type_id id) {
     else if (id.get().kind == type_kind::error) {
         return make_init_tag_node(*ts.ast_arena, {}, token_type::noerror);
     }
-    else if (id.get().kind == type_kind::slice) {
-        auto ptr = make_nil_node(*ts.ast_arena, {});
-        auto len = get_zero_value_node_for_type(ts, ts.usize_type);
-        auto typ = make_type_resolver_node(*ts.ast_arena, id);
-
-        std::vector<arena_ptr<ast_node>> args;
-        args.push_back(std::move(ptr));
-        args.push_back(std::move(len));
-        auto arglist = make_arg_list_node(*ts.ast_arena, {}, std::move(args));
-
-        auto typexpr = make_type_expr_node(*ts.ast_arena, {}, std::move(typ));
-
-        return make_init_expr_node(*ts.ast_arena, {}, std::move(typexpr), std::move(arglist));
+    else if (is_aggregate(id)) {
+        return make_nil_node(*ts.ast_arena, {});
     }
     return { nullptr, nullptr };
 }
@@ -960,6 +955,7 @@ void generate_assignments_for_init_list(type_system& ts, ast_node& node, ast_nod
     
     node.initlist.receiver = &receiver;
 
+    /*
     int i = 0;
     for (auto& arg : args) {
         // TODO: handle designated initializers
@@ -988,8 +984,9 @@ void generate_assignments_for_init_list(type_system& ts, ast_node& node, ast_nod
         resolve_node_type(ts, assignment.get());
         node.initlist.assignments.push_back(std::move(assignment));
     }
-
+    
     node.children[1]->children.clear();
+    */
 }
 
 void check_init_list_assignment(type_system& ts, ast_node& node, ast_node& receiver) {
@@ -1614,6 +1611,22 @@ void propagate_return_type(type_system& ts, const type_id& id) {
     //ts.scopes[scope_id].announced_return_types.push_back(id);
 }
 
+void propagate_type_coercion(type_system& ts, ast_node& node, const type_id& id) {
+    switch (node.type) {
+    case ast_type::return_stmt:
+        node.tid = id;
+        for (const auto& child : node.children) {
+            if (child) {
+                propagate_type_coercion(ts, *child, id);
+            }
+        }
+        break;
+    case ast_type::init_expr:
+        node.tid = id;
+        break;
+    }
+}
+
 type_id resolve_local_variable_type(type_system& ts, ast_node& l) {
     auto decl_type = l.var_type() ? resolve_node_type(ts, l.var_type()) : type_id{};
     auto val_type = l.var_value() ? resolve_node_type(ts, l.var_value()) : type_id{};
@@ -1925,7 +1938,7 @@ type_id resolve_func_type(type_system& ts, ast_node& f) {
                 }
 
                 // TODO: better coercion
-                retst->tid = ret_type;
+                propagate_type_coercion(ts, *retst, ret_type);
             }
         }
     }
@@ -2333,21 +2346,22 @@ void resolve_and_declare_local_variables(type_system& ts, ast_node& node) {
                 if (node.var_type() && node.var_value()->tid.get().size == 0) {
                     node.var_value()->tid = node.tid;
                 }
-
+                
                 // Create the ref for the assignments
-                auto idref = make_identifier_node(*ts.ast_arena, {}, { id.str });
-                resolve_identifier(ts, *idref.get());
+                //auto idref = make_identifier_node(*ts.ast_arena, {}, { id.str });
+                //resolve_identifier(ts, *idref.get());
 
                 // Generate the assignments of the initializer list values
                 if (check_aggregate_types_match(ts, node.pos, node.var_value()->tid, node.tid)) {
                     node.var_value()->tid = node.tid;
-                    check_init_list_assignment(ts, *node.var_value(), *idref);
-                    node.temps.push_back(std::move(idref));
+                    check_init_list_assignment(ts, *node.var_value(), node);
+                    //node.temps.push_back(std::move(idref));
                 }
             }
         }
     } else if (node.tid.valid() && check_type_allows_no_init(ts, node.pos, node.tid)) {
         if (is_aggregate(node.tid)) {
+            /*
             auto idref = make_identifier_node(*ts.ast_arena, {}, { id.str });
             resolve_identifier(ts, *idref.get());
             auto initlist = generate_init_list_zero_values(ts, node.tid);
@@ -2355,6 +2369,7 @@ void resolve_and_declare_local_variables(type_system& ts, ast_node& node) {
 
             node.children[ast_node::child_var_decl_value] = std::move(initlist);
             node.temps.push_back(std::move(idref));
+            */
         } else {
             auto value = get_zero_value_node_for_type(ts, node.tid);
             value->tid = node.tid;
@@ -2415,6 +2430,7 @@ void resolve_assignment_type(type_system& ts, ast_node& node) {
     }
 
     if (node.children[1]->type == ast_type::init_expr) {
+        /*
         if (!node.children[1]->initlist.receiver) {
             if (node.children[1]->tid.get().size == 0) {
                 node.children[1]->tid = node.children[0]->tid;
@@ -2424,6 +2440,7 @@ void resolve_assignment_type(type_system& ts, ast_node& node) {
                 check_init_list_assignment(ts, *node.children[1], *node.children[0]);
             }
         }
+        */
     }
     else {
         if (!node.children[1]->tid.valid() || node.children[1]->type_error) {
@@ -3001,6 +3018,24 @@ arena_ptr<ast_node> generate_temp_for_ternary_expr(type_system& ts, ast_node& no
     ifstmt->temps.push_back(std::move(temp));
     ref->pre_nodes.push_back(std::move(ifstmt));
     return ref;
+}
+
+arena_ptr<ast_node> generate_temp_for_init_expr(type_system& ts, arena_ptr<ast_node> node) {
+    auto tempname = generate_temp_name();
+    auto pos = node->pos;
+    auto tid = node->tid;
+    auto temp = make_var_decl_node_single(*ts.ast_arena, pos, token_type::let,
+        make_identifier_node(*ts.ast_arena, pos, { tempname }), // id
+        make_type_expr_node(*ts.ast_arena, pos, make_type_resolver_node(*ts.ast_arena, tid)), // type
+        std::move(node), {}); // value
+    resolve_node_type(ts, temp.get());
+
+    auto ref = make_identifier_node(*ts.ast_arena, temp->pos, { tempname });
+    resolve_node_type(ts, ref.get());
+
+    ref->pre_nodes.push_back(std::move(temp));
+
+    return std::move(ref);
 }
 
 static bool g_inside_loop;
@@ -3964,6 +3999,14 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
         else {
             node.tid = node.children[0]->tid;
         }
+
+        auto parent = node.parent;
+        if (node.tid.valid() && parent && !is_assignment(*parent) && !(parent->type == ast_type::var_decl)) {
+            //auto idx = find_child_index(parent, &node);
+            //auto self = std::move(parent->children[*idx]);
+            //auto ref = generate_temp_for_init_expr(ts, std::move(self));
+            //parent->children[*idx] = std::move(ref);
+        }
         break;
     }
     case ast_type::ternary_expr: {
@@ -4036,6 +4079,7 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
             auto parent = node.parent;
             auto idx = find_child_index(parent, &node);
             if (idx) {
+                initlist->parent = parent;
                 parent->children[*idx] = std::move(initlist);
             }
         }
@@ -4140,12 +4184,6 @@ void remangle_names(type_system& ts, ast_node* nodeptr) {
         }
         else {
             assert(!"func_overload_selector_expr no funcdef!");
-        }
-        break;
-    }
-    case ast_type::init_expr: {
-        for (auto& as : node.initlist.assignments) {
-            visit_tree(ts, *as);
         }
         break;
     }

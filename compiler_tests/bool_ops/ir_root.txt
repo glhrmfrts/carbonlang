@@ -1,13 +1,59 @@
+func cb__Nroot__NparseIntRem__Aptr__Ttuple__Tint__Tslice__Tpure__Tuint8__Tbool__Aptr__Tslice__Tpure__Tuint8__Aint -> ptr__Ttuple__Tint__Tslice__Tpure__Tuint8__Tbool
+    arg #0 $cb_agg_ret: ptr__Ttuple__Tint__Tslice__Tpure__Tuint8__Tbool;
+    arg #1 s: ptr__Tslice__Tpure__Tuint8;
+    arg #2 radix: int;
+    local #0 value: int;
+    local #1 count: usize;
+    local #2 $foriter: tuple__Tint__Tusize;
+    local #3 i: int;
+    local #4 temp$receiver$0: ptr__Ttuple__Tint__Tslice__Tpure__Tuint8__Tbool;
+    ir_load L0 0;
+    ir_load L1 0;
+    ir_load [L2 . 0] 0;
+    ir_deref A1; (push)
+    ir_load [L2 . 1] [POP() . 1];
+    ir_load L3 [L2 . 0];
+    ir_make_label cb__Nroot__NparseIntRem__Aptr__Ttuple__Tint__Tslice__Tpure__Tuint8__Tbool__Aptr__Tslice__Tpure__Tuint8__Aint$f72$cond;
+    ir_cast L3; (push)
+    ir_jmp_gte POP() [L2 . 1] cb__Nroot__NparseIntRem__Aptr__Ttuple__Tint__Tslice__Tpure__Tuint8__Tbool__Aptr__Tslice__Tpure__Tuint8__Aint$f72$end;
+    ir_make_label cb__Nroot__NparseIntRem__Aptr__Ttuple__Tint__Tslice__Tpure__Tuint8__Tbool__Aptr__Tslice__Tpure__Tuint8__Aint$f72$body;
+    ir_jmp_eq 0 0 cb__Nroot__NparseIntRem__Aptr__Ttuple__Tint__Tslice__Tpure__Tuint8__Tbool__Aptr__Tslice__Tpure__Tuint8__Aint$if69$else;
+    ir_make_label cb__Nroot__NparseIntRem__Aptr__Ttuple__Tint__Tslice__Tpure__Tuint8__Tbool__Aptr__Tslice__Tpure__Tuint8__Aint$if69$body;
+    ir_mul L0 A2; (push)
+    ir_deref A1; (push)
+    ir_deref [POP() . 0]; (push)
+    ir_index POP() L3; (push)
+    ir_sub POP() #48; (push)
+    ir_cast POP(); (push)
+    ir_add POP() POP(); (push)
+    ir_load L0 POP();
+    ir_add L1 1; (push)
+    ir_load L1 POP();
+    ir_jmp cb__Nroot__NparseIntRem__Aptr__Ttuple__Tint__Tslice__Tpure__Tuint8__Tbool__Aptr__Tslice__Tpure__Tuint8__Aint$if69$end;
+    ir_make_label cb__Nroot__NparseIntRem__Aptr__Ttuple__Tint__Tslice__Tpure__Tuint8__Tbool__Aptr__Tslice__Tpure__Tuint8__Aint$if69$else;
+    ir_jmp cb__Nroot__NparseIntRem__Aptr__Ttuple__Tint__Tslice__Tpure__Tuint8__Tbool__Aptr__Tslice__Tpure__Tuint8__Aint$f72$end;
+    ir_make_label cb__Nroot__NparseIntRem__Aptr__Ttuple__Tint__Tslice__Tpure__Tuint8__Tbool__Aptr__Tslice__Tpure__Tuint8__Aint$if69$end;
+    ir_add L3 1; (push)
+    ir_load L3 POP();
+    ir_jmp cb__Nroot__NparseIntRem__Aptr__Ttuple__Tint__Tslice__Tpure__Tuint8__Tbool__Aptr__Tslice__Tpure__Tuint8__Aint$f72$cond;
+    ir_make_label cb__Nroot__NparseIntRem__Aptr__Ttuple__Tint__Tslice__Tpure__Tuint8__Tbool__Aptr__Tslice__Tpure__Tuint8__Aint$f72$end;
+    ir_load L4 A0;
+    ir_deref L4; (push)
+    ir_load [POP() . 0] L0;
+    ir_deref L4; (push)
+    ir_store [POP() . 1] 0 0 16;
+    ir_deref L4; (push)
+    ir_cmp_gt L1 0; (push)
+    ir_load [POP() . 2] POP();
+    ir_return A0;
+endf
+
 func carbon_main -> int
-    local #0 val: tuple__Tusize__Tbool;
-    local #1 val2: tuple__Tusize__Tbool;
-    local #2 eq: bool;
-    ir_load [L0 . 0] 0;
-    ir_load [L0 . 1] 0;
-    ir_load [L1 . 0] 0;
-    ir_load [L1 . 1] 1;
-    ir_cmp_eq L0 L1; (push)
-    ir_load L2 POP();
+    local #0 val: tuple__Tusize__Tusize;
+    local #1 ptr: ptr__Tusize;
+    ir_store L0 0 0 16;
+    ir_load_addr [L0 . 1]; (push)
+    ir_load L1 POP();
     ir_return 0;
 endf
 

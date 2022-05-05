@@ -14,6 +14,25 @@
 .global cb__Naoc__Nfree__Aptr__Tslice__Tuint8
 .global cb__Naoc__Nfree__Aptr__Tslice__Tint
 .data
+    .align 16
+    .size .cmp16selector, 16
+.cmp16selector:
+    .byte 0x0
+    .byte 0x1
+    .byte 0x8
+    .byte 0x9
+    .byte 0x80
+    .byte 0x80
+    .byte 0x80
+    .byte 0x80
+    .byte 0x80
+    .byte 0x80
+    .byte 0x80
+    .byte 0x80
+    .byte 0x80
+    .byte 0x80
+    .byte 0x80
+    .byte 0x80
 .section .rodata
 .cbstr0:
     .string "\n"
@@ -541,32 +560,32 @@ cb__Naoc__NisNumeric__Auint8:
 # prolog end
 
  cmp $48,%dil
- jl cb__Naoc__NisNumeric__Auint8$if5948$else
-# ir_jmp_lt A0 #48 cb__Naoc__NisNumeric__Auint8$if5948$else;
+ jl cb__Naoc__NisNumeric__Auint8$if6045$else
+# ir_jmp_lt A0 #48 cb__Naoc__NisNumeric__Auint8$if6045$else;
 
  cmp $57,%dil
- jg cb__Naoc__NisNumeric__Auint8$if5948$else
-# ir_jmp_gt A0 #57 cb__Naoc__NisNumeric__Auint8$if5948$else;
+ jg cb__Naoc__NisNumeric__Auint8$if6045$else
+# ir_jmp_gt A0 #57 cb__Naoc__NisNumeric__Auint8$if6045$else;
 
-cb__Naoc__NisNumeric__Auint8$if5948$body:
-# ir_make_label cb__Naoc__NisNumeric__Auint8$if5948$body;
+cb__Naoc__NisNumeric__Auint8$if6045$body:
+# ir_make_label cb__Naoc__NisNumeric__Auint8$if6045$body;
 
  mov $1,%r10b
  mov %r10b,-1(%rbp)
 # ir_load L0 1;
 
- jmp cb__Naoc__NisNumeric__Auint8$if5948$end
-# ir_jmp cb__Naoc__NisNumeric__Auint8$if5948$end;
+ jmp cb__Naoc__NisNumeric__Auint8$if6045$end
+# ir_jmp cb__Naoc__NisNumeric__Auint8$if6045$end;
 
-cb__Naoc__NisNumeric__Auint8$if5948$else:
-# ir_make_label cb__Naoc__NisNumeric__Auint8$if5948$else;
+cb__Naoc__NisNumeric__Auint8$if6045$else:
+# ir_make_label cb__Naoc__NisNumeric__Auint8$if6045$else;
 
  xor %r10b,%r10b
  mov %r10b,-1(%rbp)
 # ir_load L0 0;
 
-cb__Naoc__NisNumeric__Auint8$if5948$end:
-# ir_make_label cb__Naoc__NisNumeric__Auint8$if5948$end;
+cb__Naoc__NisNumeric__Auint8$if6045$end:
+# ir_make_label cb__Naoc__NisNumeric__Auint8$if6045$end;
 
  mov -1(%rbp),%al
 # ir_return L0;
@@ -916,44 +935,44 @@ cb__Naoc__Naoc01:
  push %r13
  sub $8,%rsp
  mov %rsp,%rbp
- sub $784,%rsp
+ sub $848,%rsp
 # prolog end
 
  xor %r10d,%r10d
- mov %r10,-128(%rbp)
-# ir_load [L7 . 0] 0;
+ mov %r10,-192(%rbp)
+# ir_load [L10 . 0] 0;
 
  xor %r10d,%r10d
- mov %r10,-120(%rbp)
-# ir_load [L7 . 1] 0;
+ mov %r10,-184(%rbp)
+# ir_load [L10 . 1] 0;
 
  xor %r10d,%r10d
- mov %r10,-112(%rbp)
-# ir_load [L7 . 2] 0;
+ mov %r10,-176(%rbp)
+# ir_load [L10 . 2] 0;
 
  xor %r10d,%r10d
- mov %r10,-104(%rbp)
-# ir_load [L7 . 3] 0;
+ mov %r10,-168(%rbp)
+# ir_load [L10 . 3] 0;
 
  xor %r10d,%r10d
- mov %r10d,-96(%rbp)
-# ir_load [L7 . 4] 0;
+ mov %r10d,-160(%rbp)
+# ir_load [L10 . 4] 0;
 
  lea .cbstr1,%rax
 # ir_load_addr STR1; (push)
 
- mov %rax,-304(%rbp)
-# ir_load [L16 . 0] POP();
+ mov %rax,-368(%rbp)
+# ir_load [L19 . 0] POP();
 
  mov $15,%r10d
- mov %r10,-296(%rbp)
-# ir_load [L16 . 1] 15;
+ mov %r10,-360(%rbp)
+# ir_load [L19 . 1] 15;
 
- lea -304(%rbp),%rbx
-# ir_load_addr L16; (push)
+ lea -368(%rbp),%rbx
+# ir_load_addr L19; (push)
 
- lea -128(%rbp),%rax
-# ir_load_addr L7; (push)
+ lea -192(%rbp),%rax
+# ir_load_addr L10; (push)
 
  mov %rax,%rsi
  mov %rbx,%rdi
@@ -963,10 +982,10 @@ cb__Naoc__Naoc01:
  mov %eax,-16(%rbp)
 # ir_load L0 POP();
 
- mov -196(%rbp),%r10d
+ mov -260(%rbp),%r10d
  cmp $0,%r10d
  je cb__Naoc__Naoc01$if535$else
-# ir_jmp_eq L11 0 cb__Naoc__Naoc01$if535$else;
+# ir_jmp_eq L14 0 cb__Naoc__Naoc01$if535$else;
 
 cb__Naoc__Naoc01$if535$body:
 # ir_make_label cb__Naoc__Naoc01$if535$body;
@@ -974,15 +993,15 @@ cb__Naoc__Naoc01$if535$body:
  lea .cbstr2,%rax
 # ir_load_addr STR2; (push)
 
- mov %rax,-528(%rbp)
-# ir_load [L30 . 0] POP();
+ mov %rax,-592(%rbp)
+# ir_load [L33 . 0] POP();
 
  mov $10,%r10d
- mov %r10,-520(%rbp)
-# ir_load [L30 . 1] 10;
+ mov %r10,-584(%rbp)
+# ir_load [L33 . 1] 10;
 
- lea -528(%rbp),%rax
-# ir_load_addr L30; (push)
+ lea -592(%rbp),%rax
+# ir_load_addr L33; (push)
 
  mov %rax,%rdi
  call cb__Naoc__Nprintln__Aptr__Tslice__Tpure__Tuint8
@@ -998,18 +1017,18 @@ cb__Naoc__Naoc01$if535$else:
  lea .cbstr1,%rax
 # ir_load_addr STR1; (push)
 
- mov %rax,-320(%rbp)
-# ir_load [L17 . 0] POP();
+ mov %rax,-384(%rbp)
+# ir_load [L20 . 0] POP();
 
  mov $15,%r10d
- mov %r10,-312(%rbp)
-# ir_load [L17 . 1] 15;
+ mov %r10,-376(%rbp)
+# ir_load [L20 . 1] 15;
 
- lea -272(%rbp),%rbx
-# ir_load_addr L14; (push)
-
- lea -320(%rbp),%rax
+ lea -336(%rbp),%rbx
 # ir_load_addr L17; (push)
+
+ lea -384(%rbp),%rax
+# ir_load_addr L20; (push)
 
  xor %ecx,%ecx
  mov $4,%edx
@@ -1018,18 +1037,18 @@ cb__Naoc__Naoc01$if535$else:
  call cb__Nstd__Nsystem__Nopen__Aptr__Ttuple__TFileHandle__Terror__Aptr__Tslice__Tpure__Tuint8__AOpenFlags__Aint
 # ir_call cb__Nstd__Nsystem__Nopen__Aptr__Ttuple__TFileHandle__Terror__Aptr__Tslice__Tpure__Tuint8__AOpenFlags__Aint POP() POP() 4 0;
 
- mov -272(%rbp),%r10
- mov %r10,-280(%rbp)
-# ir_load L15 [L14 . 0];
+ mov -336(%rbp),%r10
+ mov %r10,-344(%rbp)
+# ir_load L18 [L17 . 0];
 
- mov -264(%rbp),%r10d
- mov %r10d,-196(%rbp)
-# ir_load L11 [L14 . 1];
+ mov -328(%rbp),%r10d
+ mov %r10d,-260(%rbp)
+# ir_load L14 [L17 . 1];
 
- mov -196(%rbp),%r10d
+ mov -260(%rbp),%r10d
  cmp $0,%r10d
  je cb__Naoc__Naoc01$if562$else
-# ir_jmp_eq L11 0 cb__Naoc__Naoc01$if562$else;
+# ir_jmp_eq L14 0 cb__Naoc__Naoc01$if562$else;
 
 cb__Naoc__Naoc01$if562$body:
 # ir_make_label cb__Naoc__Naoc01$if562$body;
@@ -1037,15 +1056,15 @@ cb__Naoc__Naoc01$if562$body:
  lea .cbstr3,%rax
 # ir_load_addr STR3; (push)
 
- mov %rax,-544(%rbp)
-# ir_load [L31 . 0] POP();
+ mov %rax,-608(%rbp)
+# ir_load [L34 . 0] POP();
 
  mov $10,%r10d
- mov %r10,-536(%rbp)
-# ir_load [L31 . 1] 10;
+ mov %r10,-600(%rbp)
+# ir_load [L34 . 1] 10;
 
- lea -544(%rbp),%rax
-# ir_load_addr L31; (push)
+ lea -608(%rbp),%rax
+# ir_load_addr L34; (push)
 
  mov %rax,%rdi
  call cb__Naoc__Nprintln__Aptr__Tslice__Tpure__Tuint8
@@ -1058,112 +1077,58 @@ cb__Naoc__Naoc01$if562$body:
 cb__Naoc__Naoc01$if562$else:
 # ir_make_label cb__Naoc__Naoc01$if562$else;
 
- lea -144(%rbp),%rax
-# ir_load_addr L8; (push)
+ lea -208(%rbp),%rax
+# ir_load_addr L11; (push)
 
- mov -128(%rbp),%rsi
+ mov -192(%rbp),%rsi
  mov %rax,%rdi
  call cb__Naoc__NallocString__Aptr__Tslice__Tuint8__Ausize
-# ir_call cb__Naoc__NallocString__Aptr__Tslice__Tuint8__Ausize POP() [L7 . 0];
+# ir_call cb__Naoc__NallocString__Aptr__Tslice__Tuint8__Ausize POP() [L10 . 0];
 
  push %rdi
  push %rsi
- lea -352(%rbp),%rdi
- lea -144(%rbp),%rsi
+ lea -416(%rbp),%rdi
+ lea -208(%rbp),%rsi
  mov $16,%rcx
  rep movsb
  pop %rsi
  pop %rdi
-# ir_copy L19 L8 16;
+# ir_copy L22 L11 16;
 
- lea -352(%rbp),%rax
-# ir_load_addr L19; (push)
+ lea -416(%rbp),%rax
+# ir_load_addr L22; (push)
 
  mov %rax,%rsi
- mov -280(%rbp),%rdi
+ mov -344(%rbp),%rdi
  call cb__Nstd__Nsystem__Nread__AFileHandle__Aptr__Tslice__Tuint8
-# ir_call cb__Nstd__Nsystem__Nread__AFileHandle__Aptr__Tslice__Tuint8 L15 POP(); (push)
+# ir_call cb__Nstd__Nsystem__Nread__AFileHandle__Aptr__Tslice__Tuint8 L18 POP(); (push)
 
- mov %rax,-136(%rbp)
-# ir_load [L8 . 1] POP();
+ mov %rax,-200(%rbp)
+# ir_load [L11 . 1] POP();
 
- mov -144(%rbp),%r10
+ mov -208(%rbp),%r10
  mov %r10,-16(%rbp)
-# ir_load [L0 . 0] [L8 . 0];
+# ir_load [L0 . 0] [L11 . 0];
 
- mov -136(%rbp),%r10
+ mov -200(%rbp),%r10
  mov %r10,-8(%rbp)
-# ir_load [L0 . 1] [L8 . 1];
-
- lea -176(%rbp),%rbx
-# ir_load_addr L9; (push)
-
- push %rdi
- push %rsi
- lea -368(%rbp),%rdi
- lea -16(%rbp),%rsi
- mov $16,%rcx
- rep movsb
- pop %rsi
- pop %rdi
-# ir_copy L20 L0 16;
-
- lea -368(%rbp),%rax
-# ir_load_addr L20; (push)
-
- mov %rax,%rdi
- call cb__Naoc__NcountLines__Aptr__Tslice__Tpure__Tuint8
-# ir_call cb__Naoc__NcountLines__Aptr__Tslice__Tpure__Tuint8 POP(); (push)
-
- mov %rax,%rsi
- mov %rbx,%rdi
- call cb__Naoc__NallocIntSlice__Aptr__Ttuple__Tslice__Tint__Terror__Ausize
-# ir_call cb__Naoc__NallocIntSlice__Aptr__Ttuple__Tslice__Tint__Terror__Ausize POP() POP();
-
- push %rdi
- push %rsi
- lea -192(%rbp),%rdi
- lea -176(%rbp),%rsi
- mov $16,%rcx
- rep movsb
- pop %rsi
- pop %rdi
-# ir_copy L10 [L9 . 0] 16;
-
- mov -160(%rbp),%r10d
- mov %r10d,-196(%rbp)
-# ir_load L11 [L9 . 1];
-
- mov -196(%rbp),%r10d
- cmp $0,%r10d
- je cb__Naoc__Naoc01$if633$else
-# ir_jmp_eq L11 0 cb__Naoc__Naoc01$if633$else;
-
-cb__Naoc__Naoc01$if633$body:
-# ir_make_label cb__Naoc__Naoc01$if633$body;
-
- mov $1,%edi
- call cb__Nstd__Nsystem__Nexit__Aint
-# ir_call cb__Nstd__Nsystem__Nexit__Aint 1;
-
-cb__Naoc__Naoc01$if633$else:
-# ir_make_label cb__Naoc__Naoc01$if633$else;
+# ir_load [L0 . 1] [L11 . 1];
 
  lea -240(%rbp),%rbx
 # ir_load_addr L12; (push)
 
  push %rdi
  push %rsi
- lea -400(%rbp),%rdi
+ lea -432(%rbp),%rdi
  lea -16(%rbp),%rsi
  mov $16,%rcx
  rep movsb
  pop %rsi
  pop %rdi
-# ir_copy L22 L0 16;
+# ir_copy L23 L0 16;
 
- lea -400(%rbp),%rax
-# ir_load_addr L22; (push)
+ lea -432(%rbp),%rax
+# ir_load_addr L23; (push)
 
  mov %rax,%rdi
  call cb__Naoc__NcountLines__Aptr__Tslice__Tpure__Tuint8
@@ -1185,13 +1150,67 @@ cb__Naoc__Naoc01$if633$else:
 # ir_copy L13 [L12 . 0] 16;
 
  mov -224(%rbp),%r10d
- mov %r10d,-196(%rbp)
-# ir_load L11 [L12 . 1];
+ mov %r10d,-260(%rbp)
+# ir_load L14 [L12 . 1];
 
- mov -196(%rbp),%r10d
+ mov -260(%rbp),%r10d
+ cmp $0,%r10d
+ je cb__Naoc__Naoc01$if633$else
+# ir_jmp_eq L14 0 cb__Naoc__Naoc01$if633$else;
+
+cb__Naoc__Naoc01$if633$body:
+# ir_make_label cb__Naoc__Naoc01$if633$body;
+
+ mov $1,%edi
+ call cb__Nstd__Nsystem__Nexit__Aint
+# ir_call cb__Nstd__Nsystem__Nexit__Aint 1;
+
+cb__Naoc__Naoc01$if633$else:
+# ir_make_label cb__Naoc__Naoc01$if633$else;
+
+ lea -304(%rbp),%rbx
+# ir_load_addr L15; (push)
+
+ push %rdi
+ push %rsi
+ lea -464(%rbp),%rdi
+ lea -16(%rbp),%rsi
+ mov $16,%rcx
+ rep movsb
+ pop %rsi
+ pop %rdi
+# ir_copy L25 L0 16;
+
+ lea -464(%rbp),%rax
+# ir_load_addr L25; (push)
+
+ mov %rax,%rdi
+ call cb__Naoc__NcountLines__Aptr__Tslice__Tpure__Tuint8
+# ir_call cb__Naoc__NcountLines__Aptr__Tslice__Tpure__Tuint8 POP(); (push)
+
+ mov %rax,%rsi
+ mov %rbx,%rdi
+ call cb__Naoc__NallocIntSlice__Aptr__Ttuple__Tslice__Tint__Terror__Ausize
+# ir_call cb__Naoc__NallocIntSlice__Aptr__Ttuple__Tslice__Tint__Terror__Ausize POP() POP();
+
+ push %rdi
+ push %rsi
+ lea -320(%rbp),%rdi
+ lea -304(%rbp),%rsi
+ mov $16,%rcx
+ rep movsb
+ pop %rsi
+ pop %rdi
+# ir_copy L16 [L15 . 0] 16;
+
+ mov -288(%rbp),%r10d
+ mov %r10d,-260(%rbp)
+# ir_load L14 [L15 . 1];
+
+ mov -260(%rbp),%r10d
  cmp $0,%r10d
  je cb__Naoc__Naoc01$if662$else
-# ir_jmp_eq L11 0 cb__Naoc__Naoc01$if662$else;
+# ir_jmp_eq L14 0 cb__Naoc__Naoc01$if662$else;
 
 cb__Naoc__Naoc01$if662$body:
 # ir_make_label cb__Naoc__Naoc01$if662$body;
@@ -1220,19 +1239,19 @@ cb__Naoc__Naoc01$w721$body:
 
  push %rdi
  push %rsi
- lea -624(%rbp),%rdi
+ lea -688(%rbp),%rdi
  lea -16(%rbp),%rsi
  mov $16,%rcx
  rep movsb
  pop %rsi
  pop %rdi
-# ir_copy L36 L0 16;
+# ir_copy L39 L0 16;
 
  lea -16(%rbp),%rbx
 # ir_load_addr L0; (push)
 
- lea -624(%rbp),%rax
-# ir_load_addr L36; (push)
+ lea -688(%rbp),%rax
+# ir_load_addr L39; (push)
 
  mov %rax,%rsi
  mov %rbx,%rdi
@@ -1241,19 +1260,19 @@ cb__Naoc__Naoc01$w721$body:
 
  push %rdi
  push %rsi
- lea -560(%rbp),%rdi
+ lea -624(%rbp),%rdi
  lea -16(%rbp),%rsi
  mov $16,%rcx
  rep movsb
  pop %rsi
  pop %rdi
-# ir_copy L32 L0 16;
+# ir_copy L35 L0 16;
 
- lea -672(%rbp),%rbx
-# ir_load_addr L37; (push)
+ lea -736(%rbp),%rbx
+# ir_load_addr L40; (push)
 
- lea -560(%rbp),%rax
-# ir_load_addr L32; (push)
+ lea -624(%rbp),%rax
+# ir_load_addr L35; (push)
 
  mov $10,%edx
  mov %rax,%rsi
@@ -1261,52 +1280,52 @@ cb__Naoc__Naoc01$w721$body:
  call cb__Naoc__NparseIntRem__Aptr__Ttuple__Tint__Tslice__Tpure__Tuint8__Tbool__Aptr__Tslice__Tpure__Tuint8__Aint
 # ir_call cb__Naoc__NparseIntRem__Aptr__Ttuple__Tint__Tslice__Tpure__Tuint8__Tbool__Aptr__Tslice__Tpure__Tuint8__Aint POP() POP() 10;
 
- mov -672(%rbp),%r10d
- mov %r10d,-596(%rbp)
-# ir_load L35 [L37 . 0];
+ mov -736(%rbp),%r10d
+ mov %r10d,-660(%rbp)
+# ir_load L38 [L40 . 0];
 
  push %rdi
  push %rsi
- lea -592(%rbp),%rdi
+ lea -656(%rbp),%rdi
+ lea -720(%rbp),%rsi
+ mov $16,%rcx
+ rep movsb
+ pop %rsi
+ pop %rdi
+# ir_copy L37 [L40 . 1] 16;
+
+ mov -704(%rbp),%r10b
+ mov %r10b,-625(%rbp)
+# ir_load L36 [L40 . 2];
+
+ push %rdi
+ push %rsi
+ lea -16(%rbp),%rdi
  lea -656(%rbp),%rsi
  mov $16,%rcx
  rep movsb
  pop %rsi
  pop %rdi
-# ir_copy L34 [L37 . 1] 16;
+# ir_copy L0 L37 16;
 
- mov -640(%rbp),%r10b
- mov %r10b,-561(%rbp)
-# ir_load L33 [L37 . 2];
-
- push %rdi
- push %rsi
- lea -16(%rbp),%rdi
- lea -592(%rbp),%rsi
- mov $16,%rcx
- rep movsb
- pop %rsi
- pop %rdi
-# ir_copy L0 L34 16;
-
- mov -561(%rbp),%r10b
+ mov -625(%rbp),%r10b
  cmp $0,%r10b
  je cb__Naoc__Naoc01$if718$else
-# ir_jmp_eq L33 0 cb__Naoc__Naoc01$if718$else;
+# ir_jmp_eq L36 0 cb__Naoc__Naoc01$if718$else;
 
 cb__Naoc__Naoc01$if718$body:
 # ir_make_label cb__Naoc__Naoc01$if718$body;
 
- mov -192(%rbp),%rax
-# ir_deref [L10 . 0]; (push)
+ mov -256(%rbp),%rax
+# ir_deref [L13 . 0]; (push)
 
  movsxd -20(%rbp),%r10
  lea 0(%rax,%r10,4),%rax
 # ir_index POP() L1; (push)
 
- mov -596(%rbp),%r10d
+ mov -660(%rbp),%r10d
  mov %r10d,(%rax)
-# ir_load POP() L35;
+# ir_load POP() L38;
 
  mov -20(%rbp),%r10d
  add $1,%r10d
@@ -1343,42 +1362,42 @@ cb__Naoc__Naoc01$w721$end:
 # ir_load L3 0;
 
  mov $1,%r10d
- mov %r10d,-684(%rbp)
-# ir_load [L39 . 0] 1;
+ mov %r10d,-748(%rbp)
+# ir_load [L42 . 0] 1;
 
  mov -20(%rbp),%r10d
- mov %r10d,-680(%rbp)
-# ir_load [L39 . 1] L1;
+ mov %r10d,-744(%rbp)
+# ir_load [L42 . 1] L1;
 
- mov -684(%rbp),%r10d
- mov %r10d,-676(%rbp)
-# ir_load L38 [L39 . 0];
+ mov -748(%rbp),%r10d
+ mov %r10d,-740(%rbp)
+# ir_load L41 [L42 . 0];
 
 cb__Naoc__Naoc01$f755$cond:
 # ir_make_label cb__Naoc__Naoc01$f755$cond;
 
- mov -676(%rbp),%r10d
- cmp -680(%rbp),%r10d
+ mov -740(%rbp),%r10d
+ cmp -744(%rbp),%r10d
  jge cb__Naoc__Naoc01$f755$end
-# ir_jmp_gte L38 [L39 . 1] cb__Naoc__Naoc01$f755$end;
+# ir_jmp_gte L41 [L42 . 1] cb__Naoc__Naoc01$f755$end;
 
 cb__Naoc__Naoc01$f755$body:
 # ir_make_label cb__Naoc__Naoc01$f755$body;
 
- mov -192(%rbp),%rax
-# ir_deref [L10 . 0]; (push)
+ mov -256(%rbp),%rax
+# ir_deref [L13 . 0]; (push)
 
- movsxd -676(%rbp),%r10
+ movsxd -740(%rbp),%r10
  lea 0(%rax,%r10,4),%rbx
-# ir_index POP() L38; (push)
+# ir_index POP() L41; (push)
 
- mov -192(%rbp),%r12
-# ir_deref [L10 . 0]; (push)
+ mov -256(%rbp),%r12
+# ir_deref [L13 . 0]; (push)
 
- mov -676(%rbp),%r10d
+ mov -740(%rbp),%r10d
  sub $1,%r10d
  mov %r10d,%eax
-# ir_sub L38 1; (push)
+# ir_sub L41 1; (push)
 
  movsxd %eax,%r10
  lea 0(%r12,%r10,4),%rax
@@ -1403,13 +1422,13 @@ cb__Naoc__Naoc01$if752$body:
 cb__Naoc__Naoc01$if752$else:
 # ir_make_label cb__Naoc__Naoc01$if752$else;
 
- mov -676(%rbp),%r10d
+ mov -740(%rbp),%r10d
  add $1,%r10d
  mov %r10d,%eax
-# ir_add L38 1; (push)
+# ir_add L41 1; (push)
 
- mov %eax,-676(%rbp)
-# ir_load L38 POP();
+ mov %eax,-740(%rbp)
+# ir_load L41 POP();
 
  jmp cb__Naoc__Naoc01$f755$cond
 # ir_jmp cb__Naoc__Naoc01$f755$cond;
@@ -1420,39 +1439,39 @@ cb__Naoc__Naoc01$f755$end:
  lea .cbstr4,%rax
 # ir_load_addr STR4; (push)
 
- mov %rax,-432(%rbp)
-# ir_load [L24 . 0] POP();
+ mov %rax,-496(%rbp)
+# ir_load [L27 . 0] POP();
 
  xor %r10d,%r10d
- mov %r10,-424(%rbp)
-# ir_load [L24 . 1] 0;
+ mov %r10,-488(%rbp)
+# ir_load [L27 . 1] 0;
 
- lea -432(%rbp),%rax
-# ir_load_addr L24; (push)
+ lea -496(%rbp),%rax
+# ir_load_addr L27; (push)
 
  mov %rax,%rdi
  call cb__Naoc__Nprintln__Aptr__Tslice__Tpure__Tuint8
 # ir_call cb__Naoc__Nprintln__Aptr__Tslice__Tpure__Tuint8 POP();
 
  xor %r10d,%r10d
- mov %r10d,-696(%rbp)
-# ir_load [L41 . 0] 0;
+ mov %r10d,-760(%rbp)
+# ir_load [L44 . 0] 0;
 
  mov -20(%rbp),%r10d
- mov %r10d,-692(%rbp)
-# ir_load [L41 . 1] L1;
+ mov %r10d,-756(%rbp)
+# ir_load [L44 . 1] L1;
 
- mov -696(%rbp),%r10d
- mov %r10d,-688(%rbp)
-# ir_load L40 [L41 . 0];
+ mov -760(%rbp),%r10d
+ mov %r10d,-752(%rbp)
+# ir_load L43 [L44 . 0];
 
 cb__Naoc__Naoc01$f797$cond:
 # ir_make_label cb__Naoc__Naoc01$f797$cond;
 
- mov -688(%rbp),%r10d
- cmp -692(%rbp),%r10d
+ mov -752(%rbp),%r10d
+ cmp -756(%rbp),%r10d
  jge cb__Naoc__Naoc01$f797$end
-# ir_jmp_gte L40 [L41 . 1] cb__Naoc__Naoc01$f797$end;
+# ir_jmp_gte L43 [L44 . 1] cb__Naoc__Naoc01$f797$end;
 
 cb__Naoc__Naoc01$f797$body:
 # ir_make_label cb__Naoc__Naoc01$f797$body;
@@ -1462,35 +1481,35 @@ cb__Naoc__Naoc01$f797$body:
  mov %r10d,%eax
 # ir_sub L1 2; (push)
 
- mov -688(%rbp),%r10d
+ mov -752(%rbp),%r10d
  cmp %eax,%r10d
  jge cb__Naoc__Naoc01$if794$else
-# ir_jmp_gte L40 POP() cb__Naoc__Naoc01$if794$else;
+# ir_jmp_gte L43 POP() cb__Naoc__Naoc01$if794$else;
 
 cb__Naoc__Naoc01$if794$body:
 # ir_make_label cb__Naoc__Naoc01$if794$body;
 
+ mov -320(%rbp),%rax
+# ir_deref [L16 . 0]; (push)
+
+ movsxd -752(%rbp),%r10
+ lea 0(%rax,%r10,4),%rbx
+# ir_index POP() L43; (push)
+
  mov -256(%rbp),%rax
 # ir_deref [L13 . 0]; (push)
 
- movsxd -688(%rbp),%r10
- lea 0(%rax,%r10,4),%rbx
-# ir_index POP() L40; (push)
-
- mov -192(%rbp),%rax
-# ir_deref [L10 . 0]; (push)
-
- movsxd -688(%rbp),%r10
+ movsxd -752(%rbp),%r10
  lea 0(%rax,%r10,4),%r12
-# ir_index POP() L40; (push)
+# ir_index POP() L43; (push)
 
- mov -192(%rbp),%r13
-# ir_deref [L10 . 0]; (push)
+ mov -256(%rbp),%r13
+# ir_deref [L13 . 0]; (push)
 
- mov -688(%rbp),%r10d
+ mov -752(%rbp),%r10d
  add $1,%r10d
  mov %r10d,%eax
-# ir_add L40 1; (push)
+# ir_add L43 1; (push)
 
  movsxd %eax,%r10
  lea 0(%r13,%r10,4),%rax
@@ -1501,13 +1520,13 @@ cb__Naoc__Naoc01$if794$body:
  mov %r10d,%r12d
 # ir_add POP() POP(); (push)
 
- mov -192(%rbp),%r13
-# ir_deref [L10 . 0]; (push)
+ mov -256(%rbp),%r13
+# ir_deref [L13 . 0]; (push)
 
- mov -688(%rbp),%r10d
+ mov -752(%rbp),%r10d
  add $2,%r10d
  mov %r10d,%eax
-# ir_add L40 2; (push)
+# ir_add L43 2; (push)
 
  movsxd %eax,%r10
  lea 0(%r13,%r10,4),%rax
@@ -1523,13 +1542,13 @@ cb__Naoc__Naoc01$if794$body:
 cb__Naoc__Naoc01$if794$else:
 # ir_make_label cb__Naoc__Naoc01$if794$else;
 
- mov -688(%rbp),%r10d
+ mov -752(%rbp),%r10d
  add $1,%r10d
  mov %r10d,%eax
-# ir_add L40 1; (push)
+# ir_add L43 1; (push)
 
- mov %eax,-688(%rbp)
-# ir_load L40 POP();
+ mov %eax,-752(%rbp)
+# ir_load L43 POP();
 
  jmp cb__Naoc__Naoc01$f797$cond
 # ir_jmp cb__Naoc__Naoc01$f797$cond;
@@ -1538,42 +1557,42 @@ cb__Naoc__Naoc01$f797$end:
 # ir_make_label cb__Naoc__Naoc01$f797$end;
 
  mov $1,%r10d
- mov %r10d,-708(%rbp)
-# ir_load [L43 . 0] 1;
+ mov %r10d,-772(%rbp)
+# ir_load [L46 . 0] 1;
 
  mov -20(%rbp),%r10d
- mov %r10d,-704(%rbp)
-# ir_load [L43 . 1] L1;
+ mov %r10d,-768(%rbp)
+# ir_load [L46 . 1] L1;
 
- mov -708(%rbp),%r10d
- mov %r10d,-700(%rbp)
-# ir_load L42 [L43 . 0];
+ mov -772(%rbp),%r10d
+ mov %r10d,-764(%rbp)
+# ir_load L45 [L46 . 0];
 
 cb__Naoc__Naoc01$f822$cond:
 # ir_make_label cb__Naoc__Naoc01$f822$cond;
 
- mov -700(%rbp),%r10d
- cmp -704(%rbp),%r10d
+ mov -764(%rbp),%r10d
+ cmp -768(%rbp),%r10d
  jge cb__Naoc__Naoc01$f822$end
-# ir_jmp_gte L42 [L43 . 1] cb__Naoc__Naoc01$f822$end;
+# ir_jmp_gte L45 [L46 . 1] cb__Naoc__Naoc01$f822$end;
 
 cb__Naoc__Naoc01$f822$body:
 # ir_make_label cb__Naoc__Naoc01$f822$body;
 
- mov -256(%rbp),%rax
-# ir_deref [L13 . 0]; (push)
+ mov -320(%rbp),%rax
+# ir_deref [L16 . 0]; (push)
 
- movsxd -700(%rbp),%r10
+ movsxd -764(%rbp),%r10
  lea 0(%rax,%r10,4),%rbx
-# ir_index POP() L42; (push)
+# ir_index POP() L45; (push)
 
- mov -256(%rbp),%r12
-# ir_deref [L13 . 0]; (push)
+ mov -320(%rbp),%r12
+# ir_deref [L16 . 0]; (push)
 
- mov -700(%rbp),%r10d
+ mov -764(%rbp),%r10d
  sub $1,%r10d
  mov %r10d,%eax
-# ir_sub L42 1; (push)
+# ir_sub L45 1; (push)
 
  movsxd %eax,%r10
  lea 0(%r12,%r10,4),%rax
@@ -1598,13 +1617,13 @@ cb__Naoc__Naoc01$if819$body:
 cb__Naoc__Naoc01$if819$else:
 # ir_make_label cb__Naoc__Naoc01$if819$else;
 
- mov -700(%rbp),%r10d
+ mov -764(%rbp),%r10d
  add $1,%r10d
  mov %r10d,%eax
-# ir_add L42 1; (push)
+# ir_add L45 1; (push)
 
- mov %eax,-700(%rbp)
-# ir_load L42 POP();
+ mov %eax,-764(%rbp)
+# ir_load L45 POP();
 
  jmp cb__Naoc__Naoc01$f822$cond
 # ir_jmp cb__Naoc__Naoc01$f822$cond;
@@ -1615,15 +1634,15 @@ cb__Naoc__Naoc01$f822$end:
  lea .cbstr5,%rax
 # ir_load_addr STR5; (push)
 
- mov %rax,-448(%rbp)
-# ir_load [L25 . 0] POP();
+ mov %rax,-512(%rbp)
+# ir_load [L28 . 0] POP();
 
  mov $16,%r10d
- mov %r10,-440(%rbp)
-# ir_load [L25 . 1] 16;
+ mov %r10,-504(%rbp)
+# ir_load [L28 . 1] 16;
 
- lea -448(%rbp),%rax
-# ir_load_addr L25; (push)
+ lea -512(%rbp),%rax
+# ir_load_addr L28; (push)
 
  mov %rax,%rdi
  call cb__Naoc__Nprint__Aptr__Tslice__Tpure__Tuint8
@@ -1636,15 +1655,15 @@ cb__Naoc__Naoc01$f822$end:
  lea .cbstr4,%rax
 # ir_load_addr STR4; (push)
 
- mov %rax,-464(%rbp)
-# ir_load [L26 . 0] POP();
+ mov %rax,-528(%rbp)
+# ir_load [L29 . 0] POP();
 
  xor %r10d,%r10d
- mov %r10,-456(%rbp)
-# ir_load [L26 . 1] 0;
+ mov %r10,-520(%rbp)
+# ir_load [L29 . 1] 0;
 
- lea -464(%rbp),%rax
-# ir_load_addr L26; (push)
+ lea -528(%rbp),%rax
+# ir_load_addr L29; (push)
 
  mov %rax,%rdi
  call cb__Naoc__Nprintln__Aptr__Tslice__Tpure__Tuint8
@@ -1653,15 +1672,15 @@ cb__Naoc__Naoc01$f822$end:
  lea .cbstr6,%rax
 # ir_load_addr STR6; (push)
 
- mov %rax,-480(%rbp)
-# ir_load [L27 . 0] POP();
+ mov %rax,-544(%rbp)
+# ir_load [L30 . 0] POP();
 
  mov $20,%r10d
- mov %r10,-472(%rbp)
-# ir_load [L27 . 1] 20;
+ mov %r10,-536(%rbp)
+# ir_load [L30 . 1] 20;
 
- lea -480(%rbp),%rax
-# ir_load_addr L27; (push)
+ lea -544(%rbp),%rax
+# ir_load_addr L30; (push)
 
  mov %rax,%rdi
  call cb__Naoc__Nprint__Aptr__Tslice__Tpure__Tuint8
@@ -1674,15 +1693,15 @@ cb__Naoc__Naoc01$f822$end:
  lea .cbstr4,%rax
 # ir_load_addr STR4; (push)
 
- mov %rax,-496(%rbp)
-# ir_load [L28 . 0] POP();
+ mov %rax,-560(%rbp)
+# ir_load [L31 . 0] POP();
 
  xor %r10d,%r10d
- mov %r10,-488(%rbp)
-# ir_load [L28 . 1] 0;
+ mov %r10,-552(%rbp)
+# ir_load [L31 . 1] 0;
 
- lea -496(%rbp),%rax
-# ir_load_addr L28; (push)
+ lea -560(%rbp),%rax
+# ir_load_addr L31; (push)
 
  mov %rax,%rdi
  call cb__Naoc__Nprintln__Aptr__Tslice__Tpure__Tuint8
@@ -1691,15 +1710,15 @@ cb__Naoc__Naoc01$f822$end:
  lea .cbstr7,%rax
 # ir_load_addr STR7; (push)
 
- mov %rax,-80(%rbp)
-# ir_load [L6 . 0] POP();
+ mov %rax,-144(%rbp)
+# ir_load [L9 . 0] POP();
 
  mov $11,%r10d
- mov %r10,-72(%rbp)
-# ir_load [L6 . 1] 11;
+ mov %r10,-136(%rbp)
+# ir_load [L9 . 1] 11;
 
- mov -80(%rbp),%rax
-# ir_deref [L6 . 0]; (push)
+ mov -144(%rbp),%rax
+# ir_deref [L9 . 0]; (push)
 
  mov $1,%r10
  lea 0(%rax,%r10,1),%rax
@@ -1708,8 +1727,8 @@ cb__Naoc__Naoc01$f822$end:
  lea (%rax),%rax
 # ir_load_addr POP(); (push)
 
- mov %rax,-512(%rbp)
-# ir_load [L29 . 0] POP();
+ mov %rax,-576(%rbp)
+# ir_load [L32 . 0] POP();
 
  mov $10,%r10d
  sub $1,%r10d
@@ -1719,11 +1738,11 @@ cb__Naoc__Naoc01$f822$end:
  movsxd %eax,%rax
 # ir_cast POP(); (push)
 
- mov %rax,-504(%rbp)
-# ir_load [L29 . 1] POP();
+ mov %rax,-568(%rbp)
+# ir_load [L32 . 1] POP();
 
- lea -512(%rbp),%rax
-# ir_load_addr L29; (push)
+ lea -576(%rbp),%rax
+# ir_load_addr L32; (push)
 
  mov %rax,%rdi
  call cb__Naoc__Nprintln__Aptr__Tslice__Tpure__Tuint8
@@ -1745,75 +1764,134 @@ cb__Naoc__Naoc01$f822$end:
  mov %r10b,-56(%rbp)
 # ir_load [L5 . 1] 1;
 
- mov $16,%rdi
- call cb__Naoc__Nprintln__Aint
-# ir_call cb__Naoc__Nprintln__Aint 16;
-
  movdqa -48(%rbp),%xmm0
  psadbw -64(%rbp),%xmm0
+ pshufb .cmp16selector,%xmm0
  movq %xmm0,%r10
  cmp $0,%r10d
- jne cb__Naoc__Naoc01$if924$else
-# ir_jmp_neq L4 L5 cb__Naoc__Naoc01$if924$else;
+ jne cb__Naoc__Naoc01$if913$else
+# ir_jmp_neq L4 L5 cb__Naoc__Naoc01$if913$else;
 
-cb__Naoc__Naoc01$if924$body:
-# ir_make_label cb__Naoc__Naoc01$if924$body;
+cb__Naoc__Naoc01$if913$body:
+# ir_make_label cb__Naoc__Naoc01$if913$body;
 
  lea .cbstr8,%rax
 # ir_load_addr STR8; (push)
 
- mov %rax,-736(%rbp)
-# ir_load [L44 . 0] POP();
+ mov %rax,-800(%rbp)
+# ir_load [L47 . 0] POP();
 
  mov $5,%r10d
- mov %r10,-728(%rbp)
-# ir_load [L44 . 1] 5;
+ mov %r10,-792(%rbp)
+# ir_load [L47 . 1] 5;
 
- lea -736(%rbp),%rax
-# ir_load_addr L44; (push)
+ lea -800(%rbp),%rax
+# ir_load_addr L47; (push)
 
  mov %rax,%rdi
  call cb__Naoc__Nprintln__Aptr__Tslice__Tpure__Tuint8
 # ir_call cb__Naoc__Nprintln__Aptr__Tslice__Tpure__Tuint8 POP();
 
- jmp cb__Naoc__Naoc01$if924$end
-# ir_jmp cb__Naoc__Naoc01$if924$end;
+ jmp cb__Naoc__Naoc01$if913$end
+# ir_jmp cb__Naoc__Naoc01$if913$end;
 
-cb__Naoc__Naoc01$if924$else:
-# ir_make_label cb__Naoc__Naoc01$if924$else;
+cb__Naoc__Naoc01$if913$else:
+# ir_make_label cb__Naoc__Naoc01$if913$else;
 
  lea .cbstr9,%rax
 # ir_load_addr STR9; (push)
 
- mov %rax,-752(%rbp)
-# ir_load [L45 . 0] POP();
+ mov %rax,-816(%rbp)
+# ir_load [L48 . 0] POP();
 
  mov $9,%r10d
- mov %r10,-744(%rbp)
-# ir_load [L45 . 1] 9;
+ mov %r10,-808(%rbp)
+# ir_load [L48 . 1] 9;
 
- lea -752(%rbp),%rax
-# ir_load_addr L45; (push)
+ lea -816(%rbp),%rax
+# ir_load_addr L48; (push)
 
  mov %rax,%rdi
  call cb__Naoc__Nprintln__Aptr__Tslice__Tpure__Tuint8
 # ir_call cb__Naoc__Nprintln__Aptr__Tslice__Tpure__Tuint8 POP();
 
-cb__Naoc__Naoc01$if924$end:
-# ir_make_label cb__Naoc__Naoc01$if924$end;
+cb__Naoc__Naoc01$if913$end:
+# ir_make_label cb__Naoc__Naoc01$if913$end;
+
+ xor %r10d,%r10d
+ mov %r10,-112(%rbp)
+# ir_load [L6 . 0] 0;
+
+ xor %r10d,%r10d
+ mov %r10,-104(%rbp)
+# ir_load [L6 . 1] 0;
+
+ xor %r10d,%r10d
+ mov %r10,-96(%rbp)
+# ir_load [L6 . 2] 0;
+
+ xor %r10d,%r10d
+ mov %r10,-88(%rbp)
+# ir_load [L6 . 3] 0;
+
+ xor %r10d,%r10d
+ mov %r10,-80(%rbp)
+# ir_load [L6 . 4] 0;
+
+ lea -96(%rbp),%rax
+# ir_load_addr [L6 . 2]; (push)
+
+ mov %rax,-120(%rbp)
+# ir_load L7 POP();
+
+ lea -88(%rbp),%rax
+# ir_load_addr [L6 . 3]; (push)
+
+ mov %rax,-128(%rbp)
+# ir_load L8 POP();
+
+ mov $48,%rdi
+ call cb__Naoc__Nprintln__Aint
+# ir_call cb__Naoc__Nprintln__Aint 48;
+
+ mov -128(%rbp),%r10
+ sub -120(%rbp),%r10
+ mov %r10,%rax
+# ir_sub L8 L7; (push)
+
+ mov %rax,%rdi
+ call cb__Naoc__Nprintln__Ausize
+# ir_call cb__Naoc__Nprintln__Ausize POP();
 
  push %rdi
  push %rsi
- lea -416(%rbp),%rdi
+ lea -480(%rbp),%rdi
+ lea -320(%rbp),%rsi
+ mov $16,%rcx
+ rep movsb
+ pop %rsi
+ pop %rdi
+# ir_copy L26 L16 16;
+
+ lea -480(%rbp),%rax
+# ir_load_addr L26; (push)
+
+ mov %rax,%rdi
+ call cb__Naoc__Nfree__Aptr__Tslice__Tint
+# ir_call cb__Naoc__Nfree__Aptr__Tslice__Tint POP();
+
+ push %rdi
+ push %rsi
+ lea -448(%rbp),%rdi
  lea -256(%rbp),%rsi
  mov $16,%rcx
  rep movsb
  pop %rsi
  pop %rdi
-# ir_copy L23 L13 16;
+# ir_copy L24 L13 16;
 
- lea -416(%rbp),%rax
-# ir_load_addr L23; (push)
+ lea -448(%rbp),%rax
+# ir_load_addr L24; (push)
 
  mov %rax,%rdi
  call cb__Naoc__Nfree__Aptr__Tslice__Tint
@@ -1821,41 +1899,24 @@ cb__Naoc__Naoc01$if924$end:
 
  push %rdi
  push %rsi
- lea -384(%rbp),%rdi
- lea -192(%rbp),%rsi
+ lea -400(%rbp),%rdi
+ lea -208(%rbp),%rsi
  mov $16,%rcx
  rep movsb
  pop %rsi
  pop %rdi
-# ir_copy L21 L10 16;
+# ir_copy L21 L11 16;
 
- lea -384(%rbp),%rax
+ lea -400(%rbp),%rax
 # ir_load_addr L21; (push)
-
- mov %rax,%rdi
- call cb__Naoc__Nfree__Aptr__Tslice__Tint
-# ir_call cb__Naoc__Nfree__Aptr__Tslice__Tint POP();
-
- push %rdi
- push %rsi
- lea -336(%rbp),%rdi
- lea -144(%rbp),%rsi
- mov $16,%rcx
- rep movsb
- pop %rsi
- pop %rdi
-# ir_copy L18 L8 16;
-
- lea -336(%rbp),%rax
-# ir_load_addr L18; (push)
 
  mov %rax,%rdi
  call cb__Naoc__Nfree__Aptr__Tslice__Tuint8
 # ir_call cb__Naoc__Nfree__Aptr__Tslice__Tuint8 POP();
 
- mov -280(%rbp),%rdi
+ mov -344(%rbp),%rdi
  call cb__Nstd__Nsystem__Nclose__AFileHandle
-# ir_call cb__Nstd__Nsystem__Nclose__AFileHandle L15; (push)
+# ir_call cb__Nstd__Nsystem__Nclose__AFileHandle L18; (push)
 
 # ir_noop POP();
 
@@ -1863,7 +1924,7 @@ cb__Naoc__Naoc01$if924$end:
 # ir_return L2;
 
 cb__Naoc__Naoc01$end:
- add $792,%rsp
+ add $856,%rsp
  pop %r13
  pop %r12
  pop %rbx

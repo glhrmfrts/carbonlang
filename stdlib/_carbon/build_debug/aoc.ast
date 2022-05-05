@@ -1843,16 +1843,6 @@ module aoc
               init_expr end
           decl_list end
           stmt_list
-            call
-              identifier println
-              arg_list
-                cast_expr
-                  type_expr
-                    identifier int
-                  int_literal 16
-              arg_list end
-          stmt_list end
-          stmt_list
             if{binary  
                 identifier val
                 identifier val2 compound_stmt
@@ -1918,6 +1908,118 @@ module aoc
                     arg_list end
                 stmt_list end
               compound_stmt end}
+          stmt_list end
+          decl_list
+            var_decl
+              arg_list
+                identifier values
+              arg_list end
+            .type
+              type_expr
+                tuple_type
+                  arg_list
+                    type_expr
+                      identifier usize
+                    type_expr
+                      identifier usize
+                    type_expr
+                      identifier usize
+                    type_expr
+                      identifier usize
+                    type_expr
+                      identifier usize
+                  arg_list end
+            .value
+              init_expr
+                binary =
+                  field_expr
+                    identifier values
+                    identifier first
+                  cast_expr
+                    type_resolver usize
+                    int_literal 0
+                binary =
+                  field_expr
+                    identifier values
+                    identifier second
+                  cast_expr
+                    type_resolver usize
+                    int_literal 0
+                binary =
+                  field_expr
+                    identifier values
+                    identifier third
+                  cast_expr
+                    type_resolver usize
+                    int_literal 0
+                binary =
+                  field_expr
+                    identifier values
+                    identifier fourth
+                  cast_expr
+                    type_resolver usize
+                    int_literal 0
+                binary =
+                  field_expr
+                    identifier values
+                    identifier fifth
+                  cast_expr
+                    type_resolver usize
+                    int_literal 0
+              init_expr end
+            var_decl
+              arg_list
+                identifier offs3
+              arg_list end
+            .value
+              cast_expr
+                type_expr
+                  identifier uintptr
+                cast_expr
+                  type_expr
+                    type_qualifier ptr
+                      identifier opaque
+                  unary &
+                    field_expr
+                      identifier values
+                      identifier third
+            var_decl
+              arg_list
+                identifier offs4
+              arg_list end
+            .value
+              cast_expr
+                type_expr
+                  identifier uintptr
+                cast_expr
+                  type_expr
+                    type_qualifier ptr
+                      identifier opaque
+                  unary &
+                    field_expr
+                      identifier values
+                      identifier fourth
+          decl_list end
+          stmt_list
+            call
+              identifier println
+              arg_list
+                cast_expr
+                  type_expr
+                    identifier int
+                  int_literal 48
+              arg_list end
+          stmt_list end
+          stmt_list
+            call
+              identifier println
+              arg_list
+                cast_expr
+                  type_resolver usize
+                  binary -
+                    identifier offs4
+                    identifier offs3
+              arg_list end
           stmt_list end
           stmt_list
             return_stmt

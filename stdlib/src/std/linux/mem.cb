@@ -1,5 +1,6 @@
 import std::linux::syscall
 import std::system
+import std::io
 
 type AllocParameters = struct {
     prot: int
@@ -21,7 +22,9 @@ func alloc(sz: usize): {&opaque, error} {
     let params : AllocParameters
     params.prot = PROT_READ | PROT_WRITE
     params.flags = MAP_PRIVATE | MAP_ANONYMOUS
-    return alloc(sz, &params)
+    let v = alloc(sz, &params)
+    println(v.first)
+    return v
 }
 
 func free(ptr: &opaque, sz: usize) {

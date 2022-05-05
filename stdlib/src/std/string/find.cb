@@ -1,22 +1,23 @@
-// License: MPL-2.0
-// (c) 2021 Guilherme Nemeth <guilherme.nemeth@gmail.com>
+// License: MIT
+// (c) 2022 Guilherme Nemeth <guilherme.nemeth@gmail.com>
 
 // Returns the index of the first ocurrence of 'needle' in 'haystack'.
 // Also returns true if it was found, otherwise returns false.
-func find(haystack: string, needle: uint8): {usize, bool} {
+func findString(haystack: string, needle: uint8): {usize, bool} {
     for (i in 0, haystack.len) {
         if (haystack[i] == needle) {
             return cast(usize)i, true
         }
     }
+    // TODO: return nil
     return cast(usize)0, false
 }
 
 // Returns the index of the first ocurrence of 'needle' in 'haystack'.
 // Also returns true if it was found, otherwise returns false.
-func find(haystack: string, needle: string): {usize, bool} {
+func findString(haystack: string, needle: string): {usize, bool} {
     for (i in 0, haystack.len) {
-        if (haystack[i] == needle[0] && equals(haystack[i, i+needle.len], needle)) {
+        if (haystack[i] == needle[0] && i+needle.len < haystack.len && equals("", needle)) {
             return cast(usize)i, true
         }
     }
@@ -24,10 +25,21 @@ func find(haystack: string, needle: string): {usize, bool} {
 }
 
 /*
-@test func test_find() {
-    assert(find("Hello world", "world") == {6z, true})
-    assert(find("Hello world", "Hello") == {0, true})
-    assert(!find("Hello world", "Nope").second)
-    assert(!find("Hello world", "worldsuffix").second)
+import unittestlib
+
+#test
+func test_find_char() {
+    assertEqual(findString("Hello world", "world"),         {6z, true})
+    assertEqual(findString("Hello world", "Hello"),         {0, true})
+    assertEqual(findString("Hello world", "Nope"),          nil)
+    assertEqual(findString("Hello world", "worldsuffix"),   nil)
+}
+
+#test
+func test_find_chars() {
+    assertEqual(findString("Hello world", "world"), {6z, true})
+    assertEqual(findString("Hello world", "Hello"), {0, true})
+    assertEqual(findString("Hello world", "Nope"),  nil)
+
 }
 */

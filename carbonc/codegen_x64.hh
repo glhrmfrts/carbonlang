@@ -17,6 +17,7 @@ enum gen_register {
 
     xmm0,
     xmm1,
+    xmm7,
     rip,
 
     rax,

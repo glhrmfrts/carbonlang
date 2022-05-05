@@ -129,7 +129,7 @@ bool exists(const std::string& filename)
     return GetFileAttributesW(widen(filename).c_str()) != INVALID_FILE_ATTRIBUTES;
 #else
     struct stat buf = { 0 };
-    return stat(filename.c_str(), &buf) == 0;
+    return stat(filename.c_str(), &buf) >= 0;
 #endif
 }
 
@@ -169,6 +169,8 @@ bool create(const std::string& path)
         std::string err = narrow(werr);
         return false;
     }
+#else
+    mkdir(path.c_str(), 0700);
 #endif
 
     return true;

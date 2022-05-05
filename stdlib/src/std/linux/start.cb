@@ -1,7 +1,6 @@
 import std::system
 import std::mem as mem
 import std::linux::syscall
-import aoc
 
 func testAlloc() {
     let m, err = mem::alloc(16)
@@ -65,13 +64,9 @@ extern(C) func __carbon_main(argc: int, argv: & &pure uint8) {
     //let buf : [1]uint8
     //let c = []uint8{ &buf[0], sizeof(buf) }
     //read(stdin(), c)
-    write(stdout(), "Running aoc01:\n")
-    let res01 = aoc01()
-    if (res01 == 1832) {
-        println("AOC01: OK")
-    }
+
+    import root
+    main()
 
     exit(0)
-
-    // testMain(argc)
 }

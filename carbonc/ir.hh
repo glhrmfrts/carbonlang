@@ -8,8 +8,10 @@
 namespace carbon {
 
 enum ir_op {
-    ir_load,
-    ir_copy,
+    ir_load, // (dest, src)
+    ir_load_ptr, // (dest, &src)
+    ir_copy, // (dest, src, size)
+    ir_store, // (dest, value, offset, size)
     ir_cast,
     ir_add,
     ir_sub,
@@ -60,6 +62,7 @@ struct ir_arg_data {
 
 struct ir_stackpop {
     type_id type;
+    int from_instr_index = -1;
 
     inline bool operator ==(const ir_stackpop& other) const { return type == other.type; }
 };

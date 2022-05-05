@@ -1,0 +1,40 @@
+import std::system as sys
+
+func print(s : []pure uint8) {
+    sys::write(sys::stdout(), s)
+}
+
+func print(i : int) {
+    sys::writeInt(sys::stdout(), i)
+}
+
+func print(i : usize) {
+    print(cast(int)i)
+}
+
+func println(s : []pure uint8) {
+    sys::write(sys::stdout(), s)
+    sys::write(sys::stdout(), "\n")
+}
+
+func println(i : int) {
+    sys::writeInt(sys::stdout(), i)
+    sys::write(sys::stdout(), "\n")
+}
+
+func println(i : usize) {
+    println(cast(int)i)
+}
+
+func println(p: &opaque) {
+    println(cast(int)(cast(uintptr)p))
+}
+
+func println(b: bool) {
+    if (b) {
+        println("true")
+    }
+    else {
+        println("false")
+    }
+}

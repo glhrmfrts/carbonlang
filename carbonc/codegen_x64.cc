@@ -39,12 +39,14 @@ struct func_data {
 
 constexpr gen_register reg_result = rax;
 constexpr gen_register reg_intermediate = r10;
+constexpr gen_register reg_intermediate_xmm = xmm7;
 
 const char* register_names[] = {
     "invalid",
 
     "xmm0",
     "xmm1",
+    "xmm7",
     "rip",
 
     "rax",
@@ -287,7 +289,7 @@ struct generator {
                 sz = std::max(sz, args_size);
                 calls_ever_made = true;
             }
-            else if (inst.op == ir_copy) {
+            else if (inst.op == ir_copy || inst.op == ir_store) {
                 // ir_copy uses rcx as well
                 calls_ever_made = true;
             }
@@ -533,6 +535,8 @@ struct generator {
 
         determine_instrs_destination();
         fdata.local_data.resize(func.locals.size()); // resize for any created temps
+
+        // std::cout << func.demangled_name << std::endl;
 
         em->begin_func(func.name.c_str());
         em->comment("%s", func.demangled_name.c_str());
@@ -831,21 +835,80 @@ struct generator {
             push(toop(dest));
             break;
         }
-        case ir_load: {
+        case ir_load:
+        case ir_load_ptr: {
             auto [b, btype] = transform_ir_operand(instr.operands[1]);
             auto [a, atype] = transform_ir_operand(instr.operands[0]);
-
             if (is_mem(b)) {
-                move(adjust_for_type(reg_intermediate, atype), atype, b, btype);
+                (instr.op == ir_load_ptr)
+                    ? load_address(reg_intermediate, todest(b), btype)
+                    : move(adjust_for_type(reg_intermediate, atype), atype, b, btype);
+
                 b = toop(adjust_for_type(reg_intermediate, atype));
                 btype = atype;
             }
             else if (!is_reg(b)) {
-                move(adjust_for_type(reg_intermediate, btype), btype, b, btype);
+                (instr.op == ir_load_ptr)
+                    ? load_address(reg_intermediate, todest(b), btype)
+                    : move(adjust_for_type(reg_intermediate, btype), btype, b, btype);
+
                 b = toop(adjust_for_type(reg_intermediate, atype));
                 btype = atype;
             }
             move(todest(a), atype, b, btype);
+            break;
+        }
+        case ir_store: {
+            auto [d, dtype] = transform_ir_operand(instr.operands[3]);
+            auto [c, ctype] = transform_ir_operand(instr.operands[2]);
+            auto [b, btype] = transform_ir_operand(instr.operands[1]);
+            auto [a, atype] = transform_ir_operand(instr.operands[0]);
+
+            int_type offs = std::get<int_type>(c);
+            int_type sz = std::get<int_type>(d);
+
+            assert(is_mem(a) || !"ir_store requires a memory destination");
+
+            gen_addr addr = std::get<gen_addr>(a);
+            if (std::holds_alternative<int_type>(addr.offset)) {
+                addr.offset = std::get<int_type>(addr.offset) + offs;
+            }
+
+            if (sz <= 128 && sz % 8 == 0) {
+                if (btype.get().size != 8) {
+                    em->xor_(reg_intermediate, reg_intermediate);
+                }
+                move(adjust_for_type(reg_intermediate, btype), btype, b, btype);
+
+                while (sz > 0) {
+                    move(addr, atype, toop(adjust_for_type(reg_intermediate, atype)), atype);
+                    if (std::holds_alternative<int_type>(addr.offset)) {
+                        addr.offset = std::get<int_type>(addr.offset) + 8;
+                    }
+                    sz -= 8;
+                }
+            }
+            else {
+                em->push(rdi);
+                move(adjust_for_type(rax, btype), btype, b, btype);
+                em->mov(rcx, int_type(sz / btype.get().size));
+                load_address(rdi, todest(a), atype);
+                switch (btype.get().size) {
+                case 1:
+                    em->emitln(" rep stosb");
+                    break;
+                case 2:
+                    em->emitln(" rep stosw");
+                    break;
+                case 4:
+                    em->emitln(" rep stosd");
+                    break;
+                case 8:
+                    em->emitln(" rep stosq");
+                    break;
+                }
+                em->pop(rdi);
+            }
             break;
         }
         case ir_copy: {
@@ -992,27 +1055,65 @@ struct generator {
         }
     }
 
+    // Compares 16 bytes aligned aggregate types.
+    void cmp_aggregate_16(gen_operand a, gen_operand b, type_id atype, const ir_instr& instr, std::string jumplabel = "") {
+        std::string label = "";
+        if (!jumplabel.empty()) {
+            label = jumplabel;
+        }
+        else {
+            label = em->special_label(fn->name + "_cmp16end_" + std::to_string(instr.index));
+        }
+
+        // TODO: handle more ops?
+        const char* jmpop;
+        if (instr.op == ir_cmp_eq || instr.op == ir_jmp_neq) {
+            jmpop = "jne";
+        }
+        else if (instr.op == ir_cmp_neq || instr.op == ir_jmp_eq) {
+            jmpop = "je";
+        }
+
+        size_t sz = atype.get().size;
+
+        em->movdqa(xmm0, cmp16selector_addr);
+
+        gen_addr opa = std::get<gen_addr>(a);
+        gen_addr opb = std::get<gen_addr>(b);
+        while (sz > 0) {
+            em->movdqa(reg_intermediate_xmm, opa);
+            em->psadbw(reg_intermediate_xmm, opb); // Compute the absolute difference between 2 128-bit values
+            em->pshufb(reg_intermediate_xmm, xmm0); // Shuffle the bytes to get the 2 words together
+            em->movq(reg_intermediate, reg_intermediate_xmm); // Store the difference in the intermediate register
+            auto cmpa = toop(adjust_for_type(reg_intermediate, ts->int32_type)); // The result is a 32-bit value
+            auto cmpb = int_type(0); // Compare it to zero
+            em->cmp(cmpa, cmpb);
+            if (sz > 16) {
+                em->emitln(" %s %s", jmpop, label.c_str());
+            }
+
+            opa.offset = std::get<int_type>(opa.offset) + 16;
+            opb.offset = std::get<int_type>(opb.offset) + 16;
+            sz -= 16;
+        }
+
+        if (atype.get().size > 16 && jumplabel.empty()) { em->label(label.c_str()); }
+    }
+
     void emit_cmp_jmp(const ir_instr& instr, const char* j) {
         auto label = std::get<ir_label>(instr.operands.back());
         auto [b, btype] = transform_ir_operand(instr.operands[1]);
         auto [a, atype] = transform_ir_operand(instr.operands[0]);
-        if (is_aggregate_type(atype)) {
-            if (atype.get().size == 16) {
-                em->movdqa(xmm0, a);
-                em->psadbw(xmm0, b); // Compute the absolute difference between 2 128-bit values
-                em->pshufb(xmm0, cmp16selector_addr); // Shuffle the bytes to get the 2 words together
-                em->movq(reg_intermediate, xmm0); // Store the difference in the intermediate register
-                a = toop(adjust_for_type(reg_intermediate, ts->uint32_type)); // The result is a 32-bit value
-                b = int_type(0); // Compare it to zero
-            }
+        if (is_aggregate_type(atype) && (atype.get().size % 16 == 0)) {
+            cmp_aggregate_16(a, b, atype, instr, label.name);
         }
         else {
             if (!is_reg(a)) {
                 move(adjust_for_type(reg_intermediate, atype), atype, a, atype);
                 a = toop(adjust_for_type(reg_intermediate, atype));
             }
+            em->cmp(a, b);
         }
-        em->cmp(a, b);
         em->emitln(" %s %s", j, label.name.c_str());
     }
 
@@ -1024,25 +1125,19 @@ struct generator {
         auto bytedest = adjust_for_type(dest, ts->uint8_type);
         auto realdest = adjust_for_type(dest, instr.result_type);
 
-        if (is_aggregate_type(atype)) {
-            if (atype.get().size == 16) {
-                em->movdqa(xmm0, a);
-                em->psadbw(xmm0, b); // Compute the absolute difference between 2 128-bit values
-                em->pshufb(xmm0, cmp16selector_addr); // Shuffle the bytes to get the 2 words together
-                em->movq(reg_intermediate, xmm0); // Store the difference in the intermediate register
-                a = toop(adjust_for_type(reg_intermediate, ts->uint32_type)); // The result is a 32-bit value
-                b = int_type(0); // Compare it to zero
-            }
+        if (is_aggregate_type(atype) && (atype.get().size % 16 == 0)) {
+            cmp_aggregate_16(a, b, atype, instr);
+            em->set(set, bytedest);
         }
         else {
             if (!is_reg(a)) {
                 move(adjust_for_type(reg_intermediate, atype), atype, a, atype);
                 a = toop(adjust_for_type(reg_intermediate, atype));
             }
+            em->cmp(a, b);
+            em->set(set, bytedest);
         }
 
-        em->cmp(a, b);
-        em->set(set, bytedest);
         if (get_size(realdest) > get_size(bytedest)) {
             // Just in case bool size is > 1
             em->movzx(realdest, toop(bytedest));
@@ -1073,8 +1168,12 @@ struct generator {
     std::pair<gen_operand, type_id> transform_ir_field_ref(const ir_field* arg) {
         if (std::holds_alternative<ir_local>(arg->ref)) {
             int li = std::get<ir_local>(arg->ref).index;
-            auto type = std::get<ir_local>(arg->ref).type;
-            auto& field = type.get().structure.fields[arg->field_index];
+
+            auto stype = std::get<ir_local>(arg->ref).type;
+            if (stype.get().kind == type_kind::ptr) {
+                stype = stype.get().elem_type;
+            }
+            auto& field = stype.get().structure.fields[arg->field_index];
 
             auto dest = get_local_destination(li, field.type);
             auto& offs = std::get<gen_addr>(dest);

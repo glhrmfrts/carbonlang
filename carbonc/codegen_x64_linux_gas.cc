@@ -61,7 +61,15 @@ static std::string offset_tostr(const gen_addr& r) {
     return result;
 }
 
+struct Nice {
+    alignas(long long) bool first;
+    alignas(long long) bool second;
+};
+
 static std::string tostr(const gen_destination& d) {
+    sizeof(Nice);
+    alignof(Nice);
+
     return std::visit(overload{
         [](gen_register r) -> std::string {
             return std::string{"%"} + register_names[r];
@@ -243,6 +251,7 @@ struct codegen_x64_linux_gas_emitter : public codegen_x64_emitter {
     }
 
     virtual void add_global_bytes(std::string_view label, const std::vector<std::uint8_t>& bytes) {
+        emitln("    .align 16");
         emitln("    .size %s, %zu", label.data(), bytes.size());
         emitln("%s:", label.data());
         for (auto b : bytes) {

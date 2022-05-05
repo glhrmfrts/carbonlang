@@ -1,4 +1,0 @@
-code_unit{
-  std/libc/stdio.cb
-  decl_list{
-    linkage_specifier{ extern(C)}}}

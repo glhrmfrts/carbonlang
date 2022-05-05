@@ -1,4 +1,5 @@
 .data
+    .align 16
     .size .cmp16selector, 16
 .cmp16selector:
     .byte 0x0

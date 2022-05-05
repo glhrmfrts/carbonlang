@@ -1,7 +1,0 @@
-code_unit ./src/module/module.cb
-  decl_list
-    linkage_specifier{ extern(C)}
-  decl_list end
-
-code_unit ./src/module/module.cb end
-

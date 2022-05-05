@@ -1,0 +1,473 @@
+module std/linux/syscall
+
+  code_unit ../../stdlib/src/std/linux/syscall/syscall.cb
+    decl_list
+      var_decl
+        arg_list
+          identifier MAP_SHARED
+        arg_list end
+      .value
+        int_literal 1
+      var_decl
+        arg_list
+          identifier MAP_PRIVATE
+        arg_list end
+      .value
+        int_literal 2
+      var_decl
+        arg_list
+          identifier MAP_SHARED_VALIDATE
+        arg_list end
+      .value
+        int_literal 3
+      var_decl
+        arg_list
+          identifier MAP_TYPE
+        arg_list end
+      .value
+        int_literal 15
+      var_decl
+        arg_list
+          identifier MAP_FIXED
+        arg_list end
+      .value
+        int_literal 16
+      var_decl
+        arg_list
+          identifier MAP_ANON
+        arg_list end
+      .value
+        int_literal 32
+      var_decl
+        arg_list
+          identifier MAP_ANONYMOUS
+        arg_list end
+      .value
+        identifier MAP_ANON
+      var_decl
+        arg_list
+          identifier PROT_NONE
+        arg_list end
+      .value
+        int_literal 0
+      var_decl
+        arg_list
+          identifier PROT_READ
+        arg_list end
+      .value
+        int_literal 1
+      var_decl
+        arg_list
+          identifier PROT_WRITE
+        arg_list end
+      .value
+        int_literal 2
+      var_decl
+        arg_list
+          identifier PROT_EXEC
+        arg_list end
+      .value
+        int_literal 4
+      var_decl
+        arg_list
+          identifier PROT_GROWSDOWN
+        arg_list end
+      .value
+        int_literal 16777216
+      var_decl
+        arg_list
+          identifier PROT_GROWSUP
+        arg_list end
+      .value
+        int_literal 33554432
+      func_decl
+        identifier read
+        arg_list
+          var_decl
+            arg_list
+              identifier fd
+            arg_list end
+          .type
+            type_expr
+              identifier uint
+          var_decl
+            arg_list
+              identifier ptr
+            arg_list end
+          .type
+            type_expr
+              type_qualifier ptr
+                identifier uint8
+          var_decl
+            arg_list
+              identifier len
+            arg_list end
+          .type
+            type_expr
+              identifier usize
+        arg_list end
+        compound_stmt
+          decl_list
+            asm{
+    mov $0, %rax            # system call 0 is read
+                            # file handle is already in rdi
+                            # data is already in rsi
+                            # number of bytes is already in rdx
+    syscall
+
+}
+          decl_list end
+        compound_stmt end
+      func_decl
+        identifier write
+        arg_list
+          var_decl
+            arg_list
+              identifier fd
+            arg_list end
+          .type
+            type_expr
+              identifier uint
+          var_decl
+            arg_list
+              identifier ptr
+            arg_list end
+          .type
+            type_expr
+              type_qualifier ptr
+                type_qualifier pure
+                  identifier uint8
+          var_decl
+            arg_list
+              identifier len
+            arg_list end
+          .type
+            type_expr
+              identifier usize
+        arg_list end
+        compound_stmt
+          decl_list
+            asm{
+    mov $1, %rax            # system call 1 is write
+                            # file handle is already in rdi
+                            # data is already in rsi
+                            # number of bytes is already in rdx
+    syscall
+
+}
+          decl_list end
+        compound_stmt end
+      func_decl
+        identifier open
+        arg_list
+          var_decl
+            arg_list
+              identifier filename
+            arg_list end
+          .type
+            type_expr
+              type_qualifier ptr
+                type_qualifier pure
+                  identifier uint8
+          var_decl
+            arg_list
+              identifier flags
+            arg_list end
+          .type
+            type_expr
+              identifier int
+          var_decl
+            arg_list
+              identifier mode
+            arg_list end
+          .type
+            type_expr
+              identifier int16
+        arg_list end
+        type_expr
+          identifier int
+        compound_stmt
+          decl_list
+            asm{    mov $2, %rax
+    syscall
+}
+          decl_list end
+        compound_stmt end
+      func_decl
+        identifier close
+        arg_list
+          var_decl
+            arg_list
+              identifier fd
+            arg_list end
+          .type
+            type_expr
+              identifier uint
+        arg_list end
+        compound_stmt
+          decl_list
+            asm{    mov $3, %rax
+    syscall
+}
+          decl_list end
+        compound_stmt end
+      func_decl
+        identifier stat
+        arg_list
+          var_decl
+            arg_list
+              identifier filename
+            arg_list end
+          .type
+            type_expr
+              type_qualifier ptr
+                type_qualifier pure
+                  identifier uint8
+          var_decl
+            arg_list
+              identifier buf
+            arg_list end
+          .type
+            type_expr
+              type_qualifier ptr
+                identifier opaque
+        arg_list end
+        type_expr
+          identifier int
+        compound_stmt
+          decl_list
+            asm{    mov $4, %rax
+    syscall
+}
+          decl_list end
+        compound_stmt end
+      func_decl
+        identifier fstat
+        arg_list
+          var_decl
+            arg_list
+              identifier fd
+            arg_list end
+          .type
+            type_expr
+              identifier int
+          var_decl
+            arg_list
+              identifier buf
+            arg_list end
+          .type
+            type_expr
+              type_qualifier ptr
+                identifier opaque
+        arg_list end
+        type_expr
+          identifier int
+        compound_stmt
+          decl_list
+            asm{    mov $5, %rax
+    syscall
+}
+          decl_list end
+        compound_stmt end
+      func_decl
+        identifier mmap
+        arg_list
+          var_decl
+            arg_list
+              identifier addr
+            arg_list end
+          .type
+            type_expr
+              type_qualifier ptr
+                identifier opaque
+          var_decl
+            arg_list
+              identifier size
+            arg_list end
+          .type
+            type_expr
+              identifier usize
+          var_decl
+            arg_list
+              identifier prot
+            arg_list end
+          .type
+            type_expr
+              identifier int
+          var_decl
+            arg_list
+              identifier flags
+            arg_list end
+          .type
+            type_expr
+              identifier int
+          var_decl
+            arg_list
+              identifier fd
+            arg_list end
+          .type
+            type_expr
+              identifier int
+          var_decl
+            arg_list
+              identifier offs
+            arg_list end
+          .type
+            type_expr
+              identifier usize
+        arg_list end
+        type_expr
+          type_qualifier ptr
+            identifier opaque
+        compound_stmt
+          decl_list
+            asm{    mov $9, %rax
+    mov %rcx, %r10
+    syscall
+}
+          decl_list end
+        compound_stmt end
+      func_decl
+        identifier munmap
+        arg_list
+          var_decl
+            arg_list
+              identifier addr
+            arg_list end
+          .type
+            type_expr
+              type_qualifier ptr
+                identifier opaque
+          var_decl
+            arg_list
+              identifier size
+            arg_list end
+          .type
+            type_expr
+              identifier usize
+        arg_list end
+        compound_stmt
+          decl_list
+            asm{    mov $0xB, %rax
+    syscall
+}
+          decl_list end
+        compound_stmt end
+      func_decl
+        identifier rename
+        arg_list
+          var_decl
+            arg_list
+              identifier oldname
+            arg_list end
+          .type
+            type_expr
+              type_qualifier ptr
+                type_qualifier pure
+                  identifier uint8
+          var_decl
+            arg_list
+              identifier newname
+            arg_list end
+          .type
+            type_expr
+              type_qualifier ptr
+                type_qualifier pure
+                  identifier uint8
+        arg_list end
+        compound_stmt
+          decl_list
+            asm{    mov $0x52, %rax
+    syscall
+}
+          decl_list end
+        compound_stmt end
+      func_decl
+        identifier mkdir
+        arg_list
+          var_decl
+            arg_list
+              identifier pathname
+            arg_list end
+          .type
+            type_expr
+              type_qualifier ptr
+                type_qualifier pure
+                  identifier uint8
+          var_decl
+            arg_list
+              identifier mode
+            arg_list end
+          .type
+            type_expr
+              identifier int16
+        arg_list end
+        compound_stmt
+          decl_list
+            asm{    mov $0x53, %rax
+    syscall
+}
+          decl_list end
+        compound_stmt end
+      func_decl
+        identifier rmdir
+        arg_list
+          var_decl
+            arg_list
+              identifier pathname
+            arg_list end
+          .type
+            type_expr
+              type_qualifier ptr
+                type_qualifier pure
+                  identifier uint8
+        arg_list end
+        compound_stmt
+          decl_list
+            asm{    mov $0x54, %rax
+    syscall
+}
+          decl_list end
+        compound_stmt end
+      func_decl
+        identifier unlink
+        arg_list
+          var_decl
+            arg_list
+              identifier pathname
+            arg_list end
+          .type
+            type_expr
+              type_qualifier ptr
+                type_qualifier pure
+                  identifier uint8
+        arg_list end
+        compound_stmt
+          decl_list
+            asm{    mov $0x57, %rax
+    syscall
+}
+          decl_list end
+        compound_stmt end
+      func_decl
+        identifier exit
+        arg_list
+          var_decl
+            arg_list
+              identifier code
+            arg_list end
+          .type
+            type_expr
+              identifier int
+        arg_list end
+        compound_stmt
+          decl_list
+            asm{    mov $60, %rax           # system call 60 is exit
+                            # code is already in rdi
+    syscall
+}
+          decl_list end
+        compound_stmt end
+    decl_list end
+  code_unit ../../stdlib/src/std/linux/syscall/syscall.cb end
+module std/linux/syscall end

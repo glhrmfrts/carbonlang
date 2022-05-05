@@ -22,6 +22,7 @@ if that allocation counter reaches 0, the entire block is released.
 */
 
 import std::system as sys
+import std::io
 
 private {
 
@@ -74,6 +75,8 @@ asm%{
 func alloc(usersize: usize): {&opaque, error} {
     let asize = align(usersize, ALIGNMENT)
 
+    println("asdad")
+
     let pblock = lastBlock
     for (pblock != nil) {
         if (pblock.filled + asize < pblock.cap) {
@@ -88,6 +91,7 @@ func alloc(usersize: usize): {&opaque, error} {
 
     let memsize = align(sizeof(Block) + asize, PAGE_SIZE)
     let newmem, err = sys::alloc(memsize)
+    //println(cast(int)(cast(uintptr)newmem))
     if (err != noerr) {
         return nil, err
     }

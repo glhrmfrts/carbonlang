@@ -1,6 +1,0 @@
-code_unit{
-  memory.cb
-  decl_list{
-    import_decl{ std::system}
-    linkage_specifier{ extern(C)}
-    linkage_specifier{ extern std::system}}}

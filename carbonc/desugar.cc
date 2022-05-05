@@ -180,6 +180,10 @@ void check_var_decl_aggregate_call(type_system& ts, ast_node& node) {
         if (node.var_value()->call.flags & call_flag::is_aggregate_return) { return; }
 
         auto call = transform_aggregate_call_into_pointer_argument(ts, *node.var_id(), std::move(node.children[ast_node::child_var_decl_value]));
+
+        node.children[ast_node::child_var_decl_value] = make_init_tag_node(*ts.ast_arena, node.pos, token_type::noinit);
+        node.children[ast_node::child_var_decl_value]->tid = ts.void_type;
+
         node.pre_nodes.push_back(std::move(call));
     }
 }

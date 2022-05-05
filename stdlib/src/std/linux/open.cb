@@ -1,5 +1,6 @@
 import std::system
 import std::linux::syscall as syscall
+import std::io
 
 #define O_ACCMODE       00000003                                                                                                                                                                                                              
 #define O_RDONLY        00000000                                                                                                                                                                                                              
@@ -48,6 +49,9 @@ func toKernelFlags(flags: OpenFlags) : int {
 
 extern(carbon, std::system)
 func open(filename: []pure uint8, flags: OpenFlags, mode: int): {FileHandle, error} {
+    print("open: ")
+    println(filename)
+    
     let kflags = toKernelFlags(flags)
     let fd = syscall::open(filename.ptr, kflags, cast(int16) mode)
     return cast(FileHandle)fd, noerr

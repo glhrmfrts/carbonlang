@@ -1,0 +1,1 @@
+../../build_linux/carbonc/carbonc --carbon-path ../../ --include stdlib --verbose
