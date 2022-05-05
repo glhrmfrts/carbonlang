@@ -5,7 +5,7 @@ func print(s : []pure uint8) {
 }
 
 func print(i : int) {
-    sys::writeInt(sys::stdout(), i)
+    sys::write_int(sys::stdout(), i)
 }
 
 func print(i : usize) {
@@ -18,7 +18,7 @@ func println(s : []pure uint8) {
 }
 
 func println(i : int) {
-    sys::writeInt(sys::stdout(), i)
+    sys::write_int(sys::stdout(), i)
     sys::write(sys::stdout(), "\n")
 }
 

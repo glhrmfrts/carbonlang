@@ -3,7 +3,7 @@
 
 // Returns the index of the first ocurrence of 'needle' in 'haystack'.
 // Also returns true if it was found, otherwise returns false.
-func findString(haystack: string, needle: uint8): {usize, bool} {
+func find(haystack: string, needle: uint8): {usize, bool} {
     for (i in 0, haystack.len) {
         if (haystack[i] == needle) {
             return cast(usize)i, true
@@ -15,7 +15,7 @@ func findString(haystack: string, needle: uint8): {usize, bool} {
 
 // Returns the index of the first ocurrence of 'needle' in 'haystack'.
 // Also returns true if it was found, otherwise returns false.
-func findString(haystack: string, needle: string): {usize, bool} {
+func find(haystack: string, needle: string): {usize, bool} {
     for (i in 0, haystack.len) {
         if (haystack[i] == needle[0] && i+needle.len < haystack.len && equals("", needle)) {
             return cast(usize)i, true

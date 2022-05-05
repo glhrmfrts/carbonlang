@@ -22,9 +22,9 @@ func testMain(argc: int) {
         exit(1)
     }
 
-    writeInt(stdout(), 1412312)
+    write_int(stdout(), 1412312)
     write(stdout(), "\n")
-    writeInt(stdout(), cast(int)(cast(uintptr)ptr))
+    write_int(stdout(), cast(int)(cast(uintptr)ptr))
     write(stdout(), "\n")
 
     let arr = []int{ cast(&int) ptr, N }
@@ -37,7 +37,7 @@ func testMain(argc: int) {
     }
 
     for (i in 0,N) {
-        writeInt(stdout(), arr[i])
+        write_int(stdout(), arr[i])
         write(stdout(), ",")
     }
     write(stdout(), "\n")

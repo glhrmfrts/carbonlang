@@ -1,9 +1,9 @@
-.global cb__Nroot__NallocString__Aptr__Tslice__Tuint8__Ausize
-.global cb__Nroot__NallocIntSlice__Aptr__Ttuple__Tslice__Tint__Terror__Ausize
-.global cb__Nroot__NcountLines__Aptr__Tslice__Tpure__Tuint8
-.global cb__Nroot__NisNumeric__Auint8
-.global cb__Nroot__NtrimNonNumeric__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8
-.global cb__Nroot__NparseIntRem__Aptr__Ttuple__Tint__Tslice__Tpure__Tuint8__Tbool__Aptr__Tslice__Tpure__Tuint8__Aint
+.global cb__Nroot__Nalloc_string__Aptr__Tslice__Tuint8__Ausize
+.global cb__Nroot__Nalloc_int_slice__Aptr__Ttuple__Tslice__Tint__Terror__Ausize
+.global cb__Nroot__Ncount_lines__Aptr__Tslice__Tpure__Tuint8
+.global cb__Nroot__Nis_numeric__Auint8
+.global cb__Nroot__Ntrim_left_non_numeric__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8
+.global cb__Nroot__Nparse_int__Aptr__Ttuple__Tint__Tslice__Tpure__Tuint8__Tbool__Aptr__Tslice__Tpure__Tuint8__Aint
 .global cb__Nroot__Nmain
 .global cb__Nroot__Nfree__Aptr__Tslice__Tuint8
 .global cb__Nroot__Nfree__Aptr__Tslice__Tint
@@ -47,8 +47,8 @@
 .cbstr8:
     .string "Not Equal"
 .text
-cb__Nroot__NallocString__Aptr__Tslice__Tuint8__Ausize:
-# func allocString(&[]uint8, usize): &[]uint8
+cb__Nroot__Nalloc_string__Aptr__Tslice__Tuint8__Ausize:
+# func alloc_string(&[]uint8, usize): &[]uint8
  mov %rsi,16(%rsp)
  mov %rdi,8(%rsp)
  push %rbp
@@ -111,15 +111,15 @@ cb__Nroot__NallocString__Aptr__Tslice__Tuint8__Ausize:
  mov 32(%rbp),%rax
 # ir_return A0;
 
-cb__Nroot__NallocString__Aptr__Tslice__Tuint8__Ausize$end:
+cb__Nroot__Nalloc_string__Aptr__Tslice__Tuint8__Ausize$end:
  add $88,%rsp
  pop %rbx
  pop %rbp
  ret
 
 
-cb__Nroot__NallocIntSlice__Aptr__Ttuple__Tslice__Tint__Terror__Ausize:
-# func allocIntSlice(&{[]int, error}, usize): &{[]int, error}
+cb__Nroot__Nalloc_int_slice__Aptr__Ttuple__Tslice__Tint__Terror__Ausize:
+# func alloc_int_slice(&{[]int, error}, usize): &{[]int, error}
  mov %rsi,16(%rsp)
  mov %rdi,8(%rsp)
  push %rbp
@@ -152,11 +152,11 @@ cb__Nroot__NallocIntSlice__Aptr__Ttuple__Tslice__Tint__Terror__Ausize:
 
  mov -44(%rbp),%r10d
  cmp $0,%r10d
- je cb__Nroot__NallocIntSlice__Aptr__Ttuple__Tslice__Tint__Terror__Ausize$if100$else
-# ir_jmp_eq L3 0 cb__Nroot__NallocIntSlice__Aptr__Ttuple__Tslice__Tint__Terror__Ausize$if100$else;
+ je cb__Nroot__Nalloc_int_slice__Aptr__Ttuple__Tslice__Tint__Terror__Ausize$if100$else
+# ir_jmp_eq L3 0 cb__Nroot__Nalloc_int_slice__Aptr__Ttuple__Tslice__Tint__Terror__Ausize$if100$else;
 
-cb__Nroot__NallocIntSlice__Aptr__Ttuple__Tslice__Tint__Terror__Ausize$if100$body:
-# ir_make_label cb__Nroot__NallocIntSlice__Aptr__Ttuple__Tslice__Tint__Terror__Ausize$if100$body;
+cb__Nroot__Nalloc_int_slice__Aptr__Ttuple__Tslice__Tint__Terror__Ausize$if100$body:
+# ir_make_label cb__Nroot__Nalloc_int_slice__Aptr__Ttuple__Tslice__Tint__Terror__Ausize$if100$body;
 
  mov 32(%rbp),%r10
  mov %r10,-56(%rbp)
@@ -177,11 +177,11 @@ cb__Nroot__NallocIntSlice__Aptr__Ttuple__Tslice__Tint__Terror__Ausize$if100$body
 # ir_load [POP() . 1] L3;
 
  mov 32(%rbp),%rax
- jmp cb__Nroot__NallocIntSlice__Aptr__Ttuple__Tslice__Tint__Terror__Ausize$end
+ jmp cb__Nroot__Nalloc_int_slice__Aptr__Ttuple__Tslice__Tint__Terror__Ausize$end
 # ir_return A0;
 
-cb__Nroot__NallocIntSlice__Aptr__Ttuple__Tslice__Tint__Terror__Ausize$if100$else:
-# ir_make_label cb__Nroot__NallocIntSlice__Aptr__Ttuple__Tslice__Tint__Terror__Ausize$if100$else;
+cb__Nroot__Nalloc_int_slice__Aptr__Ttuple__Tslice__Tint__Terror__Ausize$if100$else:
+# ir_make_label cb__Nroot__Nalloc_int_slice__Aptr__Ttuple__Tslice__Tint__Terror__Ausize$if100$else;
 
  mov -40(%rbp),%r10
  mov %r10,-16(%rbp)
@@ -198,29 +198,29 @@ cb__Nroot__NallocIntSlice__Aptr__Ttuple__Tslice__Tint__Terror__Ausize$if100$else
  mov -72(%rbp),%rax
 # ir_deref L6; (push)
 
- xor %r10,%r10
+ mov -16(%rbp),%r10
  mov %r10,0(%rax)
-# ir_load [POP() . 0] 0;
+# ir_load [POP() . 0] L0;
 
  mov -72(%rbp),%rax
 # ir_deref L6; (push)
 
  xor %r10d,%r10d
- mov %r10d,8(%rax)
+ mov %r10d,16(%rax)
 # ir_load [POP() . 1] 0;
 
  mov 32(%rbp),%rax
 # ir_return A0;
 
-cb__Nroot__NallocIntSlice__Aptr__Ttuple__Tslice__Tint__Terror__Ausize$end:
+cb__Nroot__Nalloc_int_slice__Aptr__Ttuple__Tslice__Tint__Terror__Ausize$end:
  add $104,%rsp
  pop %rbx
  pop %rbp
  ret
 
 
-cb__Nroot__NcountLines__Aptr__Tslice__Tpure__Tuint8:
-# func countLines([]pure uint8): usize
+cb__Nroot__Ncount_lines__Aptr__Tslice__Tpure__Tuint8:
+# func count_lines([]pure uint8): usize
  push %rbp
  mov %rsp,%rbp
  sub $32,%rsp
@@ -245,18 +245,18 @@ cb__Nroot__NcountLines__Aptr__Tslice__Tpure__Tuint8:
  mov %r10d,-12(%rbp)
 # ir_load L1 [L2 . 0];
 
-cb__Nroot__NcountLines__Aptr__Tslice__Tpure__Tuint8$f179$cond:
-# ir_make_label cb__Nroot__NcountLines__Aptr__Tslice__Tpure__Tuint8$f179$cond;
+cb__Nroot__Ncount_lines__Aptr__Tslice__Tpure__Tuint8$f179$cond:
+# ir_make_label cb__Nroot__Ncount_lines__Aptr__Tslice__Tpure__Tuint8$f179$cond;
 
  movsxd -12(%rbp),%rax
 # ir_cast L1; (push)
 
  cmp -24(%rbp),%rax
- jge cb__Nroot__NcountLines__Aptr__Tslice__Tpure__Tuint8$f179$end
-# ir_jmp_gte POP() [L2 . 1] cb__Nroot__NcountLines__Aptr__Tslice__Tpure__Tuint8$f179$end;
+ jge cb__Nroot__Ncount_lines__Aptr__Tslice__Tpure__Tuint8$f179$end
+# ir_jmp_gte POP() [L2 . 1] cb__Nroot__Ncount_lines__Aptr__Tslice__Tpure__Tuint8$f179$end;
 
-cb__Nroot__NcountLines__Aptr__Tslice__Tpure__Tuint8$f179$body:
-# ir_make_label cb__Nroot__NcountLines__Aptr__Tslice__Tpure__Tuint8$f179$body;
+cb__Nroot__Ncount_lines__Aptr__Tslice__Tpure__Tuint8$f179$body:
+# ir_make_label cb__Nroot__Ncount_lines__Aptr__Tslice__Tpure__Tuint8$f179$body;
 
  mov %rdi,%rax
 # ir_deref A0; (push)
@@ -270,11 +270,11 @@ cb__Nroot__NcountLines__Aptr__Tslice__Tpure__Tuint8$f179$body:
 
  mov (%rax),%r10b
  cmp $10,%r10b
- jne cb__Nroot__NcountLines__Aptr__Tslice__Tpure__Tuint8$if176$else
-# ir_jmp_neq POP() #10 cb__Nroot__NcountLines__Aptr__Tslice__Tpure__Tuint8$if176$else;
+ jne cb__Nroot__Ncount_lines__Aptr__Tslice__Tpure__Tuint8$if176$else
+# ir_jmp_neq POP() #10 cb__Nroot__Ncount_lines__Aptr__Tslice__Tpure__Tuint8$if176$else;
 
-cb__Nroot__NcountLines__Aptr__Tslice__Tpure__Tuint8$if176$body:
-# ir_make_label cb__Nroot__NcountLines__Aptr__Tslice__Tpure__Tuint8$if176$body;
+cb__Nroot__Ncount_lines__Aptr__Tslice__Tpure__Tuint8$if176$body:
+# ir_make_label cb__Nroot__Ncount_lines__Aptr__Tslice__Tpure__Tuint8$if176$body;
 
  mov -8(%rbp),%r10
  add $1,%r10
@@ -284,8 +284,8 @@ cb__Nroot__NcountLines__Aptr__Tslice__Tpure__Tuint8$if176$body:
  mov %rax,-8(%rbp)
 # ir_load L0 POP();
 
-cb__Nroot__NcountLines__Aptr__Tslice__Tpure__Tuint8$if176$else:
-# ir_make_label cb__Nroot__NcountLines__Aptr__Tslice__Tpure__Tuint8$if176$else;
+cb__Nroot__Ncount_lines__Aptr__Tslice__Tpure__Tuint8$if176$else:
+# ir_make_label cb__Nroot__Ncount_lines__Aptr__Tslice__Tpure__Tuint8$if176$else;
 
  mov -12(%rbp),%r10d
  add $1,%r10d
@@ -295,67 +295,67 @@ cb__Nroot__NcountLines__Aptr__Tslice__Tpure__Tuint8$if176$else:
  mov %eax,-12(%rbp)
 # ir_load L1 POP();
 
- jmp cb__Nroot__NcountLines__Aptr__Tslice__Tpure__Tuint8$f179$cond
-# ir_jmp cb__Nroot__NcountLines__Aptr__Tslice__Tpure__Tuint8$f179$cond;
+ jmp cb__Nroot__Ncount_lines__Aptr__Tslice__Tpure__Tuint8$f179$cond
+# ir_jmp cb__Nroot__Ncount_lines__Aptr__Tslice__Tpure__Tuint8$f179$cond;
 
-cb__Nroot__NcountLines__Aptr__Tslice__Tpure__Tuint8$f179$end:
-# ir_make_label cb__Nroot__NcountLines__Aptr__Tslice__Tpure__Tuint8$f179$end;
+cb__Nroot__Ncount_lines__Aptr__Tslice__Tpure__Tuint8$f179$end:
+# ir_make_label cb__Nroot__Ncount_lines__Aptr__Tslice__Tpure__Tuint8$f179$end;
 
  mov -8(%rbp),%rax
 # ir_return L0;
 
-cb__Nroot__NcountLines__Aptr__Tslice__Tpure__Tuint8$end:
+cb__Nroot__Ncount_lines__Aptr__Tslice__Tpure__Tuint8$end:
  add $32,%rsp
  pop %rbp
  ret
 
 
-cb__Nroot__NisNumeric__Auint8:
-# func isNumeric(uint8): bool
+cb__Nroot__Nis_numeric__Auint8:
+# func is_numeric(uint8): bool
  push %rbp
  mov %rsp,%rbp
  sub $16,%rsp
 # prolog end
 
  cmp $48,%dil
- jl cb__Nroot__NisNumeric__Auint8$if5085$else
-# ir_jmp_lt A0 #48 cb__Nroot__NisNumeric__Auint8$if5085$else;
+ jl cb__Nroot__Nis_numeric__Auint8$if5050$else
+# ir_jmp_lt A0 #48 cb__Nroot__Nis_numeric__Auint8$if5050$else;
 
  cmp $57,%dil
- jg cb__Nroot__NisNumeric__Auint8$if5085$else
-# ir_jmp_gt A0 #57 cb__Nroot__NisNumeric__Auint8$if5085$else;
+ jg cb__Nroot__Nis_numeric__Auint8$if5050$else
+# ir_jmp_gt A0 #57 cb__Nroot__Nis_numeric__Auint8$if5050$else;
 
-cb__Nroot__NisNumeric__Auint8$if5085$body:
-# ir_make_label cb__Nroot__NisNumeric__Auint8$if5085$body;
+cb__Nroot__Nis_numeric__Auint8$if5050$body:
+# ir_make_label cb__Nroot__Nis_numeric__Auint8$if5050$body;
 
  mov $1,%r10b
  mov %r10b,-1(%rbp)
 # ir_load L0 1;
 
- jmp cb__Nroot__NisNumeric__Auint8$if5085$end
-# ir_jmp cb__Nroot__NisNumeric__Auint8$if5085$end;
+ jmp cb__Nroot__Nis_numeric__Auint8$if5050$end
+# ir_jmp cb__Nroot__Nis_numeric__Auint8$if5050$end;
 
-cb__Nroot__NisNumeric__Auint8$if5085$else:
-# ir_make_label cb__Nroot__NisNumeric__Auint8$if5085$else;
+cb__Nroot__Nis_numeric__Auint8$if5050$else:
+# ir_make_label cb__Nroot__Nis_numeric__Auint8$if5050$else;
 
  xor %r10b,%r10b
  mov %r10b,-1(%rbp)
 # ir_load L0 0;
 
-cb__Nroot__NisNumeric__Auint8$if5085$end:
-# ir_make_label cb__Nroot__NisNumeric__Auint8$if5085$end;
+cb__Nroot__Nis_numeric__Auint8$if5050$end:
+# ir_make_label cb__Nroot__Nis_numeric__Auint8$if5050$end;
 
  mov -1(%rbp),%al
 # ir_return L0;
 
-cb__Nroot__NisNumeric__Auint8$end:
+cb__Nroot__Nis_numeric__Auint8$end:
  add $16,%rsp
  pop %rbp
  ret
 
 
-cb__Nroot__NtrimNonNumeric__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8:
-# func trimNonNumeric(&[]pure uint8, &[]pure uint8): &[]pure uint8
+cb__Nroot__Ntrim_left_non_numeric__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8:
+# func trim_left_non_numeric(&[]pure uint8, &[]pure uint8): &[]pure uint8
  mov %rsi,16(%rsp)
  mov %rdi,8(%rsp)
  push %rbp
@@ -384,18 +384,18 @@ cb__Nroot__NtrimNonNumeric__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tu
  mov %r10d,-12(%rbp)
 # ir_load L1 [L2 . 0];
 
-cb__Nroot__NtrimNonNumeric__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8$f253$cond:
-# ir_make_label cb__Nroot__NtrimNonNumeric__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8$f253$cond;
+cb__Nroot__Ntrim_left_non_numeric__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8$f253$cond:
+# ir_make_label cb__Nroot__Ntrim_left_non_numeric__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8$f253$cond;
 
  movsxd -12(%rbp),%rax
 # ir_cast L1; (push)
 
  cmp -24(%rbp),%rax
- jge cb__Nroot__NtrimNonNumeric__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8$f253$end
-# ir_jmp_gte POP() [L2 . 1] cb__Nroot__NtrimNonNumeric__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8$f253$end;
+ jge cb__Nroot__Ntrim_left_non_numeric__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8$f253$end
+# ir_jmp_gte POP() [L2 . 1] cb__Nroot__Ntrim_left_non_numeric__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8$f253$end;
 
-cb__Nroot__NtrimNonNumeric__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8$f253$body:
-# ir_make_label cb__Nroot__NtrimNonNumeric__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8$f253$body;
+cb__Nroot__Ntrim_left_non_numeric__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8$f253$body:
+# ir_make_label cb__Nroot__Ntrim_left_non_numeric__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8$f253$body;
 
  mov 40(%rbp),%rax
 # ir_deref A1; (push)
@@ -408,15 +408,15 @@ cb__Nroot__NtrimNonNumeric__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tu
 # ir_index POP() L1; (push)
 
  mov (%rax),%dil
- call cb__Nroot__NisNumeric__Auint8
-# ir_call cb__Nroot__NisNumeric__Auint8 POP(); (push)
+ call cb__Nroot__Nis_numeric__Auint8
+# ir_call cb__Nroot__Nis_numeric__Auint8 POP(); (push)
 
  cmp $0,%al
- jne cb__Nroot__NtrimNonNumeric__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8$if250$else
-# ir_jmp_neq POP() 0 cb__Nroot__NtrimNonNumeric__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8$if250$else;
+ jne cb__Nroot__Ntrim_left_non_numeric__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8$if250$else
+# ir_jmp_neq POP() 0 cb__Nroot__Ntrim_left_non_numeric__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8$if250$else;
 
-cb__Nroot__NtrimNonNumeric__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8$if250$body:
-# ir_make_label cb__Nroot__NtrimNonNumeric__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8$if250$body;
+cb__Nroot__Ntrim_left_non_numeric__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8$if250$body:
+# ir_make_label cb__Nroot__Ntrim_left_non_numeric__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8$if250$body;
 
  mov -8(%rbp),%r10
  add $1,%r10
@@ -426,17 +426,17 @@ cb__Nroot__NtrimNonNumeric__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tu
  mov %rax,-8(%rbp)
 # ir_load L0 POP();
 
- jmp cb__Nroot__NtrimNonNumeric__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8$if250$end
-# ir_jmp cb__Nroot__NtrimNonNumeric__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8$if250$end;
+ jmp cb__Nroot__Ntrim_left_non_numeric__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8$if250$end
+# ir_jmp cb__Nroot__Ntrim_left_non_numeric__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8$if250$end;
 
-cb__Nroot__NtrimNonNumeric__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8$if250$else:
-# ir_make_label cb__Nroot__NtrimNonNumeric__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8$if250$else;
+cb__Nroot__Ntrim_left_non_numeric__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8$if250$else:
+# ir_make_label cb__Nroot__Ntrim_left_non_numeric__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8$if250$else;
 
- jmp cb__Nroot__NtrimNonNumeric__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8$f253$end
-# ir_jmp cb__Nroot__NtrimNonNumeric__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8$f253$end;
+ jmp cb__Nroot__Ntrim_left_non_numeric__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8$f253$end
+# ir_jmp cb__Nroot__Ntrim_left_non_numeric__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8$f253$end;
 
-cb__Nroot__NtrimNonNumeric__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8$if250$end:
-# ir_make_label cb__Nroot__NtrimNonNumeric__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8$if250$end;
+cb__Nroot__Ntrim_left_non_numeric__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8$if250$end:
+# ir_make_label cb__Nroot__Ntrim_left_non_numeric__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8$if250$end;
 
  mov -12(%rbp),%r10d
  add $1,%r10d
@@ -446,11 +446,11 @@ cb__Nroot__NtrimNonNumeric__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tu
  mov %eax,-12(%rbp)
 # ir_load L1 POP();
 
- jmp cb__Nroot__NtrimNonNumeric__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8$f253$cond
-# ir_jmp cb__Nroot__NtrimNonNumeric__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8$f253$cond;
+ jmp cb__Nroot__Ntrim_left_non_numeric__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8$f253$cond
+# ir_jmp cb__Nroot__Ntrim_left_non_numeric__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8$f253$cond;
 
-cb__Nroot__NtrimNonNumeric__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8$f253$end:
-# ir_make_label cb__Nroot__NtrimNonNumeric__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8$f253$end;
+cb__Nroot__Ntrim_left_non_numeric__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8$f253$end:
+# ir_make_label cb__Nroot__Ntrim_left_non_numeric__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8$f253$end;
 
  mov 32(%rbp),%r10
  mov %r10,-40(%rbp)
@@ -487,15 +487,15 @@ cb__Nroot__NtrimNonNumeric__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tu
  mov 32(%rbp),%rax
 # ir_return A0;
 
-cb__Nroot__NtrimNonNumeric__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8$end:
+cb__Nroot__Ntrim_left_non_numeric__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8$end:
  add $72,%rsp
  pop %rbx
  pop %rbp
  ret
 
 
-cb__Nroot__NparseIntRem__Aptr__Ttuple__Tint__Tslice__Tpure__Tuint8__Tbool__Aptr__Tslice__Tpure__Tuint8__Aint:
-# func parseIntRem(&{int, []pure uint8, bool}, &[]pure uint8, int): &{int, []pure uint8, bool}
+cb__Nroot__Nparse_int__Aptr__Ttuple__Tint__Tslice__Tpure__Tuint8__Tbool__Aptr__Tslice__Tpure__Tuint8__Aint:
+# func parse_int(&{int, []pure uint8, bool}, &[]pure uint8, int): &{int, []pure uint8, bool}
  mov %edx,24(%rsp)
  mov %rsi,16(%rsp)
  mov %rdi,8(%rsp)
@@ -529,18 +529,18 @@ cb__Nroot__NparseIntRem__Aptr__Ttuple__Tint__Tslice__Tpure__Tuint8__Tbool__Aptr_
  mov %r10d,-20(%rbp)
 # ir_load L2 [L3 . 0];
 
-cb__Nroot__NparseIntRem__Aptr__Ttuple__Tint__Tslice__Tpure__Tuint8__Tbool__Aptr__Tslice__Tpure__Tuint8__Aint$f351$cond:
-# ir_make_label cb__Nroot__NparseIntRem__Aptr__Ttuple__Tint__Tslice__Tpure__Tuint8__Tbool__Aptr__Tslice__Tpure__Tuint8__Aint$f351$cond;
+cb__Nroot__Nparse_int__Aptr__Ttuple__Tint__Tslice__Tpure__Tuint8__Tbool__Aptr__Tslice__Tpure__Tuint8__Aint$f351$cond:
+# ir_make_label cb__Nroot__Nparse_int__Aptr__Ttuple__Tint__Tslice__Tpure__Tuint8__Tbool__Aptr__Tslice__Tpure__Tuint8__Aint$f351$cond;
 
  movsxd -20(%rbp),%rax
 # ir_cast L2; (push)
 
  cmp -40(%rbp),%rax
- jge cb__Nroot__NparseIntRem__Aptr__Ttuple__Tint__Tslice__Tpure__Tuint8__Tbool__Aptr__Tslice__Tpure__Tuint8__Aint$f351$end
-# ir_jmp_gte POP() [L3 . 1] cb__Nroot__NparseIntRem__Aptr__Ttuple__Tint__Tslice__Tpure__Tuint8__Tbool__Aptr__Tslice__Tpure__Tuint8__Aint$f351$end;
+ jge cb__Nroot__Nparse_int__Aptr__Ttuple__Tint__Tslice__Tpure__Tuint8__Tbool__Aptr__Tslice__Tpure__Tuint8__Aint$f351$end
+# ir_jmp_gte POP() [L3 . 1] cb__Nroot__Nparse_int__Aptr__Ttuple__Tint__Tslice__Tpure__Tuint8__Tbool__Aptr__Tslice__Tpure__Tuint8__Aint$f351$end;
 
-cb__Nroot__NparseIntRem__Aptr__Ttuple__Tint__Tslice__Tpure__Tuint8__Tbool__Aptr__Tslice__Tpure__Tuint8__Aint$f351$body:
-# ir_make_label cb__Nroot__NparseIntRem__Aptr__Ttuple__Tint__Tslice__Tpure__Tuint8__Tbool__Aptr__Tslice__Tpure__Tuint8__Aint$f351$body;
+cb__Nroot__Nparse_int__Aptr__Ttuple__Tint__Tslice__Tpure__Tuint8__Tbool__Aptr__Tslice__Tpure__Tuint8__Aint$f351$body:
+# ir_make_label cb__Nroot__Nparse_int__Aptr__Ttuple__Tint__Tslice__Tpure__Tuint8__Tbool__Aptr__Tslice__Tpure__Tuint8__Aint$f351$body;
 
  mov 40(%rbp),%rax
 # ir_deref A1; (push)
@@ -553,15 +553,15 @@ cb__Nroot__NparseIntRem__Aptr__Ttuple__Tint__Tslice__Tpure__Tuint8__Tbool__Aptr_
 # ir_index POP() L2; (push)
 
  mov (%rax),%dil
- call cb__Nroot__NisNumeric__Auint8
-# ir_call cb__Nroot__NisNumeric__Auint8 POP(); (push)
+ call cb__Nroot__Nis_numeric__Auint8
+# ir_call cb__Nroot__Nis_numeric__Auint8 POP(); (push)
 
  cmp $0,%al
- je cb__Nroot__NparseIntRem__Aptr__Ttuple__Tint__Tslice__Tpure__Tuint8__Tbool__Aptr__Tslice__Tpure__Tuint8__Aint$if348$else
-# ir_jmp_eq POP() 0 cb__Nroot__NparseIntRem__Aptr__Ttuple__Tint__Tslice__Tpure__Tuint8__Tbool__Aptr__Tslice__Tpure__Tuint8__Aint$if348$else;
+ je cb__Nroot__Nparse_int__Aptr__Ttuple__Tint__Tslice__Tpure__Tuint8__Tbool__Aptr__Tslice__Tpure__Tuint8__Aint$if348$else
+# ir_jmp_eq POP() 0 cb__Nroot__Nparse_int__Aptr__Ttuple__Tint__Tslice__Tpure__Tuint8__Tbool__Aptr__Tslice__Tpure__Tuint8__Aint$if348$else;
 
-cb__Nroot__NparseIntRem__Aptr__Ttuple__Tint__Tslice__Tpure__Tuint8__Tbool__Aptr__Tslice__Tpure__Tuint8__Aint$if348$body:
-# ir_make_label cb__Nroot__NparseIntRem__Aptr__Ttuple__Tint__Tslice__Tpure__Tuint8__Tbool__Aptr__Tslice__Tpure__Tuint8__Aint$if348$body;
+cb__Nroot__Nparse_int__Aptr__Ttuple__Tint__Tslice__Tpure__Tuint8__Tbool__Aptr__Tslice__Tpure__Tuint8__Aint$if348$body:
+# ir_make_label cb__Nroot__Nparse_int__Aptr__Ttuple__Tint__Tslice__Tpure__Tuint8__Tbool__Aptr__Tslice__Tpure__Tuint8__Aint$if348$body;
 
  mov -4(%rbp),%r10d
  imul 48(%rbp),%r10d
@@ -601,17 +601,17 @@ cb__Nroot__NparseIntRem__Aptr__Ttuple__Tint__Tslice__Tpure__Tuint8__Tbool__Aptr_
  mov %rax,-16(%rbp)
 # ir_load L1 POP();
 
- jmp cb__Nroot__NparseIntRem__Aptr__Ttuple__Tint__Tslice__Tpure__Tuint8__Tbool__Aptr__Tslice__Tpure__Tuint8__Aint$if348$end
-# ir_jmp cb__Nroot__NparseIntRem__Aptr__Ttuple__Tint__Tslice__Tpure__Tuint8__Tbool__Aptr__Tslice__Tpure__Tuint8__Aint$if348$end;
+ jmp cb__Nroot__Nparse_int__Aptr__Ttuple__Tint__Tslice__Tpure__Tuint8__Tbool__Aptr__Tslice__Tpure__Tuint8__Aint$if348$end
+# ir_jmp cb__Nroot__Nparse_int__Aptr__Ttuple__Tint__Tslice__Tpure__Tuint8__Tbool__Aptr__Tslice__Tpure__Tuint8__Aint$if348$end;
 
-cb__Nroot__NparseIntRem__Aptr__Ttuple__Tint__Tslice__Tpure__Tuint8__Tbool__Aptr__Tslice__Tpure__Tuint8__Aint$if348$else:
-# ir_make_label cb__Nroot__NparseIntRem__Aptr__Ttuple__Tint__Tslice__Tpure__Tuint8__Tbool__Aptr__Tslice__Tpure__Tuint8__Aint$if348$else;
+cb__Nroot__Nparse_int__Aptr__Ttuple__Tint__Tslice__Tpure__Tuint8__Tbool__Aptr__Tslice__Tpure__Tuint8__Aint$if348$else:
+# ir_make_label cb__Nroot__Nparse_int__Aptr__Ttuple__Tint__Tslice__Tpure__Tuint8__Tbool__Aptr__Tslice__Tpure__Tuint8__Aint$if348$else;
 
- jmp cb__Nroot__NparseIntRem__Aptr__Ttuple__Tint__Tslice__Tpure__Tuint8__Tbool__Aptr__Tslice__Tpure__Tuint8__Aint$f351$end
-# ir_jmp cb__Nroot__NparseIntRem__Aptr__Ttuple__Tint__Tslice__Tpure__Tuint8__Tbool__Aptr__Tslice__Tpure__Tuint8__Aint$f351$end;
+ jmp cb__Nroot__Nparse_int__Aptr__Ttuple__Tint__Tslice__Tpure__Tuint8__Tbool__Aptr__Tslice__Tpure__Tuint8__Aint$f351$end
+# ir_jmp cb__Nroot__Nparse_int__Aptr__Ttuple__Tint__Tslice__Tpure__Tuint8__Tbool__Aptr__Tslice__Tpure__Tuint8__Aint$f351$end;
 
-cb__Nroot__NparseIntRem__Aptr__Ttuple__Tint__Tslice__Tpure__Tuint8__Tbool__Aptr__Tslice__Tpure__Tuint8__Aint$if348$end:
-# ir_make_label cb__Nroot__NparseIntRem__Aptr__Ttuple__Tint__Tslice__Tpure__Tuint8__Tbool__Aptr__Tslice__Tpure__Tuint8__Aint$if348$end;
+cb__Nroot__Nparse_int__Aptr__Ttuple__Tint__Tslice__Tpure__Tuint8__Tbool__Aptr__Tslice__Tpure__Tuint8__Aint$if348$end:
+# ir_make_label cb__Nroot__Nparse_int__Aptr__Ttuple__Tint__Tslice__Tpure__Tuint8__Tbool__Aptr__Tslice__Tpure__Tuint8__Aint$if348$end;
 
  mov -20(%rbp),%r10d
  add $1,%r10d
@@ -621,11 +621,11 @@ cb__Nroot__NparseIntRem__Aptr__Ttuple__Tint__Tslice__Tpure__Tuint8__Tbool__Aptr_
  mov %eax,-20(%rbp)
 # ir_load L2 POP();
 
- jmp cb__Nroot__NparseIntRem__Aptr__Ttuple__Tint__Tslice__Tpure__Tuint8__Tbool__Aptr__Tslice__Tpure__Tuint8__Aint$f351$cond
-# ir_jmp cb__Nroot__NparseIntRem__Aptr__Ttuple__Tint__Tslice__Tpure__Tuint8__Tbool__Aptr__Tslice__Tpure__Tuint8__Aint$f351$cond;
+ jmp cb__Nroot__Nparse_int__Aptr__Ttuple__Tint__Tslice__Tpure__Tuint8__Tbool__Aptr__Tslice__Tpure__Tuint8__Aint$f351$cond
+# ir_jmp cb__Nroot__Nparse_int__Aptr__Ttuple__Tint__Tslice__Tpure__Tuint8__Tbool__Aptr__Tslice__Tpure__Tuint8__Aint$f351$cond;
 
-cb__Nroot__NparseIntRem__Aptr__Ttuple__Tint__Tslice__Tpure__Tuint8__Tbool__Aptr__Tslice__Tpure__Tuint8__Aint$f351$end:
-# ir_make_label cb__Nroot__NparseIntRem__Aptr__Ttuple__Tint__Tslice__Tpure__Tuint8__Tbool__Aptr__Tslice__Tpure__Tuint8__Aint$f351$end;
+cb__Nroot__Nparse_int__Aptr__Ttuple__Tint__Tslice__Tpure__Tuint8__Tbool__Aptr__Tslice__Tpure__Tuint8__Aint$f351$end:
+# ir_make_label cb__Nroot__Nparse_int__Aptr__Ttuple__Tint__Tslice__Tpure__Tuint8__Tbool__Aptr__Tslice__Tpure__Tuint8__Aint$f351$end;
 
  mov 32(%rbp),%r10
  mov %r10,-56(%rbp)
@@ -687,7 +687,7 @@ cb__Nroot__NparseIntRem__Aptr__Ttuple__Tint__Tslice__Tpure__Tuint8__Tbool__Aptr_
  mov 32(%rbp),%rax
 # ir_return A0;
 
-cb__Nroot__NparseIntRem__Aptr__Ttuple__Tint__Tslice__Tpure__Tuint8__Tbool__Aptr__Tslice__Tpure__Tuint8__Aint$end:
+cb__Nroot__Nparse_int__Aptr__Ttuple__Tint__Tslice__Tpure__Tuint8__Tbool__Aptr__Tslice__Tpure__Tuint8__Aint$end:
  add $88,%rsp
  pop %rbx
  pop %rbp
@@ -695,7 +695,7 @@ cb__Nroot__NparseIntRem__Aptr__Ttuple__Tint__Tslice__Tpure__Tuint8__Tbool__Aptr_
 
 
 cb__Nroot__Nmain:
-# func main(): int
+# func main(): {}
  push %rbp
  push %rbx
  push %r12
@@ -790,8 +790,8 @@ cb__Nroot__Nmain$if411$else:
  mov $4,%edx
  mov %rax,%rsi
  mov %rbx,%rdi
- call cb__Nstd__Nsystem__Nopen__Aptr__Ttuple__TFileHandle__Terror__Aptr__Tslice__Tpure__Tuint8__AOpenFlags__Aint
-# ir_call cb__Nstd__Nsystem__Nopen__Aptr__Ttuple__TFileHandle__Terror__Aptr__Tslice__Tpure__Tuint8__AOpenFlags__Aint POP() POP() 4 0;
+ call cb__Nstd__Nsystem__Nopen__Aptr__Ttuple__Tfile_handle__Terror__Aptr__Tslice__Tpure__Tuint8__Aopen_flags__Aint
+# ir_call cb__Nstd__Nsystem__Nopen__Aptr__Ttuple__Tfile_handle__Terror__Aptr__Tslice__Tpure__Tuint8__Aopen_flags__Aint POP() POP() 4 0;
 
  mov -320(%rbp),%r10
  mov %r10,-328(%rbp)
@@ -838,8 +838,8 @@ cb__Nroot__Nmain$if438$else:
 
  mov -176(%rbp),%rsi
  mov %rax,%rdi
- call cb__Nroot__NallocString__Aptr__Tslice__Tuint8__Ausize
-# ir_call cb__Nroot__NallocString__Aptr__Tslice__Tuint8__Ausize POP() [L9 . 0];
+ call cb__Nroot__Nalloc_string__Aptr__Tslice__Tuint8__Ausize
+# ir_call cb__Nroot__Nalloc_string__Aptr__Tslice__Tuint8__Ausize POP() [L9 . 0];
 
  push %rdi
  push %rsi
@@ -856,8 +856,8 @@ cb__Nroot__Nmain$if438$else:
 
  mov %rax,%rsi
  mov -328(%rbp),%rdi
- call cb__Nstd__Nsystem__Nread__AFileHandle__Aptr__Tslice__Tuint8
-# ir_call cb__Nstd__Nsystem__Nread__AFileHandle__Aptr__Tslice__Tuint8 L17 POP(); (push)
+ call cb__Nstd__Nsystem__Nread__Afile_handle__Aptr__Tslice__Tuint8
+# ir_call cb__Nstd__Nsystem__Nread__Afile_handle__Aptr__Tslice__Tuint8 L17 POP(); (push)
 
  mov %rax,-184(%rbp)
 # ir_load [L10 . 1] POP();
@@ -887,13 +887,13 @@ cb__Nroot__Nmain$if438$else:
 # ir_load_addr L22; (push)
 
  mov %rax,%rdi
- call cb__Nroot__NcountLines__Aptr__Tslice__Tpure__Tuint8
-# ir_call cb__Nroot__NcountLines__Aptr__Tslice__Tpure__Tuint8 POP(); (push)
+ call cb__Nroot__Ncount_lines__Aptr__Tslice__Tpure__Tuint8
+# ir_call cb__Nroot__Ncount_lines__Aptr__Tslice__Tpure__Tuint8 POP(); (push)
 
  mov %rax,%rsi
  mov %rbx,%rdi
- call cb__Nroot__NallocIntSlice__Aptr__Ttuple__Tslice__Tint__Terror__Ausize
-# ir_call cb__Nroot__NallocIntSlice__Aptr__Ttuple__Tslice__Tint__Terror__Ausize POP() POP();
+ call cb__Nroot__Nalloc_int_slice__Aptr__Ttuple__Tslice__Tint__Terror__Ausize
+# ir_call cb__Nroot__Nalloc_int_slice__Aptr__Ttuple__Tslice__Tint__Terror__Ausize POP() POP();
 
  push %rdi
  push %rsi
@@ -941,13 +941,13 @@ cb__Nroot__Nmain$if509$else:
 # ir_load_addr L24; (push)
 
  mov %rax,%rdi
- call cb__Nroot__NcountLines__Aptr__Tslice__Tpure__Tuint8
-# ir_call cb__Nroot__NcountLines__Aptr__Tslice__Tpure__Tuint8 POP(); (push)
+ call cb__Nroot__Ncount_lines__Aptr__Tslice__Tpure__Tuint8
+# ir_call cb__Nroot__Ncount_lines__Aptr__Tslice__Tpure__Tuint8 POP(); (push)
 
  mov %rax,%rsi
  mov %rbx,%rdi
- call cb__Nroot__NallocIntSlice__Aptr__Ttuple__Tslice__Tint__Terror__Ausize
-# ir_call cb__Nroot__NallocIntSlice__Aptr__Ttuple__Tslice__Tint__Terror__Ausize POP() POP();
+ call cb__Nroot__Nalloc_int_slice__Aptr__Ttuple__Tslice__Tint__Terror__Ausize
+# ir_call cb__Nroot__Nalloc_int_slice__Aptr__Ttuple__Tslice__Tint__Terror__Ausize POP() POP();
 
  push %rdi
  push %rsi
@@ -1011,8 +1011,8 @@ cb__Nroot__Nmain$w597$body:
 
  mov %rax,%rsi
  mov %rbx,%rdi
- call cb__Nroot__NtrimNonNumeric__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8
-# ir_call cb__Nroot__NtrimNonNumeric__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8 POP() POP();
+ call cb__Nroot__Ntrim_left_non_numeric__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8
+# ir_call cb__Nroot__Ntrim_left_non_numeric__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8 POP() POP();
 
  push %rdi
  push %rsi
@@ -1033,8 +1033,8 @@ cb__Nroot__Nmain$w597$body:
  mov $10,%edx
  mov %rax,%rsi
  mov %rbx,%rdi
- call cb__Nroot__NparseIntRem__Aptr__Ttuple__Tint__Tslice__Tpure__Tuint8__Tbool__Aptr__Tslice__Tpure__Tuint8__Aint
-# ir_call cb__Nroot__NparseIntRem__Aptr__Ttuple__Tint__Tslice__Tpure__Tuint8__Tbool__Aptr__Tslice__Tpure__Tuint8__Aint POP() POP() 10;
+ call cb__Nroot__Nparse_int__Aptr__Ttuple__Tint__Tslice__Tpure__Tuint8__Tbool__Aptr__Tslice__Tpure__Tuint8__Aint
+# ir_call cb__Nroot__Nparse_int__Aptr__Ttuple__Tint__Tslice__Tpure__Tuint8__Tbool__Aptr__Tslice__Tpure__Tuint8__Aint POP() POP() 10;
 
  mov -704(%rbp),%r10d
  mov %r10d,-644(%rbp)
@@ -1641,13 +1641,10 @@ cb__Nroot__Nmain$if781$end:
 # ir_call cb__Nroot__Nfree__Aptr__Tslice__Tuint8 POP();
 
  mov -328(%rbp),%rdi
- call cb__Nstd__Nsystem__Nclose__AFileHandle
-# ir_call cb__Nstd__Nsystem__Nclose__AFileHandle L17; (push)
+ call cb__Nstd__Nsystem__Nclose__Afile_handle
+# ir_call cb__Nstd__Nsystem__Nclose__Afile_handle L17; (push)
 
 # ir_noop POP();
-
- mov -24(%rbp),%eax
-# ir_return L2;
 
 cb__Nroot__Nmain$end:
  add $856,%rsp

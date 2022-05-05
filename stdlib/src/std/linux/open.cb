@@ -21,7 +21,7 @@ import std::io
 #define O_NOATIME       01000000                                                                                                                                                                                                              
 #define O_CLOEXEC       02000000        /* set close_on_exec */         
 
-func toKernelFlags(flags: OpenFlags) : int {
+func to_kernel_flags(flags : open_flags) : int {
     let lflags : int
 
     if (flags & (Write | Read)) {
@@ -48,11 +48,8 @@ func toKernelFlags(flags: OpenFlags) : int {
 }
 
 extern(carbon, std::system)
-func open(filename: []pure uint8, flags: OpenFlags, mode: int): {FileHandle, error} {
-    print("open: ")
-    println(filename)
-    
-    let kflags = toKernelFlags(flags)
+func open(filename: []pure uint8, flags: open_flags, mode: int): {file_handle, error} {
+    let kflags = to_kernel_flags(flags)
     let fd = syscall::open(filename.ptr, kflags, cast(int16) mode)
-    return cast(FileHandle)fd, noerr
+    return cast(file_handle)fd, noerr
 }

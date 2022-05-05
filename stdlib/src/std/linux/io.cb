@@ -3,27 +3,27 @@ import std::linux::syscall as syscall
 
 extern(carbon, std::system) {
 
-func stdin(): FileHandle {
-    return cast(FileHandle)(cast(uintptr)0)
+func stdin(): file_handle {
+    return cast(file_handle)(cast(uintptr)0)
 }
 
-func stdout(): FileHandle {
-    return cast(FileHandle)(cast(uintptr)1)
+func stdout(): file_handle {
+    return cast(file_handle)(cast(uintptr)1)
 }
 
-func stderr(): FileHandle {
-    return cast(FileHandle)(cast(uintptr)2)
+func stderr(): file_handle {
+    return cast(file_handle)(cast(uintptr)2)
 }
 
-func read(fd: FileHandle, data: []uint8) {
+func read(fd: file_handle, data: []uint8) {
     syscall::read(cast(uint)(cast(uintptr)fd), data.ptr, data.len)
 }
 
-func write(fd: FileHandle, data: []pure uint8) {
+func write(fd: file_handle, data: []pure uint8) {
     syscall::write(cast(uint)(cast(uintptr)fd), data.ptr, data.len)
 }
 
-func close(fd: FileHandle) : error {
+func close(fd: file_handle) : error {
     syscall::close(cast(uint)(cast(uintptr)fd))
     return noerr
 }

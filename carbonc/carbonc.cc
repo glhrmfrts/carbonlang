@@ -31,6 +31,8 @@ namespace carbon {
 
 struct project_info {
     std::string working_dir;
+    std::string build_dir;
+    std::string single_file;
     std::string target_name;
     std::string cb_path;
     std::string entrypoint;
@@ -325,14 +327,35 @@ void parse_options(project_info& p, int argc, const char* argv[]) {
         ttype = target_type::dynamic_library;
     }
 
-    bool freestanding = has_arg("--freestanding", "-f", argc, argv);
+    bool freestanding = has_arg("--freestanding", "-F", argc, argv);
 
     p.entrypoint = entrypoint;
     p.target = ttype;
     p.freestanding = freestanding;
-    p.verbose = has_arg("--verbose", "-d", argc, argv);
+    p.verbose = has_arg("--verbose", "-V", argc, argv);
     p.embed_std = embed_std_lib;
     p.includes = get_all_args("--include", "-i", argc, argv);
+    p.single_file = find_arg("--file", "-f", argc, argv);
+    p.build_dir = find_arg("--build-dir", "-B", argc, argv);
+}
+
+void print_usage() {
+    printf(
+        "carbonc %s - usage:\n"
+        "   carbonc {options}\n"
+        "\n"
+        "options:\n"
+        "   -B, --build-dir - Path to generate build intermediate files\n"
+        "   -e, --entrypoint - Entrypoint function to the executable when in freestanding mode\n"
+        "   -f, --file - Work in single file mode, instead of 'project' mode\n"
+        "   -F, --freestanding - Freestanding mode, assume no OS layer and no particular entrypoint\n"
+        "   -h, --help - This help\n"
+        "   -i, --include - Include source files from another project path\n"
+        "   -o, --output - Final output file path\n"
+        "   -t, --type - Type of target: executable, shared, static\n"
+        "   -V, --verbose - Verbose compiler output\n",
+        CARBON_VERSION_STRING
+    );
 }
 
 int run_project_mode(int argc, const char* argv[]) {
@@ -511,6 +534,11 @@ int run_project_mode(int argc, const char* argv[]) {
 
 int main(int argc, const char* argv[]) {
     memory_arena ast_arena{ 1024*1024 };
+
+    if (has_arg("--help", "-h", argc, argv)) {
+        print_usage();
+        return 0;
+    }
 
     if (true) {
         return run_project_mode(argc, argv);

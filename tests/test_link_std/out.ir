@@ -1,5 +1,0 @@
-func cb__Nmain__Nmain__Aptr__Tslice__Tslice__Tpure__Tuint8 -> int
-    arg #0 args: ptr__Tslice__Tslice__Tpure__Tuint8;
-    ir_return 0;
-endf
-

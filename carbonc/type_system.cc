@@ -3020,24 +3020,6 @@ arena_ptr<ast_node> generate_temp_for_ternary_expr(type_system& ts, ast_node& no
     return ref;
 }
 
-arena_ptr<ast_node> generate_temp_for_init_expr(type_system& ts, arena_ptr<ast_node> node) {
-    auto tempname = generate_temp_name();
-    auto pos = node->pos;
-    auto tid = node->tid;
-    auto temp = make_var_decl_node_single(*ts.ast_arena, pos, token_type::let,
-        make_identifier_node(*ts.ast_arena, pos, { tempname }), // id
-        make_type_expr_node(*ts.ast_arena, pos, make_type_resolver_node(*ts.ast_arena, tid)), // type
-        std::move(node), {}); // value
-    resolve_node_type(ts, temp.get());
-
-    auto ref = make_identifier_node(*ts.ast_arena, temp->pos, { tempname });
-    resolve_node_type(ts, ref.get());
-
-    ref->pre_nodes.push_back(std::move(temp));
-
-    return std::move(ref);
-}
-
 static bool g_inside_loop;
 
 type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
@@ -3697,9 +3679,6 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
         resolve_node_type(ts, node.children[0].get());
 
         auto fieldid = build_identifier_value(node.children[1]->id_parts);
-        if (fieldid == "strlen") {
-            //printf("asdqwe\n");
-        }
 
         if (node.children[0]->tid.valid()) {
             auto ltype = node.children[0]->tid;
@@ -3707,11 +3686,7 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
 
             // Generate a temp variable if it's not a lvalue
             if (!node.desugar_flags) {
-                if (node.children[0]->type == ast_type::init_expr) {
-                    generate_temp_for_field_expr(ts, node, ltype);
-                    node.desugar_flags |= 1;
-                }
-                else if (node.children[0]->type == ast_type::call_expr && is_aggregate_root(ltype)) {
+                if (node.children[0]->type == ast_type::call_expr && is_aggregate_root(ltype)) {
                     generate_temp_for_field_expr(ts, node, ltype);
                     node.desugar_flags |= 1;
                 }
@@ -3998,14 +3973,6 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
         }
         else {
             node.tid = node.children[0]->tid;
-        }
-
-        auto parent = node.parent;
-        if (node.tid.valid() && parent && !is_assignment(*parent) && !(parent->type == ast_type::var_decl)) {
-            //auto idx = find_child_index(parent, &node);
-            //auto self = std::move(parent->children[*idx]);
-            //auto ref = generate_temp_for_init_expr(ts, std::move(self));
-            //parent->children[*idx] = std::move(ref);
         }
         break;
     }

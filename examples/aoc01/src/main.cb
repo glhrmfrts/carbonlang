@@ -4,25 +4,25 @@ import std::io
 //import std::fs as fs
 //import std::string
 
-func allocString(sz: usize): []uint8 {
+func alloc_string(sz: usize): []uint8 {
     let data, err = mem::alloc(sz + 1)
     mem::memset(data, 0, sz + 1)
     return []uint8{ (cast(&uint8)data), sz }
 }
 
-func allocIntSlice(n : usize) : {[]int, error} {
+func alloc_int_slice(n : usize) : {[]int, error} {
     let buf, err = mem::alloc(n * sizeof(int))
     if (err != noerr) { return []int{}, err } // TODO: return nil, err
 
     let slice = []int{ cast(&int)buf, n }
-    return nil, noerr
+    return slice, noerr
 }
 
 func free(s) {
     mem::free(s.ptr)
 }
 
-func countLines(s : []pure uint8) : usize {
+func count_lines(s : []pure uint8) : usize {
     let count : usize
     for (i in 0,s.len) {
         if (s[i] == '\n') {
@@ -32,14 +32,14 @@ func countLines(s : []pure uint8) : usize {
     return count
 }
 
-func isNumeric(c : uint8) : bool {
+func is_numeric(c : uint8) : bool {
     return c >= '0' && c <= '9'
 }
 
-func trimNonNumeric(s : []pure uint8) : []pure uint8 {
+func trim_left_non_numeric(s: []pure uint8): []pure uint8 {
     let count : usize
     for (i in 0, s.len) {
-        if (!isNumeric(s[i])) {
+        if (!is_numeric(s[i])) {
             count += 1
         }
         else {
@@ -49,12 +49,12 @@ func trimNonNumeric(s : []pure uint8) : []pure uint8 {
     return []pure uint8{ s.ptr + count, s.len - count }
 }
 
-func parseIntRem(s : []pure uint8, radix : int) : {int, []pure uint8, bool} {
+func parse_int(s : []pure uint8, radix : int) : {int, []pure uint8, bool} {
     let value : int
     let count : usize
 
     for (i in 0,s.len) {
-        if (isNumeric(s[i])) {
+        if (is_numeric(s[i])) {
             value = value * radix + (s[i] - '0')
             count += 1
         }
@@ -83,7 +83,7 @@ func main() {
     }
     defer sys::close(fd)
     
-    let input = allocString(stat.size)
+    let input = alloc_string(stat.size)
     defer free(input)
     
     input.len = sys::read(fd, input)
@@ -92,28 +92,28 @@ func main() {
 
     // TODO: investigate allocIntSlice(countLines(input)) crashes
 
-    let numbers, err = allocIntSlice(countLines(buf))
+    let numbers, err = alloc_int_slice(count_lines(buf))
     if (err != noerr) { sys::exit(1) }
     defer free(numbers)
 
-    let sums, err = allocIntSlice(countLines(buf))
+    let sums, err = alloc_int_slice(count_lines(buf))
     if (err != noerr) { sys::exit(1) }
     defer free(sums)
 
-    let numberCount = 0
+    let numbercount = 0
 
     for (buf.len > 0) {
-        buf = trimNonNumeric(buf)
+        buf = trim_left_non_numeric(buf)
 
         // TODO: Warning about variable shadowing
-        let n, nbuf, ok = parseIntRem(buf, 10)
+        let n, nbuf, ok = parse_int(buf, 10)
         buf = nbuf
 
         //print("end: ") println(end)
         if (ok) {
             //print("parsed number: ") println(n)
-            numbers[numberCount] = n
-            numberCount += 1
+            numbers[numbercount] = n
+            numbercount += 1
         }
         else {
             //println("failed to parse number")
@@ -121,34 +121,34 @@ func main() {
         }
     }
 
-    let incCount = 0
-    let sumIncCount = 0
+    let inccount = 0
+    let suminccount = 0
 
-    for (i in 1,numberCount) {
+    for (i in 1,numbercount) {
         if (numbers[i] > numbers[i - 1]) {
-            incCount += 1
+            inccount += 1
         }
     }
     println("")
 
-    for (i in 0,numberCount) {
-        if (i < numberCount - 2) {
+    for (i in 0,numbercount) {
+        if (i < numbercount - 2) {
             sums[i] = numbers[i] + numbers[i + 1] + numbers[i + 2]
         }
     }
 
-    for (i in 1,numberCount) {
+    for (i in 1,numbercount) {
         if (sums[i] > sums[i - 1]) {
-            sumIncCount += 1
+            suminccount += 1
         }
     }
 
     print("increase count: ")
-    print(incCount)
+    print(inccount)
     println("")
 
     print("sum increase count: ")
-    print(sumIncCount)
+    print(suminccount)
     println("")
 
     let helloworld = "hello world"
@@ -168,6 +168,4 @@ func main() {
     let offs4 = cast(uintptr)(cast(&opaque)(&values.fourth))
     println(cast(int)(sizeof(values)))
     println(offs4 - offs3)
-
-    return incCount
 }

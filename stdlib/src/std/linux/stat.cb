@@ -46,7 +46,7 @@ func stat(filename: []pure uint8, buf: &Stat): error {
     return noerr
 }
 
-func stat(fd: FileHandle, buf: &Stat): error {
+func stat(fd: file_handle, buf: &Stat): error {
     let cstat : C_Stat
 
     if (syscall::fstat(cast(int)(cast(uintptr)fd), &cstat) < 0) {

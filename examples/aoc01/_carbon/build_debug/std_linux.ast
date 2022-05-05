@@ -14,13 +14,13 @@ module std/linux
             arg_list
             arg_list end
             type_expr
-              identifier FileHandle
+              identifier file_handle
             compound_stmt
               stmt_list
                 return_stmt
                   cast_expr
                     type_expr
-                      identifier FileHandle
+                      identifier file_handle
                     cast_expr
                       type_expr
                         identifier uintptr
@@ -32,13 +32,13 @@ module std/linux
             arg_list
             arg_list end
             type_expr
-              identifier FileHandle
+              identifier file_handle
             compound_stmt
               stmt_list
                 return_stmt
                   cast_expr
                     type_expr
-                      identifier FileHandle
+                      identifier file_handle
                     cast_expr
                       type_expr
                         identifier uintptr
@@ -50,13 +50,13 @@ module std/linux
             arg_list
             arg_list end
             type_expr
-              identifier FileHandle
+              identifier file_handle
             compound_stmt
               stmt_list
                 return_stmt
                   cast_expr
                     type_expr
-                      identifier FileHandle
+                      identifier file_handle
                     cast_expr
                       type_expr
                         identifier uintptr
@@ -72,7 +72,7 @@ module std/linux
                 arg_list end
               .type
                 type_expr
-                  identifier FileHandle
+                  identifier file_handle
               var_decl
                 arg_list
                   identifier data
@@ -112,7 +112,7 @@ module std/linux
                 arg_list end
               .type
                 type_expr
-                  identifier FileHandle
+                  identifier file_handle
               var_decl
                 arg_list
                   identifier data
@@ -152,7 +152,7 @@ module std/linux
                 arg_list end
               .type
                 type_expr
-                  identifier FileHandle
+                  identifier file_handle
             arg_list end
             type_expr
               identifier $error
@@ -188,7 +188,7 @@ module std/linux
       import_decl
         identifier std::io
       type_decl
-        identifier AllocParameters
+        identifier alloc_parameters
         type_expr
           struct_type
             decl_list
@@ -245,7 +245,7 @@ module std/linux
                   cast_expr
                     type_expr
                       type_qualifier ptr
-                        identifier AllocParameters
+                        identifier alloc_parameters
                     identifier op
                 var_decl
                   arg_list
@@ -338,7 +338,7 @@ module std/linux
                   arg_list end
                 .type
                   type_expr
-                    identifier AllocParameters
+                    identifier alloc_parameters
               decl_list end
               stmt_list
                 binary =
@@ -358,39 +358,22 @@ module std/linux
                     identifier MAP_PRIVATE
                     identifier MAP_ANONYMOUS
               stmt_list end
-              decl_list
-                .pre_nodes
-                  call
-                    identifier alloc
-                    arg_list
-                      unary &
-                        identifier v
-                      identifier sz
-                      unary &
-                        identifier params
-                    arg_list end
-                var_decl
-                  arg_list
-                    identifier v
-                  arg_list end
-                .value
-                  
-              decl_list end
-              stmt_list
-                call
-                  identifier println
-                  arg_list
-                    field_expr
-                      identifier v
-                      identifier first
-                  arg_list end
-              stmt_list end
               stmt_list
                 .pre_nodes
                   binary =
                     unary @
                       identifier $cb_agg_ret
-                    identifier v
+                    .pre_nodes
+                      call
+                        identifier alloc
+                        arg_list
+                          unary &
+                            identifier $cbT3
+                          identifier sz
+                          unary &
+                            identifier params
+                        arg_list end
+                    identifier $cbT3
                 return_stmt
                   identifier $cb_agg_ret
               stmt_list end
@@ -546,7 +529,7 @@ module std/linux
       .value
         int_literal 524288
       func_decl
-        identifier toKernelFlags
+        identifier to_kernel_flags
         arg_list
           var_decl
             arg_list
@@ -554,7 +537,7 @@ module std/linux
             arg_list end
           .type
             type_expr
-              identifier OpenFlags
+              identifier open_flags
         arg_list end
         type_expr
           identifier int
@@ -578,7 +561,7 @@ module std/linux
                     identifier Write
                     identifier Read
                 cast_expr
-                  type_resolver OpenFlags
+                  type_resolver open_flags
                   int_literal 0 compound_stmt
                 stmt_list
                   binary =
@@ -590,7 +573,7 @@ module std/linux
                     identifier flags
                     identifier Write
                   cast_expr
-                    type_resolver OpenFlags
+                    type_resolver open_flags
                     int_literal 0 compound_stmt
                   stmt_list
                     binary =
@@ -602,7 +585,7 @@ module std/linux
                       identifier flags
                       identifier Read
                     cast_expr
-                      type_resolver OpenFlags
+                      type_resolver open_flags
                       int_literal 0 compound_stmt
                     stmt_list
                       binary =
@@ -617,7 +600,7 @@ module std/linux
                   identifier flags
                   identifier Create
                 cast_expr
-                  type_resolver OpenFlags
+                  type_resolver open_flags
                   int_literal 0 compound_stmt
                 stmt_list
                   binary =
@@ -634,7 +617,7 @@ module std/linux
                   identifier flags
                   identifier Append
                 cast_expr
-                  type_resolver OpenFlags
+                  type_resolver open_flags
                   int_literal 0 compound_stmt
                 stmt_list
                   binary =
@@ -651,7 +634,7 @@ module std/linux
                   identifier flags
                   identifier Truncate
                 cast_expr
-                  type_resolver OpenFlags
+                  type_resolver open_flags
                   int_literal 0 compound_stmt
                 stmt_list
                   binary =
@@ -676,7 +659,7 @@ module std/linux
                 identifier $cb_agg_ret
               arg_list end
             .type
-              type_resolver &{FileHandle, error}
+              type_resolver &{file_handle, error}
             var_decl
               arg_list
                 identifier filename
@@ -689,7 +672,7 @@ module std/linux
               arg_list end
             .type
               type_expr
-                identifier OpenFlags
+                identifier open_flags
             var_decl
               arg_list
                 identifier mode
@@ -698,46 +681,8 @@ module std/linux
               type_expr
                 identifier int
           arg_list end
-          type_resolver &{FileHandle, error}
+          type_resolver &{file_handle, error}
           compound_stmt
-            stmt_list
-              .pre_nodes
-                var_decl
-                  arg_list
-                    identifier $cbT35
-                  arg_list end
-                .value
-                  init_expr
-                    type_expr
-                      type_resolver []pure uint8
-                    arg_list
-                      string_literal "open: "
-                      int_literal 6
-                    arg_list end
-                  init_expr end
-              call
-                identifier print
-                arg_list
-                  unary &
-                    identifier $cbT35
-                arg_list end
-            stmt_list end
-            stmt_list
-              .pre_nodes
-                var_decl
-                  arg_list
-                    identifier $cbT36
-                  arg_list end
-                .value
-                  unary @
-                    identifier filename
-              call
-                identifier println
-                arg_list
-                  unary &
-                    identifier $cbT36
-                arg_list end
-            stmt_list end
             decl_list
               var_decl
                 arg_list
@@ -745,7 +690,7 @@ module std/linux
                 arg_list end
               .value
                 call
-                  identifier toKernelFlags
+                  identifier to_kernel_flags
                   arg_list
                     identifier flags
                   arg_list end
@@ -777,7 +722,7 @@ module std/linux
                     arg_list
                       cast_expr
                         type_expr
-                          identifier FileHandle
+                          identifier file_handle
                         identifier fd
                       int_literal 0
                     arg_list end
@@ -840,14 +785,14 @@ module std/linux
                 identifier mem::alloc
                 arg_list
                   unary &
-                    identifier $cbT6
+                    identifier $cbT7
                   cast_expr
                     type_resolver usize
                     int_literal 16
                 arg_list end
             var_decl
               arg_list
-                identifier $cbT6
+                identifier $cbT7
               arg_list end
             .value
               
@@ -860,7 +805,7 @@ module std/linux
                 type_resolver &opaque
             .value
               field_expr
-                identifier $cbT6
+                identifier $cbT7
                 identifier first
             var_decl
               arg_list
@@ -871,7 +816,7 @@ module std/linux
                 type_resolver error
             .value
               field_expr
-                identifier $cbT6
+                identifier $cbT7
                 identifier second
 
           decl_list end
@@ -883,7 +828,7 @@ module std/linux
                   .pre_nodes
                     var_decl
                       arg_list
-                        identifier $cbT37
+                        identifier $cbT36
                       arg_list end
                     .value
                       init_expr
@@ -903,7 +848,7 @@ module std/linux
                         arg_list
                         arg_list end
                       unary &
-                        identifier $cbT37
+                        identifier $cbT36
                     arg_list end
                 stmt_list end
                 stmt_list
@@ -916,7 +861,7 @@ module std/linux
             .pre_nodes
               var_decl
                 arg_list
-                  identifier $cbT38
+                  identifier $cbT37
                 arg_list end
               .value
                 init_expr
@@ -936,7 +881,7 @@ module std/linux
                   arg_list
                   arg_list end
                 unary &
-                  identifier $cbT38
+                  identifier $cbT37
               arg_list end
           stmt_list end
           stmt_list
@@ -985,7 +930,7 @@ module std/linux
                 identifier mem::alloc
                 arg_list
                   unary &
-                    identifier $cbT7
+                    identifier $cbT8
                   binary *
                     cast_expr
                       type_resolver usize
@@ -994,7 +939,7 @@ module std/linux
                 arg_list end
             var_decl
               arg_list
-                identifier $cbT7
+                identifier $cbT8
               arg_list end
             .value
               
@@ -1007,7 +952,7 @@ module std/linux
                 type_resolver &opaque
             .value
               field_expr
-                identifier $cbT7
+                identifier $cbT8
                 identifier first
             var_decl
               arg_list
@@ -1018,7 +963,7 @@ module std/linux
                 type_resolver error
             .value
               field_expr
-                identifier $cbT7
+                identifier $cbT8
                 identifier second
 
           decl_list end
@@ -1037,7 +982,7 @@ module std/linux
           stmt_list end
           stmt_list
             call
-              identifier writeInt
+              identifier write_int
               arg_list
                 call
                   identifier stdout
@@ -1050,7 +995,7 @@ module std/linux
             .pre_nodes
               var_decl
                 arg_list
-                  identifier $cbT39
+                  identifier $cbT38
                 arg_list end
               .value
                 init_expr
@@ -1070,12 +1015,12 @@ module std/linux
                   arg_list
                   arg_list end
                 unary &
-                  identifier $cbT39
+                  identifier $cbT38
               arg_list end
           stmt_list end
           stmt_list
             call
-              identifier writeInt
+              identifier write_int
               arg_list
                 call
                   identifier stdout
@@ -1094,7 +1039,7 @@ module std/linux
             .pre_nodes
               var_decl
                 arg_list
-                  identifier $cbT40
+                  identifier $cbT39
                 arg_list end
               .value
                 init_expr
@@ -1114,7 +1059,7 @@ module std/linux
                   arg_list
                   arg_list end
                 unary &
-                  identifier $cbT40
+                  identifier $cbT39
               arg_list end
           stmt_list end
           decl_list
@@ -1181,7 +1126,7 @@ module std/linux
               arg_list end              compound_stmt
                 stmt_list
                   call
-                    identifier writeInt
+                    identifier write_int
                     arg_list
                       call
                         identifier stdout
@@ -1196,7 +1141,7 @@ module std/linux
                   .pre_nodes
                     var_decl
                       arg_list
-                        identifier $cbT41
+                        identifier $cbT40
                       arg_list end
                     .value
                       init_expr
@@ -1215,7 +1160,7 @@ module std/linux
                         arg_list
                         arg_list end
                       unary &
-                        identifier $cbT41
+                        identifier $cbT40
                     arg_list end
                 stmt_list end
               compound_stmt end
@@ -1224,7 +1169,7 @@ module std/linux
             .pre_nodes
               var_decl
                 arg_list
-                  identifier $cbT42
+                  identifier $cbT41
                 arg_list end
               .value
                 init_expr
@@ -1244,7 +1189,7 @@ module std/linux
                   arg_list
                   arg_list end
                 unary &
-                  identifier $cbT42
+                  identifier $cbT41
               arg_list end
           stmt_list end
           stmt_list
@@ -1264,7 +1209,7 @@ module std/linux
             .pre_nodes
               var_decl
                 arg_list
-                  identifier $cbT43
+                  identifier $cbT42
                 arg_list end
               .value
                 init_expr
@@ -1284,7 +1229,7 @@ module std/linux
                   arg_list
                   arg_list end
                 unary &
-                  identifier $cbT43
+                  identifier $cbT42
               arg_list end
           stmt_list end
           decl_list
@@ -1485,7 +1430,7 @@ module std/linux
                 arg_list end
               .type
                 type_expr
-                  identifier FileHandle
+                  identifier file_handle
               var_decl
                 arg_list
                   identifier buf

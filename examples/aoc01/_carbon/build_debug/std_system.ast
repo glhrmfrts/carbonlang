@@ -73,7 +73,7 @@ module std/system
           arg_list end
       linkage_specifier end
       type_decl
-        identifier FileHandle
+        identifier file_handle
         type_expr
           type_qualifier ptr
             identifier opaque
@@ -87,7 +87,7 @@ module std/system
               arg_list end
             .type
               type_expr
-                identifier FileHandle
+                identifier file_handle
             var_decl
               arg_list
                 identifier data
@@ -108,7 +108,7 @@ module std/system
               arg_list end
             .type
               type_expr
-                identifier FileHandle
+                identifier file_handle
             var_decl
               arg_list
                 identifier data
@@ -120,7 +120,7 @@ module std/system
             identifier isize
       linkage_specifier end
       type_decl
-        identifier OpenFlags
+        identifier open_flags
         type_expr
                       arg_list
               identifier Create
@@ -138,7 +138,7 @@ module std/system
                 identifier $cb_agg_ret
               arg_list end
             .type
-              type_resolver &{FileHandle, error}
+              type_resolver &{file_handle, error}
             var_decl
               arg_list
                 identifier path
@@ -151,7 +151,7 @@ module std/system
               arg_list end
             .type
               type_expr
-                identifier OpenFlags
+                identifier open_flags
             var_decl
               arg_list
                 identifier mode
@@ -160,7 +160,7 @@ module std/system
               type_expr
                 identifier int
           arg_list end
-          type_resolver &{FileHandle, error}
+          type_resolver &{file_handle, error}
       linkage_specifier end
       linkage_specifier extern
         func_decl
@@ -168,7 +168,7 @@ module std/system
           arg_list
           arg_list end
           type_expr
-            identifier FileHandle
+            identifier file_handle
       linkage_specifier end
       linkage_specifier extern
         func_decl
@@ -176,7 +176,7 @@ module std/system
           arg_list
           arg_list end
           type_expr
-            identifier FileHandle
+            identifier file_handle
       linkage_specifier end
       linkage_specifier extern
         func_decl
@@ -184,7 +184,7 @@ module std/system
           arg_list
           arg_list end
           type_expr
-            identifier FileHandle
+            identifier file_handle
       linkage_specifier end
       linkage_specifier extern
         func_decl
@@ -196,7 +196,7 @@ module std/system
               arg_list end
             .type
               type_expr
-                identifier FileHandle
+                identifier file_handle
           arg_list end
           type_expr
             identifier int
@@ -211,7 +211,7 @@ module std/system
               arg_list end
             .type
               type_expr
-                identifier FileHandle
+                identifier file_handle
           arg_list end
           type_expr
             identifier $error
@@ -234,7 +234,7 @@ module std/system
               arg_list end
             .type
               type_expr
-                identifier FileHandle
+                identifier file_handle
             var_decl
               arg_list
                 identifier offset
@@ -324,7 +324,7 @@ module std/system
               arg_list end
             .type
               type_expr
-                identifier FileHandle
+                identifier file_handle
             var_decl
               arg_list
                 identifier buf
@@ -453,25 +453,25 @@ module std/system
             identifier $error
       linkage_specifier end
       type_decl
-        identifier ThreadHandle
+        identifier thread_handle
         type_expr
           type_qualifier ptr
             identifier opaque
       type_decl
-        identifier MutexHandle
+        identifier mutex_handle
         type_expr
           type_qualifier ptr
             identifier opaque
       linkage_specifier extern
         func_decl
-          identifier makeThread
+          identifier make_thread
           arg_list
             var_decl
               arg_list
                 identifier $cb_agg_ret
               arg_list end
             .type
-              type_resolver &{ThreadHandle, error}
+              type_resolver &{thread_handle, error}
             var_decl
               arg_list
                 identifier fn
@@ -494,7 +494,7 @@ module std/system
                 type_qualifier ptr
                   identifier opaque
           arg_list end
-          type_resolver &{ThreadHandle, error}
+          type_resolver &{thread_handle, error}
       linkage_specifier end
       linkage_specifier extern
         func_decl
@@ -506,14 +506,14 @@ module std/system
               arg_list end
             .type
               type_expr
-                identifier ThreadHandle
+                identifier thread_handle
           arg_list end
           type_expr
             identifier $error
       linkage_specifier end
       linkage_specifier extern
         func_decl
-          identifier threadId
+          identifier thread_id
           arg_list
           arg_list end
           type_expr
@@ -521,7 +521,7 @@ module std/system
       linkage_specifier end
       linkage_specifier extern
         func_decl
-          identifier cpuCount
+          identifier cpu_count
           arg_list
           arg_list end
           type_expr
@@ -529,16 +529,16 @@ module std/system
       linkage_specifier end
       linkage_specifier extern
         func_decl
-          identifier makeMutex
+          identifier make_mutex
           arg_list
             var_decl
               arg_list
                 identifier $cb_agg_ret
               arg_list end
             .type
-              type_resolver &{MutexHandle, error}
+              type_resolver &{mutex_handle, error}
           arg_list end
-          type_resolver &{MutexHandle, error}
+          type_resolver &{mutex_handle, error}
       linkage_specifier end
       linkage_specifier extern
         func_decl
@@ -550,7 +550,7 @@ module std/system
               arg_list end
             .type
               type_expr
-                identifier MutexHandle
+                identifier mutex_handle
           arg_list end
           type_expr
             identifier $error
@@ -565,7 +565,7 @@ module std/system
               arg_list end
             .type
               type_expr
-                identifier MutexHandle
+                identifier mutex_handle
           arg_list end
           type_expr
             identifier $error
@@ -580,12 +580,12 @@ module std/system
               arg_list end
             .type
               type_expr
-                identifier MutexHandle
+                identifier mutex_handle
           arg_list end
       linkage_specifier end
       linkage_specifier extern
         func_decl
-          identifier sleepMs
+          identifier sleep_ms
           arg_list
             var_decl
               arg_list
@@ -866,7 +866,7 @@ module std/system
           stmt_list end
         compound_stmt end
       func_decl
-        identifier writeInt
+        identifier write_int
         arg_list
           var_decl
             arg_list
@@ -874,7 +874,7 @@ module std/system
             arg_list end
           .type
             type_expr
-              identifier FileHandle
+              identifier file_handle
           var_decl
             arg_list
               identifier value
@@ -920,7 +920,7 @@ module std/system
                 .pre_nodes
                   var_decl
                     arg_list
-                      identifier $cbT53
+                      identifier $cbT51
                     arg_list end
                   .value
                     identifier dest
@@ -930,14 +930,14 @@ module std/system
                     identifier value
                     int_literal 10
                     unary &
-                      identifier $cbT53
+                      identifier $cbT51
                   arg_list end
           stmt_list end
           stmt_list
             .pre_nodes
               var_decl
                 arg_list
-                  identifier $cbT54
+                  identifier $cbT52
                 arg_list end
               .value
                 identifier dest
@@ -946,7 +946,7 @@ module std/system
               arg_list
                 identifier fd
                 unary &
-                  identifier $cbT54
+                  identifier $cbT52
               arg_list end
           stmt_list end
         compound_stmt end

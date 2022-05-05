@@ -29,23 +29,23 @@ private {
 const ALIGNMENT : usize = 16
 const PAGE_SIZE : usize = 4096
 
-type Block = struct {
+type memory_block = struct {
     filled: usize
     cap: usize
-    numAllocs: usize
-    next: &Block
+    num_allocs: usize
+    next: &memory_block
 }
 
-let lastBlock : &Block
+let last_block : &memory_block
 
-func allocInBlock(pblock: &Block, size: usize): &opaque {
-    let blockdata = (cast(&uint8)(cast(&opaque)pblock)) + sizeof(Block)
+func alloc_in_block(pblock: &memory_block, size: usize): &opaque {
+    let blockdata = (cast(&uint8)(cast(&opaque)pblock)) + sizeof(memory_block)
     let ptr = blockdata + pblock.filled
     pblock.filled += size
-    pblock.numAllocs += 1
+    pblock.num_allocs += 1
 
     sys::write(sys::stdout(), "std::mem - Growing block fill to ")
-    sys::writeInt(sys::stdout(), cast(int)pblock.filled)
+    sys::write_int(sys::stdout(), cast(int)pblock.filled)
     sys::write(sys::stdout(), " bytes\n")
 
     return ptr
@@ -75,9 +75,7 @@ asm%{
 func alloc(usersize: usize): {&opaque, error} {
     let asize = align(usersize, ALIGNMENT)
 
-    println("asdad")
-
-    let pblock = lastBlock
+    let pblock = last_block
     for (pblock != nil) {
         if (pblock.filled + asize < pblock.cap) {
             break
@@ -86,37 +84,36 @@ func alloc(usersize: usize): {&opaque, error} {
     }
 
     if (pblock != nil) {
-        return allocInBlock(pblock, asize), noerr
+        return alloc_in_block(pblock, asize), noerr
     }
 
-    let memsize = align(sizeof(Block) + asize, PAGE_SIZE)
+    let memsize = align(sizeof(memory_block) + asize, PAGE_SIZE)
     let newmem, err = sys::alloc(memsize)
-    //println(cast(int)(cast(uintptr)newmem))
     if (err != noerr) {
         return nil, err
     }
 
-    memset(newmem, 0, sizeof(Block))
+    memset(newmem, 0, sizeof(memory_block))
 
-    let newblock = cast(&Block)(newmem)
+    let newblock = cast(&memory_block)(newmem)
     newblock.cap = memsize
-    newblock.next = lastBlock
+    newblock.next = last_block
 
     sys::write(sys::stdout(), "std::mem - Allocating block of ")
-    sys::writeInt(sys::stdout(), cast(int)newblock.cap)
+    sys::write_int(sys::stdout(), cast(int)newblock.cap)
     sys::write(sys::stdout(), " bytes\n")
 
-    lastBlock = newblock
+    last_block = newblock
 
-    return allocInBlock(newblock, asize), noerr
+    return alloc_in_block(newblock, asize), noerr
 }
 
 func free(ptr: &opaque) {
-    let pblock = lastBlock
-    let prevblock : &Block
+    let pblock = last_block
+    let prevblock : &memory_block
 
     for (pblock != nil) {
-        let blockdata = (cast(&uint8)(cast(&opaque)pblock)) + sizeof(Block)
+        let blockdata = (cast(&uint8)(cast(&opaque)pblock)) + sizeof(memory_block)
         if (ptr >= blockdata && ptr < (blockdata + pblock.cap)) {
             break
         }
@@ -130,17 +127,17 @@ func free(ptr: &opaque) {
         return
     }
 
-    pblock.numAllocs -= 1
-    if (pblock.numAllocs == 0) {
-        if (lastBlock == pblock) {
-            lastBlock = pblock.next
+    pblock.num_allocs -= 1
+    if (pblock.num_allocs == 0) {
+        if (last_block == pblock) {
+            last_block = pblock.next
         }
         else {
             prevblock.next = pblock.next
         }
 
         sys::write(sys::stdout(), "std::mem - Freeing block of ")
-        sys::writeInt(sys::stdout(), cast(int)pblock.cap)
+        sys::write_int(sys::stdout(), cast(int)pblock.cap)
         sys::write(sys::stdout(), " bytes\n")
 
         sys::free(pblock, pblock.cap)

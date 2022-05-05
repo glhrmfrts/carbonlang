@@ -66,8 +66,8 @@ cb__Nstd__Nio__Nprint__Aptr__Tslice__Tpure__Tuint8:
 
  mov %rax,%rsi
  mov %rbx,%rdi
- call cb__Nstd__Nsystem__Nwrite__AFileHandle__Aptr__Tslice__Tpure__Tuint8
-# ir_call cb__Nstd__Nsystem__Nwrite__AFileHandle__Aptr__Tslice__Tpure__Tuint8 POP() POP(); (push)
+ call cb__Nstd__Nsystem__Nwrite__Afile_handle__Aptr__Tslice__Tpure__Tuint8
+# ir_call cb__Nstd__Nsystem__Nwrite__Afile_handle__Aptr__Tslice__Tpure__Tuint8 POP() POP(); (push)
 
 # ir_noop POP();
 
@@ -91,8 +91,8 @@ cb__Nstd__Nio__Nprint__Aint:
 
  mov 16(%rbp),%esi
  mov %rax,%rdi
- call cb__Nstd__Nsystem__NwriteInt__AFileHandle__Aint
-# ir_call cb__Nstd__Nsystem__NwriteInt__AFileHandle__Aint POP() A0;
+ call cb__Nstd__Nsystem__Nwrite_int__Afile_handle__Aint
+# ir_call cb__Nstd__Nsystem__Nwrite_int__Afile_handle__Aint POP() A0;
 
 cb__Nstd__Nio__Nprint__Aint$end:
  add $16,%rsp
@@ -154,8 +154,8 @@ cb__Nstd__Nio__Nprintln__Aptr__Tslice__Tpure__Tuint8:
 
  mov %rax,%rsi
  mov %rbx,%rdi
- call cb__Nstd__Nsystem__Nwrite__AFileHandle__Aptr__Tslice__Tpure__Tuint8
-# ir_call cb__Nstd__Nsystem__Nwrite__AFileHandle__Aptr__Tslice__Tpure__Tuint8 POP() POP(); (push)
+ call cb__Nstd__Nsystem__Nwrite__Afile_handle__Aptr__Tslice__Tpure__Tuint8
+# ir_call cb__Nstd__Nsystem__Nwrite__Afile_handle__Aptr__Tslice__Tpure__Tuint8 POP() POP(); (push)
 
 # ir_noop POP();
 
@@ -178,8 +178,8 @@ cb__Nstd__Nio__Nprintln__Aptr__Tslice__Tpure__Tuint8:
 
  mov %rax,%rsi
  mov %rbx,%rdi
- call cb__Nstd__Nsystem__Nwrite__AFileHandle__Aptr__Tslice__Tpure__Tuint8
-# ir_call cb__Nstd__Nsystem__Nwrite__AFileHandle__Aptr__Tslice__Tpure__Tuint8 POP() POP(); (push)
+ call cb__Nstd__Nsystem__Nwrite__Afile_handle__Aptr__Tslice__Tpure__Tuint8
+# ir_call cb__Nstd__Nsystem__Nwrite__Afile_handle__Aptr__Tslice__Tpure__Tuint8 POP() POP(); (push)
 
 # ir_noop POP();
 
@@ -205,8 +205,8 @@ cb__Nstd__Nio__Nprintln__Aint:
 
  mov 32(%rbp),%esi
  mov %rax,%rdi
- call cb__Nstd__Nsystem__NwriteInt__AFileHandle__Aint
-# ir_call cb__Nstd__Nsystem__NwriteInt__AFileHandle__Aint POP() A0;
+ call cb__Nstd__Nsystem__Nwrite_int__Afile_handle__Aint
+# ir_call cb__Nstd__Nsystem__Nwrite_int__Afile_handle__Aint POP() A0;
 
  lea .cbstr0,%rax
 # ir_load_addr STR0; (push)
@@ -227,8 +227,8 @@ cb__Nstd__Nio__Nprintln__Aint:
 
  mov %rax,%rsi
  mov %rbx,%rdi
- call cb__Nstd__Nsystem__Nwrite__AFileHandle__Aptr__Tslice__Tpure__Tuint8
-# ir_call cb__Nstd__Nsystem__Nwrite__AFileHandle__Aptr__Tslice__Tpure__Tuint8 POP() POP(); (push)
+ call cb__Nstd__Nsystem__Nwrite__Afile_handle__Aptr__Tslice__Tpure__Tuint8
+# ir_call cb__Nstd__Nsystem__Nwrite__Afile_handle__Aptr__Tslice__Tpure__Tuint8 POP() POP(); (push)
 
 # ir_noop POP();
 
@@ -293,11 +293,11 @@ cb__Nstd__Nio__Nprintln__Abool:
 
  mov 16(%rbp),%r10b
  cmp $0,%r10b
- je cb__Nstd__Nio__Nprintln__Abool$if1267$else
-# ir_jmp_eq A0 0 cb__Nstd__Nio__Nprintln__Abool$if1267$else;
+ je cb__Nstd__Nio__Nprintln__Abool$if1264$else
+# ir_jmp_eq A0 0 cb__Nstd__Nio__Nprintln__Abool$if1264$else;
 
-cb__Nstd__Nio__Nprintln__Abool$if1267$body:
-# ir_make_label cb__Nstd__Nio__Nprintln__Abool$if1267$body;
+cb__Nstd__Nio__Nprintln__Abool$if1264$body:
+# ir_make_label cb__Nstd__Nio__Nprintln__Abool$if1264$body;
 
  lea .cbstr1,%rax
 # ir_load_addr STR1; (push)
@@ -316,11 +316,11 @@ cb__Nstd__Nio__Nprintln__Abool$if1267$body:
  call cb__Nstd__Nio__Nprintln__Aptr__Tslice__Tpure__Tuint8
 # ir_call cb__Nstd__Nio__Nprintln__Aptr__Tslice__Tpure__Tuint8 POP();
 
- jmp cb__Nstd__Nio__Nprintln__Abool$if1267$end
-# ir_jmp cb__Nstd__Nio__Nprintln__Abool$if1267$end;
+ jmp cb__Nstd__Nio__Nprintln__Abool$if1264$end
+# ir_jmp cb__Nstd__Nio__Nprintln__Abool$if1264$end;
 
-cb__Nstd__Nio__Nprintln__Abool$if1267$else:
-# ir_make_label cb__Nstd__Nio__Nprintln__Abool$if1267$else;
+cb__Nstd__Nio__Nprintln__Abool$if1264$else:
+# ir_make_label cb__Nstd__Nio__Nprintln__Abool$if1264$else;
 
  lea .cbstr2,%rax
 # ir_load_addr STR2; (push)
@@ -339,8 +339,8 @@ cb__Nstd__Nio__Nprintln__Abool$if1267$else:
  call cb__Nstd__Nio__Nprintln__Aptr__Tslice__Tpure__Tuint8
 # ir_call cb__Nstd__Nio__Nprintln__Aptr__Tslice__Tpure__Tuint8 POP();
 
-cb__Nstd__Nio__Nprintln__Abool$if1267$end:
-# ir_make_label cb__Nstd__Nio__Nprintln__Abool$if1267$end;
+cb__Nstd__Nio__Nprintln__Abool$if1264$end:
+# ir_make_label cb__Nstd__Nio__Nprintln__Abool$if1264$end;
 
 cb__Nstd__Nio__Nprintln__Abool$end:
  add $48,%rsp

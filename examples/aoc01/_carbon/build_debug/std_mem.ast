@@ -91,7 +91,7 @@ module std/mem
           .value
             int_literal 4096
           type_decl
-            identifier Block
+            identifier memory_block
             type_expr
               struct_type
                 decl_list
@@ -111,7 +111,7 @@ module std/mem
                       identifier usize
                   var_decl
                     arg_list
-                      identifier numAllocs
+                      identifier num_allocs
                     arg_list end
                   .type
                     type_expr
@@ -123,20 +123,20 @@ module std/mem
                   .type
                     type_expr
                       type_qualifier ptr
-                        identifier Block
+                        identifier memory_block
                 decl_list end
           var_decl
             arg_list
-              identifier lastBlock
+              identifier last_block
             arg_list end
           .type
             type_expr
               type_qualifier ptr
-                identifier Block
+                identifier memory_block
           .value
             nil_literal
           func_decl
-            identifier allocInBlock
+            identifier alloc_in_block
             arg_list
               var_decl
                 arg_list
@@ -145,7 +145,7 @@ module std/mem
               .type
                 type_expr
                   type_qualifier ptr
-                    identifier Block
+                    identifier memory_block
               var_decl
                 arg_list
                   identifier size
@@ -201,11 +201,11 @@ module std/mem
                 binary =
                   field_expr
                     identifier pblock
-                    identifier numAllocs
+                    identifier num_allocs
                   binary +
                     field_expr
                       identifier pblock
-                      identifier numAllocs
+                      identifier num_allocs
                     cast_expr
                       type_resolver usize
                       int_literal 1
@@ -214,7 +214,7 @@ module std/mem
                 .pre_nodes
                   var_decl
                     arg_list
-                      identifier $cbT44
+                      identifier $cbT43
                     arg_list end
                   .value
                     init_expr
@@ -233,12 +233,12 @@ module std/mem
                       arg_list
                       arg_list end
                     unary &
-                      identifier $cbT44
+                      identifier $cbT43
                   arg_list end
               stmt_list end
               stmt_list
                 call
-                  identifier sys::writeInt
+                  identifier sys::write_int
                   arg_list
                     call
                       identifier sys::stdout
@@ -256,7 +256,7 @@ module std/mem
                 .pre_nodes
                   var_decl
                     arg_list
-                      identifier $cbT45
+                      identifier $cbT44
                     arg_list end
                   .value
                     init_expr
@@ -276,7 +276,7 @@ module std/mem
                       arg_list
                       arg_list end
                     unary &
-                      identifier $cbT45
+                      identifier $cbT44
                   arg_list end
               stmt_list end
               stmt_list
@@ -422,36 +422,12 @@ module std/mem
                   identifier usersize
                   identifier ALIGNMENT
                 arg_list end
-          decl_list end
-          stmt_list
-            .pre_nodes
-              var_decl
-                arg_list
-                  identifier $cbT46
-                arg_list end
-              .value
-                init_expr
-                  type_expr
-                    type_resolver []pure uint8
-                  arg_list
-                    string_literal "asdad"
-                    int_literal 5
-                  arg_list end
-                init_expr end
-            call
-              identifier println
-              arg_list
-                unary &
-                  identifier $cbT46
-              arg_list end
-          stmt_list end
-          decl_list
             var_decl
               arg_list
                 identifier pblock
               arg_list end
             .value
-              identifier lastBlock
+              identifier last_block
           decl_list end
           stmt_list
                           binary  
@@ -493,7 +469,7 @@ module std/mem
                       init_expr
                         arg_list
                           call
-                            identifier allocInBlock
+                            identifier alloc_in_block
                             arg_list
                               identifier pblock
                               identifier asize
@@ -525,12 +501,12 @@ module std/mem
                 identifier sys::alloc
                 arg_list
                   unary &
-                    identifier $cbT8
+                    identifier $cbT9
                   identifier memsize
                 arg_list end
             var_decl
               arg_list
-                identifier $cbT8
+                identifier $cbT9
               arg_list end
             .value
               
@@ -543,7 +519,7 @@ module std/mem
                 type_resolver &opaque
             .value
               field_expr
-                identifier $cbT8
+                identifier $cbT9
                 identifier first
             var_decl
               arg_list
@@ -554,7 +530,7 @@ module std/mem
                 type_resolver error
             .value
               field_expr
-                identifier $cbT8
+                identifier $cbT9
                 identifier second
 
           decl_list end
@@ -596,7 +572,7 @@ module std/mem
               cast_expr
                 type_expr
                   type_qualifier ptr
-                    identifier Block
+                    identifier memory_block
                 identifier newmem
           decl_list end
           stmt_list
@@ -611,13 +587,13 @@ module std/mem
               field_expr
                 identifier newblock
                 identifier next
-              identifier lastBlock
+              identifier last_block
           stmt_list end
           stmt_list
             .pre_nodes
               var_decl
                 arg_list
-                  identifier $cbT47
+                  identifier $cbT45
                 arg_list end
               .value
                 init_expr
@@ -636,12 +612,12 @@ module std/mem
                   arg_list
                   arg_list end
                 unary &
-                  identifier $cbT47
+                  identifier $cbT45
               arg_list end
           stmt_list end
           stmt_list
             call
-              identifier sys::writeInt
+              identifier sys::write_int
               arg_list
                 call
                   identifier sys::stdout
@@ -659,7 +635,7 @@ module std/mem
             .pre_nodes
               var_decl
                 arg_list
-                  identifier $cbT48
+                  identifier $cbT46
                 arg_list end
               .value
                 init_expr
@@ -679,12 +655,12 @@ module std/mem
                   arg_list
                   arg_list end
                 unary &
-                  identifier $cbT48
+                  identifier $cbT46
               arg_list end
           stmt_list end
           stmt_list
             binary =
-              identifier lastBlock
+              identifier last_block
               identifier newblock
           stmt_list end
           stmt_list
@@ -695,7 +671,7 @@ module std/mem
                 init_expr
                   arg_list
                     call
-                      identifier allocInBlock
+                      identifier alloc_in_block
                       arg_list
                         identifier newblock
                         identifier asize
@@ -726,7 +702,7 @@ module std/mem
                 identifier pblock
               arg_list end
             .value
-              identifier lastBlock
+              identifier last_block
             var_decl
               arg_list
                 identifier prevblock
@@ -734,7 +710,7 @@ module std/mem
             .type
               type_expr
                 type_qualifier ptr
-                  identifier Block
+                  identifier memory_block
             .value
               nil_literal
           decl_list end
@@ -805,11 +781,11 @@ module std/mem
             binary =
               field_expr
                 identifier pblock
-                identifier numAllocs
+                identifier num_allocs
               binary -
                 field_expr
                   identifier pblock
-                  identifier numAllocs
+                  identifier num_allocs
                 cast_expr
                   type_resolver usize
                   int_literal 1
@@ -818,17 +794,17 @@ module std/mem
             if{binary  
                 field_expr
                   identifier pblock
-                  identifier numAllocs
+                  identifier num_allocs
                 cast_expr
                   type_resolver usize
                   int_literal 0 compound_stmt
                 stmt_list
                   if{binary  
-                      identifier lastBlock
+                      identifier last_block
                       identifier pblock compound_stmt
                       stmt_list
                         binary =
-                          identifier lastBlock
+                          identifier last_block
                           field_expr
                             identifier pblock
                             identifier next
@@ -849,7 +825,7 @@ module std/mem
                   .pre_nodes
                     var_decl
                       arg_list
-                        identifier $cbT49
+                        identifier $cbT47
                       arg_list end
                     .value
                       init_expr
@@ -868,12 +844,12 @@ module std/mem
                         arg_list
                         arg_list end
                       unary &
-                        identifier $cbT49
+                        identifier $cbT47
                     arg_list end
                 stmt_list end
                 stmt_list
                   call
-                    identifier sys::writeInt
+                    identifier sys::write_int
                     arg_list
                       call
                         identifier sys::stdout
@@ -891,7 +867,7 @@ module std/mem
                   .pre_nodes
                     var_decl
                       arg_list
-                        identifier $cbT50
+                        identifier $cbT48
                       arg_list end
                     .value
                       init_expr
@@ -911,7 +887,7 @@ module std/mem
                         arg_list
                         arg_list end
                       unary &
-                        identifier $cbT50
+                        identifier $cbT48
                     arg_list end
                 stmt_list end
                 stmt_list

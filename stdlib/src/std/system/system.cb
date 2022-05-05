@@ -21,25 +21,25 @@ extern func free(m: &opaque, sz: usize)
 
 // io.cb
 
-typealias FileHandle = &opaque
+typealias file_handle = &opaque
 
-extern func write(fd: FileHandle, data: []pure uint8): isize
+extern func write(fd: file_handle, data: []pure uint8): isize
 
-extern func read(fd: FileHandle, data: []uint8): isize
+extern func read(fd: file_handle, data: []uint8): isize
 
-type OpenFlags = enumflags { Create Write Read Append Truncate }
+type open_flags = enumflags { Create Write Read Append Truncate }
 
-extern func open(path: []pure uint8, flags: OpenFlags, mode: int): {FileHandle, error}
+extern func open(path: []pure uint8, flags: open_flags, mode: int): {file_handle, error}
 
-extern func stdout(): FileHandle
+extern func stdout(): file_handle
 
-extern func stderr(): FileHandle
+extern func stderr(): file_handle
 
-extern func stdin(): FileHandle
+extern func stdin(): file_handle
 
-extern func fdflags(fd: FileHandle): int
+extern func fdflags(fd: file_handle): int
 
-extern func close(fd: FileHandle): error
+extern func close(fd: file_handle): error
 
 type Whence = enum {
     SeekSet
@@ -47,7 +47,7 @@ type Whence = enum {
     SeekEnd
 }
 
-extern func seek(fd: FileHandle, offset: int64, w: Whence)
+extern func seek(fd: file_handle, offset: int64, w: Whence)
 
 type Stat = struct {
     size: usize
@@ -59,7 +59,7 @@ type Stat = struct {
 
 extern func stat(filename: []pure uint8, buf: &Stat): error
 
-extern func stat(fd: FileHandle, buf: &Stat): error
+extern func stat(fd: file_handle, buf: &Stat): error
 
 extern func unlink(path: []pure uint8): error
 
@@ -81,27 +81,27 @@ extern func process(cmdline: []pure uint8, pwd: []pure uint8): error
 
 // thread.cb
 
-typealias ThreadHandle = &opaque
+typealias thread_handle = &opaque
 
-typealias MutexHandle = &opaque
+typealias mutex_handle = &opaque
 
-extern func makeThread(fn: {&opaque} -> {}, arg: &opaque): {ThreadHandle, error}
+extern func make_thread(fn: {&opaque} -> {}, arg: &opaque): {thread_handle, error}
 
-extern func join(th: ThreadHandle): error
+extern func join(th: thread_handle): error
 
-extern func threadId(): int
+extern func thread_id(): int
 
-extern func cpuCount(): int
+extern func cpu_count(): int
 
-extern func makeMutex(): {MutexHandle, error}
+extern func make_mutex(): {mutex_handle, error}
 
-extern func lock(m: MutexHandle): error
+extern func lock(m: mutex_handle): error
 
-extern func unlock(m: MutexHandle): error
+extern func unlock(m: mutex_handle): error
 
-extern func destroy(m: MutexHandle)
+extern func destroy(m: mutex_handle)
 
-extern func sleepMs(ms: uint64)
+extern func sleep_ms(ms: uint64)
 
 // temporary
 
@@ -157,7 +157,7 @@ func intToString(value: int, base: int, dest: []uint8) {
     return offs
 }
 
-func writeInt(fd: FileHandle, value: int) {
+func write_int(fd: file_handle, value: int) {
     let buf : [32]uint8
     let dest = []uint8{&buf[0], sizeof(buf)}
     dest.len = intToString(value, 10, dest)
