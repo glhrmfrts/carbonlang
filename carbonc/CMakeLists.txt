@@ -9,6 +9,6 @@ set(CMAKE_CXX_STANDARD 17)
 
 add_compile_options(-g)
 
-add_compile_definitions(CARBON_VERSION ${CARBON_VERSION})
+add_compile_definitions(CARBON_VERSION="${CARBON_VERSION}")
 
 add_executable(${TARGET_NAME} ${SRC_FILES} ${HEADER_FILES})

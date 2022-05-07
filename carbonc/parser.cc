@@ -97,6 +97,10 @@ struct parser_impl {
             result = make_identifier_node(*ast_arena, lex->pos(), { "$error" });
             lex->next();
         }
+        else if (TOK == token_type::nil) {
+            result = make_identifier_node(*ast_arena, lex->pos(), { "$nil" });
+            lex->next();
+        }
 
         if (result) {
             if (!no_wrap) {

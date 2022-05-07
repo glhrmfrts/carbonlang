@@ -1373,12 +1373,16 @@ struct generator {
         }
 
         if (dest_tid.get().size > tid.get().size && !is_lit(op)) {
-            if (tid.get().is_signed) {
-                em->movsx(dest, op);
+            auto ireg = adjust_for_type(reg_intermediate, tid);
+
+            if (dest_tid.get().is_signed) {
+                em->movsx(ireg, op);
             }
             else {
-                em->movzx(dest, op);
+                em->movzx(ireg, op);
             }
+
+            em->mov(dest, toop(adjust_for_type(reg_intermediate, dest_tid)));
         }
         else if (dest_tid.get().size < tid.get().size && !is_lit(op)) {
             em->mov(adjust_for_type(reg_intermediate, tid), op);

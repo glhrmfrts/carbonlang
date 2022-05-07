@@ -1,23 +1,11 @@
-import std::string
 import std::io
-
-let g_glob = 25
+import std::system
 
 func test_div(a, b) {
     return a / b
 }
 
-func main(args: []string) {
+func main() {
     let a = test_div(10, 5)
-
-    g_glob = 9543
-
-    let j = g_glob
-
-    println(j)
-    println(j == 9543)
-    println(j == 95434)
-    println("hello world")
-
-    return j
+    println(a)
 }

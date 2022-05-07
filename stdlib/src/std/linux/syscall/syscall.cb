@@ -116,3 +116,25 @@ asm%{
     syscall
 }%asm
 }
+
+func fork(): int {
+asm%{
+    mov $57, %rax
+    syscall
+}%asm
+}
+
+func execve(filename: &pure uint8, argv: & & pure uint8, envp: & & pure uint8) {
+asm%{
+    mov $59, %rax
+    syscall
+}%asm
+}
+
+func wait4(pid: int, stat_addr: &int, options: int, ru: &opaque) {
+asm%{
+    mov $61, %rax
+    mov %rcx,%r10
+    syscall
+}%asm
+}

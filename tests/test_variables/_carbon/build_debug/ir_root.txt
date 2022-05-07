@@ -1,0 +1,30 @@
+string #0: "hi";
+string #1: "/usr/bin/carbonc";
+func cb__Nroot__Nmain -> void
+    local #0 argsbuf: array__I10__Tslice__Tpure__Tuint8;
+    local #1 args: slice__Tslice__Tpure__Tuint8;
+    local #2 $cbT1: tuple__Tint__Terror;
+    local #3 $cbT6: slice__Tpure__Tuint8;
+    local #4 $cbT7: slice__Tpure__Tuint8;
+    local #5 $cbT8: slice__Tslice__Tpure__Tuint8;
+    ir_load_addr STR0; (push)
+    ir_load [L3 . 0] POP();
+    ir_load [L3 . 1] 2;
+    ir_load_addr L3; (push)
+    ir_call cb__Nstd__Nio__Nprintln__Aptr__Tslice__Tpure__Tuint8 POP();
+    ir_store L0 0 0 160;
+    ir_index L0 0; (push)
+    ir_load_addr POP(); (push)
+    ir_load [L1 . 0] POP();
+    ir_load [L1 . 1] 0;
+    ir_load_addr STR1; (push)
+    ir_load [L4 . 0] POP();
+    ir_load [L4 . 1] 16;
+    ir_copy L5 L1 16;
+    ir_load_addr L2; (push)
+    ir_load_addr L4; (push)
+    ir_load_addr L5; (push)
+    ir_call cb__Nstd__Nsystem__Nprocess__Aptr__Ttuple__Tint__Terror__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tslice__Tpure__Tuint8 POP() POP() POP();
+    ir_noop L2;
+endf
+

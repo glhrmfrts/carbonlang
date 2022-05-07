@@ -76,7 +76,7 @@ extern func mkdir(path: []pure uint8): error
 
 extern func exit(code: int)
 
-extern func process(cmdline: []pure uint8, pwd: []pure uint8): error
+extern func process(path: []pure uint8, args: [][]pure uint8): {int, error}
 
 
 // thread.cb

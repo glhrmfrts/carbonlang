@@ -1,0 +1,960 @@
+module std/system
+
+  code_unit ../../stdlib/src/std/system/system.cb
+    decl_list
+              identifier ALLOC_FAILED        identifier PATH_NOT_FOUND        identifier INVALID_HANDLE        identifier UNKNOWN_ERROR
+      linkage_specifier extern
+        func_decl
+          identifier alloc
+          arg_list
+            var_decl
+              arg_list
+                identifier $cb_agg_ret
+              arg_list end
+            .type
+              type_resolver &{&opaque, error}
+            var_decl
+              arg_list
+                identifier sz
+              arg_list end
+            .type
+              type_expr
+                identifier usize
+          arg_list end
+          type_resolver &{&opaque, error}
+      linkage_specifier end
+      linkage_specifier extern
+        func_decl
+          identifier alloc
+          arg_list
+            var_decl
+              arg_list
+                identifier $cb_agg_ret
+              arg_list end
+            .type
+              type_resolver &{&opaque, error}
+            var_decl
+              arg_list
+                identifier sz
+              arg_list end
+            .type
+              type_expr
+                identifier usize
+            var_decl
+              arg_list
+                identifier extra
+              arg_list end
+            .type
+              type_expr
+                type_qualifier ptr
+                  identifier opaque
+          arg_list end
+          type_resolver &{&opaque, error}
+      linkage_specifier end
+      linkage_specifier extern
+        func_decl
+          identifier free
+          arg_list
+            var_decl
+              arg_list
+                identifier m
+              arg_list end
+            .type
+              type_expr
+                type_qualifier ptr
+                  identifier opaque
+            var_decl
+              arg_list
+                identifier sz
+              arg_list end
+            .type
+              type_expr
+                identifier usize
+          arg_list end
+      linkage_specifier end
+      type_decl
+        identifier file_handle
+        type_expr
+          type_qualifier ptr
+            identifier opaque
+      linkage_specifier extern
+        func_decl
+          identifier write
+          arg_list
+            var_decl
+              arg_list
+                identifier fd
+              arg_list end
+            .type
+              type_expr
+                identifier file_handle
+            var_decl
+              arg_list
+                identifier data
+              arg_list end
+            .type
+              type_resolver &[]pure uint8
+          arg_list end
+          type_expr
+            identifier isize
+      linkage_specifier end
+      linkage_specifier extern
+        func_decl
+          identifier read
+          arg_list
+            var_decl
+              arg_list
+                identifier fd
+              arg_list end
+            .type
+              type_expr
+                identifier file_handle
+            var_decl
+              arg_list
+                identifier data
+              arg_list end
+            .type
+              type_resolver &[]uint8
+          arg_list end
+          type_expr
+            identifier isize
+      linkage_specifier end
+      type_decl
+        identifier open_flags
+        type_expr
+                      arg_list
+              identifier Create
+              identifier Write
+              identifier Read
+              identifier Append
+              identifier Truncate
+            arg_list end
+      linkage_specifier extern
+        func_decl
+          identifier open
+          arg_list
+            var_decl
+              arg_list
+                identifier $cb_agg_ret
+              arg_list end
+            .type
+              type_resolver &{file_handle, error}
+            var_decl
+              arg_list
+                identifier path
+              arg_list end
+            .type
+              type_resolver &[]pure uint8
+            var_decl
+              arg_list
+                identifier flags
+              arg_list end
+            .type
+              type_expr
+                identifier open_flags
+            var_decl
+              arg_list
+                identifier mode
+              arg_list end
+            .type
+              type_expr
+                identifier int
+          arg_list end
+          type_resolver &{file_handle, error}
+      linkage_specifier end
+      linkage_specifier extern
+        func_decl
+          identifier stdout
+          arg_list
+          arg_list end
+          type_expr
+            identifier file_handle
+      linkage_specifier end
+      linkage_specifier extern
+        func_decl
+          identifier stderr
+          arg_list
+          arg_list end
+          type_expr
+            identifier file_handle
+      linkage_specifier end
+      linkage_specifier extern
+        func_decl
+          identifier stdin
+          arg_list
+          arg_list end
+          type_expr
+            identifier file_handle
+      linkage_specifier end
+      linkage_specifier extern
+        func_decl
+          identifier fdflags
+          arg_list
+            var_decl
+              arg_list
+                identifier fd
+              arg_list end
+            .type
+              type_expr
+                identifier file_handle
+          arg_list end
+          type_expr
+            identifier int
+      linkage_specifier end
+      linkage_specifier extern
+        func_decl
+          identifier close
+          arg_list
+            var_decl
+              arg_list
+                identifier fd
+              arg_list end
+            .type
+              type_expr
+                identifier file_handle
+          arg_list end
+          type_expr
+            identifier $error
+      linkage_specifier end
+      type_decl
+        identifier Whence
+        type_expr
+                      arg_list
+              identifier SeekSet
+              identifier SeekCurrent
+              identifier SeekEnd
+            arg_list end
+      linkage_specifier extern
+        func_decl
+          identifier seek
+          arg_list
+            var_decl
+              arg_list
+                identifier fd
+              arg_list end
+            .type
+              type_expr
+                identifier file_handle
+            var_decl
+              arg_list
+                identifier offset
+              arg_list end
+            .type
+              type_expr
+                identifier int64
+            var_decl
+              arg_list
+                identifier w
+              arg_list end
+            .type
+              type_expr
+                identifier Whence
+          arg_list end
+      linkage_specifier end
+      type_decl
+        identifier Stat
+        type_expr
+          struct_type
+            decl_list
+              var_decl
+                arg_list
+                  identifier size
+                arg_list end
+              .type
+                type_expr
+                  identifier usize
+              var_decl
+                arg_list
+                  identifier mtime
+                arg_list end
+              .type
+                type_expr
+                  identifier int64
+              var_decl
+                arg_list
+                  identifier atime
+                arg_list end
+              .type
+                type_expr
+                  identifier int64
+              var_decl
+                arg_list
+                  identifier ctime
+                arg_list end
+              .type
+                type_expr
+                  identifier int64
+              var_decl
+                arg_list
+                  identifier mode
+                arg_list end
+              .type
+                type_expr
+                  identifier int
+            decl_list end
+      linkage_specifier extern
+        func_decl
+          identifier stat
+          arg_list
+            var_decl
+              arg_list
+                identifier filename
+              arg_list end
+            .type
+              type_resolver &[]pure uint8
+            var_decl
+              arg_list
+                identifier buf
+              arg_list end
+            .type
+              type_expr
+                type_qualifier ptr
+                  identifier Stat
+          arg_list end
+          type_expr
+            identifier $error
+      linkage_specifier end
+      linkage_specifier extern
+        func_decl
+          identifier stat
+          arg_list
+            var_decl
+              arg_list
+                identifier fd
+              arg_list end
+            .type
+              type_expr
+                identifier file_handle
+            var_decl
+              arg_list
+                identifier buf
+              arg_list end
+            .type
+              type_expr
+                type_qualifier ptr
+                  identifier Stat
+          arg_list end
+          type_expr
+            identifier $error
+      linkage_specifier end
+      linkage_specifier extern
+        func_decl
+          identifier unlink
+          arg_list
+            var_decl
+              arg_list
+                identifier path
+              arg_list end
+            .type
+              type_resolver &[]pure uint8
+          arg_list end
+          type_expr
+            identifier $error
+      linkage_specifier end
+      linkage_specifier extern
+        func_decl
+          identifier remove
+          arg_list
+            var_decl
+              arg_list
+                identifier path
+              arg_list end
+            .type
+              type_resolver &[]pure uint8
+          arg_list end
+          type_expr
+            identifier $error
+      linkage_specifier end
+      linkage_specifier extern
+        func_decl
+          identifier rename
+          arg_list
+            var_decl
+              arg_list
+                identifier path
+              arg_list end
+            .type
+              type_resolver &[]pure uint8
+            var_decl
+              arg_list
+                identifier dest
+              arg_list end
+            .type
+              type_resolver &[]pure uint8
+          arg_list end
+          type_expr
+            identifier $error
+      linkage_specifier end
+      linkage_specifier extern
+        func_decl
+          identifier copy
+          arg_list
+            var_decl
+              arg_list
+                identifier path
+              arg_list end
+            .type
+              type_resolver &[]pure uint8
+            var_decl
+              arg_list
+                identifier dest
+              arg_list end
+            .type
+              type_resolver &[]pure uint8
+          arg_list end
+          type_expr
+            identifier $error
+      linkage_specifier end
+      linkage_specifier extern
+        func_decl
+          identifier mkdir
+          arg_list
+            var_decl
+              arg_list
+                identifier path
+              arg_list end
+            .type
+              type_resolver &[]pure uint8
+          arg_list end
+          type_expr
+            identifier $error
+      linkage_specifier end
+      linkage_specifier extern
+        func_decl
+          identifier exit
+          arg_list
+            var_decl
+              arg_list
+                identifier code
+              arg_list end
+            .type
+              type_expr
+                identifier int
+          arg_list end
+      linkage_specifier end
+      linkage_specifier extern
+        func_decl
+          identifier process
+          arg_list
+            var_decl
+              arg_list
+                identifier $cb_agg_ret
+              arg_list end
+            .type
+              type_resolver &{int, error}
+            var_decl
+              arg_list
+                identifier path
+              arg_list end
+            .type
+              type_resolver &[]pure uint8
+            var_decl
+              arg_list
+                identifier args
+              arg_list end
+            .type
+              type_resolver &[][]pure uint8
+          arg_list end
+          type_resolver &{int, error}
+      linkage_specifier end
+      type_decl
+        identifier thread_handle
+        type_expr
+          type_qualifier ptr
+            identifier opaque
+      type_decl
+        identifier mutex_handle
+        type_expr
+          type_qualifier ptr
+            identifier opaque
+      linkage_specifier extern
+        func_decl
+          identifier make_thread
+          arg_list
+            var_decl
+              arg_list
+                identifier $cb_agg_ret
+              arg_list end
+            .type
+              type_resolver &{thread_handle, error}
+            var_decl
+              arg_list
+                identifier fn
+              arg_list end
+            .type
+              type_expr
+                                  arg_list
+                    type_expr
+                      type_qualifier ptr
+                        identifier opaque
+                  arg_list end                  type_expr
+                    tuple_type
+
+            var_decl
+              arg_list
+                identifier arg
+              arg_list end
+            .type
+              type_expr
+                type_qualifier ptr
+                  identifier opaque
+          arg_list end
+          type_resolver &{thread_handle, error}
+      linkage_specifier end
+      linkage_specifier extern
+        func_decl
+          identifier join
+          arg_list
+            var_decl
+              arg_list
+                identifier th
+              arg_list end
+            .type
+              type_expr
+                identifier thread_handle
+          arg_list end
+          type_expr
+            identifier $error
+      linkage_specifier end
+      linkage_specifier extern
+        func_decl
+          identifier thread_id
+          arg_list
+          arg_list end
+          type_expr
+            identifier int
+      linkage_specifier end
+      linkage_specifier extern
+        func_decl
+          identifier cpu_count
+          arg_list
+          arg_list end
+          type_expr
+            identifier int
+      linkage_specifier end
+      linkage_specifier extern
+        func_decl
+          identifier make_mutex
+          arg_list
+            var_decl
+              arg_list
+                identifier $cb_agg_ret
+              arg_list end
+            .type
+              type_resolver &{mutex_handle, error}
+          arg_list end
+          type_resolver &{mutex_handle, error}
+      linkage_specifier end
+      linkage_specifier extern
+        func_decl
+          identifier lock
+          arg_list
+            var_decl
+              arg_list
+                identifier m
+              arg_list end
+            .type
+              type_expr
+                identifier mutex_handle
+          arg_list end
+          type_expr
+            identifier $error
+      linkage_specifier end
+      linkage_specifier extern
+        func_decl
+          identifier unlock
+          arg_list
+            var_decl
+              arg_list
+                identifier m
+              arg_list end
+            .type
+              type_expr
+                identifier mutex_handle
+          arg_list end
+          type_expr
+            identifier $error
+      linkage_specifier end
+      linkage_specifier extern
+        func_decl
+          identifier destroy
+          arg_list
+            var_decl
+              arg_list
+                identifier m
+              arg_list end
+            .type
+              type_expr
+                identifier mutex_handle
+          arg_list end
+      linkage_specifier end
+      linkage_specifier extern
+        func_decl
+          identifier sleep_ms
+          arg_list
+            var_decl
+              arg_list
+                identifier ms
+              arg_list end
+            .type
+              type_expr
+                identifier uint64
+          arg_list end
+      linkage_specifier end
+      func_decl
+        identifier intToString
+        arg_list
+          var_decl
+            arg_list
+              identifier value
+            arg_list end
+          .type
+            type_expr
+              identifier int
+          var_decl
+            arg_list
+              identifier base
+            arg_list end
+          .type
+            type_expr
+              identifier int
+          var_decl
+            arg_list
+              identifier dest
+            arg_list end
+          .type
+            type_resolver &[]uint8
+        arg_list end
+        compound_stmt
+          stmt_list
+            if{binary  
+                binary <
+                  identifier base
+                  int_literal 2
+                binary >
+                  identifier base
+                  int_literal 36 compound_stmt
+                stmt_list
+                  return_stmt
+                    int_literal 0
+                stmt_list end
+              compound_stmt end}
+          stmt_list end
+          decl_list
+            var_decl
+              arg_list
+                identifier result
+              arg_list end
+            .value
+              unary @
+                identifier dest
+            var_decl
+              arg_list
+                identifier tpl_str
+              arg_list end
+            .value
+              init_expr
+                type_expr
+                  type_resolver []pure uint8
+                arg_list
+                  string_literal "zyxwvutsrqponmlkjihgfedcba9876543210123456789abcdefghijklmnopqrstuvwxyz"
+                  int_literal 71
+                arg_list end
+              init_expr end
+            var_decl
+              arg_list
+                identifier tmp_value
+              arg_list end
+            .value
+              identifier value
+            var_decl
+              arg_list
+                identifier offs
+              arg_list end
+            .type
+              type_expr
+                identifier int
+            .value
+              int_literal 0
+            var_decl
+              arg_list
+                identifier nvalue
+              arg_list end
+            .value
+              unary -
+                int_literal 1
+          decl_list end
+          stmt_list
+                          binary  
+                identifier nvalue
+                int_literal 0              compound_stmt
+                stmt_list
+                  if{binary  
+                      cast_expr
+                        type_resolver usize
+                        identifier offs
+                      field_expr
+                        identifier result
+                        identifier len compound_stmt
+                      stmt_list
+                        binary =
+                          identifier offs
+                          binary -
+                            identifier offs
+                            int_literal 1
+                      stmt_list end
+                      stmt_list
+                        
+                      stmt_list end
+                    compound_stmt end}
+                stmt_list end
+                stmt_list
+                  binary =
+                    identifier tmp_value
+                    identifier value
+                stmt_list end
+                stmt_list
+                  binary =
+                    identifier value
+                    binary /
+                      identifier value
+                      identifier base
+                stmt_list end
+                stmt_list
+                  binary =
+                    identifier nvalue
+                    identifier value
+                stmt_list end
+                stmt_list
+                  binary =
+                    field_expr
+                        identifier result
+                        identifier ptr[identifier offs]
+                    cast_expr
+                      type_resolver uint8
+                      field_expr
+                          identifier tpl_str
+                          identifier ptr[binary +
+                          int_literal 35
+                          binary -
+                            identifier tmp_value
+                            binary *
+                              identifier value
+                              identifier base]
+                stmt_list end
+                stmt_list
+                  binary =
+                    identifier offs
+                    binary +
+                      identifier offs
+                      int_literal 1
+                stmt_list end
+              compound_stmt end
+          stmt_list end
+          decl_list
+            var_decl
+              arg_list
+                identifier ptr
+              arg_list end
+            .type
+              type_expr
+                type_qualifier ptr
+                  identifier uint8
+            .value
+              unary &
+                field_expr
+                    identifier result
+                    identifier ptr[identifier offs]
+            var_decl
+              arg_list
+                identifier ptr1
+              arg_list end
+            .type
+              type_expr
+                type_qualifier ptr
+                  identifier uint8
+            .value
+              unary &
+                field_expr
+                    identifier result
+                    identifier ptr[int_literal 0]
+          decl_list end
+          stmt_list
+            if{binary <
+                identifier tmp_value
+                int_literal 0 compound_stmt
+                stmt_list
+                  binary =
+                    unary @
+                      identifier ptr
+                    cast_expr
+                      type_resolver uint8
+                      
+                stmt_list end
+                stmt_list
+                  binary =
+                    identifier ptr
+                    binary +
+                      identifier ptr
+                      int_literal 1
+                stmt_list end
+              compound_stmt end}
+          stmt_list end
+          stmt_list
+            binary =
+              unary @
+                identifier ptr
+              cast_expr
+                type_resolver uint8
+                
+          stmt_list end
+          stmt_list
+            binary =
+              identifier ptr
+              binary -
+                identifier ptr
+                int_literal 1
+          stmt_list end
+          decl_list
+            var_decl
+              arg_list
+                identifier tmp_char
+              arg_list end
+            .type
+              type_expr
+                identifier uint8
+            .value
+              int_literal 0
+          decl_list end
+          stmt_list
+                          binary <
+                identifier ptr1
+                identifier ptr              compound_stmt
+                stmt_list
+                  binary =
+                    identifier tmp_char
+                    unary @
+                      identifier ptr
+                stmt_list end
+                stmt_list
+                  binary =
+                    unary @
+                      identifier ptr
+                    unary @
+                      identifier ptr1
+                stmt_list end
+                stmt_list
+                  binary =
+                    identifier ptr
+                    binary -
+                      identifier ptr
+                      int_literal 1
+                stmt_list end
+                stmt_list
+                  binary =
+                    unary @
+                      identifier ptr1
+                    identifier tmp_char
+                stmt_list end
+                stmt_list
+                  binary =
+                    identifier ptr1
+                    binary +
+                      identifier ptr1
+                      int_literal 1
+                stmt_list end
+              compound_stmt end
+          stmt_list end
+          stmt_list
+            return_stmt
+              identifier offs
+          stmt_list end
+        compound_stmt end
+      func_decl
+        identifier write_int
+        arg_list
+          var_decl
+            arg_list
+              identifier fd
+            arg_list end
+          .type
+            type_expr
+              identifier file_handle
+          var_decl
+            arg_list
+              identifier value
+            arg_list end
+          .type
+            type_expr
+              identifier int
+        arg_list end
+        compound_stmt
+          decl_list
+            var_decl
+              arg_list
+                identifier buf
+              arg_list end
+            .type
+              type_expr
+                array_type{size=int_literal 32 type_expr
+                    identifier uint8}
+            var_decl
+              arg_list
+                identifier dest
+              arg_list end
+            .value
+              init_expr
+                type_expr
+                  slice_type [ ] 
+                    type_expr
+                      identifier uint8
+                arg_list
+                  unary &
+                    identifier buf[int_literal 0]
+                  int_literal 32
+                arg_list end
+              init_expr end
+          decl_list end
+          stmt_list
+            binary =
+              field_expr
+                identifier dest
+                identifier len
+              cast_expr
+                type_resolver usize
+                .pre_nodes
+                  var_decl
+                    arg_list
+                      identifier $cbT36
+                    arg_list end
+                  .value
+                    identifier dest
+                call
+                  identifier intToString
+                  arg_list
+                    identifier value
+                    int_literal 10
+                    unary &
+                      identifier $cbT36
+                  arg_list end
+          stmt_list end
+          stmt_list
+            .pre_nodes
+              var_decl
+                arg_list
+                  identifier $cbT37
+                arg_list end
+              .value
+                identifier dest
+            call
+              identifier write
+              arg_list
+                identifier fd
+                unary &
+                  identifier $cbT37
+              arg_list end
+          stmt_list end
+        compound_stmt end
+    decl_list end
+  code_unit ../../stdlib/src/std/system/system.cb end
+module std/system end

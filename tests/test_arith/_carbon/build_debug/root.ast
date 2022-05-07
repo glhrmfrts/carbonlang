@@ -1,0 +1,81 @@
+module root
+
+  code_unit ./src/main.cb
+    decl_list
+      import_decl
+        identifier std::io
+      import_decl
+        identifier std::system
+      func_decl
+        identifier test_div
+        arg_list
+          var_decl
+            arg_list
+              identifier a
+            arg_list end
+          var_decl
+            arg_list
+              identifier b
+            arg_list end
+        arg_list end
+        compound_stmt
+          stmt_list
+            return_stmt
+              binary /
+                identifier a
+                identifier b
+          stmt_list end
+        compound_stmt end
+      func_decl
+        identifier main
+        arg_list
+        arg_list end
+        compound_stmt
+          decl_list
+            var_decl
+              arg_list
+                identifier a
+              arg_list end
+            .value
+              call
+                identifier test_div
+                arg_list
+                  int_literal 10
+                  int_literal 5
+                arg_list end
+          decl_list end
+          stmt_list
+            call
+              identifier println
+              arg_list
+                identifier a
+              arg_list end
+          stmt_list end
+        compound_stmt end
+      func_decl
+        identifier test_div
+        arg_list
+          var_decl
+            arg_list
+              identifier a
+            arg_list end
+          .type
+            type_resolver int
+          var_decl
+            arg_list
+              identifier b
+            arg_list end
+          .type
+            type_resolver int
+        arg_list end
+        compound_stmt
+          stmt_list
+            return_stmt
+              binary /
+                identifier a
+                identifier b
+          stmt_list end
+        compound_stmt end
+    decl_list end
+  code_unit ./src/main.cb end
+module root end

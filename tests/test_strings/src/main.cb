@@ -1,0 +1,29 @@
+import std::io
+
+func main() {
+    println("a string")
+
+    let str = "a string"
+    println(str.ptr == "a string".ptr) // true
+
+    println("a string".len) // 8
+
+    println(str[0] == 'a') // true
+
+    // null-termination
+    let ptr = str.ptr
+    println(ptr[str.len] == 0) // true
+
+    let sub = str[2, 5]
+    print(sub) print(",") println(sub.len) // str,3
+
+    let begin = str[0, 5]
+    print(begin) print(",") println(begin.len) // a str,5
+
+    // TODO: more convenient: str[2, ...]
+    let end = str[2, str.len]
+    print(end) print(",") println(end.len) // string,6
+
+    //let end = str[2, ...]
+    //println(end) // string
+}

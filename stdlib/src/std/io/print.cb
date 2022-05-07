@@ -12,6 +12,19 @@ func print(i : usize) {
     print(cast(int)i)
 }
 
+func print(b : bool) {
+    if (b) {
+        print("true")
+    }
+    else {
+        print("false")
+    }
+}
+
+func print(v : nil) {
+    print("nil")
+}
+
 func println(s : []pure uint8) {
     sys::write(sys::stdout(), s)
     sys::write(sys::stdout(), "\n")
@@ -31,10 +44,11 @@ func println(p: &opaque) {
 }
 
 func println(b: bool) {
-    if (b) {
-        println("true")
-    }
-    else {
-        println("false")
-    }
+    print(b)
+    println("")
+}
+
+func println(v: nil) {
+    print(v)
+    println("")
 }

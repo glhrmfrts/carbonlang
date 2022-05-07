@@ -1,9 +1,68 @@
 import std::linux::syscall as syscall
+import std::io
 
 extern(carbon, std::system) {
 
+/*
+func make_slice(`T, len: usize) {
+    let buf = cast(&T) mem::alloc(len * sizeof(T))
+    return []T{ buf, len }
+}
+*/
+
 func exit(code: int) {
     syscall::exit(code)
+}
+
+func process(path: []pure uint8, args: [][]pure uint8): {int, error} {
+    let child = syscall::fork()
+    if (child == 0) {
+        //let a = make_arena()
+        //let argv = concat({path.ptr}, map(args, func(it)=it.ptr, a), a)
+        let buf = cast(&pure uint8) mem::alloc((args.len + 2) * sizeof(path.ptr)).first
+        let argv = []&pure uint8{ buf, args.len }
+        argv[0] = path.ptr
+        for (i in 0, args.len) {
+            argv[i + 1] = args[i].ptr
+        }
+        argv[args.len + 1] = nil
+        syscall::execve(path.ptr, argv.ptr, nil)
+        syscall::exit(0)
+    }
+    else if (child != -1) {
+        let status : int
+        syscall::wait4(child, &status, 0, nil)
+        if (wifexited(status)) {
+            return wexitstatus(status), noerr
+        }
+        else if (wifsignaled(status)) {
+            return wtermsig(status), noerr
+        }
+        syscall::exit(1)
+    }
+    else {
+        return 0, errno_to_error(child)
+    }
+}
+
+func errno_to_error(code: int) {
+    return noerr
+}
+
+func wifexited(status: int): bool {
+    return true
+}
+
+func wifsignaled(status: int): bool {
+    return false
+}
+
+func wexitstatus(status: int): int {
+    return 0
+}
+
+func wtermsig(status: int): int {
+    return 0
 }
 
 }

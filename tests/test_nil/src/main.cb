@@ -1,0 +1,14 @@
+import std::io
+
+type data = struct {
+    x: int
+    y: int
+}
+
+func main() {
+    println(nil)
+
+    let d : data = nil
+    print(d.x) print(",") print(d.y)
+    println("")
+}

@@ -1,0 +1,10 @@
+import std::io
+import std::system
+
+func main() {
+    println("hi")
+    
+    let argsbuf : [10][]pure uint8
+    let args = [][]pure uint8{&argsbuf[0], 0}
+    process("/usr/bin/carbonc", args)
+}

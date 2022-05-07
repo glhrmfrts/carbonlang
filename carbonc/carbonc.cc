@@ -36,6 +36,7 @@ struct project_info {
     std::string target_name;
     std::string cb_path;
     std::string entrypoint;
+    std::string output_file;
     std::vector<std::string> asm_obj_files;
     std::vector<std::string> includes;
     target_type target;
@@ -334,10 +335,18 @@ void parse_options(project_info& p, int argc, const char* argv[]) {
     p.freestanding = freestanding;
     p.verbose = has_arg("--verbose", "-V", argc, argv);
     p.embed_std = embed_std_lib;
-    p.includes = get_all_args("--include", "-i", argc, argv);
-    p.single_file = find_arg("--file", "-f", argc, argv);
-    p.build_dir = find_arg("--build-dir", "-B", argc, argv);
+    p.includes = get_all_args("--include", "-I", argc, argv);
+
+    if (find_arg("--file", "-f", argc, argv))
+        p.single_file = find_arg("--file", "-f", argc, argv);
+
+    if (find_arg("--build-dir", "-B", argc, argv))
+        p.build_dir = find_arg("--build-dir", "-B", argc, argv);
 }
+
+#ifndef CARBON_VERSION
+#define CARBON_VERSION ""
+#endif
 
 void print_usage() {
     printf(
@@ -350,15 +359,15 @@ void print_usage() {
         "   -f, --file - Work in single file mode, instead of 'project' mode\n"
         "   -F, --freestanding - Freestanding mode, assume no OS layer and no particular entrypoint\n"
         "   -h, --help - This help\n"
-        "   -i, --include - Include source files from another project path\n"
+        "   -I, --include - Include source files from another project path\n"
         "   -o, --output - Final output file path\n"
         "   -t, --type - Type of target: executable, shared, static\n"
         "   -V, --verbose - Verbose compiler output\n",
-        CARBON_VERSION_STRING
+        CARBON_VERSION
     );
 }
 
-int run_project_mode(int argc, const char* argv[]) {
+bool run_project_mode(int argc, const char* argv[]) {
     auto timebegin = std::chrono::system_clock::now();
 
     char dirnamebuf[260];
@@ -374,8 +383,8 @@ int run_project_mode(int argc, const char* argv[]) {
     }
 
     if (!cbpath) {
-        std::cerr << "carbonc - error: environment variable CARBON_PATH or command-line argument --carbon-path are required to compile!\n";
-        return 1;
+        std::cerr << "carbonc - error: environment variable CARBON_PATH or command-line argument --carbon-path,-p are required to compile!\n";
+        return false;
     }
     proj.cb_path = cbpath;
     proj.target_name = dirname;
@@ -454,7 +463,7 @@ int run_project_mode(int argc, const char* argv[]) {
             std::cerr << "carbonc - more " << (ts.errors.size() - errcount) << " errors were found, but only " << maxerrs << " were reported\n";
             std::cerr << "carbonc - use the '--maxerrors {n}' option to change the error limit\n";
         }
-        return 1;
+        return false;
     }
 
     std::deque<ir_program> irprogs;
@@ -507,11 +516,10 @@ int run_project_mode(int argc, const char* argv[]) {
 #else
         rename(ld_file.c_str(), out_file.c_str());
 #endif
-        
 
         const char* outpath = find_arg("--output", "-o", argc, argv);
         if (outpath) {
-            //CopyFileA(out_file.c_str(), outpath, false);
+            copyfile(out_file, outpath);
         }
         else {
             outpath = out_file.c_str();
@@ -529,7 +537,7 @@ int run_project_mode(int argc, const char* argv[]) {
         std::cout << "\ncarbonc - total compilation time: " << std::chrono::duration_cast<std::chrono::milliseconds>(dur).count() << "ms\n";
     }
 
-    return 0;
+    return true;
 }
 
 int main(int argc, const char* argv[]) {
@@ -540,8 +548,8 @@ int main(int argc, const char* argv[]) {
         return 0;
     }
 
-    if (true) {
-        return run_project_mode(argc, argv);
+    if (!run_project_mode(argc, argv)) {
+        return EXIT_FAILURE;
     }
 
     return 0;

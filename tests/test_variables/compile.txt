@@ -1,0 +1,49 @@
+carbonc - compiling target: test_variables
+
+carbonc - compiling module: root
+    process_code_unit: ./src/main.cb
+carbonc - compiling module: std/io
+    process_code_unit: ../../stdlib/src/std/io/print.cb
+carbonc - compiling module: std/linux
+    process_code_unit: ../../stdlib/src/std/linux/io.cb
+    process_code_unit: ../../stdlib/src/std/linux/mem.cb
+    process_code_unit: ../../stdlib/src/std/linux/open.cb
+    process_code_unit: ../../stdlib/src/std/linux/process.cb
+    process_code_unit: ../../stdlib/src/std/linux/start.cb
+    process_code_unit: ../../stdlib/src/std/linux/stat.cb
+carbonc - compiling module: std/linux/syscall
+    process_code_unit: ../../stdlib/src/std/linux/syscall/syscall.cb
+assembly file: std_linux_x86_64_start.s
+carbonc - running assembler: as _carbon/build_debug/std_linux_x86_64_start.s -o _carbon/build_debug/std_linux_x86_64_start.o
+carbonc - compiling module: std/mem
+    process_code_unit: ../../stdlib/src/std/mem/arena.cb
+    process_code_unit: ../../stdlib/src/std/mem/mem.cb
+carbonc - compiling module: std/string
+    process_code_unit: ../../stdlib/src/std/string/equals.cb
+    process_code_unit: ../../stdlib/src/std/string/find.cb
+    process_code_unit: ../../stdlib/src/std/string/string.cb
+carbonc - compiling module: std/system
+    process_code_unit: ../../stdlib/src/std/system/system.cb
+carbonc - parsing time: 365ms
+
+carbonc - type checking 
+carbonc - type checking time: 87ms
+
+carbonc - generating IR 
+carbonc - IR generation time: 34ms
+
+carbonc - generating assembly 
+carbonc - running assembler: as _carbon/build_debug/root.asm -o _carbon/build_debug/root.o
+carbonc - running assembler: as _carbon/build_debug/std_io.asm -o _carbon/build_debug/std_io.o
+carbonc - running assembler: as _carbon/build_debug/std_linux.asm -o _carbon/build_debug/std_linux.o
+carbonc - running assembler: as _carbon/build_debug/std_linux_syscall.asm -o _carbon/build_debug/std_linux_syscall.o
+carbonc - running assembler: as _carbon/build_debug/std_mem.asm -o _carbon/build_debug/std_mem.o
+carbonc - running assembler: as _carbon/build_debug/std_string.asm -o _carbon/build_debug/std_string.o
+carbonc - running assembler: as _carbon/build_debug/std_system.asm -o _carbon/build_debug/std_system.o
+carbonc - assembly generation time: 229ms
+
+carbonc - running linker command: ld  -e _start -o _carbon/build_debug/test_variables _carbon/build_debug/std_linux_x86_64_start.o _carbon/build_debug/root.o _carbon/build_debug/std_io.o _carbon/build_debug/std_linux.o _carbon/build_debug/std_linux_syscall.o _carbon/build_debug/std_mem.o _carbon/build_debug/std_string.o _carbon/build_debug/std_system.o
+carbonc - output: a.out
+
+carbonc - total lines parsed: 867
+carbonc - total compilation time: 824ms

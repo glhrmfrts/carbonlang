@@ -1,0 +1,205 @@
+string #0: "zyxwvutsrqponmlkjihgfedcba9876543210123456789abcdefghijklmnopqrstuvwxyz";
+func cb__Nstd__Nsystem__Nalloc__Aptr__Ttuple__Tptr__Topaque__Terror__Ausize -> ptr__Ttuple__Tptr__Topaque__Terror
+endf
+
+func cb__Nstd__Nsystem__Nalloc__Aptr__Ttuple__Tptr__Topaque__Terror__Ausize__Aptr__Topaque -> ptr__Ttuple__Tptr__Topaque__Terror
+endf
+
+func cb__Nstd__Nsystem__Nfree__Aptr__Topaque__Ausize -> void
+endf
+
+func cb__Nstd__Nsystem__Nwrite__Afile_handle__Aptr__Tslice__Tpure__Tuint8 -> isize
+endf
+
+func cb__Nstd__Nsystem__Nread__Afile_handle__Aptr__Tslice__Tuint8 -> isize
+endf
+
+func cb__Nstd__Nsystem__Nopen__Aptr__Ttuple__Tfile_handle__Terror__Aptr__Tslice__Tpure__Tuint8__Aopen_flags__Aint -> ptr__Ttuple__Tfile_handle__Terror
+endf
+
+func cb__Nstd__Nsystem__Nstdout -> file_handle
+endf
+
+func cb__Nstd__Nsystem__Nstderr -> file_handle
+endf
+
+func cb__Nstd__Nsystem__Nstdin -> file_handle
+endf
+
+func cb__Nstd__Nsystem__Nfdflags__Afile_handle -> int
+endf
+
+func cb__Nstd__Nsystem__Nclose__Afile_handle -> error
+endf
+
+func cb__Nstd__Nsystem__Nseek__Afile_handle__Aint64__AWhence -> void
+endf
+
+func cb__Nstd__Nsystem__Nstat__Aptr__Tslice__Tpure__Tuint8__Aptr__TStat -> error
+endf
+
+func cb__Nstd__Nsystem__Nstat__Afile_handle__Aptr__TStat -> error
+endf
+
+func cb__Nstd__Nsystem__Nunlink__Aptr__Tslice__Tpure__Tuint8 -> error
+endf
+
+func cb__Nstd__Nsystem__Nremove__Aptr__Tslice__Tpure__Tuint8 -> error
+endf
+
+func cb__Nstd__Nsystem__Nrename__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8 -> error
+endf
+
+func cb__Nstd__Nsystem__Ncopy__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tpure__Tuint8 -> error
+endf
+
+func cb__Nstd__Nsystem__Nmkdir__Aptr__Tslice__Tpure__Tuint8 -> error
+endf
+
+func cb__Nstd__Nsystem__Nexit__Aint -> void
+endf
+
+func cb__Nstd__Nsystem__Nprocess__Aptr__Ttuple__Tint__Terror__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tslice__Tpure__Tuint8 -> ptr__Ttuple__Tint__Terror
+endf
+
+func cb__Nstd__Nsystem__Nmake_thread__Aptr__Ttuple__Tthread_handle__Terror__Afuncptr__Tptr__Topaque__Tvoid__Aptr__Topaque -> ptr__Ttuple__Tthread_handle__Terror
+endf
+
+func cb__Nstd__Nsystem__Njoin__Athread_handle -> error
+endf
+
+func cb__Nstd__Nsystem__Nthread_id -> int
+endf
+
+func cb__Nstd__Nsystem__Ncpu_count -> int
+endf
+
+func cb__Nstd__Nsystem__Nmake_mutex__Aptr__Ttuple__Tmutex_handle__Terror -> ptr__Ttuple__Tmutex_handle__Terror
+endf
+
+func cb__Nstd__Nsystem__Nlock__Amutex_handle -> error
+endf
+
+func cb__Nstd__Nsystem__Nunlock__Amutex_handle -> error
+endf
+
+func cb__Nstd__Nsystem__Ndestroy__Amutex_handle -> void
+endf
+
+func cb__Nstd__Nsystem__Nsleep_ms__Auint64 -> void
+endf
+
+func cb__Nstd__Nsystem__NintToString__Aint__Aint__Aptr__Tslice__Tuint8 -> int
+    arg #0 value: int;
+    arg #1 base: int;
+    arg #2 dest: ptr__Tslice__Tuint8;
+    local #0 result: slice__Tuint8;
+    local #1 tmp_value: int;
+    local #2 offs: int;
+    local #3 nvalue: int;
+    local #4 ptr: ptr__Tuint8;
+    local #5 ptr1: ptr__Tuint8;
+    local #6 tmp_char: uint8;
+    local #7 tpl_str: slice__Tpure__Tuint8;
+    ir_jmp_lt A1 2 cb__Nstd__Nsystem__NintToString__Aint__Aint__Aptr__Tslice__Tuint8$if3589$body;
+    ir_jmp_lte A1 36 cb__Nstd__Nsystem__NintToString__Aint__Aint__Aptr__Tslice__Tuint8$if3589$else;
+    ir_make_label cb__Nstd__Nsystem__NintToString__Aint__Aint__Aptr__Tslice__Tuint8$if3589$body;
+    ir_return 0;
+    ir_make_label cb__Nstd__Nsystem__NintToString__Aint__Aint__Aptr__Tslice__Tuint8$if3589$else;
+    ir_deref A2; (push)
+    ir_copy L0 POP() 16;
+    ir_load_addr STR0; (push)
+    ir_load [L7 . 0] POP();
+    ir_load [L7 . 1] 71;
+    ir_load L1 A0;
+    ir_load L2 0;
+    ir_neg 1; (push)
+    ir_load L3 POP();
+    ir_make_label cb__Nstd__Nsystem__NintToString__Aint__Aint__Aptr__Tslice__Tuint8$w3665$cond;
+    ir_jmp_eq L3 0 cb__Nstd__Nsystem__NintToString__Aint__Aint__Aptr__Tslice__Tuint8$w3665$end;
+    ir_make_label cb__Nstd__Nsystem__NintToString__Aint__Aint__Aptr__Tslice__Tuint8$w3665$body;
+    ir_cast L2; (push)
+    ir_jmp_lt POP() [L0 . 1] cb__Nstd__Nsystem__NintToString__Aint__Aint__Aptr__Tslice__Tuint8$if3630$else;
+    ir_make_label cb__Nstd__Nsystem__NintToString__Aint__Aint__Aptr__Tslice__Tuint8$if3630$body;
+    ir_sub L2 1; (push)
+    ir_load L2 POP();
+    ir_jmp cb__Nstd__Nsystem__NintToString__Aint__Aint__Aptr__Tslice__Tuint8$w3665$end;
+    ir_make_label cb__Nstd__Nsystem__NintToString__Aint__Aint__Aptr__Tslice__Tuint8$if3630$else;
+    ir_load L1 A0;
+    ir_div A0 A1; (push)
+    ir_load A0 POP();
+    ir_load L3 A0;
+    ir_deref [L0 . 0]; (push)
+    ir_index POP() L2; (push)
+    ir_deref [L7 . 0]; (push)
+    ir_mul A0 A1; (push)
+    ir_sub L1 POP(); (push)
+    ir_add 35 POP(); (push)
+    ir_index POP() POP(); (push)
+    ir_load POP() POP();
+    ir_add L2 1; (push)
+    ir_load L2 POP();
+    ir_jmp cb__Nstd__Nsystem__NintToString__Aint__Aint__Aptr__Tslice__Tuint8$w3665$cond;
+    ir_make_label cb__Nstd__Nsystem__NintToString__Aint__Aint__Aptr__Tslice__Tuint8$w3665$end;
+    ir_deref [L0 . 0]; (push)
+    ir_index POP() L2; (push)
+    ir_load_addr POP(); (push)
+    ir_load L4 POP();
+    ir_deref [L0 . 0]; (push)
+    ir_index POP() 0; (push)
+    ir_load_addr POP(); (push)
+    ir_load L5 POP();
+    ir_jmp_gte L1 0 cb__Nstd__Nsystem__NintToString__Aint__Aint__Aptr__Tslice__Tuint8$if3705$else;
+    ir_make_label cb__Nstd__Nsystem__NintToString__Aint__Aint__Aptr__Tslice__Tuint8$if3705$body;
+    ir_deref L4; (push)
+    ir_load POP() #45;
+    ir_add L4 1; (push)
+    ir_load L4 POP();
+    ir_make_label cb__Nstd__Nsystem__NintToString__Aint__Aint__Aptr__Tslice__Tuint8$if3705$else;
+    ir_deref L4; (push)
+    ir_load POP() #0;
+    ir_sub L4 1; (push)
+    ir_load L4 POP();
+    ir_load L6 0;
+    ir_make_label cb__Nstd__Nsystem__NintToString__Aint__Aint__Aptr__Tslice__Tuint8$w3751$cond;
+    ir_jmp_gte L5 L4 cb__Nstd__Nsystem__NintToString__Aint__Aint__Aptr__Tslice__Tuint8$w3751$end;
+    ir_make_label cb__Nstd__Nsystem__NintToString__Aint__Aint__Aptr__Tslice__Tuint8$w3751$body;
+    ir_deref L4; (push)
+    ir_load L6 POP();
+    ir_deref L4; (push)
+    ir_deref L5; (push)
+    ir_load POP() POP();
+    ir_sub L4 1; (push)
+    ir_load L4 POP();
+    ir_deref L5; (push)
+    ir_load POP() L6;
+    ir_add L5 1; (push)
+    ir_load L5 POP();
+    ir_jmp cb__Nstd__Nsystem__NintToString__Aint__Aint__Aptr__Tslice__Tuint8$w3751$cond;
+    ir_make_label cb__Nstd__Nsystem__NintToString__Aint__Aint__Aptr__Tslice__Tuint8$w3751$end;
+    ir_return L2;
+endf
+
+func cb__Nstd__Nsystem__Nwrite_int__Afile_handle__Aint -> void
+    arg #0 fd: file_handle;
+    arg #1 value: int;
+    local #0 buf: array__I32__Tuint8;
+    local #1 dest: slice__Tuint8;
+    local #2 $cbT36: slice__Tuint8;
+    local #3 $cbT37: slice__Tuint8;
+    ir_store L0 0 0 32;
+    ir_index L0 0; (push)
+    ir_load_addr POP(); (push)
+    ir_load [L1 . 0] POP();
+    ir_load [L1 . 1] 32;
+    ir_copy L2 L1 16;
+    ir_load_addr L2; (push)
+    ir_call cb__Nstd__Nsystem__NintToString__Aint__Aint__Aptr__Tslice__Tuint8 A1 10 POP(); (push)
+    ir_cast POP(); (push)
+    ir_load [L1 . 1] POP();
+    ir_copy L3 L1 16;
+    ir_load_addr L3; (push)
+    ir_call cb__Nstd__Nsystem__Nwrite__Afile_handle__Aptr__Tslice__Tpure__Tuint8 A0 POP(); (push)
+    ir_noop POP();
+endf
+

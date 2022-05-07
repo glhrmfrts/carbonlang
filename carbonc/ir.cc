@@ -1332,7 +1332,7 @@ void print_ir(const std::string& modname) {
     std::string irmodname = modname;
     while (replace(irmodname, "/", "_"));
 
-    std::ofstream f{ "ir_" + irmodname + ".txt" };
+    std::ofstream f{ "_carbon/build_debug/ir_" + irmodname + ".txt" };
 
     for (std::size_t i = 0; i < prog->strings.size(); i++) {
         f << "string #" << i << ": \"" << prog->strings[i] << "\";\n";

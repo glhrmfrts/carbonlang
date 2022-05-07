@@ -1342,6 +1342,12 @@ type_id get_type_expr_node_type(type_system& ts, ast_node& node) {
             break;
         }
 
+        if (node.id_parts.front() == "$nil") {
+            node.tid = ts.nil_type;
+            node.type_error = false;
+            break;
+        }
+
         auto sym = find_symbol(ts, separate_module_identifier(node.id_parts));
         if (sym) {
             if (sym->kind == symbol_kind::type) {

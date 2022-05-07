@@ -1,0 +1,115 @@
+module root
+
+  code_unit ./src/main.cb
+    decl_list
+      import_decl
+        identifier std::io
+      type_decl
+        identifier data
+        type_expr
+          struct_type
+            decl_list
+              var_decl
+                arg_list
+                  identifier x
+                arg_list end
+              .type
+                type_expr
+                  identifier int
+              var_decl
+                arg_list
+                  identifier y
+                arg_list end
+              .type
+                type_expr
+                  identifier int
+            decl_list end
+      func_decl
+        identifier main
+        arg_list
+        arg_list end
+        compound_stmt
+          stmt_list
+            call
+              identifier println
+              arg_list
+                nil_literal
+              arg_list end
+          stmt_list end
+          decl_list
+            var_decl
+              arg_list
+                identifier d
+              arg_list end
+            .type
+              type_expr
+                identifier data
+            .value
+              nil_literal
+          decl_list end
+          stmt_list
+            call
+              identifier print
+              arg_list
+                field_expr
+                  identifier d
+                  identifier x
+              arg_list end
+          stmt_list end
+          stmt_list
+            .pre_nodes
+              var_decl
+                arg_list
+                  identifier $cbT5
+                arg_list end
+              .value
+                init_expr
+                  type_expr
+                    type_resolver []pure uint8
+                  arg_list
+                    string_literal ","
+                    int_literal 1
+                  arg_list end
+                init_expr end
+            call
+              identifier print
+              arg_list
+                unary &
+                  identifier $cbT5
+              arg_list end
+          stmt_list end
+          stmt_list
+            call
+              identifier print
+              arg_list
+                field_expr
+                  identifier d
+                  identifier y
+              arg_list end
+          stmt_list end
+          stmt_list
+            .pre_nodes
+              var_decl
+                arg_list
+                  identifier $cbT6
+                arg_list end
+              .value
+                init_expr
+                  type_expr
+                    type_resolver []pure uint8
+                  arg_list
+                    string_literal ""
+                    int_literal 0
+                  arg_list end
+                init_expr end
+            call
+              identifier println
+              arg_list
+                unary &
+                  identifier $cbT6
+              arg_list end
+          stmt_list end
+        compound_stmt end
+    decl_list end
+  code_unit ./src/main.cb end
+module root end

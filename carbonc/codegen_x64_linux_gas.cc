@@ -337,7 +337,14 @@ struct codegen_x64_linux_gas_emitter : public codegen_x64_emitter {
     }
 
     virtual void movzx(gen_destination reg, gen_operand src) {
-        emitln(" movzx %s,%s", tostr_sized(src).c_str(), tostr_sized(reg).c_str());
+        std::size_t destsize = get_size(reg);
+        std::size_t fromsize = get_size(src);
+        if (fromsize >= 4) {
+            emitln(" mov %s,%s", tostr_sized(src).c_str(), tostr_sized(reg).c_str());
+        }
+        else {
+            emitln(" movzx %s,%s", tostr_sized(src).c_str(), tostr_sized(reg).c_str());
+        }
     }
 
     virtual void movq(gen_destination reg, gen_operand src) {

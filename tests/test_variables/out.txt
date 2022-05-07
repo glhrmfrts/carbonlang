@@ -1,0 +1,5 @@
+hi
+std::mem - Allocating block of 4096 bytes
+std::mem - Growing block fill to 16 bytes
+carbonc - compiling target: test_variables
+

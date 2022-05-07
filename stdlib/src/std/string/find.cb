@@ -26,20 +26,25 @@ func find(haystack: string, needle: string): {usize, bool} {
 
 /*
 import unittestlib
+import std::fs
 
 #test
 func test_find_char() {
-    assertEqual(findString("Hello world", "world"),         {6z, true})
-    assertEqual(findString("Hello world", "Hello"),         {0, true})
-    assertEqual(findString("Hello world", "Nope"),          nil)
-    assertEqual(findString("Hello world", "worldsuffix"),   nil)
+    defer catch (err) {
+        return 0, nil
+    }
+
+    assert_equal(find_unicode("Hello world", "world"),         {6z, true})
+    assert_equal(find_unicode("Hello world", "Hello"),         {0, true})
+    assert_equal(find_unicode("Hello world", "Nope"),          nil)
+    assert_equal(find_unicode("Hello world", "worldsuffix"),   nil)
 }
 
 #test
 func test_find_chars() {
-    assertEqual(findString("Hello world", "world"), {6z, true})
-    assertEqual(findString("Hello world", "Hello"), {0, true})
-    assertEqual(findString("Hello world", "Nope"),  nil)
+    assert_equal(find_unicode("Hello world", "world"), {6z, true})
+    assert_equal(find_unicode("Hello world", "Hello"), {0, true})
+    assert_equal(find_unicode("Hello world", "Nope"),  nil)
 
 }
 */
