@@ -68,7 +68,7 @@ struct struct_field {
     bool operator ==(const struct_field& other) const { return names == other.names && type == other.type && offset == other.offset; }
 };
 
-using type_constructor_func = std::function<arena_ptr<ast_node>(const std::vector<comptime_value>&)>;
+using type_constructor_func = std::function<arena_ptr<ast_node>(const std::vector<const_value>&)>;
 
 struct type_constructor {
     ast_node* self;
@@ -158,7 +158,7 @@ enum class symbol_kind {
     top_level_func,
     overloaded_func_base,
     type,
-    comptime,
+    const_value,
 };
 
 struct symbol_info {
@@ -177,7 +177,7 @@ struct symbol_info {
     std::vector<func_def*> generic_funcs;
 
     // if kind == comptime
-    comptime_value ctvalue;
+    const_value ctvalue;
     type_id cttype;
 };
 
@@ -202,7 +202,7 @@ struct call_info {
     std::vector<type_id> arg_types;
     string_hash mangled_name;
     type_id func_type_id{};
-    std::vector<comptime_value> comptime_args{};
+    std::vector<const_value> const_args{};
 };
 
 struct func_overload_info {
@@ -272,7 +272,7 @@ struct func_def {
     bool is_generic = false;
     scope_def* decl_scope;
     string_hash base_symbol;
-    std::vector<comptime_value> comptime_args{};
+    std::vector<const_value> const_args{};
     std::vector<std::string> extern_alias;
 };
 
@@ -396,19 +396,17 @@ bool compare_types_exact(const type_def& a, const type_def& b);
 
 type_id find_type_by_value(type_system& ts, scope_def& scope, const type_def& tdef);
 
-type_id execute_type_constructor(type_system& ts, scope_def& scope, type_constructor& tpl, const std::vector<comptime_value>& args);
+type_id execute_type_constructor(type_system& ts, scope_def& scope, type_constructor& tpl, const std::vector<const_value>& args);
 
-type_id execute_builtin_type_constructor(type_system& ts, type_constructor& tpl, const std::vector<comptime_value>& args);
+type_id execute_builtin_type_constructor(type_system& ts, type_constructor& tpl, const std::vector<const_value>& args);
 
-string_hash build_tuple_name(const std::vector<comptime_value>& args);
+string_hash build_tuple_name(const std::vector<const_value>& args);
 
-string_hash build_type_constructor_name(const std::string& name, const std::vector<comptime_value>& args);
+string_hash build_type_constructor_name(const std::string& name, const std::vector<const_value>& args);
 
-string_hash build_type_constructor_mangled_name(const std::string& mangled_name, const std::vector<comptime_value>& args);
+string_hash build_type_constructor_mangled_name(const std::string& mangled_name, const std::vector<const_value>& args);
 
 type_id get_ptr_type_to(type_system& ts, type_id elem_type);
-
-type_id get_nullableptr_type_to(type_system& ts, type_id elem_type);
 
 
 void resolve_func_args_type(type_system& ts, ast_node& node);

@@ -1,1 +1,1 @@
-\code\pl\carbon\build\carbonc\Debug\carbonc.exe --carbon-path /code/pl/carbon -f -e carbon_main --verbose
+\code\pl\carbon\build\carbonc\Debug\carbonc.exe -p /code/pl/carbon -F -e carbon_main --verbose

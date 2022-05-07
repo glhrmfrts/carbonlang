@@ -1,0 +1,1888 @@
+module std/linux
+
+  code_unit ../../../stdlib/src/std/linux/io.cb
+    decl_list
+      import_decl
+        identifier std::system
+      import_decl
+        identifier std::linux::syscall
+        identifier syscall
+      linkage_specifier extern
+        decl_list
+          func_decl
+            identifier stdin
+            arg_list
+            arg_list end
+            type_expr
+              identifier file_handle
+            compound_stmt
+              stmt_list
+                return_stmt
+                  cast_expr
+                    type_expr
+                      identifier file_handle
+                    cast_expr
+                      type_expr
+                        identifier uintptr
+                      int_literal 0
+              stmt_list end
+            compound_stmt end
+          func_decl
+            identifier stdout
+            arg_list
+            arg_list end
+            type_expr
+              identifier file_handle
+            compound_stmt
+              stmt_list
+                return_stmt
+                  cast_expr
+                    type_expr
+                      identifier file_handle
+                    cast_expr
+                      type_expr
+                        identifier uintptr
+                      int_literal 1
+              stmt_list end
+            compound_stmt end
+          func_decl
+            identifier stderr
+            arg_list
+            arg_list end
+            type_expr
+              identifier file_handle
+            compound_stmt
+              stmt_list
+                return_stmt
+                  cast_expr
+                    type_expr
+                      identifier file_handle
+                    cast_expr
+                      type_expr
+                        identifier uintptr
+                      int_literal 2
+              stmt_list end
+            compound_stmt end
+          func_decl
+            identifier read
+            arg_list
+              var_decl
+                arg_list
+                  identifier fd
+                arg_list end
+              .type
+                type_expr
+                  identifier file_handle
+              var_decl
+                arg_list
+                  identifier data
+                arg_list end
+              .type
+                type_resolver &[]uint8
+            arg_list end
+            compound_stmt
+              stmt_list
+                call
+                  identifier syscall::read
+                  arg_list
+                    cast_expr
+                      type_expr
+                        identifier uint
+                      cast_expr
+                        type_expr
+                          identifier uintptr
+                        identifier fd
+                    field_expr
+                      unary @
+                        identifier data
+                      identifier ptr
+                    field_expr
+                      unary @
+                        identifier data
+                      identifier len
+                  arg_list end
+              stmt_list end
+            compound_stmt end
+          func_decl
+            identifier write
+            arg_list
+              var_decl
+                arg_list
+                  identifier fd
+                arg_list end
+              .type
+                type_expr
+                  identifier file_handle
+              var_decl
+                arg_list
+                  identifier data
+                arg_list end
+              .type
+                type_resolver &[]pure uint8
+            arg_list end
+            compound_stmt
+              stmt_list
+                call
+                  identifier syscall::write
+                  arg_list
+                    cast_expr
+                      type_expr
+                        identifier uint
+                      cast_expr
+                        type_expr
+                          identifier uintptr
+                        identifier fd
+                    field_expr
+                      unary @
+                        identifier data
+                      identifier ptr
+                    field_expr
+                      unary @
+                        identifier data
+                      identifier len
+                  arg_list end
+              stmt_list end
+            compound_stmt end
+          func_decl
+            identifier close
+            arg_list
+              var_decl
+                arg_list
+                  identifier fd
+                arg_list end
+              .type
+                type_expr
+                  identifier file_handle
+            arg_list end
+            type_expr
+              identifier $error
+            compound_stmt
+              stmt_list
+                call
+                  identifier syscall::close
+                  arg_list
+                    cast_expr
+                      type_expr
+                        identifier uint
+                      cast_expr
+                        type_expr
+                          identifier uintptr
+                        identifier fd
+                  arg_list end
+              stmt_list end
+              stmt_list
+                return_stmt
+                  int_literal 0
+              stmt_list end
+            compound_stmt end
+          func_decl
+            identifier chdir
+            arg_list
+              var_decl
+                arg_list
+                  identifier path
+                arg_list end
+              .type
+                type_resolver &[]pure uint8
+            arg_list end
+            type_expr
+              identifier $error
+            compound_stmt
+              stmt_list
+                call
+                  identifier syscall::chdir
+                  arg_list
+                    field_expr
+                      unary @
+                        identifier path
+                      identifier ptr
+                  arg_list end
+              stmt_list end
+              stmt_list
+                return_stmt
+                  int_literal 0
+              stmt_list end
+            compound_stmt end
+        decl_list end
+      linkage_specifier end
+    decl_list end
+  code_unit ../../../stdlib/src/std/linux/io.cb end
+  code_unit ../../../stdlib/src/std/linux/mem.cb
+    decl_list
+      import_decl
+        identifier std::linux::syscall
+      import_decl
+        identifier std::system
+      import_decl
+        identifier std::io
+      type_decl
+        identifier alloc_parameters
+        type_expr
+          struct_type
+            decl_list
+              var_decl
+                arg_list
+                  identifier prot
+                arg_list end
+              .type
+                type_expr
+                  identifier int
+              var_decl
+                arg_list
+                  identifier flags
+                arg_list end
+              .type
+                type_expr
+                  identifier int
+            decl_list end
+      linkage_specifier extern
+        decl_list
+          func_decl
+            identifier alloc
+            arg_list
+              var_decl
+                arg_list
+                  identifier $cb_agg_ret
+                arg_list end
+              .type
+                type_resolver &{&opaque, error}
+              var_decl
+                arg_list
+                  identifier sz
+                arg_list end
+              .type
+                type_expr
+                  identifier usize
+              var_decl
+                arg_list
+                  identifier op
+                arg_list end
+              .type
+                type_expr
+                  type_qualifier ptr
+                    identifier opaque
+            arg_list end
+            type_resolver &{&opaque, error}
+            compound_stmt
+              decl_list
+                var_decl
+                  arg_list
+                    identifier params
+                  arg_list end
+                .value
+                  cast_expr
+                    type_expr
+                      type_qualifier ptr
+                        identifier alloc_parameters
+                    identifier op
+                var_decl
+                  arg_list
+                    identifier ptr
+                  arg_list end
+                .value
+                  call
+                    identifier mmap
+                    arg_list
+                      nil_literal
+                      identifier sz
+                      field_expr
+                        identifier params
+                        identifier prot
+                      field_expr
+                        identifier params
+                        identifier flags
+                      int_literal 0
+                      cast_expr
+                        type_resolver usize
+                        int_literal 0
+                    arg_list end
+              decl_list end
+              stmt_list
+                if{binary  
+                    identifier ptr
+                    cast_expr
+                      type_expr
+                        type_qualifier ptr
+                          identifier opaque
+                      cast_expr
+                        type_expr
+                          identifier uintptr
+                        unary -
+                          int_literal 1 compound_stmt
+                    stmt_list
+                      .pre_nodes
+                        binary =
+                          unary @
+                            identifier $cb_agg_ret
+                          init_expr
+                            arg_list
+                              nil_literal
+                              identifier ALLOC_FAILED
+                            arg_list end
+                          init_expr end
+                      return_stmt
+                        identifier $cb_agg_ret
+                    stmt_list end
+                  compound_stmt end}
+              stmt_list end
+              stmt_list
+                .pre_nodes
+                  binary =
+                    unary @
+                      identifier $cb_agg_ret
+                    init_expr
+                      arg_list
+                        identifier ptr
+                        int_literal 0
+                      arg_list end
+                    init_expr end
+                return_stmt
+                  identifier $cb_agg_ret
+              stmt_list end
+            compound_stmt end
+          func_decl
+            identifier alloc
+            arg_list
+              var_decl
+                arg_list
+                  identifier $cb_agg_ret
+                arg_list end
+              .type
+                type_resolver &{&opaque, error}
+              var_decl
+                arg_list
+                  identifier sz
+                arg_list end
+              .type
+                type_expr
+                  identifier usize
+            arg_list end
+            type_resolver &{&opaque, error}
+            compound_stmt
+              decl_list
+                var_decl
+                  arg_list
+                    identifier params
+                  arg_list end
+                .type
+                  type_expr
+                    identifier alloc_parameters
+              decl_list end
+              stmt_list
+                binary =
+                  field_expr
+                    identifier params
+                    identifier prot
+                  binary |
+                    identifier PROT_READ
+                    identifier PROT_WRITE
+              stmt_list end
+              stmt_list
+                binary =
+                  field_expr
+                    identifier params
+                    identifier flags
+                  binary |
+                    identifier MAP_PRIVATE
+                    identifier MAP_ANONYMOUS
+              stmt_list end
+              stmt_list
+                .pre_nodes
+                  binary =
+                    unary @
+                      identifier $cb_agg_ret
+                    .pre_nodes
+                      call
+                        identifier alloc
+                        arg_list
+                          unary &
+                            identifier $cbT0
+                          identifier sz
+                          unary &
+                            identifier params
+                        arg_list end
+                    identifier $cbT0
+                return_stmt
+                  identifier $cb_agg_ret
+              stmt_list end
+            compound_stmt end
+          func_decl
+            identifier free
+            arg_list
+              var_decl
+                arg_list
+                  identifier ptr
+                arg_list end
+              .type
+                type_expr
+                  type_qualifier ptr
+                    identifier opaque
+              var_decl
+                arg_list
+                  identifier sz
+                arg_list end
+              .type
+                type_expr
+                  identifier usize
+            arg_list end
+            compound_stmt
+              stmt_list
+                call
+                  identifier munmap
+                  arg_list
+                    identifier ptr
+                    identifier sz
+                  arg_list end
+              stmt_list end
+            compound_stmt end
+        decl_list end
+      linkage_specifier end
+    decl_list end
+  code_unit ../../../stdlib/src/std/linux/mem.cb end
+  code_unit ../../../stdlib/src/std/linux/open.cb
+    decl_list
+      import_decl
+        identifier std::system
+      import_decl
+        identifier std::linux::syscall
+        identifier syscall
+      import_decl
+        identifier std::io
+      var_decl
+        arg_list
+          identifier O_ACCMODE
+        arg_list end
+      .value
+        int_literal 3
+      var_decl
+        arg_list
+          identifier O_RDONLY
+        arg_list end
+      .value
+        int_literal 0
+      var_decl
+        arg_list
+          identifier O_WRONLY
+        arg_list end
+      .value
+        int_literal 1
+      var_decl
+        arg_list
+          identifier O_RDWR
+        arg_list end
+      .value
+        int_literal 2
+      var_decl
+        arg_list
+          identifier O_CREAT
+        arg_list end
+      .value
+        int_literal 64
+      var_decl
+        arg_list
+          identifier O_EXCL
+        arg_list end
+      .value
+        int_literal 128
+      var_decl
+        arg_list
+          identifier O_NOCTTY
+        arg_list end
+      .value
+        int_literal 256
+      var_decl
+        arg_list
+          identifier O_TRUNC
+        arg_list end
+      .value
+        int_literal 512
+      var_decl
+        arg_list
+          identifier O_APPEND
+        arg_list end
+      .value
+        int_literal 1024
+      var_decl
+        arg_list
+          identifier O_NONBLOCK
+        arg_list end
+      .value
+        int_literal 2048
+      var_decl
+        arg_list
+          identifier O_DSYNC
+        arg_list end
+      .value
+        int_literal 4096
+      var_decl
+        arg_list
+          identifier FASYNC
+        arg_list end
+      .value
+        int_literal 8192
+      var_decl
+        arg_list
+          identifier O_DIRECT
+        arg_list end
+      .value
+        int_literal 16384
+      var_decl
+        arg_list
+          identifier O_LARGEFILE
+        arg_list end
+      .value
+        int_literal 32768
+      var_decl
+        arg_list
+          identifier O_DIRECTORY
+        arg_list end
+      .value
+        int_literal 65536
+      var_decl
+        arg_list
+          identifier O_NOFOLLOW
+        arg_list end
+      .value
+        int_literal 131072
+      var_decl
+        arg_list
+          identifier O_NOATIME
+        arg_list end
+      .value
+        int_literal 262144
+      var_decl
+        arg_list
+          identifier O_CLOEXEC
+        arg_list end
+      .value
+        int_literal 524288
+      func_decl
+        identifier to_kernel_flags
+        arg_list
+          var_decl
+            arg_list
+              identifier flags
+            arg_list end
+          .type
+            type_expr
+              identifier open_flags
+        arg_list end
+        type_expr
+          identifier int
+        compound_stmt
+          decl_list
+            var_decl
+              arg_list
+                identifier lflags
+              arg_list end
+            .type
+              type_expr
+                identifier int
+            .value
+              int_literal 0
+          decl_list end
+          stmt_list
+            if{binary  
+                binary &
+                  identifier flags
+                  binary |
+                    identifier Write
+                    identifier Read
+                cast_expr
+                  type_resolver open_flags
+                  int_literal 0 compound_stmt
+                stmt_list
+                  binary =
+                    identifier lflags
+                    identifier O_RDWR
+                stmt_list end
+              compound_stmt end else if{binary  
+                  binary &
+                    identifier flags
+                    identifier Write
+                  cast_expr
+                    type_resolver open_flags
+                    int_literal 0 compound_stmt
+                  stmt_list
+                    binary =
+                      identifier lflags
+                      identifier O_WRONLY
+                  stmt_list end
+                compound_stmt end else if{binary  
+                    binary &
+                      identifier flags
+                      identifier Read
+                    cast_expr
+                      type_resolver open_flags
+                      int_literal 0 compound_stmt
+                    stmt_list
+                      binary =
+                        identifier lflags
+                        identifier O_RDONLY
+                    stmt_list end
+                  compound_stmt end}}}
+          stmt_list end
+          stmt_list
+            if{binary  
+                binary &
+                  identifier flags
+                  identifier Create
+                cast_expr
+                  type_resolver open_flags
+                  int_literal 0 compound_stmt
+                stmt_list
+                  binary =
+                    identifier lflags
+                    binary |
+                      identifier lflags
+                      identifier O_CREAT
+                stmt_list end
+              compound_stmt end}
+          stmt_list end
+          stmt_list
+            if{binary  
+                binary &
+                  identifier flags
+                  identifier Append
+                cast_expr
+                  type_resolver open_flags
+                  int_literal 0 compound_stmt
+                stmt_list
+                  binary =
+                    identifier lflags
+                    binary |
+                      identifier lflags
+                      identifier O_APPEND
+                stmt_list end
+              compound_stmt end}
+          stmt_list end
+          stmt_list
+            if{binary  
+                binary &
+                  identifier flags
+                  identifier Truncate
+                cast_expr
+                  type_resolver open_flags
+                  int_literal 0 compound_stmt
+                stmt_list
+                  binary =
+                    identifier lflags
+                    binary |
+                      identifier lflags
+                      identifier O_TRUNC
+                stmt_list end
+              compound_stmt end}
+          stmt_list end
+          stmt_list
+            return_stmt
+              identifier lflags
+          stmt_list end
+        compound_stmt end
+      linkage_specifier extern
+        func_decl
+          identifier open
+          arg_list
+            var_decl
+              arg_list
+                identifier $cb_agg_ret
+              arg_list end
+            .type
+              type_resolver &{file_handle, error}
+            var_decl
+              arg_list
+                identifier filename
+              arg_list end
+            .type
+              type_resolver &[]pure uint8
+            var_decl
+              arg_list
+                identifier flags
+              arg_list end
+            .type
+              type_expr
+                identifier open_flags
+            var_decl
+              arg_list
+                identifier mode
+              arg_list end
+            .type
+              type_expr
+                identifier int
+          arg_list end
+          type_resolver &{file_handle, error}
+          compound_stmt
+            decl_list
+              var_decl
+                arg_list
+                  identifier kflags
+                arg_list end
+              .value
+                call
+                  identifier to_kernel_flags
+                  arg_list
+                    identifier flags
+                  arg_list end
+              var_decl
+                arg_list
+                  identifier fd
+                arg_list end
+              .value
+                call
+                  identifier syscall::open
+                  arg_list
+                    field_expr
+                      unary @
+                        identifier filename
+                      identifier ptr
+                    identifier kflags
+                    cast_expr
+                      type_expr
+                        identifier int16
+                      identifier mode
+                  arg_list end
+            decl_list end
+            stmt_list
+              .pre_nodes
+                binary =
+                  unary @
+                    identifier $cb_agg_ret
+                  init_expr
+                    arg_list
+                      cast_expr
+                        type_expr
+                          identifier file_handle
+                        identifier fd
+                      int_literal 0
+                    arg_list end
+                  init_expr end
+              return_stmt
+                identifier $cb_agg_ret
+            stmt_list end
+          compound_stmt end
+      linkage_specifier end
+    decl_list end
+  code_unit ../../../stdlib/src/std/linux/open.cb end
+  code_unit ../../../stdlib/src/std/linux/process.cb
+    decl_list
+      import_decl
+        identifier std::linux::syscall
+        identifier syscall
+      import_decl
+        identifier std::io
+      linkage_specifier extern
+        decl_list
+          func_decl
+            identifier exit
+            arg_list
+              var_decl
+                arg_list
+                  identifier code
+                arg_list end
+              .type
+                type_expr
+                  identifier int
+            arg_list end
+            compound_stmt
+              stmt_list
+                call
+                  identifier syscall::exit
+                  arg_list
+                    identifier code
+                  arg_list end
+              stmt_list end
+            compound_stmt end
+          func_decl
+            identifier process
+            arg_list
+              var_decl
+                arg_list
+                  identifier $cb_agg_ret
+                arg_list end
+              .type
+                type_resolver &{int, error}
+              var_decl
+                arg_list
+                  identifier path
+                arg_list end
+              .type
+                type_resolver &[]pure uint8
+              var_decl
+                arg_list
+                  identifier args
+                arg_list end
+              .type
+                type_resolver &[][]pure uint8
+            arg_list end
+            type_resolver &{int, error}
+            compound_stmt
+              decl_list
+                var_decl
+                  arg_list
+                    identifier child
+                  arg_list end
+                .value
+                  call
+                    identifier syscall::fork
+                    arg_list
+                    arg_list end
+              decl_list end
+              stmt_list
+                if{binary  
+                    identifier child
+                    int_literal 0 compound_stmt
+                    decl_list
+                      var_decl
+                        arg_list
+                          identifier buf
+                        arg_list end
+                      .value
+                        cast_expr
+                          type_expr
+                            type_qualifier ptr
+                              type_qualifier pure
+                                identifier uint8
+                          field_expr
+                            .pre_nodes
+                              call
+                                identifier mem::alloc
+                                arg_list
+                                  unary &
+                                    identifier $cbT1
+                                  binary *
+                                    binary +
+                                      field_expr
+                                        unary @
+                                          identifier args
+                                        identifier len
+                                      cast_expr
+                                        type_resolver usize
+                                        int_literal 2
+                                    int_literal 8
+                                arg_list end
+                            identifier $cbT1
+                            identifier first
+                      var_decl
+                        arg_list
+                          identifier argv
+                        arg_list end
+                      .value
+                        init_expr
+                          type_expr
+                            slice_type [ ] 
+                              type_expr
+                                type_qualifier ptr
+                                  type_qualifier pure
+                                    identifier uint8
+                          arg_list
+                            identifier buf
+                            binary +
+                              field_expr
+                                unary @
+                                  identifier args
+                                identifier len
+                              cast_expr
+                                type_resolver usize
+                                int_literal 2
+                          arg_list end
+                        init_expr end
+                    decl_list end
+                    stmt_list
+                      binary =
+                        field_expr
+                            identifier argv
+                            identifier ptr[int_literal 0]
+                        field_expr
+                          unary @
+                            identifier path
+                          identifier ptr
+                    stmt_list end
+                    stmt_list
+                                              arg_list
+                          identifier i
+                        arg_list end                        compound_stmt
+                          stmt_list
+                            binary =
+                              field_expr
+                                  identifier argv
+                                  identifier ptr[binary +
+                                  identifier i
+                                  int_literal 1]
+                              field_expr
+                                field_expr
+                                    unary @
+                                      identifier args
+                                    identifier ptr[identifier i]
+                                identifier ptr
+                          stmt_list end
+                        compound_stmt end
+                    stmt_list end
+                    stmt_list
+                      binary =
+                        field_expr
+                            identifier argv
+                            identifier ptr[binary +
+                            field_expr
+                              unary @
+                                identifier args
+                              identifier len
+                            cast_expr
+                              type_resolver usize
+                              int_literal 1]
+                        nil_literal
+                    stmt_list end
+                    stmt_list
+                      call
+                        identifier syscall::execve
+                        arg_list
+                          field_expr
+                            unary @
+                              identifier path
+                            identifier ptr
+                          field_expr
+                            identifier argv
+                            identifier ptr
+                          nil_literal
+                        arg_list end
+                    stmt_list end
+                    stmt_list
+                      call
+                        identifier syscall::exit
+                        arg_list
+                          int_literal 0
+                        arg_list end
+                    stmt_list end
+                  compound_stmt end else if{binary  
+                      identifier child
+                      unary -
+                        int_literal 1 compound_stmt
+                      decl_list
+                        var_decl
+                          arg_list
+                            identifier status
+                          arg_list end
+                        .type
+                          type_expr
+                            identifier int
+                        .value
+                          int_literal 0
+                      decl_list end
+                      stmt_list
+                        call
+                          identifier syscall::wait4
+                          arg_list
+                            identifier child
+                            unary &
+                              identifier status
+                            int_literal 0
+                            nil_literal
+                          arg_list end
+                      stmt_list end
+                      stmt_list
+                        if{binary  
+                            call
+                              identifier wifexited
+                              arg_list
+                                identifier status
+                              arg_list end
+                            bool_literal false compound_stmt
+                            stmt_list
+                              .pre_nodes
+                                binary =
+                                  unary @
+                                    identifier $cb_agg_ret
+                                  init_expr
+                                    arg_list
+                                      call
+                                        identifier wexitstatus
+                                        arg_list
+                                          identifier status
+                                        arg_list end
+                                      int_literal 0
+                                    arg_list end
+                                  init_expr end
+                              return_stmt
+                                identifier $cb_agg_ret
+                            stmt_list end
+                          compound_stmt end else if{binary  
+                              call
+                                identifier wifsignaled
+                                arg_list
+                                  identifier status
+                                arg_list end
+                              bool_literal false compound_stmt
+                              stmt_list
+                                .pre_nodes
+                                  binary =
+                                    unary @
+                                      identifier $cb_agg_ret
+                                    init_expr
+                                      arg_list
+                                        call
+                                          identifier wtermsig
+                                          arg_list
+                                            identifier status
+                                          arg_list end
+                                        int_literal 0
+                                      arg_list end
+                                    init_expr end
+                                return_stmt
+                                  identifier $cb_agg_ret
+                              stmt_list end
+                            compound_stmt end}}
+                      stmt_list end
+                      stmt_list
+                        call
+                          identifier syscall::exit
+                          arg_list
+                            int_literal 1
+                          arg_list end
+                      stmt_list end
+                    compound_stmt end else compound_stmt
+                      stmt_list
+                        .pre_nodes
+                          binary =
+                            unary @
+                              identifier $cb_agg_ret
+                            init_expr
+                              arg_list
+                                int_literal 0
+                                call
+                                  identifier errno_to_error
+                                  arg_list
+                                    identifier child
+                                  arg_list end
+                              arg_list end
+                            init_expr end
+                        return_stmt
+                          identifier $cb_agg_ret
+                      stmt_list end
+                    compound_stmt end}}
+              stmt_list end
+            compound_stmt end
+          func_decl
+            identifier errno_to_error
+            arg_list
+              var_decl
+                arg_list
+                  identifier code
+                arg_list end
+              .type
+                type_expr
+                  identifier int
+            arg_list end
+            compound_stmt
+              stmt_list
+                return_stmt
+                  int_literal 0
+              stmt_list end
+            compound_stmt end
+          func_decl
+            identifier wifexited
+            arg_list
+              var_decl
+                arg_list
+                  identifier status
+                arg_list end
+              .type
+                type_expr
+                  identifier int
+            arg_list end
+            type_expr
+              identifier bool
+            compound_stmt
+              stmt_list
+                return_stmt
+                  bool_literal true
+              stmt_list end
+            compound_stmt end
+          func_decl
+            identifier wifsignaled
+            arg_list
+              var_decl
+                arg_list
+                  identifier status
+                arg_list end
+              .type
+                type_expr
+                  identifier int
+            arg_list end
+            type_expr
+              identifier bool
+            compound_stmt
+              stmt_list
+                return_stmt
+                  bool_literal false
+              stmt_list end
+            compound_stmt end
+          func_decl
+            identifier wexitstatus
+            arg_list
+              var_decl
+                arg_list
+                  identifier status
+                arg_list end
+              .type
+                type_expr
+                  identifier int
+            arg_list end
+            type_expr
+              identifier int
+            compound_stmt
+              stmt_list
+                return_stmt
+                  int_literal 0
+              stmt_list end
+            compound_stmt end
+          func_decl
+            identifier wtermsig
+            arg_list
+              var_decl
+                arg_list
+                  identifier status
+                arg_list end
+              .type
+                type_expr
+                  identifier int
+            arg_list end
+            type_expr
+              identifier int
+            compound_stmt
+              stmt_list
+                return_stmt
+                  int_literal 0
+              stmt_list end
+            compound_stmt end
+        decl_list end
+      linkage_specifier end
+    decl_list end
+  code_unit ../../../stdlib/src/std/linux/process.cb end
+  code_unit ../../../stdlib/src/std/linux/start.cb
+    decl_list
+      import_decl
+        identifier std::system
+      import_decl
+        identifier std::mem
+        identifier mem
+      import_decl
+        identifier std::linux::syscall
+      func_decl
+        identifier testAlloc
+        arg_list
+        arg_list end
+        compound_stmt
+          decl_list
+            .pre_nodes
+              call
+                identifier mem::alloc
+                arg_list
+                  unary &
+                    identifier $cbT2
+                  cast_expr
+                    type_resolver usize
+                    int_literal 16
+                arg_list end
+            var_decl
+              arg_list
+                identifier $cbT2
+              arg_list end
+            .value
+              
+            var_decl
+              arg_list
+                identifier m
+              arg_list end
+            .type
+              type_expr
+                type_resolver &opaque
+            .value
+              field_expr
+                identifier $cbT2
+                identifier first
+            var_decl
+              arg_list
+                identifier err
+              arg_list end
+            .type
+              type_expr
+                type_resolver error
+            .value
+              field_expr
+                identifier $cbT2
+                identifier second
+
+          decl_list end
+          stmt_list
+            if{binary  
+                identifier err
+                int_literal 0 compound_stmt
+                stmt_list
+                  .pre_nodes
+                    var_decl
+                      arg_list
+                        identifier $cbT15
+                      arg_list end
+                    .value
+                      init_expr
+                        type_expr
+                          type_resolver []pure uint8
+                        arg_list
+                          string_literal "ALLOC_FAILED
+"
+                          int_literal 13
+                        arg_list end
+                      init_expr end
+                  call
+                    identifier write
+                    arg_list
+                      call
+                        identifier stdout
+                        arg_list
+                        arg_list end
+                      unary &
+                        identifier $cbT15
+                    arg_list end
+                stmt_list end
+                stmt_list
+                  return_stmt
+
+                stmt_list end
+              compound_stmt end}
+          stmt_list end
+          stmt_list
+            .pre_nodes
+              var_decl
+                arg_list
+                  identifier $cbT16
+                arg_list end
+              .value
+                init_expr
+                  type_expr
+                    type_resolver []pure uint8
+                  arg_list
+                    string_literal "testAlloc: OK
+"
+                    int_literal 14
+                  arg_list end
+                init_expr end
+            call
+              identifier write
+              arg_list
+                call
+                  identifier stdout
+                  arg_list
+                  arg_list end
+                unary &
+                  identifier $cbT16
+              arg_list end
+          stmt_list end
+          stmt_list
+            call
+              identifier mem::free
+              arg_list
+                identifier m
+              arg_list end
+          stmt_list end
+        compound_stmt end
+      var_decl
+        arg_list
+          identifier N
+        arg_list end
+      .value
+        int_literal 10
+      func_decl
+        identifier testMain
+        arg_list
+          var_decl
+            arg_list
+              identifier argc
+            arg_list end
+          .type
+            type_expr
+              identifier int
+        arg_list end
+        compound_stmt
+          decl_list
+            var_decl
+              arg_list
+                identifier invalidMapValue
+              arg_list end
+            .value
+              cast_expr
+                type_expr
+                  type_qualifier ptr
+                    identifier opaque
+                cast_expr
+                  type_expr
+                    identifier uintptr
+                  unary -
+                    int_literal 1
+            .pre_nodes
+              call
+                identifier mem::alloc
+                arg_list
+                  unary &
+                    identifier $cbT3
+                  binary *
+                    cast_expr
+                      type_resolver usize
+                      identifier N
+                    int_literal 4
+                arg_list end
+            var_decl
+              arg_list
+                identifier $cbT3
+              arg_list end
+            .value
+              
+            var_decl
+              arg_list
+                identifier ptr
+              arg_list end
+            .type
+              type_expr
+                type_resolver &opaque
+            .value
+              field_expr
+                identifier $cbT3
+                identifier first
+            var_decl
+              arg_list
+                identifier err
+              arg_list end
+            .type
+              type_expr
+                type_resolver error
+            .value
+              field_expr
+                identifier $cbT3
+                identifier second
+
+          decl_list end
+          stmt_list
+            if{binary  
+                identifier err
+                int_literal 0 compound_stmt
+                stmt_list
+                  call
+                    identifier exit
+                    arg_list
+                      int_literal 1
+                    arg_list end
+                stmt_list end
+              compound_stmt end}
+          stmt_list end
+          stmt_list
+            call
+              identifier write_int
+              arg_list
+                call
+                  identifier stdout
+                  arg_list
+                  arg_list end
+                int_literal 1412312
+              arg_list end
+          stmt_list end
+          stmt_list
+            .pre_nodes
+              var_decl
+                arg_list
+                  identifier $cbT17
+                arg_list end
+              .value
+                init_expr
+                  type_expr
+                    type_resolver []pure uint8
+                  arg_list
+                    string_literal "
+"
+                    int_literal 1
+                  arg_list end
+                init_expr end
+            call
+              identifier write
+              arg_list
+                call
+                  identifier stdout
+                  arg_list
+                  arg_list end
+                unary &
+                  identifier $cbT17
+              arg_list end
+          stmt_list end
+          stmt_list
+            call
+              identifier write_int
+              arg_list
+                call
+                  identifier stdout
+                  arg_list
+                  arg_list end
+                cast_expr
+                  type_expr
+                    identifier int
+                  cast_expr
+                    type_expr
+                      identifier uintptr
+                    identifier ptr
+              arg_list end
+          stmt_list end
+          stmt_list
+            .pre_nodes
+              var_decl
+                arg_list
+                  identifier $cbT18
+                arg_list end
+              .value
+                init_expr
+                  type_expr
+                    type_resolver []pure uint8
+                  arg_list
+                    string_literal "
+"
+                    int_literal 1
+                  arg_list end
+                init_expr end
+            call
+              identifier write
+              arg_list
+                call
+                  identifier stdout
+                  arg_list
+                  arg_list end
+                unary &
+                  identifier $cbT18
+              arg_list end
+          stmt_list end
+          decl_list
+            var_decl
+              arg_list
+                identifier arr
+              arg_list end
+            .value
+              init_expr
+                type_expr
+                  slice_type [ ] 
+                    type_expr
+                      identifier int
+                arg_list
+                  cast_expr
+                    type_expr
+                      type_qualifier ptr
+                        identifier int
+                    identifier ptr
+                  identifier N
+                arg_list end
+              init_expr end
+          decl_list end
+          stmt_list
+            binary =
+              field_expr
+                  identifier arr
+                  identifier ptr[int_literal 0]
+              int_literal 0
+          stmt_list end
+          stmt_list
+            binary =
+              field_expr
+                  identifier arr
+                  identifier ptr[int_literal 1]
+              int_literal 1
+          stmt_list end
+          stmt_list
+                          arg_list
+                identifier i
+              arg_list end              compound_stmt
+                stmt_list
+                  binary =
+                    field_expr
+                        identifier arr
+                        identifier ptr[identifier i]
+                    binary +
+                      field_expr
+                          identifier arr
+                          identifier ptr[binary -
+                          identifier i
+                          int_literal 1]
+                      field_expr
+                          identifier arr
+                          identifier ptr[binary -
+                          identifier i
+                          int_literal 2]
+                stmt_list end
+              compound_stmt end
+          stmt_list end
+          stmt_list
+                          arg_list
+                identifier i
+              arg_list end              compound_stmt
+                stmt_list
+                  call
+                    identifier write_int
+                    arg_list
+                      call
+                        identifier stdout
+                        arg_list
+                        arg_list end
+                      field_expr
+                          identifier arr
+                          identifier ptr[identifier i]
+                    arg_list end
+                stmt_list end
+                stmt_list
+                  .pre_nodes
+                    var_decl
+                      arg_list
+                        identifier $cbT19
+                      arg_list end
+                    .value
+                      init_expr
+                        type_expr
+                          type_resolver []pure uint8
+                        arg_list
+                          string_literal ","
+                          int_literal 1
+                        arg_list end
+                      init_expr end
+                  call
+                    identifier write
+                    arg_list
+                      call
+                        identifier stdout
+                        arg_list
+                        arg_list end
+                      unary &
+                        identifier $cbT19
+                    arg_list end
+                stmt_list end
+              compound_stmt end
+          stmt_list end
+          stmt_list
+            .pre_nodes
+              var_decl
+                arg_list
+                  identifier $cbT20
+                arg_list end
+              .value
+                init_expr
+                  type_expr
+                    type_resolver []pure uint8
+                  arg_list
+                    string_literal "
+"
+                    int_literal 1
+                  arg_list end
+                init_expr end
+            call
+              identifier write
+              arg_list
+                call
+                  identifier stdout
+                  arg_list
+                  arg_list end
+                unary &
+                  identifier $cbT20
+              arg_list end
+          stmt_list end
+          stmt_list
+            call
+              identifier testAlloc
+              arg_list
+              arg_list end
+          stmt_list end
+          stmt_list
+            call
+              identifier mem::free
+              arg_list
+                identifier ptr
+              arg_list end
+          stmt_list end
+          stmt_list
+            .pre_nodes
+              var_decl
+                arg_list
+                  identifier $cbT21
+                arg_list end
+              .value
+                init_expr
+                  type_expr
+                    type_resolver []pure uint8
+                  arg_list
+                    string_literal "I'm going to segfault, ok?
+"
+                    int_literal 27
+                  arg_list end
+                init_expr end
+            call
+              identifier write
+              arg_list
+                call
+                  identifier stdout
+                  arg_list
+                  arg_list end
+                unary &
+                  identifier $cbT21
+              arg_list end
+          stmt_list end
+          decl_list
+            var_decl
+              arg_list
+                identifier val
+              arg_list end
+            .value
+              field_expr
+                  identifier arr
+                  identifier ptr[int_literal 0]
+          decl_list end
+          stmt_list
+            call
+              identifier exit
+              arg_list
+                identifier argc
+              arg_list end
+          stmt_list end
+        compound_stmt end
+      func_decl
+        identifier testBoolOp
+        arg_list
+        arg_list end
+        compound_stmt
+          decl_list
+            var_decl
+              arg_list
+                identifier count
+              arg_list end
+            .value
+              int_literal 0
+            var_decl
+              arg_list
+                identifier value
+              arg_list end
+            .value
+              binary >
+                identifier count
+                int_literal 0
+          decl_list end
+          stmt_list
+            return_stmt
+              bool_literal false
+          stmt_list end
+        compound_stmt end
+      linkage_specifier extern(C)
+        func_decl
+          identifier __carbon_main
+          arg_list
+            var_decl
+              arg_list
+                identifier argc
+              arg_list end
+            .type
+              type_expr
+                identifier int
+            var_decl
+              arg_list
+                identifier argv
+              arg_list end
+            .type
+              type_expr
+                type_qualifier ptr
+                  type_qualifier ptr
+                    type_qualifier pure
+                      identifier uint8
+          arg_list end
+          compound_stmt
+            decl_list
+              import_decl
+                identifier root
+            decl_list end
+            stmt_list
+              call
+                identifier main
+                arg_list
+                arg_list end
+            stmt_list end
+            stmt_list
+              call
+                identifier exit
+                arg_list
+                  int_literal 0
+                arg_list end
+            stmt_list end
+          compound_stmt end
+      linkage_specifier end
+    decl_list end
+  code_unit ../../../stdlib/src/std/linux/start.cb end
+  code_unit ../../../stdlib/src/std/linux/stat.cb
+    decl_list
+      import_decl
+        identifier std::system
+      import_decl
+        identifier std::linux::syscall
+        identifier syscall
+      linkage_specifier extern(C)
+        decl_list
+                      identifier C_Stat            decl_list
+              
+              
+              
+              
+              
+              
+              
+              
+              
+              
+              
+              
+              
+              
+              
+              
+              
+              
+              
+              
+              
+            decl_list end
+        decl_list end
+      linkage_specifier end
+      linkage_specifier extern
+        decl_list
+          func_decl
+            identifier stat
+            arg_list
+              var_decl
+                arg_list
+                  identifier filename
+                arg_list end
+              .type
+                type_resolver &[]pure uint8
+              var_decl
+                arg_list
+                  identifier buf
+                arg_list end
+              .type
+                type_expr
+                  type_qualifier ptr
+                    identifier Stat
+            arg_list end
+            type_expr
+              identifier $error
+            compound_stmt
+              decl_list
+                var_decl
+                  arg_list
+                    identifier cstat
+                  arg_list end
+                .type
+                  type_expr
+                    identifier C_Stat
+              decl_list end
+              stmt_list
+                if{binary <
+                    call
+                      identifier syscall::stat
+                      arg_list
+                        field_expr
+                          unary @
+                            identifier filename
+                          identifier ptr
+                        unary &
+                          identifier cstat
+                      arg_list end
+                    int_literal 0 compound_stmt
+                    stmt_list
+                      return_stmt
+                        identifier UNKNOWN_ERROR
+                    stmt_list end
+                  compound_stmt end}
+              stmt_list end
+              stmt_list
+                binary =
+                  field_expr
+                    identifier buf
+                    identifier size
+                  cast_expr
+                    type_resolver usize
+                    field_expr
+                      identifier cstat
+                      identifier st_size
+              stmt_list end
+              stmt_list
+                return_stmt
+                  int_literal 0
+              stmt_list end
+            compound_stmt end
+          func_decl
+            identifier stat
+            arg_list
+              var_decl
+                arg_list
+                  identifier fd
+                arg_list end
+              .type
+                type_expr
+                  identifier file_handle
+              var_decl
+                arg_list
+                  identifier buf
+                arg_list end
+              .type
+                type_expr
+                  type_qualifier ptr
+                    identifier Stat
+            arg_list end
+            type_expr
+              identifier $error
+            compound_stmt
+              decl_list
+                var_decl
+                  arg_list
+                    identifier cstat
+                  arg_list end
+                .type
+                  type_expr
+                    identifier C_Stat
+              decl_list end
+              stmt_list
+                if{binary <
+                    call
+                      identifier syscall::fstat
+                      arg_list
+                        cast_expr
+                          type_expr
+                            identifier int
+                          cast_expr
+                            type_expr
+                              identifier uintptr
+                            identifier fd
+                        unary &
+                          identifier cstat
+                      arg_list end
+                    int_literal 0 compound_stmt
+                    stmt_list
+                      return_stmt
+                        identifier UNKNOWN_ERROR
+                    stmt_list end
+                  compound_stmt end}
+              stmt_list end
+              stmt_list
+                binary =
+                  field_expr
+                    identifier buf
+                    identifier size
+                  cast_expr
+                    type_resolver usize
+                    field_expr
+                      identifier cstat
+                      identifier st_size
+              stmt_list end
+              stmt_list
+                return_stmt
+                  int_literal 0
+              stmt_list end
+            compound_stmt end
+        decl_list end
+      linkage_specifier end
+    decl_list end
+  code_unit ../../../stdlib/src/std/linux/stat.cb end
+module std/linux end

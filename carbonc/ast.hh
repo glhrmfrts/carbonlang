@@ -31,7 +31,7 @@ enum class ast_type {
     ternary_expr,
     func_expr,
     func_overload_selector_expr,
-    comptime_expr,
+    const_expr,
 
     type_decl,
     type_constructor_decl,
@@ -247,7 +247,7 @@ arena_ptr<ast_node> make_func_expr_node(memory_arena& arena, const position& pos
 
 arena_ptr<ast_node> make_func_overload_selector_expr_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& fn, arena_ptr<ast_node>&& arg_types);
 
-arena_ptr<ast_node> make_comptime_expr_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& expr);
+arena_ptr<ast_node> make_const_expr_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& expr);
 
 arena_ptr<ast_node> make_import_decl_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& mod, arena_ptr<ast_node>&& alias);
 

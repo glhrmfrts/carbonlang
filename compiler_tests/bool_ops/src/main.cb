@@ -1,20 +1,7 @@
 import module
 
-func parseIntRem(s : []pure uint8, radix : int) : {int, []pure uint8, bool} {
-    let value : int
-    let count : usize
-
-    for (i in 0,s.len) {
-        if (false) {
-            value = value * radix + (s[i] - '0')
-            count += 1
-        }
-        else {
-            break
-        }
-    }
-
-    return value, nil, count > 0
+func alloc_slice(type T, size: usize) {
+    return []T{ nil, size }
 }
 
 extern(C) func carbon_main() : int {
@@ -40,7 +27,7 @@ extern(C) func carbon_main() : int {
 
     takeString("Hello")
 
-    let values  : {usize, {usize, usize}}
+    let values : {usize, {usize, usize}}
 
     let eq : int
     if (values == {cast(usize)0, {cast(usize)0, cast(usize)0}}) {
@@ -50,10 +37,5 @@ extern(C) func carbon_main() : int {
         eq = 0
     }
 */
-
-    let val : {usize,usize}
-
-    let ptr = &val.second
-
-    return 0
+    let a = alloc_slice(type &pure uint8, 1)
 }

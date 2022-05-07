@@ -81,6 +81,13 @@ asm%{
 }%asm
 }
 
+func chdir(path: &pure uint8) {
+asm%{
+    mov $0x50, %rax
+    syscall
+}%asm
+}
+
 func rename(oldname: &pure uint8, newname: &pure uint8) {
 asm%{
     mov $0x52, %rax

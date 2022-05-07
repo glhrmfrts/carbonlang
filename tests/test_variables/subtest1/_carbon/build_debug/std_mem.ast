@@ -1,0 +1,908 @@
+module std/mem
+
+  code_unit ../../../stdlib/src/std/mem/arena.cb
+    decl_list
+      import_decl
+        identifier std::system
+      type_decl
+        identifier ArenaBlock
+        type_expr
+          struct_type
+            decl_list
+              var_decl
+                arg_list
+                  identifier mem
+                arg_list end
+              .type
+                type_expr
+                  type_qualifier ptr
+                    identifier opaque
+              var_decl
+                arg_list
+                  identifier filled
+                arg_list end
+              .type
+                type_expr
+                  identifier usize
+              var_decl
+                arg_list
+                  identifier prev
+                arg_list end
+              .type
+                type_expr
+                  type_qualifier ptr
+                    identifier ArenaBlock
+            decl_list end
+      type_decl
+        identifier Arena
+        type_expr
+          struct_type
+            decl_list
+              var_decl
+                arg_list
+                  identifier firstBlock
+                arg_list end
+              .type
+                type_expr
+                  type_qualifier ptr
+                    identifier ArenaBlock
+              var_decl
+                arg_list
+                  identifier alignment
+                arg_list end
+              .type
+                type_expr
+                  identifier usize
+              var_decl
+                arg_list
+                  identifier blockSize
+                arg_list end
+              .type
+                type_expr
+                  identifier usize
+            decl_list end
+    decl_list end
+  code_unit ../../../stdlib/src/std/mem/arena.cb end
+  code_unit ../../../stdlib/src/std/mem/mem.cb
+    decl_list
+      import_decl
+        identifier std::system
+        identifier sys
+      import_decl
+        identifier std::io
+      visibility_specifier local
+        decl_list
+          var_decl
+            arg_list
+              identifier ALIGNMENT
+            arg_list end
+          .type
+            type_expr
+              identifier usize
+          .value
+            int_literal 16
+          var_decl
+            arg_list
+              identifier PAGE_SIZE
+            arg_list end
+          .type
+            type_expr
+              identifier usize
+          .value
+            int_literal 4096
+          type_decl
+            identifier memory_block
+            type_expr
+              struct_type
+                decl_list
+                  var_decl
+                    arg_list
+                      identifier filled
+                    arg_list end
+                  .type
+                    type_expr
+                      identifier usize
+                  var_decl
+                    arg_list
+                      identifier cap
+                    arg_list end
+                  .type
+                    type_expr
+                      identifier usize
+                  var_decl
+                    arg_list
+                      identifier num_allocs
+                    arg_list end
+                  .type
+                    type_expr
+                      identifier usize
+                  var_decl
+                    arg_list
+                      identifier next
+                    arg_list end
+                  .type
+                    type_expr
+                      type_qualifier ptr
+                        identifier memory_block
+                decl_list end
+          var_decl
+            arg_list
+              identifier last_block
+            arg_list end
+          .type
+            type_expr
+              type_qualifier ptr
+                identifier memory_block
+          .value
+            nil_literal
+          func_decl
+            identifier alloc_in_block
+            arg_list
+              var_decl
+                arg_list
+                  identifier pblock
+                arg_list end
+              .type
+                type_expr
+                  type_qualifier ptr
+                    identifier memory_block
+              var_decl
+                arg_list
+                  identifier size
+                arg_list end
+              .type
+                type_expr
+                  identifier usize
+            arg_list end
+            type_expr
+              type_qualifier ptr
+                identifier opaque
+            compound_stmt
+              decl_list
+                var_decl
+                  arg_list
+                    identifier blockdata
+                  arg_list end
+                .value
+                  binary +
+                    cast_expr
+                      type_expr
+                        type_qualifier ptr
+                          identifier uint8
+                      cast_expr
+                        type_expr
+                          type_qualifier ptr
+                            identifier opaque
+                        identifier pblock
+                    int_literal 32
+                var_decl
+                  arg_list
+                    identifier ptr
+                  arg_list end
+                .value
+                  binary +
+                    identifier blockdata
+                    field_expr
+                      identifier pblock
+                      identifier filled
+              decl_list end
+              stmt_list
+                binary =
+                  field_expr
+                    identifier pblock
+                    identifier filled
+                  binary +
+                    field_expr
+                      identifier pblock
+                      identifier filled
+                    identifier size
+              stmt_list end
+              stmt_list
+                binary =
+                  field_expr
+                    identifier pblock
+                    identifier num_allocs
+                  binary +
+                    field_expr
+                      identifier pblock
+                      identifier num_allocs
+                    cast_expr
+                      type_resolver usize
+                      int_literal 1
+              stmt_list end
+              stmt_list
+                .pre_nodes
+                  var_decl
+                    arg_list
+                      identifier $cbT22
+                    arg_list end
+                  .value
+                    init_expr
+                      type_expr
+                        type_resolver []pure uint8
+                      arg_list
+                        string_literal "std::mem - Growing block fill to "
+                        int_literal 33
+                      arg_list end
+                    init_expr end
+                call
+                  identifier sys::write
+                  arg_list
+                    call
+                      identifier sys::stdout
+                      arg_list
+                      arg_list end
+                    unary &
+                      identifier $cbT22
+                  arg_list end
+              stmt_list end
+              stmt_list
+                call
+                  identifier sys::write_int
+                  arg_list
+                    call
+                      identifier sys::stdout
+                      arg_list
+                      arg_list end
+                    cast_expr
+                      type_expr
+                        identifier int
+                      field_expr
+                        identifier pblock
+                        identifier filled
+                  arg_list end
+              stmt_list end
+              stmt_list
+                .pre_nodes
+                  var_decl
+                    arg_list
+                      identifier $cbT23
+                    arg_list end
+                  .value
+                    init_expr
+                      type_expr
+                        type_resolver []pure uint8
+                      arg_list
+                        string_literal " bytes
+"
+                        int_literal 7
+                      arg_list end
+                    init_expr end
+                call
+                  identifier sys::write
+                  arg_list
+                    call
+                      identifier sys::stdout
+                      arg_list
+                      arg_list end
+                    unary &
+                      identifier $cbT23
+                  arg_list end
+              stmt_list end
+              stmt_list
+                return_stmt
+                  identifier ptr
+              stmt_list end
+            compound_stmt end
+          func_decl
+            identifier align
+            arg_list
+              var_decl
+                arg_list
+                  identifier size
+                arg_list end
+              .type
+                type_expr
+                  identifier usize
+              var_decl
+                arg_list
+                  identifier alignment
+                arg_list end
+              .type
+                type_expr
+                  identifier usize
+            arg_list end
+            type_expr
+              identifier usize
+            compound_stmt
+              stmt_list
+                return_stmt
+                  binary +
+                    identifier size
+                    binary &
+                      unary -
+                        identifier size
+                      binary -
+                        identifier alignment
+                        cast_expr
+                          type_expr
+                            identifier usize
+                          int_literal 1
+              stmt_list end
+            compound_stmt end
+        decl_list end
+      visibility_specifier end
+      func_decl
+        identifier memcopy
+        arg_list
+          var_decl
+            arg_list
+              identifier dest
+            arg_list end
+          .type
+            type_expr
+              type_qualifier ptr
+                identifier opaque
+          var_decl
+            arg_list
+              identifier src
+            arg_list end
+          .type
+            type_expr
+              type_qualifier ptr
+                type_qualifier pure
+                  identifier opaque
+          var_decl
+            arg_list
+              identifier size
+            arg_list end
+          .type
+            type_expr
+              identifier usize
+        arg_list end
+        compound_stmt
+          decl_list
+            asm{    mov %rdx,%rcx
+    rep movsb
+}
+          decl_list end
+        compound_stmt end
+      func_decl
+        identifier memset
+        arg_list
+          var_decl
+            arg_list
+              identifier dest
+            arg_list end
+          .type
+            type_expr
+              type_qualifier ptr
+                identifier opaque
+          var_decl
+            arg_list
+              identifier value
+            arg_list end
+          .type
+            type_expr
+              identifier uint8
+          var_decl
+            arg_list
+              identifier count
+            arg_list end
+          .type
+            type_expr
+              identifier usize
+        arg_list end
+        compound_stmt
+          decl_list
+            asm{    mov %rsi,%rax
+    mov %rdx,%rcx
+    rep stosb
+}
+          decl_list end
+        compound_stmt end
+      func_decl
+        identifier alloc
+        arg_list
+          var_decl
+            arg_list
+              identifier $cb_agg_ret
+            arg_list end
+          .type
+            type_resolver &{&opaque, error}
+          var_decl
+            arg_list
+              identifier usersize
+            arg_list end
+          .type
+            type_expr
+              identifier usize
+        arg_list end
+        type_resolver &{&opaque, error}
+        compound_stmt
+          decl_list
+            var_decl
+              arg_list
+                identifier asize
+              arg_list end
+            .value
+              call
+                identifier align
+                arg_list
+                  identifier usersize
+                  identifier ALIGNMENT
+                arg_list end
+            var_decl
+              arg_list
+                identifier pblock
+              arg_list end
+            .value
+              identifier last_block
+          decl_list end
+          stmt_list
+                          binary  
+                identifier pblock
+                nil_literal              compound_stmt
+                stmt_list
+                  if{binary <
+                      binary +
+                        field_expr
+                          identifier pblock
+                          identifier filled
+                        identifier asize
+                      field_expr
+                        identifier pblock
+                        identifier cap compound_stmt
+                      stmt_list
+                        
+                      stmt_list end
+                    compound_stmt end}
+                stmt_list end
+                stmt_list
+                  binary =
+                    identifier pblock
+                    field_expr
+                      identifier pblock
+                      identifier next
+                stmt_list end
+              compound_stmt end
+          stmt_list end
+          stmt_list
+            if{binary  
+                identifier pblock
+                nil_literal compound_stmt
+                stmt_list
+                  .pre_nodes
+                    binary =
+                      unary @
+                        identifier $cb_agg_ret
+                      init_expr
+                        arg_list
+                          call
+                            identifier alloc_in_block
+                            arg_list
+                              identifier pblock
+                              identifier asize
+                            arg_list end
+                          int_literal 0
+                        arg_list end
+                      init_expr end
+                  return_stmt
+                    identifier $cb_agg_ret
+                stmt_list end
+              compound_stmt end}
+          stmt_list end
+          decl_list
+            var_decl
+              arg_list
+                identifier memsize
+              arg_list end
+            .value
+              call
+                identifier align
+                arg_list
+                  binary +
+                    int_literal 32
+                    identifier asize
+                  identifier PAGE_SIZE
+                arg_list end
+            .pre_nodes
+              call
+                identifier sys::alloc
+                arg_list
+                  unary &
+                    identifier $cbT4
+                  identifier memsize
+                arg_list end
+            var_decl
+              arg_list
+                identifier $cbT4
+              arg_list end
+            .value
+              
+            var_decl
+              arg_list
+                identifier newmem
+              arg_list end
+            .type
+              type_expr
+                type_resolver &opaque
+            .value
+              field_expr
+                identifier $cbT4
+                identifier first
+            var_decl
+              arg_list
+                identifier err
+              arg_list end
+            .type
+              type_expr
+                type_resolver error
+            .value
+              field_expr
+                identifier $cbT4
+                identifier second
+
+          decl_list end
+          stmt_list
+            if{binary  
+                identifier err
+                int_literal 0 compound_stmt
+                stmt_list
+                  .pre_nodes
+                    binary =
+                      unary @
+                        identifier $cb_agg_ret
+                      init_expr
+                        arg_list
+                          nil_literal
+                          identifier err
+                        arg_list end
+                      init_expr end
+                  return_stmt
+                    identifier $cb_agg_ret
+                stmt_list end
+              compound_stmt end}
+          stmt_list end
+          stmt_list
+            call
+              identifier memset
+              arg_list
+                identifier newmem
+                int_literal 0
+                int_literal 32
+              arg_list end
+          stmt_list end
+          decl_list
+            var_decl
+              arg_list
+                identifier newblock
+              arg_list end
+            .value
+              cast_expr
+                type_expr
+                  type_qualifier ptr
+                    identifier memory_block
+                identifier newmem
+          decl_list end
+          stmt_list
+            binary =
+              field_expr
+                identifier newblock
+                identifier cap
+              identifier memsize
+          stmt_list end
+          stmt_list
+            binary =
+              field_expr
+                identifier newblock
+                identifier next
+              identifier last_block
+          stmt_list end
+          stmt_list
+            .pre_nodes
+              var_decl
+                arg_list
+                  identifier $cbT24
+                arg_list end
+              .value
+                init_expr
+                  type_expr
+                    type_resolver []pure uint8
+                  arg_list
+                    string_literal "std::mem - Allocating block of "
+                    int_literal 31
+                  arg_list end
+                init_expr end
+            call
+              identifier sys::write
+              arg_list
+                call
+                  identifier sys::stdout
+                  arg_list
+                  arg_list end
+                unary &
+                  identifier $cbT24
+              arg_list end
+          stmt_list end
+          stmt_list
+            call
+              identifier sys::write_int
+              arg_list
+                call
+                  identifier sys::stdout
+                  arg_list
+                  arg_list end
+                cast_expr
+                  type_expr
+                    identifier int
+                  field_expr
+                    identifier newblock
+                    identifier cap
+              arg_list end
+          stmt_list end
+          stmt_list
+            .pre_nodes
+              var_decl
+                arg_list
+                  identifier $cbT25
+                arg_list end
+              .value
+                init_expr
+                  type_expr
+                    type_resolver []pure uint8
+                  arg_list
+                    string_literal " bytes
+"
+                    int_literal 7
+                  arg_list end
+                init_expr end
+            call
+              identifier sys::write
+              arg_list
+                call
+                  identifier sys::stdout
+                  arg_list
+                  arg_list end
+                unary &
+                  identifier $cbT25
+              arg_list end
+          stmt_list end
+          stmt_list
+            binary =
+              identifier last_block
+              identifier newblock
+          stmt_list end
+          stmt_list
+            .pre_nodes
+              binary =
+                unary @
+                  identifier $cb_agg_ret
+                init_expr
+                  arg_list
+                    call
+                      identifier alloc_in_block
+                      arg_list
+                        identifier newblock
+                        identifier asize
+                      arg_list end
+                    int_literal 0
+                  arg_list end
+                init_expr end
+            return_stmt
+              identifier $cb_agg_ret
+          stmt_list end
+        compound_stmt end
+      func_decl
+        identifier free
+        arg_list
+          var_decl
+            arg_list
+              identifier ptr
+            arg_list end
+          .type
+            type_expr
+              type_qualifier ptr
+                identifier opaque
+        arg_list end
+        compound_stmt
+          decl_list
+            var_decl
+              arg_list
+                identifier pblock
+              arg_list end
+            .value
+              identifier last_block
+            var_decl
+              arg_list
+                identifier prevblock
+              arg_list end
+            .type
+              type_expr
+                type_qualifier ptr
+                  identifier memory_block
+            .value
+              nil_literal
+          decl_list end
+          stmt_list
+                          binary  
+                identifier pblock
+                nil_literal              compound_stmt
+                decl_list
+                  var_decl
+                    arg_list
+                      identifier blockdata
+                    arg_list end
+                  .value
+                    binary +
+                      cast_expr
+                        type_expr
+                          type_qualifier ptr
+                            identifier uint8
+                        cast_expr
+                          type_expr
+                            type_qualifier ptr
+                              identifier opaque
+                          identifier pblock
+                      int_literal 32
+                decl_list end
+                stmt_list
+                  if{binary  
+                      binary  
+                        identifier ptr
+                        identifier blockdata
+                      binary <
+                        identifier ptr
+                        binary +
+                          identifier blockdata
+                          field_expr
+                            identifier pblock
+                            identifier cap compound_stmt
+                      stmt_list
+                        
+                      stmt_list end
+                    compound_stmt end}
+                stmt_list end
+                stmt_list
+                  binary =
+                    identifier prevblock
+                    identifier pblock
+                stmt_list end
+                stmt_list
+                  binary =
+                    identifier pblock
+                    field_expr
+                      identifier pblock
+                      identifier next
+                stmt_list end
+              compound_stmt end
+          stmt_list end
+          stmt_list
+            if{binary  
+                identifier pblock
+                nil_literal compound_stmt
+                stmt_list
+                  return_stmt
+
+                stmt_list end
+              compound_stmt end}
+          stmt_list end
+          stmt_list
+            binary =
+              field_expr
+                identifier pblock
+                identifier num_allocs
+              binary -
+                field_expr
+                  identifier pblock
+                  identifier num_allocs
+                cast_expr
+                  type_resolver usize
+                  int_literal 1
+          stmt_list end
+          stmt_list
+            if{binary  
+                field_expr
+                  identifier pblock
+                  identifier num_allocs
+                cast_expr
+                  type_resolver usize
+                  int_literal 0 compound_stmt
+                stmt_list
+                  if{binary  
+                      identifier last_block
+                      identifier pblock compound_stmt
+                      stmt_list
+                        binary =
+                          identifier last_block
+                          field_expr
+                            identifier pblock
+                            identifier next
+                      stmt_list end
+                    compound_stmt end else compound_stmt
+                      stmt_list
+                        binary =
+                          field_expr
+                            identifier prevblock
+                            identifier next
+                          field_expr
+                            identifier pblock
+                            identifier next
+                      stmt_list end
+                    compound_stmt end}
+                stmt_list end
+                stmt_list
+                  .pre_nodes
+                    var_decl
+                      arg_list
+                        identifier $cbT26
+                      arg_list end
+                    .value
+                      init_expr
+                        type_expr
+                          type_resolver []pure uint8
+                        arg_list
+                          string_literal "std::mem - Freeing block of "
+                          int_literal 28
+                        arg_list end
+                      init_expr end
+                  call
+                    identifier sys::write
+                    arg_list
+                      call
+                        identifier sys::stdout
+                        arg_list
+                        arg_list end
+                      unary &
+                        identifier $cbT26
+                    arg_list end
+                stmt_list end
+                stmt_list
+                  call
+                    identifier sys::write_int
+                    arg_list
+                      call
+                        identifier sys::stdout
+                        arg_list
+                        arg_list end
+                      cast_expr
+                        type_expr
+                          identifier int
+                        field_expr
+                          identifier pblock
+                          identifier cap
+                    arg_list end
+                stmt_list end
+                stmt_list
+                  .pre_nodes
+                    var_decl
+                      arg_list
+                        identifier $cbT27
+                      arg_list end
+                    .value
+                      init_expr
+                        type_expr
+                          type_resolver []pure uint8
+                        arg_list
+                          string_literal " bytes
+"
+                          int_literal 7
+                        arg_list end
+                      init_expr end
+                  call
+                    identifier sys::write
+                    arg_list
+                      call
+                        identifier sys::stdout
+                        arg_list
+                        arg_list end
+                      unary &
+                        identifier $cbT27
+                    arg_list end
+                stmt_list end
+                stmt_list
+                  call
+                    identifier sys::free
+                    arg_list
+                      identifier pblock
+                      field_expr
+                        identifier pblock
+                        identifier cap
+                    arg_list end
+                stmt_list end
+              compound_stmt end}
+          stmt_list end
+        compound_stmt end
+    decl_list end
+  code_unit ../../../stdlib/src/std/mem/mem.cb end
+module std/mem end

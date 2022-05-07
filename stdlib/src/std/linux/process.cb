@@ -20,7 +20,7 @@ func process(path: []pure uint8, args: [][]pure uint8): {int, error} {
         //let a = make_arena()
         //let argv = concat({path.ptr}, map(args, func(it)=it.ptr, a), a)
         let buf = cast(&pure uint8) mem::alloc((args.len + 2) * sizeof(path.ptr)).first
-        let argv = []&pure uint8{ buf, args.len }
+        let argv = []&pure uint8{ buf, args.len + 2 }
         argv[0] = path.ptr
         for (i in 0, args.len) {
             argv[i + 1] = args[i].ptr

@@ -1,3 +1,4 @@
+.global cb__Nroot__Nrun_compiler__Aptr__Tslice__Tpure__Tuint8
 .global cb__Nroot__Nmain
 .data
     .align 16
@@ -21,35 +22,31 @@
     .byte 0x80
 .section .rodata
 .cbstr0:
-    .string "hi"
+    .string "-p"
 .cbstr1:
+    .string "../../.."
+.cbstr2:
+    .string "-I"
+.cbstr3:
+    .string "stdlib"
+.cbstr4:
+    .string "-o"
+.cbstr5:
+    .string "test.out"
+.cbstr6:
     .string "/usr/bin/carbonc"
+.cbstr7:
+    .string "subtest1"
 .text
-cb__Nroot__Nmain:
-# func main(): {}
+cb__Nroot__Nrun_compiler__Aptr__Tslice__Tpure__Tuint8:
+# func run_compiler([]pure uint8): int
+ mov %rdi,8(%rsp)
  push %rbp
  push %rbx
  push %r12
  mov %rsp,%rbp
- sub $272,%rsp
+ sub $320,%rsp
 # prolog end
-
- lea .cbstr0,%rax
-# ir_load_addr STR0; (push)
-
- mov %rax,-208(%rbp)
-# ir_load [L3 . 0] POP();
-
- mov $2,%r10d
- mov %r10,-200(%rbp)
-# ir_load [L3 . 1] 2;
-
- lea -208(%rbp),%rax
-# ir_load_addr L3; (push)
-
- mov %rax,%rdi
- call cb__Nstd__Nio__Nprintln__Aptr__Tslice__Tpure__Tuint8
-# ir_call cb__Nstd__Nio__Nprintln__Aptr__Tslice__Tpure__Tuint8 POP();
 
  push %rdi
  xor %rax,%rax
@@ -70,12 +67,202 @@ cb__Nroot__Nmain:
  mov %rax,-176(%rbp)
 # ir_load [L1 . 0] POP();
 
- xor %r10d,%r10d
+ mov $6,%r10d
  mov %r10,-168(%rbp)
-# ir_load [L1 . 1] 0;
+# ir_load [L1 . 1] 6;
+
+ mov -176(%rbp),%rax
+# ir_deref [L1 . 0]; (push)
+
+ xor %r10,%r10
+ imul $16,%r10
+ lea 0(%rax,%r10,1),%rax
+# ir_index POP() 0; (push)
+
+ lea (%rax),%r10
+ mov %r10,-248(%rbp)
+# ir_load_ptr L6 POP();
+
+ mov -248(%rbp),%rbx
+# ir_deref L6; (push)
+
+ lea .cbstr0,%rax
+# ir_load_addr STR0; (push)
+
+ mov %rax,0(%rbx)
+# ir_load [POP() . 0] POP();
+
+ mov -248(%rbp),%rax
+# ir_deref L6; (push)
+
+ mov $2,%r10d
+ mov %r10,8(%rax)
+# ir_load [POP() . 1] 2;
+
+ mov -176(%rbp),%rax
+# ir_deref [L1 . 0]; (push)
+
+ mov $1,%r10
+ imul $16,%r10
+ lea 0(%rax,%r10,1),%rax
+# ir_index POP() 1; (push)
+
+ lea (%rax),%r10
+ mov %r10,-256(%rbp)
+# ir_load_ptr L7 POP();
+
+ mov -256(%rbp),%rbx
+# ir_deref L7; (push)
 
  lea .cbstr1,%rax
 # ir_load_addr STR1; (push)
+
+ mov %rax,0(%rbx)
+# ir_load [POP() . 0] POP();
+
+ mov -256(%rbp),%rax
+# ir_deref L7; (push)
+
+ mov $8,%r10d
+ mov %r10,8(%rax)
+# ir_load [POP() . 1] 8;
+
+ mov -176(%rbp),%rax
+# ir_deref [L1 . 0]; (push)
+
+ mov $2,%r10
+ imul $16,%r10
+ lea 0(%rax,%r10,1),%rax
+# ir_index POP() 2; (push)
+
+ lea (%rax),%r10
+ mov %r10,-264(%rbp)
+# ir_load_ptr L8 POP();
+
+ mov -264(%rbp),%rbx
+# ir_deref L8; (push)
+
+ lea .cbstr2,%rax
+# ir_load_addr STR2; (push)
+
+ mov %rax,0(%rbx)
+# ir_load [POP() . 0] POP();
+
+ mov -264(%rbp),%rax
+# ir_deref L8; (push)
+
+ mov $2,%r10d
+ mov %r10,8(%rax)
+# ir_load [POP() . 1] 2;
+
+ mov -176(%rbp),%rax
+# ir_deref [L1 . 0]; (push)
+
+ mov $3,%r10
+ imul $16,%r10
+ lea 0(%rax,%r10,1),%rax
+# ir_index POP() 3; (push)
+
+ lea (%rax),%r10
+ mov %r10,-272(%rbp)
+# ir_load_ptr L9 POP();
+
+ mov -272(%rbp),%rbx
+# ir_deref L9; (push)
+
+ lea .cbstr3,%rax
+# ir_load_addr STR3; (push)
+
+ mov %rax,0(%rbx)
+# ir_load [POP() . 0] POP();
+
+ mov -272(%rbp),%rax
+# ir_deref L9; (push)
+
+ mov $6,%r10d
+ mov %r10,8(%rax)
+# ir_load [POP() . 1] 6;
+
+ mov -176(%rbp),%rax
+# ir_deref [L1 . 0]; (push)
+
+ mov $4,%r10
+ imul $16,%r10
+ lea 0(%rax,%r10,1),%rax
+# ir_index POP() 4; (push)
+
+ lea (%rax),%r10
+ mov %r10,-280(%rbp)
+# ir_load_ptr L10 POP();
+
+ mov -280(%rbp),%rbx
+# ir_deref L10; (push)
+
+ lea .cbstr4,%rax
+# ir_load_addr STR4; (push)
+
+ mov %rax,0(%rbx)
+# ir_load [POP() . 0] POP();
+
+ mov -280(%rbp),%rax
+# ir_deref L10; (push)
+
+ mov $2,%r10d
+ mov %r10,8(%rax)
+# ir_load [POP() . 1] 2;
+
+ mov -176(%rbp),%rax
+# ir_deref [L1 . 0]; (push)
+
+ mov $5,%r10
+ imul $16,%r10
+ lea 0(%rax,%r10,1),%rax
+# ir_index POP() 5; (push)
+
+ lea (%rax),%r10
+ mov %r10,-288(%rbp)
+# ir_load_ptr L11 POP();
+
+ mov -288(%rbp),%rbx
+# ir_deref L11; (push)
+
+ lea .cbstr5,%rax
+# ir_load_addr STR5; (push)
+
+ mov %rax,0(%rbx)
+# ir_load [POP() . 0] POP();
+
+ mov -288(%rbp),%rax
+# ir_deref L11; (push)
+
+ mov $8,%r10d
+ mov %r10,8(%rax)
+# ir_load [POP() . 1] 8;
+
+ mov 32(%rbp),%rax
+# ir_deref A0; (push)
+
+ push %rdi
+ push %rsi
+ lea -208(%rbp),%rdi
+ lea 0(%rax),%rsi
+ mov $16,%rcx
+ rep movsb
+ pop %rsi
+ pop %rdi
+# ir_copy L3 POP() 16;
+
+ lea -208(%rbp),%rax
+# ir_load_addr L3; (push)
+
+ mov %rax,%rdi
+ call cb__Nstd__Nsystem__Nchdir__Aptr__Tslice__Tpure__Tuint8
+# ir_call cb__Nstd__Nsystem__Nchdir__Aptr__Tslice__Tpure__Tuint8 POP(); (push)
+
+# ir_noop POP();
+
+ lea .cbstr6,%rax
+# ir_load_addr STR6; (push)
 
  mov %rax,-224(%rbp)
 # ir_load [L4 . 0] POP();
@@ -109,12 +296,51 @@ cb__Nroot__Nmain:
  call cb__Nstd__Nsystem__Nprocess__Aptr__Ttuple__Tint__Terror__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tslice__Tpure__Tuint8
 # ir_call cb__Nstd__Nsystem__Nprocess__Aptr__Ttuple__Tint__Terror__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tslice__Tpure__Tuint8 POP() POP() POP();
 
-# ir_noop L2;
+ mov -184(%rbp),%eax
+# ir_return [L2 . 0];
 
-cb__Nroot__Nmain$end:
- add $272,%rsp
+cb__Nroot__Nrun_compiler__Aptr__Tslice__Tpure__Tuint8$end:
+ add $320,%rsp
  pop %r12
  pop %rbx
+ pop %rbp
+ ret
+
+
+cb__Nroot__Nmain:
+# func main(): {}
+ push %rbp
+ mov %rsp,%rbp
+ sub $32,%rsp
+# prolog end
+
+ lea .cbstr7,%rax
+# ir_load_addr STR7; (push)
+
+ mov %rax,-16(%rbp)
+# ir_load [L0 . 0] POP();
+
+ mov $8,%r10d
+ mov %r10,-8(%rbp)
+# ir_load [L0 . 1] 8;
+
+ lea -16(%rbp),%rax
+# ir_load_addr L0; (push)
+
+ mov %rax,%rdi
+ call cb__Nroot__Nrun_compiler__Aptr__Tslice__Tpure__Tuint8
+# ir_call cb__Nroot__Nrun_compiler__Aptr__Tslice__Tpure__Tuint8 POP(); (push)
+
+ cmp $0,%eax
+ sete %al
+# ir_cmp_eq POP() 0; (push)
+
+ mov %al,%dil
+ call cb__Nstd__Nio__Nprintln__Abool
+# ir_call cb__Nstd__Nio__Nprintln__Abool POP();
+
+cb__Nroot__Nmain$end:
+ add $32,%rsp
  pop %rbp
  ret
 

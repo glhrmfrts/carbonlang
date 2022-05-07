@@ -678,7 +678,7 @@ void generate_ir_index_expr(ast_node& node) {
     auto b = pop();
 
     temit(ir_index, node.tid, a, b);
-    push(ir_stackpop{ node.tid });
+    push(ir_stackpop{ node.tid, emitindex() });
 }
 
 void generate_ir_call_expr(ast_node& node) {
@@ -1022,6 +1022,12 @@ void generate_ir_init_expr(ast_node& node) {
 
             needsderef = true;
         }
+        else if (orginstr.op == ir_index) {
+            auto temp = create_temp_receiver(get_ptr_type_to(*ts, node.tid));
+            emit(ir_load_ptr, fromref(temp), fromref(*receiver));
+            receiver = temp;
+            needsderef = true;
+        }
     }
     else if (receiver && std::holds_alternative<std::shared_ptr<ir_field>>(*receiver)) {
         auto temp = create_temp_receiver(get_ptr_type_to(*ts, node.tid));
@@ -1092,7 +1098,7 @@ void generate_ir_nullcast_expr(ast_node& node) {
 }
 
 void generate_ir_identifier(ast_node& node) {
-    if (node.lvalue.symbol->kind == symbol_kind::comptime) {
+    if (node.lvalue.symbol->kind == symbol_kind::const_value) {
         auto value = node.lvalue.symbol->ctvalue;
         auto type = node.lvalue.symbol->cttype;
         if (std::holds_alternative<int_type>(value)) {

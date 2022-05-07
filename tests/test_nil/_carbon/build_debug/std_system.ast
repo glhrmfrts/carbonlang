@@ -123,9 +123,9 @@ module std/system
         identifier open_flags
         type_expr
                       arg_list
-              identifier Create
               identifier Write
               identifier Read
+              identifier Create
               identifier Append
               identifier Truncate
             arg_list end

@@ -149,14 +149,14 @@ bool declare_type_symbol(type_system& ts, scope_def& scope, const string_hash& h
     return true;
 }
 
-bool declare_comptime_symbol(type_system& ts, const string_hash& hash, const comptime_value& value, type_id tid) {
+bool declare_const_symbol(type_system& ts, const string_hash& hash, const const_value& value, type_id tid) {
     auto it = ts.current_scope->symbols.find(hash);
     if (it != ts.current_scope->symbols.end()) {
         return false;
     }
 
     symbol_info info;
-    info.kind = symbol_kind::comptime;
+    info.kind = symbol_kind::const_value;
     info.scope = ts.current_scope;
     info.ctvalue = value;
     info.cttype = tid;

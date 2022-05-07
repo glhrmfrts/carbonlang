@@ -1,0 +1,18 @@
+func carbon_main -> int
+    local #0 a: slice__Tptr__Tpure__Tuint8;
+    ir_load_addr L0; (push)
+    ir_call cb__Nroot__Nalloc_slice__Cptr__Tpure__Tuint8__Aptr__Tslice__Tptr__Tpure__Tuint8__Ausize POP() 1;
+endf
+
+func cb__Nroot__Nalloc_slice__Cptr__Tpure__Tuint8__Aptr__Tslice__Tptr__Tpure__Tuint8__Ausize -> ptr__Tslice__Tptr__Tpure__Tuint8
+    arg #0 $cb_agg_ret: ptr__Tslice__Tptr__Tpure__Tuint8;
+    arg #1 size: usize;
+    local #0 temp$receiver$0: ptr__Tslice__Tptr__Tpure__Tuint8;
+    ir_load L0 A0;
+    ir_deref L0; (push)
+    ir_load [POP() . 0] 0;
+    ir_deref L0; (push)
+    ir_load [POP() . 1] 0;
+    ir_return A0;
+endf
+

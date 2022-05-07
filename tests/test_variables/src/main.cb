@@ -1,10 +1,20 @@
 import std::io
 import std::system
 
-func main() {
-    println("hi")
-    
+func run_compiler(folder: []pure uint8): int {
     let argsbuf : [10][]pure uint8
-    let args = [][]pure uint8{&argsbuf[0], 0}
-    process("/usr/bin/carbonc", args)
+    let args = [][]pure uint8{&argsbuf[0], 6}
+    args[0] = "-p"
+    args[1] = "../../.."
+    args[2] = "-I"
+    args[3] = "stdlib"
+    args[4] = "-o"
+    args[5] = "test.out"
+    chdir(folder)
+    return process("/usr/bin/carbonc", args).first
+}
+
+func main() {
+    println(run_compiler("subtest1") == 0)
+    // println(run_compiler("subtest2") == 1)
 }

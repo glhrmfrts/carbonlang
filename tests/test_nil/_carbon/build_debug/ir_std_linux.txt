@@ -104,27 +104,27 @@ func cb__Nstd__Nlinux__Nto_kernel_flags__Aopen_flags -> int
     arg #0 flags: open_flags;
     local #0 lflags: int;
     ir_load L0 0;
-    ir_or 2 4; (push)
+    ir_or 1 2; (push)
     ir_and A0 POP(); (push)
     ir_jmp_eq POP() 0 cb__Nstd__Nlinux__Nto_kernel_flags__Aopen_flags$if766$else;
     ir_make_label cb__Nstd__Nlinux__Nto_kernel_flags__Aopen_flags$if766$body;
     ir_load L0 2;
     ir_jmp cb__Nstd__Nlinux__Nto_kernel_flags__Aopen_flags$if766$end;
     ir_make_label cb__Nstd__Nlinux__Nto_kernel_flags__Aopen_flags$if766$else;
-    ir_and A0 2; (push)
+    ir_and A0 1; (push)
     ir_jmp_eq POP() 0 cb__Nstd__Nlinux__Nto_kernel_flags__Aopen_flags$if765$else;
     ir_make_label cb__Nstd__Nlinux__Nto_kernel_flags__Aopen_flags$if765$body;
     ir_load L0 1;
     ir_jmp cb__Nstd__Nlinux__Nto_kernel_flags__Aopen_flags$if765$end;
     ir_make_label cb__Nstd__Nlinux__Nto_kernel_flags__Aopen_flags$if765$else;
-    ir_and A0 4; (push)
+    ir_and A0 2; (push)
     ir_jmp_eq POP() 0 cb__Nstd__Nlinux__Nto_kernel_flags__Aopen_flags$if764$else;
     ir_make_label cb__Nstd__Nlinux__Nto_kernel_flags__Aopen_flags$if764$body;
     ir_load L0 0;
     ir_make_label cb__Nstd__Nlinux__Nto_kernel_flags__Aopen_flags$if764$else;
     ir_make_label cb__Nstd__Nlinux__Nto_kernel_flags__Aopen_flags$if765$end;
     ir_make_label cb__Nstd__Nlinux__Nto_kernel_flags__Aopen_flags$if766$end;
-    ir_and A0 1; (push)
+    ir_and A0 4; (push)
     ir_jmp_eq POP() 0 cb__Nstd__Nlinux__Nto_kernel_flags__Aopen_flags$if776$else;
     ir_make_label cb__Nstd__Nlinux__Nto_kernel_flags__Aopen_flags$if776$body;
     ir_or L0 64; (push)

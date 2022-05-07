@@ -920,7 +920,7 @@ struct parser_impl {
     }
 
     arena_ptr<ast_node> parse_func_arg_decl() {
-        if (TOK_CHAR == '`') {
+        if (TOK == token_type::type) {
             return parse_primary_expr();
         }
         return parse_arg_decl(token_type::let);
@@ -1299,6 +1299,16 @@ struct parser_impl {
         case token_type::func: {
             return parse_func_decl(/*as_expr=*/true);
         }
+        case token_type::type: {
+            auto pos = lex->pos();
+            lex->next();
+
+            auto expr = parse_type_expr();
+            if (!expr) {
+                throw parse_error(filename, lex->pos(), "expected type expression after 'type'");
+            }
+            return make_const_expr_node(*ast_arena, pos, std::move(expr));
+        }
         default: {
             char c = TOK_CHAR;
             switch (c) {
@@ -1314,16 +1324,6 @@ struct parser_impl {
             case '{': {
                 // init list
                 return parse_init_list_expr({nullptr, nullptr});
-            }
-            case '`': {
-                auto pos = lex->pos();
-                lex->next();
-
-                auto expr = parse_expr();
-                if (!expr) {
-                    throw parse_error(filename, lex->pos(), "expected compile-time expression after '`'");
-                }
-                return make_comptime_expr_node(*ast_arena, pos, std::move(expr));
             }
             default: {
                 if (is_unary_op(TOK)) {

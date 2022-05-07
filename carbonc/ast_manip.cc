@@ -97,8 +97,8 @@ arena_ptr<ast_node> copy_node_helper(type_system& ts, ast_node& node) {
     else if (node.type == ast_type::type_expr) {
         return make_type_expr_node(*ts.ast_arena, node.pos, copy_node(ts, node.children[0].get()));
     }
-    else if (node.type == ast_type::comptime_expr) {
-        return make_comptime_expr_node(*ts.ast_arena, node.pos, copy_node(ts, node.children[0].get()));
+    else if (node.type == ast_type::const_expr) {
+        return make_const_expr_node(*ts.ast_arena, node.pos, copy_node(ts, node.children[0].get()));
     }
     else if (node.type == ast_type::type_qualifier) {
         return make_type_qualifier_node(*ts.ast_arena, node.pos, node.type_qual, copy_node(ts, node.children[0].get()));

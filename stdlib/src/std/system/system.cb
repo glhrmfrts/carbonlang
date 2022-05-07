@@ -27,7 +27,7 @@ extern func write(fd: file_handle, data: []pure uint8): isize
 
 extern func read(fd: file_handle, data: []uint8): isize
 
-type open_flags = enumflags { Create Write Read Append Truncate }
+type open_flags = enumflags { Write Read Create Append Truncate }
 
 extern func open(path: []pure uint8, flags: open_flags, mode: int): {file_handle, error}
 
@@ -70,6 +70,8 @@ extern func rename(path: []pure uint8, dest: []pure uint8): error
 extern func copy(path: []pure uint8, dest: []pure uint8): error
 
 extern func mkdir(path: []pure uint8): error
+
+extern func chdir(path: []pure uint8): error
 
 
 // process.cb

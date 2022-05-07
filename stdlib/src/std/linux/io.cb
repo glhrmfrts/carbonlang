@@ -28,4 +28,9 @@ func close(fd: file_handle) : error {
     return noerr
 }
 
+func chdir(path: []pure uint8): error {
+    syscall::chdir(path.ptr)
+    return noerr
+}
+
 }

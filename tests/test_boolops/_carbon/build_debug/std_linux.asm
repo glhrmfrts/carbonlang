@@ -386,10 +386,10 @@ cb__Nstd__Nlinux__Nto_kernel_flags__Aopen_flags:
  mov %r10d,-4(%rbp)
 # ir_load L0 0;
 
- mov $2,%r10d
- or $4,%r10d
+ mov $1,%r10d
+ or $2,%r10d
  mov %r10d,%eax
-# ir_or 2 4; (push)
+# ir_or 1 2; (push)
 
  and %eax,%edi
  mov %edi,%eax
@@ -412,9 +412,9 @@ cb__Nstd__Nlinux__Nto_kernel_flags__Aopen_flags$if901$body:
 cb__Nstd__Nlinux__Nto_kernel_flags__Aopen_flags$if901$else:
 # ir_make_label cb__Nstd__Nlinux__Nto_kernel_flags__Aopen_flags$if901$else;
 
- and $2,%edi
+ and $1,%edi
  mov %edi,%eax
-# ir_and A0 2; (push)
+# ir_and A0 1; (push)
 
  cmp $0,%eax
  je cb__Nstd__Nlinux__Nto_kernel_flags__Aopen_flags$if900$else
@@ -433,9 +433,9 @@ cb__Nstd__Nlinux__Nto_kernel_flags__Aopen_flags$if900$body:
 cb__Nstd__Nlinux__Nto_kernel_flags__Aopen_flags$if900$else:
 # ir_make_label cb__Nstd__Nlinux__Nto_kernel_flags__Aopen_flags$if900$else;
 
- and $4,%edi
+ and $2,%edi
  mov %edi,%eax
-# ir_and A0 4; (push)
+# ir_and A0 2; (push)
 
  cmp $0,%eax
  je cb__Nstd__Nlinux__Nto_kernel_flags__Aopen_flags$if899$else
@@ -457,9 +457,9 @@ cb__Nstd__Nlinux__Nto_kernel_flags__Aopen_flags$if900$end:
 cb__Nstd__Nlinux__Nto_kernel_flags__Aopen_flags$if901$end:
 # ir_make_label cb__Nstd__Nlinux__Nto_kernel_flags__Aopen_flags$if901$end;
 
- and $1,%edi
+ and $4,%edi
  mov %edi,%eax
-# ir_and A0 1; (push)
+# ir_and A0 4; (push)
 
  cmp $0,%eax
  je cb__Nstd__Nlinux__Nto_kernel_flags__Aopen_flags$if911$else
