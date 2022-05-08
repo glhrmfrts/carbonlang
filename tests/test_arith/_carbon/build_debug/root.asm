@@ -1,5 +1,11 @@
 .global cb__Nroot__Nmain
 .global cb__Nroot__Ntest_div__Aint__Aint
+.section .error_array
+    .quad 0
+    .quad 1
+    .quad 2
+    .quad 3
+    .quad 4
 .data
     .align 16
     .size .cmp16selector, 16
@@ -36,6 +42,9 @@ cb__Nroot__Nmain:
 
  mov %eax,-4(%rbp)
 # ir_load L0 POP();
+
+ mov __error_array_start(%rip),%rax
+ mov __error_array_end(%rip),%rbx
 
  mov -4(%rbp),%edi
  call cb__Nstd__Nio__Nprintln__Aint

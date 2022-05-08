@@ -6,6 +6,7 @@
 .global cb__Nstd__Nlinux__Nsyscall__Nfstat__Aint__Aptr__Topaque
 .global cb__Nstd__Nlinux__Nsyscall__Nmmap__Aptr__Topaque__Ausize__Aint__Aint__Aint__Ausize
 .global cb__Nstd__Nlinux__Nsyscall__Nmunmap__Aptr__Topaque__Ausize
+.global cb__Nstd__Nlinux__Nsyscall__Nchdir__Aptr__Tpure__Tuint8
 .global cb__Nstd__Nlinux__Nsyscall__Nrename__Aptr__Tpure__Tuint8__Aptr__Tpure__Tuint8
 .global cb__Nstd__Nlinux__Nsyscall__Nmkdir__Aptr__Tpure__Tuint8__Aint16
 .global cb__Nstd__Nlinux__Nsyscall__Nrmdir__Aptr__Tpure__Tuint8
@@ -155,6 +156,20 @@ cb__Nstd__Nlinux__Nsyscall__Nmunmap__Aptr__Topaque__Ausize:
     syscall
 
 cb__Nstd__Nlinux__Nsyscall__Nmunmap__Aptr__Topaque__Ausize$end:
+ pop %rbp
+ ret
+
+
+cb__Nstd__Nlinux__Nsyscall__Nchdir__Aptr__Tpure__Tuint8:
+# func chdir(&pure uint8): {}
+ push %rbp
+ mov %rsp,%rbp
+# prolog end
+
+    mov $0x50, %rax
+    syscall
+
+cb__Nstd__Nlinux__Nsyscall__Nchdir__Aptr__Tpure__Tuint8$end:
  pop %rbp
  ret
 

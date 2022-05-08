@@ -139,11 +139,11 @@ cb__Nstd__Nio__Nprint__Abool:
 
  mov 16(%rbp),%r10b
  cmp $0,%r10b
- je cb__Nstd__Nio__Nprint__Abool$if148$else
-# ir_jmp_eq A0 0 cb__Nstd__Nio__Nprint__Abool$if148$else;
+ je cb__Nstd__Nio__Nprint__Abool$if159$else
+# ir_jmp_eq A0 0 cb__Nstd__Nio__Nprint__Abool$if159$else;
 
-cb__Nstd__Nio__Nprint__Abool$if148$body:
-# ir_make_label cb__Nstd__Nio__Nprint__Abool$if148$body;
+cb__Nstd__Nio__Nprint__Abool$if159$body:
+# ir_make_label cb__Nstd__Nio__Nprint__Abool$if159$body;
 
  lea .cbstr0,%rax
 # ir_load_addr STR0; (push)
@@ -162,11 +162,11 @@ cb__Nstd__Nio__Nprint__Abool$if148$body:
  call cb__Nstd__Nio__Nprint__Aptr__Tslice__Tpure__Tuint8
 # ir_call cb__Nstd__Nio__Nprint__Aptr__Tslice__Tpure__Tuint8 POP();
 
- jmp cb__Nstd__Nio__Nprint__Abool$if148$end
-# ir_jmp cb__Nstd__Nio__Nprint__Abool$if148$end;
+ jmp cb__Nstd__Nio__Nprint__Abool$if159$end
+# ir_jmp cb__Nstd__Nio__Nprint__Abool$if159$end;
 
-cb__Nstd__Nio__Nprint__Abool$if148$else:
-# ir_make_label cb__Nstd__Nio__Nprint__Abool$if148$else;
+cb__Nstd__Nio__Nprint__Abool$if159$else:
+# ir_make_label cb__Nstd__Nio__Nprint__Abool$if159$else;
 
  lea .cbstr1,%rax
 # ir_load_addr STR1; (push)
@@ -185,8 +185,8 @@ cb__Nstd__Nio__Nprint__Abool$if148$else:
  call cb__Nstd__Nio__Nprint__Aptr__Tslice__Tpure__Tuint8
 # ir_call cb__Nstd__Nio__Nprint__Aptr__Tslice__Tpure__Tuint8 POP();
 
-cb__Nstd__Nio__Nprint__Abool$if148$end:
-# ir_make_label cb__Nstd__Nio__Nprint__Abool$if148$end;
+cb__Nstd__Nio__Nprint__Abool$if159$end:
+# ir_make_label cb__Nstd__Nio__Nprint__Abool$if159$end;
 
 cb__Nstd__Nio__Nprint__Abool$end:
  add $48,%rsp

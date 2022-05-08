@@ -939,7 +939,7 @@ module std/system
                 .pre_nodes
                   var_decl
                     arg_list
-                      identifier $cbT30
+                      identifier $cbT31
                     arg_list end
                   .value
                     identifier dest
@@ -949,14 +949,14 @@ module std/system
                     identifier value
                     int_literal 10
                     unary &
-                      identifier $cbT30
+                      identifier $cbT31
                   arg_list end
           stmt_list end
           stmt_list
             .pre_nodes
               var_decl
                 arg_list
-                  identifier $cbT31
+                  identifier $cbT32
                 arg_list end
               .value
                 identifier dest
@@ -965,7 +965,7 @@ module std/system
               arg_list
                 identifier fd
                 unary &
-                  identifier $cbT31
+                  identifier $cbT32
               arg_list end
           stmt_list end
         compound_stmt end

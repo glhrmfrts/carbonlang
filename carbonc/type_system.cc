@@ -1073,7 +1073,7 @@ bool can_integral_be_cast_from(type_system& ts, type_def& self, type_def& from) 
         return true;
     }
 
-    if (from.kind == type_kind::enum_ || from.kind == type_kind::enumflags) {
+    if (from.kind == type_kind::enum_ || from.kind == type_kind::enumflags || from.kind == type_kind::error) {
         return true;
     }
 
@@ -2768,9 +2768,6 @@ void resolve_call_funcdef(type_system& ts, ast_node& node) {
     auto pair = separate_module_identifier(node.call_func()->id_parts);
 
     separate_call_args(ts, node);
-    if (node.node_id == 134) {
-        printf("ASD\n");
-    }
 
     for (const auto& linkage : { func_linkage::local_carbon, func_linkage::external_c }) {
         node.call.mangled_name = mangle_func_name(ts, { pair.second.str }, node.call.const_args, node.call_args(), linkage);

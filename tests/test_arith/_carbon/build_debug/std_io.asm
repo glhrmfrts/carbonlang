@@ -9,6 +9,19 @@
 .global cb__Nstd__Nio__Nprintln__Aptr__Topaque
 .global cb__Nstd__Nio__Nprintln__Abool
 .global cb__Nstd__Nio__Nprintln__Anil
+.section .error_array
+    .quad 5
+    .quad 6
+    .quad 7
+    .quad 8
+    .quad 9
+    .quad 9
+    .quad 9
+    .quad 9
+    .quad 9
+    .quad 9
+    .quad 9
+    .quad 9
 .data
     .align 16
     .size .cmp16selector, 16

@@ -1,29 +1,31 @@
-hi
 std::mem - Allocating block of 4096 bytes
 std::mem - Growing block fill to 64 bytes
-carbonc - compiling target: test_variables
+0
+carbonc - compiling target: subtest1
 
 carbonc - compiling module: root
     process_code_unit: ./src/main.cb
 carbonc - compiling module: std/io
-    process_code_unit: ../../stdlib/src/std/io/print.cb
+    process_code_unit: ../../../stdlib/src/std/io/print.cb
 carbonc - compiling module: std/linux
-    process_code_unit: ../../stdlib/src/std/linux/io.cb
-    process_code_unit: ../../stdlib/src/std/linux/mem.cb
-    process_code_unit: ../../stdlib/src/std/linux/open.cb
-    process_code_unit: ../../stdlib/src/std/linux/process.cb
-    process_code_unit: ../../stdlib/src/std/linux/start.cb
-    process_code_unit: ../../stdlib/src/std/linux/stat.cb
+    process_code_unit: ../../../stdlib/src/std/linux/io.cb
+    process_code_unit: ../../../stdlib/src/std/linux/mem.cb
+    process_code_unit: ../../../stdlib/src/std/linux/open.cb
+    process_code_unit: ../../../stdlib/src/std/linux/process.cb
+    process_code_unit: ../../../stdlib/src/std/linux/start.cb
+    process_code_unit: ../../../stdlib/src/std/linux/stat.cb
 carbonc - compiling module: std/linux/syscall
-    process_code_unit: ../../stdlib/src/std/linux/syscall/syscall.cb
+    process_code_unit: ../../../stdlib/src/std/linux/syscall/syscall.cb
 assembly file: std_linux_x86_64_start.s
 carbonc - compiling module: std/mem
-    process_code_unit: ../../stdlib/src/std/mem/arena.cb
-    process_code_unit: ../../stdlib/src/std/mem/mem.cb
+    process_code_unit: ../../../stdlib/src/std/mem/arena.cb
+    process_code_unit: ../../../stdlib/src/std/mem/mem.cb
+    process_code_unit: ../../../stdlib/src/std/mem/slice.cb
 carbonc - compiling module: std/string
-    process_code_unit: ../../stdlib/src/std/string/equals.cb
-    process_code_unit: ../../stdlib/src/std/string/find.cb
-    process_code_unit: ../../stdlib/src/std/string/string.cb
+    process_code_unit: ../../../stdlib/src/std/string/equals.cb
+    process_code_unit: ../../../stdlib/src/std/string/find.cb
+    process_code_unit: ../../../stdlib/src/std/string/string.cb
 carbonc - compiling module: std/system
-    process_code_unit: ../../stdlib/src/std/system/system.cb
+    process_code_unit: ../../../stdlib/src/std/system/system.cb
 carbonc - output: test.out
+true

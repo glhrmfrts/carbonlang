@@ -2,8 +2,8 @@ string #0: ",";
 string #1: "";
 func cb__Nroot__Nmain -> void
     local #0 d: data;
-    local #1 $cbT5: slice__Tpure__Tuint8;
-    local #2 $cbT6: slice__Tpure__Tuint8;
+    local #1 $cbT6: slice__Tpure__Tuint8;
+    local #2 $cbT7: slice__Tpure__Tuint8;
     ir_call cb__Nstd__Nio__Nprintln__Anil 0;
     ir_store L0 0 0 8;
     ir_call cb__Nstd__Nio__Nprint__Aint [L0 . 0];
@@ -18,5 +18,6 @@ func cb__Nroot__Nmain -> void
     ir_load [L2 . 1] 0;
     ir_load_addr L2; (push)
     ir_call cb__Nstd__Nio__Nprintln__Aptr__Tslice__Tpure__Tuint8 POP();
+    ir_call cb__Nstd__Nio__Nprintln__Aint 1304468645;
 endf
 

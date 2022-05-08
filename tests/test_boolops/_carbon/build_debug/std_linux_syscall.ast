@@ -354,6 +354,26 @@ module std/linux/syscall
           decl_list end
         compound_stmt end
       func_decl
+        identifier chdir
+        arg_list
+          var_decl
+            arg_list
+              identifier path
+            arg_list end
+          .type
+            type_expr
+              type_qualifier ptr
+                type_qualifier pure
+                  identifier uint8
+        arg_list end
+        compound_stmt
+          decl_list
+            asm{    mov $0x50, %rax
+    syscall
+}
+          decl_list end
+        compound_stmt end
+      func_decl
         identifier rename
         arg_list
           var_decl

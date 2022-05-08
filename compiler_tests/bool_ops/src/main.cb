@@ -6,6 +6,19 @@ func alloc_slice(type T, size: usize): {[]T, error} {
         return nil, err
     }
 
+/*
+    make_array(type T, { 0, 1, 2, 3, 4 }) -> {array(T), error} // Returns a new array with the specified elements.
+    append(&arr, elem) -> error // Returns any error that ocurred allocating memory for the new elem.
+    insert(&arr, i, elem) -> {T,bool,error}
+    remove(&arr, i) -> {T,bool}
+    nth(&arr, i) -> {&T,bool} // Returns a pointer to the array element and whether the index is valid or not.
+    slice(&arr) -> []T // Returns a view of the array as a slice.
+    free(&arr) -> {} // Release the array memory, but not that of it's elements if they are/contain pointers.
+    arr.ptr // &T Pointer to the array data
+    arr.len // Effective length of the array
+    arr.cap // Capacity of the array buffer
+*/
+
     let result = []T{ cast(&T)buf, size }
     return result, noerr
 }

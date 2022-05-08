@@ -1,6 +1,5 @@
 import std::linux::syscall as syscall
 import std::io
-import std::array
 
 extern(carbon, std::system) {
 
@@ -15,13 +14,13 @@ func exit(code: int) {
     syscall::exit(code)
 }
 
-func process(path: string, args: &pure []string): {int, error} {
+func process(path: []pure uint8, args: [][]pure uint8): {int, error} {
     let child = syscall::fork()
     if (child == 0) {
-        let argv = mem::alloc_slice(type &pure uint8, args.len + 2)
+        let argv, err = mem::alloc_slice(type &pure uint8, args.len + 2)
         argv[0] = path.ptr
         for (i in 0, args.len) {
-            argv[i + 1] = args[i]
+            argv[i + 1] = args[i].ptr
         }
         argv[args.len + 1] = nil
         syscall::execve(path.ptr, argv.ptr, nil)

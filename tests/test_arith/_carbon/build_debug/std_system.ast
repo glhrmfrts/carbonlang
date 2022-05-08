@@ -421,6 +421,20 @@ module std/system
       linkage_specifier end
       linkage_specifier extern
         func_decl
+          identifier chdir
+          arg_list
+            var_decl
+              arg_list
+                identifier path
+              arg_list end
+            .type
+              type_resolver &[]pure uint8
+          arg_list end
+          type_expr
+            identifier $error
+      linkage_specifier end
+      linkage_specifier extern
+        func_decl
           identifier exit
           arg_list
             var_decl
@@ -925,7 +939,7 @@ module std/system
                 .pre_nodes
                   var_decl
                     arg_list
-                      identifier $cbT29
+                      identifier $cbT30
                     arg_list end
                   .value
                     identifier dest
@@ -935,14 +949,14 @@ module std/system
                     identifier value
                     int_literal 10
                     unary &
-                      identifier $cbT29
+                      identifier $cbT30
                   arg_list end
           stmt_list end
           stmt_list
             .pre_nodes
               var_decl
                 arg_list
-                  identifier $cbT30
+                  identifier $cbT31
                 arg_list end
               .value
                 identifier dest
@@ -951,7 +965,7 @@ module std/system
               arg_list
                 identifier fd
                 unary &
-                  identifier $cbT30
+                  identifier $cbT31
               arg_list end
           stmt_list end
         compound_stmt end

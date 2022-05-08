@@ -214,7 +214,7 @@ module std/mem
                 .pre_nodes
                   var_decl
                     arg_list
-                      identifier $cbT21
+                      identifier $cbT22
                     arg_list end
                   .value
                     init_expr
@@ -233,7 +233,7 @@ module std/mem
                       arg_list
                       arg_list end
                     unary &
-                      identifier $cbT21
+                      identifier $cbT22
                   arg_list end
               stmt_list end
               stmt_list
@@ -256,7 +256,7 @@ module std/mem
                 .pre_nodes
                   var_decl
                     arg_list
-                      identifier $cbT22
+                      identifier $cbT23
                     arg_list end
                   .value
                     init_expr
@@ -276,7 +276,7 @@ module std/mem
                       arg_list
                       arg_list end
                     unary &
-                      identifier $cbT22
+                      identifier $cbT23
                   arg_list end
               stmt_list end
               stmt_list
@@ -593,7 +593,7 @@ module std/mem
             .pre_nodes
               var_decl
                 arg_list
-                  identifier $cbT23
+                  identifier $cbT24
                 arg_list end
               .value
                 init_expr
@@ -612,7 +612,7 @@ module std/mem
                   arg_list
                   arg_list end
                 unary &
-                  identifier $cbT23
+                  identifier $cbT24
               arg_list end
           stmt_list end
           stmt_list
@@ -635,7 +635,7 @@ module std/mem
             .pre_nodes
               var_decl
                 arg_list
-                  identifier $cbT24
+                  identifier $cbT25
                 arg_list end
               .value
                 init_expr
@@ -655,7 +655,7 @@ module std/mem
                   arg_list
                   arg_list end
                 unary &
-                  identifier $cbT24
+                  identifier $cbT25
               arg_list end
           stmt_list end
           stmt_list
@@ -825,7 +825,7 @@ module std/mem
                   .pre_nodes
                     var_decl
                       arg_list
-                        identifier $cbT25
+                        identifier $cbT26
                       arg_list end
                     .value
                       init_expr
@@ -844,7 +844,7 @@ module std/mem
                         arg_list
                         arg_list end
                       unary &
-                        identifier $cbT25
+                        identifier $cbT26
                     arg_list end
                 stmt_list end
                 stmt_list
@@ -867,7 +867,7 @@ module std/mem
                   .pre_nodes
                     var_decl
                       arg_list
-                        identifier $cbT26
+                        identifier $cbT27
                       arg_list end
                     .value
                       init_expr
@@ -887,7 +887,7 @@ module std/mem
                         arg_list
                         arg_list end
                       unary &
-                        identifier $cbT26
+                        identifier $cbT27
                     arg_list end
                 stmt_list end
                 stmt_list
@@ -905,4 +905,231 @@ module std/mem
         compound_stmt end
     decl_list end
   code_unit ../../stdlib/src/std/mem/mem.cb end
+  code_unit ../../stdlib/src/std/mem/slice.cb
+    decl_list
+      func_decl
+        identifier alloc_slice
+        arg_list
+                      type_expr
+              identifier T
+          var_decl
+            arg_list
+              identifier size
+            arg_list end
+          .type
+            type_expr
+              identifier usize
+        arg_list end
+        type_expr
+          tuple_type
+            arg_list
+              type_expr
+                slice_type [ ] 
+                  type_expr
+                    identifier T
+              type_expr
+                identifier $error
+            arg_list end
+        compound_stmt
+          decl_list
+            var_decl
+              arg_list
+                identifier buf
+                identifier err
+              arg_list end
+            .value
+              call
+                identifier alloc
+                arg_list
+                  binary *
+                    identifier size
+                    call
+                      identifier sizeof
+                      arg_list
+                        identifier T
+                      arg_list end
+                arg_list end
+          decl_list end
+          stmt_list
+            if{binary  
+                identifier err
+                 compound_stmt
+                stmt_list
+                  return_stmt
+                    init_expr
+                      arg_list
+                        nil_literal
+                        identifier err
+                      arg_list end
+                    init_expr end
+                stmt_list end
+              compound_stmt end}
+          stmt_list end
+          decl_list
+            var_decl
+              arg_list
+                identifier result
+              arg_list end
+            .value
+              init_expr
+                type_expr
+                  slice_type [ ] 
+                    type_expr
+                      identifier T
+                arg_list
+                  cast_expr
+                    type_expr
+                      type_qualifier ptr
+                        identifier T
+                    identifier buf
+                  identifier size
+                arg_list end
+              init_expr end
+          decl_list end
+          stmt_list
+            return_stmt
+              init_expr
+                arg_list
+                  identifier result
+                  
+                arg_list end
+              init_expr end
+          stmt_list end
+        compound_stmt end
+      func_decl
+        identifier free_slice
+        arg_list
+          var_decl
+            arg_list
+              identifier s
+            arg_list end
+        arg_list end
+        compound_stmt
+          stmt_list
+            call
+              identifier free
+              arg_list
+                field_expr
+                  identifier s
+                  identifier ptr
+              arg_list end
+          stmt_list end
+        compound_stmt end
+      func_decl
+        identifier alloc_slice
+        arg_list
+          var_decl
+            arg_list
+              identifier $cb_agg_ret
+            arg_list end
+          .type
+            type_resolver &{[]&pure uint8, error}
+          var_decl
+            arg_list
+              identifier size
+            arg_list end
+          .type
+            type_resolver usize
+        arg_list end
+        type_resolver &{[]&pure uint8, error}
+        compound_stmt
+          decl_list
+            .pre_nodes
+              call
+                identifier alloc
+                arg_list
+                  unary &
+                    identifier $cbT5
+                  binary *
+                    identifier size
+                    int_literal 8
+                arg_list end
+            var_decl
+              arg_list
+                identifier $cbT5
+              arg_list end
+            .value
+              
+            var_decl
+              arg_list
+                identifier buf
+              arg_list end
+            .type
+              type_expr
+                type_resolver &opaque
+            .value
+              field_expr
+                identifier $cbT5
+                identifier first
+            var_decl
+              arg_list
+                identifier err
+              arg_list end
+            .type
+              type_expr
+                type_resolver error
+            .value
+              field_expr
+                identifier $cbT5
+                identifier second
+
+          decl_list end
+          stmt_list
+            if{binary  
+                identifier err
+                int_literal 0 compound_stmt
+                stmt_list
+                  .pre_nodes
+                    binary =
+                      unary @
+                        identifier $cb_agg_ret
+                      init_expr
+                        arg_list
+                          nil_literal
+                          identifier err
+                        arg_list end
+                      init_expr end
+                  return_stmt
+                    identifier $cb_agg_ret
+                stmt_list end
+              compound_stmt end}
+          stmt_list end
+          decl_list
+            var_decl
+              arg_list
+                identifier result
+              arg_list end
+            .value
+              init_expr
+                type_expr
+                  slice_type [ ] 
+                    type_expr
+                      identifier T
+                arg_list
+                  cast_expr
+                    type_expr
+                      type_qualifier ptr
+                        identifier T
+                    identifier buf
+                  identifier size
+                arg_list end
+              init_expr end
+          decl_list end
+          stmt_list
+            .pre_nodes
+              binary =
+                unary @
+                  identifier $cb_agg_ret
+                init_expr
+                  arg_list
+                    identifier result
+                    int_literal 0
+                  arg_list end
+                init_expr end
+            return_stmt
+              identifier $cb_agg_ret
+          stmt_list end
+        compound_stmt end
+    decl_list end
+  code_unit ../../stdlib/src/std/mem/slice.cb end
 module std/mem end

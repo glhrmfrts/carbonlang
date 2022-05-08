@@ -1,4 +1,4 @@
-//Low-level system provided layer.
+// Low-level system provided layer.
 
 error {
     ALLOC_FAILED
@@ -9,6 +9,9 @@ error {
 
     UNKNOWN_ERROR
 }
+
+// Returns the string representation of any error
+extern func error_string(err: error): []pure uint8
 
 // memory.cb
 

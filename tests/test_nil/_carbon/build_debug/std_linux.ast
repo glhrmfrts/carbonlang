@@ -175,6 +175,34 @@ module std/linux
                   int_literal 0
               stmt_list end
             compound_stmt end
+          func_decl
+            identifier chdir
+            arg_list
+              var_decl
+                arg_list
+                  identifier path
+                arg_list end
+              .type
+                type_resolver &[]pure uint8
+            arg_list end
+            type_expr
+              identifier $error
+            compound_stmt
+              stmt_list
+                call
+                  identifier syscall::chdir
+                  arg_list
+                    field_expr
+                      unary @
+                        identifier path
+                      identifier ptr
+                  arg_list end
+              stmt_list end
+              stmt_list
+                return_stmt
+                  int_literal 0
+              stmt_list end
+            compound_stmt end
         decl_list end
       linkage_specifier end
     decl_list end
@@ -803,56 +831,49 @@ module std/linux
                     identifier child
                     int_literal 0 compound_stmt
                     decl_list
+                      .pre_nodes
+                        call
+                          identifier mem::alloc_slice
+                          arg_list
+                            unary &
+                              identifier $cbT1
+                            binary +
+                              field_expr
+                                identifier args
+                                identifier len
+                              cast_expr
+                                type_resolver usize
+                                int_literal 2
+                          arg_list end
                       var_decl
                         arg_list
-                          identifier buf
+                          identifier $cbT1
                         arg_list end
                       .value
-                        cast_expr
-                          type_expr
-                            type_qualifier ptr
-                              type_qualifier pure
-                                identifier uint8
-                          field_expr
-                            .pre_nodes
-                              call
-                                identifier mem::alloc
-                                arg_list
-                                  unary &
-                                    identifier $cbT1
-                                  binary *
-                                    binary +
-                                      field_expr
-                                        unary @
-                                          identifier args
-                                        identifier len
-                                      cast_expr
-                                        type_resolver usize
-                                        int_literal 2
-                                    int_literal 8
-                                arg_list end
-                            identifier $cbT1
-                            identifier first
+                        
                       var_decl
                         arg_list
                           identifier argv
                         arg_list end
+                      .type
+                        type_expr
+                          type_resolver []&pure uint8
                       .value
-                        init_expr
-                          type_expr
-                            slice_type [ ] 
-                              type_expr
-                                type_qualifier ptr
-                                  type_qualifier pure
-                                    identifier uint8
-                          arg_list
-                            identifier buf
-                            field_expr
-                              unary @
-                                identifier args
-                              identifier len
-                          arg_list end
-                        init_expr end
+                        field_expr
+                          identifier $cbT1
+                          identifier first
+                      var_decl
+                        arg_list
+                          identifier err
+                        arg_list end
+                      .type
+                        type_expr
+                          type_resolver error
+                      .value
+                        field_expr
+                          identifier $cbT1
+                          identifier second
+
                     decl_list end
                     stmt_list
                       binary =
@@ -1187,7 +1208,7 @@ module std/linux
                   .pre_nodes
                     var_decl
                       arg_list
-                        identifier $cbT16
+                        identifier $cbT17
                       arg_list end
                     .value
                       init_expr
@@ -1207,7 +1228,7 @@ module std/linux
                         arg_list
                         arg_list end
                       unary &
-                        identifier $cbT16
+                        identifier $cbT17
                     arg_list end
                 stmt_list end
                 stmt_list
@@ -1220,7 +1241,7 @@ module std/linux
             .pre_nodes
               var_decl
                 arg_list
-                  identifier $cbT17
+                  identifier $cbT18
                 arg_list end
               .value
                 init_expr
@@ -1240,7 +1261,7 @@ module std/linux
                   arg_list
                   arg_list end
                 unary &
-                  identifier $cbT17
+                  identifier $cbT18
               arg_list end
           stmt_list end
           stmt_list
@@ -1354,7 +1375,7 @@ module std/linux
             .pre_nodes
               var_decl
                 arg_list
-                  identifier $cbT18
+                  identifier $cbT19
                 arg_list end
               .value
                 init_expr
@@ -1374,7 +1395,7 @@ module std/linux
                   arg_list
                   arg_list end
                 unary &
-                  identifier $cbT18
+                  identifier $cbT19
               arg_list end
           stmt_list end
           stmt_list
@@ -1398,7 +1419,7 @@ module std/linux
             .pre_nodes
               var_decl
                 arg_list
-                  identifier $cbT19
+                  identifier $cbT20
                 arg_list end
               .value
                 init_expr
@@ -1418,7 +1439,7 @@ module std/linux
                   arg_list
                   arg_list end
                 unary &
-                  identifier $cbT19
+                  identifier $cbT20
               arg_list end
           stmt_list end
           decl_list
@@ -1500,7 +1521,7 @@ module std/linux
                   .pre_nodes
                     var_decl
                       arg_list
-                        identifier $cbT20
+                        identifier $cbT21
                       arg_list end
                     .value
                       init_expr
@@ -1519,7 +1540,7 @@ module std/linux
                         arg_list
                         arg_list end
                       unary &
-                        identifier $cbT20
+                        identifier $cbT21
                     arg_list end
                 stmt_list end
               compound_stmt end
@@ -1528,7 +1549,7 @@ module std/linux
             .pre_nodes
               var_decl
                 arg_list
-                  identifier $cbT21
+                  identifier $cbT22
                 arg_list end
               .value
                 init_expr
@@ -1548,7 +1569,7 @@ module std/linux
                   arg_list
                   arg_list end
                 unary &
-                  identifier $cbT21
+                  identifier $cbT22
               arg_list end
           stmt_list end
           stmt_list
@@ -1568,7 +1589,7 @@ module std/linux
             .pre_nodes
               var_decl
                 arg_list
-                  identifier $cbT22
+                  identifier $cbT23
                 arg_list end
               .value
                 init_expr
@@ -1588,7 +1609,7 @@ module std/linux
                   arg_list
                   arg_list end
                 unary &
-                  identifier $cbT22
+                  identifier $cbT23
               arg_list end
           stmt_list end
           decl_list

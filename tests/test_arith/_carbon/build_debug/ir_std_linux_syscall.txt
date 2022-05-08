@@ -79,6 +79,13 @@ func cb__Nstd__Nlinux__Nsyscall__Nmunmap__Aptr__Topaque__Ausize -> void
 ;
 endf
 
+func cb__Nstd__Nlinux__Nsyscall__Nchdir__Aptr__Tpure__Tuint8 -> void
+    arg #0 path: ptr__Tpure__Tuint8;
+    ir_asm     mov $0x50, %rax
+    syscall
+;
+endf
+
 func cb__Nstd__Nlinux__Nsyscall__Nrename__Aptr__Tpure__Tuint8__Aptr__Tpure__Tuint8 -> void
     arg #0 oldname: ptr__Tpure__Tuint8;
     arg #1 newname: ptr__Tpure__Tuint8;

@@ -651,7 +651,7 @@ cb__Nstd__Nsystem__Nprocess__Aptr__Ttuple__Tint__Terror__Aptr__Tslice__Tpure__Tu
  push %rbx
  sub $8,%rsp
  mov %rsp,%rbp
- sub $144,%rsp
+ sub $160,%rsp
 # prolog end
 
  call cb__Nstd__Nlinux__Nsyscall__Nfork
@@ -662,14 +662,14 @@ cb__Nstd__Nsystem__Nprocess__Aptr__Ttuple__Tint__Terror__Aptr__Tslice__Tpure__Tu
 
  mov -4(%rbp),%r10d
  cmp $0,%r10d
- jne cb__Nstd__Nsystem__Nprocess__Aptr__Ttuple__Tint__Terror__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tslice__Tpure__Tuint8$if1071$else
-# ir_jmp_neq L0 0 cb__Nstd__Nsystem__Nprocess__Aptr__Ttuple__Tint__Terror__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tslice__Tpure__Tuint8$if1071$else;
+ jne cb__Nstd__Nsystem__Nprocess__Aptr__Ttuple__Tint__Terror__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tslice__Tpure__Tuint8$if1054$else
+# ir_jmp_neq L0 0 cb__Nstd__Nsystem__Nprocess__Aptr__Ttuple__Tint__Terror__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tslice__Tpure__Tuint8$if1054$else;
 
-cb__Nstd__Nsystem__Nprocess__Aptr__Ttuple__Tint__Terror__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tslice__Tpure__Tuint8$if1071$body:
-# ir_make_label cb__Nstd__Nsystem__Nprocess__Aptr__Ttuple__Tint__Terror__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tslice__Tpure__Tuint8$if1071$body;
+cb__Nstd__Nsystem__Nprocess__Aptr__Ttuple__Tint__Terror__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tslice__Tpure__Tuint8$if1054$body:
+# ir_make_label cb__Nstd__Nsystem__Nprocess__Aptr__Ttuple__Tint__Terror__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tslice__Tpure__Tuint8$if1054$body;
 
- lea -32(%rbp),%rbx
-# ir_load_addr L1; (push)
+ lea -64(%rbp),%rbx
+# ir_load_addr L3; (push)
 
  mov 48(%rbp),%rax
 # ir_deref A2; (push)
@@ -678,35 +678,31 @@ cb__Nstd__Nsystem__Nprocess__Aptr__Ttuple__Tint__Terror__Aptr__Tslice__Tpure__Tu
  add $2,%r10
  mov %r10,%rax
 # ir_add [POP() . 1] 2; (push)
-
- imul $8,%rax
-# ir_mul POP() 8; (push)
 
  mov %rax,%rsi
  mov %rbx,%rdi
- call cb__Nstd__Nmem__Nalloc__Aptr__Ttuple__Tptr__Topaque__Terror__Ausize
-# ir_call cb__Nstd__Nmem__Nalloc__Aptr__Ttuple__Tptr__Topaque__Terror__Ausize POP() POP();
+ call cb__Nstd__Nmem__Nalloc_slice__Cptr__Tpure__Tuint8__Aptr__Ttuple__Tslice__Tptr__Tpure__Tuint8__Terror__Ausize
+# ir_call cb__Nstd__Nmem__Nalloc_slice__Cptr__Tpure__Tuint8__Aptr__Ttuple__Tslice__Tptr__Tpure__Tuint8__Terror__Ausize POP() POP();
 
- mov -32(%rbp),%r10
- mov %r10,-56(%rbp)
-# ir_load L3 [L1 . 0];
+ push %rdi
+ push %rsi
+ lea -32(%rbp),%rdi
+ lea -64(%rbp),%rsi
+ mov $16,%rcx
+ rep movsb
+ pop %rsi
+ pop %rdi
+# ir_copy L2 [L3 . 0] 16;
 
- mov -56(%rbp),%r10
- mov %r10,-48(%rbp)
-# ir_load [L2 . 0] L3;
+ mov -48(%rbp),%r10d
+ mov %r10d,-8(%rbp)
+# ir_load L1 [L3 . 1];
 
- mov 48(%rbp),%rax
-# ir_deref A2; (push)
+ mov -8(%rbp),%edi
+ call cb__Nstd__Nio__Nprintln__Aint
+# ir_call cb__Nstd__Nio__Nprintln__Aint L1;
 
- mov 8(%rax),%r10
- add $2,%r10
- mov %r10,%rax
-# ir_add [POP() . 1] 2; (push)
-
- mov %rax,-40(%rbp)
-# ir_load [L2 . 1] POP();
-
- mov -48(%rbp),%rax
+ mov -32(%rbp),%rax
 # ir_deref [L2 . 0]; (push)
 
  xor %r10,%r10
@@ -721,38 +717,38 @@ cb__Nstd__Nsystem__Nprocess__Aptr__Ttuple__Tint__Terror__Aptr__Tslice__Tpure__Tu
 # ir_load POP() [POP() . 0];
 
  xor %r10d,%r10d
- mov %r10d,-80(%rbp)
+ mov %r10d,-96(%rbp)
 # ir_load [L5 . 0] 0;
 
  mov 48(%rbp),%rax
 # ir_deref A2; (push)
 
  mov 8(%rax),%r10
- mov %r10,-72(%rbp)
+ mov %r10,-88(%rbp)
 # ir_load [L5 . 1] [POP() . 1];
 
- mov -80(%rbp),%r10d
- mov %r10d,-60(%rbp)
+ mov -96(%rbp),%r10d
+ mov %r10d,-68(%rbp)
 # ir_load L4 [L5 . 0];
 
-cb__Nstd__Nsystem__Nprocess__Aptr__Ttuple__Tint__Terror__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tslice__Tpure__Tuint8$f975$cond:
-# ir_make_label cb__Nstd__Nsystem__Nprocess__Aptr__Ttuple__Tint__Terror__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tslice__Tpure__Tuint8$f975$cond;
+cb__Nstd__Nsystem__Nprocess__Aptr__Ttuple__Tint__Terror__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tslice__Tpure__Tuint8$f958$cond:
+# ir_make_label cb__Nstd__Nsystem__Nprocess__Aptr__Ttuple__Tint__Terror__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tslice__Tpure__Tuint8$f958$cond;
 
- mov -60(%rbp),%r10d
+ mov -68(%rbp),%r10d
  mov %r10,%rax
 # ir_cast L4; (push)
 
- cmp -72(%rbp),%rax
- jge cb__Nstd__Nsystem__Nprocess__Aptr__Ttuple__Tint__Terror__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tslice__Tpure__Tuint8$f975$end
-# ir_jmp_gte POP() [L5 . 1] cb__Nstd__Nsystem__Nprocess__Aptr__Ttuple__Tint__Terror__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tslice__Tpure__Tuint8$f975$end;
+ cmp -88(%rbp),%rax
+ jge cb__Nstd__Nsystem__Nprocess__Aptr__Ttuple__Tint__Terror__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tslice__Tpure__Tuint8$f958$end
+# ir_jmp_gte POP() [L5 . 1] cb__Nstd__Nsystem__Nprocess__Aptr__Ttuple__Tint__Terror__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tslice__Tpure__Tuint8$f958$end;
 
-cb__Nstd__Nsystem__Nprocess__Aptr__Ttuple__Tint__Terror__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tslice__Tpure__Tuint8$f975$body:
-# ir_make_label cb__Nstd__Nsystem__Nprocess__Aptr__Ttuple__Tint__Terror__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tslice__Tpure__Tuint8$f975$body;
+cb__Nstd__Nsystem__Nprocess__Aptr__Ttuple__Tint__Terror__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tslice__Tpure__Tuint8$f958$body:
+# ir_make_label cb__Nstd__Nsystem__Nprocess__Aptr__Ttuple__Tint__Terror__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tslice__Tpure__Tuint8$f958$body;
 
- mov -48(%rbp),%rbx
+ mov -32(%rbp),%rbx
 # ir_deref [L2 . 0]; (push)
 
- mov -60(%rbp),%r10d
+ mov -68(%rbp),%r10d
  add $1,%r10d
  mov %r10d,%eax
 # ir_add L4 1; (push)
@@ -768,7 +764,7 @@ cb__Nstd__Nsystem__Nprocess__Aptr__Ttuple__Tint__Terror__Aptr__Tslice__Tpure__Tu
  mov 0(%rax),%rax
 # ir_deref [POP() . 0]; (push)
 
- mov -60(%rbp),%r10d
+ mov -68(%rbp),%r10d
  mov %r10,%r10
  imul $16,%r10
  lea 0(%rax,%r10,1),%rax
@@ -778,21 +774,21 @@ cb__Nstd__Nsystem__Nprocess__Aptr__Ttuple__Tint__Terror__Aptr__Tslice__Tpure__Tu
  mov %r10,(%rbx)
 # ir_load POP() [POP() . 0];
 
- mov -60(%rbp),%r10d
+ mov -68(%rbp),%r10d
  add $1,%r10d
  mov %r10d,%eax
 # ir_add L4 1; (push)
 
- mov %eax,-60(%rbp)
+ mov %eax,-68(%rbp)
 # ir_load L4 POP();
 
- jmp cb__Nstd__Nsystem__Nprocess__Aptr__Ttuple__Tint__Terror__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tslice__Tpure__Tuint8$f975$cond
-# ir_jmp cb__Nstd__Nsystem__Nprocess__Aptr__Ttuple__Tint__Terror__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tslice__Tpure__Tuint8$f975$cond;
+ jmp cb__Nstd__Nsystem__Nprocess__Aptr__Ttuple__Tint__Terror__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tslice__Tpure__Tuint8$f958$cond
+# ir_jmp cb__Nstd__Nsystem__Nprocess__Aptr__Ttuple__Tint__Terror__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tslice__Tpure__Tuint8$f958$cond;
 
-cb__Nstd__Nsystem__Nprocess__Aptr__Ttuple__Tint__Terror__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tslice__Tpure__Tuint8$f975$end:
-# ir_make_label cb__Nstd__Nsystem__Nprocess__Aptr__Ttuple__Tint__Terror__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tslice__Tpure__Tuint8$f975$end;
+cb__Nstd__Nsystem__Nprocess__Aptr__Ttuple__Tint__Terror__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tslice__Tpure__Tuint8$f958$end:
+# ir_make_label cb__Nstd__Nsystem__Nprocess__Aptr__Ttuple__Tint__Terror__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tslice__Tpure__Tuint8$f958$end;
 
- mov -48(%rbp),%rbx
+ mov -32(%rbp),%rbx
 # ir_deref [L2 . 0]; (push)
 
  mov 48(%rbp),%rax
@@ -815,7 +811,7 @@ cb__Nstd__Nsystem__Nprocess__Aptr__Ttuple__Tint__Terror__Aptr__Tslice__Tpure__Tu
 # ir_deref A1; (push)
 
  xor %rdx,%rdx
- mov -48(%rbp),%rsi
+ mov -32(%rbp),%rsi
  mov 0(%rax),%rdi
  call cb__Nstd__Nlinux__Nsyscall__Nexecve__Aptr__Tpure__Tuint8__Aptr__Tptr__Tpure__Tuint8__Aptr__Tptr__Tpure__Tuint8
 # ir_call cb__Nstd__Nlinux__Nsyscall__Nexecve__Aptr__Tpure__Tuint8__Aptr__Tptr__Tpure__Tuint8__Aptr__Tptr__Tpure__Tuint8 [POP() . 0] [L2 . 0] 0;
@@ -824,11 +820,11 @@ cb__Nstd__Nsystem__Nprocess__Aptr__Ttuple__Tint__Terror__Aptr__Tslice__Tpure__Tu
  call cb__Nstd__Nlinux__Nsyscall__Nexit__Aint
 # ir_call cb__Nstd__Nlinux__Nsyscall__Nexit__Aint 0;
 
- jmp cb__Nstd__Nsystem__Nprocess__Aptr__Ttuple__Tint__Terror__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tslice__Tpure__Tuint8$if1071$end
-# ir_jmp cb__Nstd__Nsystem__Nprocess__Aptr__Ttuple__Tint__Terror__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tslice__Tpure__Tuint8$if1071$end;
+ jmp cb__Nstd__Nsystem__Nprocess__Aptr__Ttuple__Tint__Terror__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tslice__Tpure__Tuint8$if1054$end
+# ir_jmp cb__Nstd__Nsystem__Nprocess__Aptr__Ttuple__Tint__Terror__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tslice__Tpure__Tuint8$if1054$end;
 
-cb__Nstd__Nsystem__Nprocess__Aptr__Ttuple__Tint__Terror__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tslice__Tpure__Tuint8$if1071$else:
-# ir_make_label cb__Nstd__Nsystem__Nprocess__Aptr__Ttuple__Tint__Terror__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tslice__Tpure__Tuint8$if1071$else;
+cb__Nstd__Nsystem__Nprocess__Aptr__Ttuple__Tint__Terror__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tslice__Tpure__Tuint8$if1054$else:
+# ir_make_label cb__Nstd__Nsystem__Nprocess__Aptr__Ttuple__Tint__Terror__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tslice__Tpure__Tuint8$if1054$else;
 
  mov $1,%eax
  neg %eax
@@ -836,17 +832,17 @@ cb__Nstd__Nsystem__Nprocess__Aptr__Ttuple__Tint__Terror__Aptr__Tslice__Tpure__Tu
 
  mov -4(%rbp),%r10d
  cmp %eax,%r10d
- je cb__Nstd__Nsystem__Nprocess__Aptr__Ttuple__Tint__Terror__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tslice__Tpure__Tuint8$if1070$else
-# ir_jmp_eq L0 POP() cb__Nstd__Nsystem__Nprocess__Aptr__Ttuple__Tint__Terror__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tslice__Tpure__Tuint8$if1070$else;
+ je cb__Nstd__Nsystem__Nprocess__Aptr__Ttuple__Tint__Terror__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tslice__Tpure__Tuint8$if1053$else
+# ir_jmp_eq L0 POP() cb__Nstd__Nsystem__Nprocess__Aptr__Ttuple__Tint__Terror__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tslice__Tpure__Tuint8$if1053$else;
 
-cb__Nstd__Nsystem__Nprocess__Aptr__Ttuple__Tint__Terror__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tslice__Tpure__Tuint8$if1070$body:
-# ir_make_label cb__Nstd__Nsystem__Nprocess__Aptr__Ttuple__Tint__Terror__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tslice__Tpure__Tuint8$if1070$body;
+cb__Nstd__Nsystem__Nprocess__Aptr__Ttuple__Tint__Terror__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tslice__Tpure__Tuint8$if1053$body:
+# ir_make_label cb__Nstd__Nsystem__Nprocess__Aptr__Ttuple__Tint__Terror__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tslice__Tpure__Tuint8$if1053$body;
 
  xor %r10d,%r10d
- mov %r10d,-84(%rbp)
+ mov %r10d,-100(%rbp)
 # ir_load L6 0;
 
- lea -84(%rbp),%rax
+ lea -100(%rbp),%rax
 # ir_load_addr L6; (push)
 
  xor %rcx,%rcx
@@ -856,32 +852,32 @@ cb__Nstd__Nsystem__Nprocess__Aptr__Ttuple__Tint__Terror__Aptr__Tslice__Tpure__Tu
  call cb__Nstd__Nlinux__Nsyscall__Nwait4__Aint__Aptr__Tint__Aint__Aptr__Topaque
 # ir_call cb__Nstd__Nlinux__Nsyscall__Nwait4__Aint__Aptr__Tint__Aint__Aptr__Topaque L0 POP() 0 0;
 
- mov -84(%rbp),%edi
+ mov -100(%rbp),%edi
  call cb__Nstd__Nsystem__Nwifexited__Aint
 # ir_call cb__Nstd__Nsystem__Nwifexited__Aint L6; (push)
 
  cmp $0,%al
- je cb__Nstd__Nsystem__Nprocess__Aptr__Ttuple__Tint__Terror__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tslice__Tpure__Tuint8$if1052$else
-# ir_jmp_eq POP() 0 cb__Nstd__Nsystem__Nprocess__Aptr__Ttuple__Tint__Terror__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tslice__Tpure__Tuint8$if1052$else;
+ je cb__Nstd__Nsystem__Nprocess__Aptr__Ttuple__Tint__Terror__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tslice__Tpure__Tuint8$if1035$else
+# ir_jmp_eq POP() 0 cb__Nstd__Nsystem__Nprocess__Aptr__Ttuple__Tint__Terror__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tslice__Tpure__Tuint8$if1035$else;
 
-cb__Nstd__Nsystem__Nprocess__Aptr__Ttuple__Tint__Terror__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tslice__Tpure__Tuint8$if1052$body:
-# ir_make_label cb__Nstd__Nsystem__Nprocess__Aptr__Ttuple__Tint__Terror__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tslice__Tpure__Tuint8$if1052$body;
+cb__Nstd__Nsystem__Nprocess__Aptr__Ttuple__Tint__Terror__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tslice__Tpure__Tuint8$if1035$body:
+# ir_make_label cb__Nstd__Nsystem__Nprocess__Aptr__Ttuple__Tint__Terror__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tslice__Tpure__Tuint8$if1035$body;
 
  mov 32(%rbp),%r10
- mov %r10,-96(%rbp)
+ mov %r10,-112(%rbp)
 # ir_load L7 A0;
 
- mov -96(%rbp),%rbx
+ mov -112(%rbp),%rbx
 # ir_deref L7; (push)
 
- mov -84(%rbp),%edi
+ mov -100(%rbp),%edi
  call cb__Nstd__Nsystem__Nwexitstatus__Aint
 # ir_call cb__Nstd__Nsystem__Nwexitstatus__Aint L6; (push)
 
  mov %eax,0(%rbx)
 # ir_load [POP() . 0] POP();
 
- mov -96(%rbp),%rax
+ mov -112(%rbp),%rax
 # ir_deref L7; (push)
 
  xor %r10d,%r10d
@@ -892,38 +888,38 @@ cb__Nstd__Nsystem__Nprocess__Aptr__Ttuple__Tint__Terror__Aptr__Tslice__Tpure__Tu
  jmp cb__Nstd__Nsystem__Nprocess__Aptr__Ttuple__Tint__Terror__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tslice__Tpure__Tuint8$end
 # ir_return A0;
 
- jmp cb__Nstd__Nsystem__Nprocess__Aptr__Ttuple__Tint__Terror__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tslice__Tpure__Tuint8$if1052$end
-# ir_jmp cb__Nstd__Nsystem__Nprocess__Aptr__Ttuple__Tint__Terror__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tslice__Tpure__Tuint8$if1052$end;
+ jmp cb__Nstd__Nsystem__Nprocess__Aptr__Ttuple__Tint__Terror__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tslice__Tpure__Tuint8$if1035$end
+# ir_jmp cb__Nstd__Nsystem__Nprocess__Aptr__Ttuple__Tint__Terror__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tslice__Tpure__Tuint8$if1035$end;
 
-cb__Nstd__Nsystem__Nprocess__Aptr__Ttuple__Tint__Terror__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tslice__Tpure__Tuint8$if1052$else:
-# ir_make_label cb__Nstd__Nsystem__Nprocess__Aptr__Ttuple__Tint__Terror__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tslice__Tpure__Tuint8$if1052$else;
+cb__Nstd__Nsystem__Nprocess__Aptr__Ttuple__Tint__Terror__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tslice__Tpure__Tuint8$if1035$else:
+# ir_make_label cb__Nstd__Nsystem__Nprocess__Aptr__Ttuple__Tint__Terror__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tslice__Tpure__Tuint8$if1035$else;
 
- mov -84(%rbp),%edi
+ mov -100(%rbp),%edi
  call cb__Nstd__Nsystem__Nwifsignaled__Aint
 # ir_call cb__Nstd__Nsystem__Nwifsignaled__Aint L6; (push)
 
  cmp $0,%al
- je cb__Nstd__Nsystem__Nprocess__Aptr__Ttuple__Tint__Terror__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tslice__Tpure__Tuint8$if1051$else
-# ir_jmp_eq POP() 0 cb__Nstd__Nsystem__Nprocess__Aptr__Ttuple__Tint__Terror__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tslice__Tpure__Tuint8$if1051$else;
+ je cb__Nstd__Nsystem__Nprocess__Aptr__Ttuple__Tint__Terror__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tslice__Tpure__Tuint8$if1034$else
+# ir_jmp_eq POP() 0 cb__Nstd__Nsystem__Nprocess__Aptr__Ttuple__Tint__Terror__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tslice__Tpure__Tuint8$if1034$else;
 
-cb__Nstd__Nsystem__Nprocess__Aptr__Ttuple__Tint__Terror__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tslice__Tpure__Tuint8$if1051$body:
-# ir_make_label cb__Nstd__Nsystem__Nprocess__Aptr__Ttuple__Tint__Terror__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tslice__Tpure__Tuint8$if1051$body;
+cb__Nstd__Nsystem__Nprocess__Aptr__Ttuple__Tint__Terror__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tslice__Tpure__Tuint8$if1034$body:
+# ir_make_label cb__Nstd__Nsystem__Nprocess__Aptr__Ttuple__Tint__Terror__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tslice__Tpure__Tuint8$if1034$body;
 
  mov 32(%rbp),%r10
- mov %r10,-104(%rbp)
+ mov %r10,-120(%rbp)
 # ir_load L8 A0;
 
- mov -104(%rbp),%rbx
+ mov -120(%rbp),%rbx
 # ir_deref L8; (push)
 
- mov -84(%rbp),%edi
+ mov -100(%rbp),%edi
  call cb__Nstd__Nsystem__Nwtermsig__Aint
 # ir_call cb__Nstd__Nsystem__Nwtermsig__Aint L6; (push)
 
  mov %eax,0(%rbx)
 # ir_load [POP() . 0] POP();
 
- mov -104(%rbp),%rax
+ mov -120(%rbp),%rax
 # ir_deref L8; (push)
 
  xor %r10d,%r10d
@@ -934,34 +930,34 @@ cb__Nstd__Nsystem__Nprocess__Aptr__Ttuple__Tint__Terror__Aptr__Tslice__Tpure__Tu
  jmp cb__Nstd__Nsystem__Nprocess__Aptr__Ttuple__Tint__Terror__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tslice__Tpure__Tuint8$end
 # ir_return A0;
 
-cb__Nstd__Nsystem__Nprocess__Aptr__Ttuple__Tint__Terror__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tslice__Tpure__Tuint8$if1051$else:
-# ir_make_label cb__Nstd__Nsystem__Nprocess__Aptr__Ttuple__Tint__Terror__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tslice__Tpure__Tuint8$if1051$else;
+cb__Nstd__Nsystem__Nprocess__Aptr__Ttuple__Tint__Terror__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tslice__Tpure__Tuint8$if1034$else:
+# ir_make_label cb__Nstd__Nsystem__Nprocess__Aptr__Ttuple__Tint__Terror__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tslice__Tpure__Tuint8$if1034$else;
 
-cb__Nstd__Nsystem__Nprocess__Aptr__Ttuple__Tint__Terror__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tslice__Tpure__Tuint8$if1052$end:
-# ir_make_label cb__Nstd__Nsystem__Nprocess__Aptr__Ttuple__Tint__Terror__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tslice__Tpure__Tuint8$if1052$end;
+cb__Nstd__Nsystem__Nprocess__Aptr__Ttuple__Tint__Terror__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tslice__Tpure__Tuint8$if1035$end:
+# ir_make_label cb__Nstd__Nsystem__Nprocess__Aptr__Ttuple__Tint__Terror__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tslice__Tpure__Tuint8$if1035$end;
 
  mov $1,%edi
  call cb__Nstd__Nlinux__Nsyscall__Nexit__Aint
 # ir_call cb__Nstd__Nlinux__Nsyscall__Nexit__Aint 1;
 
- jmp cb__Nstd__Nsystem__Nprocess__Aptr__Ttuple__Tint__Terror__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tslice__Tpure__Tuint8$if1070$end
-# ir_jmp cb__Nstd__Nsystem__Nprocess__Aptr__Ttuple__Tint__Terror__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tslice__Tpure__Tuint8$if1070$end;
+ jmp cb__Nstd__Nsystem__Nprocess__Aptr__Ttuple__Tint__Terror__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tslice__Tpure__Tuint8$if1053$end
+# ir_jmp cb__Nstd__Nsystem__Nprocess__Aptr__Ttuple__Tint__Terror__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tslice__Tpure__Tuint8$if1053$end;
 
-cb__Nstd__Nsystem__Nprocess__Aptr__Ttuple__Tint__Terror__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tslice__Tpure__Tuint8$if1070$else:
-# ir_make_label cb__Nstd__Nsystem__Nprocess__Aptr__Ttuple__Tint__Terror__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tslice__Tpure__Tuint8$if1070$else;
+cb__Nstd__Nsystem__Nprocess__Aptr__Ttuple__Tint__Terror__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tslice__Tpure__Tuint8$if1053$else:
+# ir_make_label cb__Nstd__Nsystem__Nprocess__Aptr__Ttuple__Tint__Terror__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tslice__Tpure__Tuint8$if1053$else;
 
  mov 32(%rbp),%r10
- mov %r10,-112(%rbp)
+ mov %r10,-128(%rbp)
 # ir_load L9 A0;
 
- mov -112(%rbp),%rax
+ mov -128(%rbp),%rax
 # ir_deref L9; (push)
 
  xor %r10d,%r10d
  mov %r10d,0(%rax)
 # ir_load [POP() . 0] 0;
 
- mov -112(%rbp),%rbx
+ mov -128(%rbp),%rbx
 # ir_deref L9; (push)
 
  mov -4(%rbp),%edi
@@ -975,14 +971,14 @@ cb__Nstd__Nsystem__Nprocess__Aptr__Ttuple__Tint__Terror__Aptr__Tslice__Tpure__Tu
  jmp cb__Nstd__Nsystem__Nprocess__Aptr__Ttuple__Tint__Terror__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tslice__Tpure__Tuint8$end
 # ir_return A0;
 
-cb__Nstd__Nsystem__Nprocess__Aptr__Ttuple__Tint__Terror__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tslice__Tpure__Tuint8$if1070$end:
-# ir_make_label cb__Nstd__Nsystem__Nprocess__Aptr__Ttuple__Tint__Terror__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tslice__Tpure__Tuint8$if1070$end;
+cb__Nstd__Nsystem__Nprocess__Aptr__Ttuple__Tint__Terror__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tslice__Tpure__Tuint8$if1053$end:
+# ir_make_label cb__Nstd__Nsystem__Nprocess__Aptr__Ttuple__Tint__Terror__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tslice__Tpure__Tuint8$if1053$end;
 
-cb__Nstd__Nsystem__Nprocess__Aptr__Ttuple__Tint__Terror__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tslice__Tpure__Tuint8$if1071$end:
-# ir_make_label cb__Nstd__Nsystem__Nprocess__Aptr__Ttuple__Tint__Terror__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tslice__Tpure__Tuint8$if1071$end;
+cb__Nstd__Nsystem__Nprocess__Aptr__Ttuple__Tint__Terror__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tslice__Tpure__Tuint8$if1054$end:
+# ir_make_label cb__Nstd__Nsystem__Nprocess__Aptr__Ttuple__Tint__Terror__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tslice__Tpure__Tuint8$if1054$end;
 
 cb__Nstd__Nsystem__Nprocess__Aptr__Ttuple__Tint__Terror__Aptr__Tslice__Tpure__Tuint8__Aptr__Tslice__Tslice__Tpure__Tuint8$end:
- add $152,%rsp
+ add $168,%rsp
  pop %rbx
  pop %rbp
  ret
@@ -1085,11 +1081,11 @@ cb__Nstd__Nlinux__NtestAlloc:
 
  mov -28(%rbp),%r10d
  cmp $0,%r10d
- je cb__Nstd__Nlinux__NtestAlloc$if1220$else
-# ir_jmp_eq L2 0 cb__Nstd__Nlinux__NtestAlloc$if1220$else;
+ je cb__Nstd__Nlinux__NtestAlloc$if1191$else
+# ir_jmp_eq L2 0 cb__Nstd__Nlinux__NtestAlloc$if1191$else;
 
-cb__Nstd__Nlinux__NtestAlloc$if1220$body:
-# ir_make_label cb__Nstd__Nlinux__NtestAlloc$if1220$body;
+cb__Nstd__Nlinux__NtestAlloc$if1191$body:
+# ir_make_label cb__Nstd__Nlinux__NtestAlloc$if1191$body;
 
  lea .cbstr0,%rax
 # ir_load_addr STR0; (push)
@@ -1116,8 +1112,8 @@ cb__Nstd__Nlinux__NtestAlloc$if1220$body:
  jmp cb__Nstd__Nlinux__NtestAlloc$end
 # ir_return #0;
 
-cb__Nstd__Nlinux__NtestAlloc$if1220$else:
-# ir_make_label cb__Nstd__Nlinux__NtestAlloc$if1220$else;
+cb__Nstd__Nlinux__NtestAlloc$if1191$else:
+# ir_make_label cb__Nstd__Nlinux__NtestAlloc$if1191$else;
 
  lea .cbstr1,%rax
 # ir_load_addr STR1; (push)
@@ -1199,18 +1195,18 @@ cb__Nstd__Nlinux__NtestMain__Aint:
 
  mov -76(%rbp),%r10d
  cmp $0,%r10d
- je cb__Nstd__Nlinux__NtestMain__Aint$if1283$else
-# ir_jmp_eq L5 0 cb__Nstd__Nlinux__NtestMain__Aint$if1283$else;
+ je cb__Nstd__Nlinux__NtestMain__Aint$if1254$else
+# ir_jmp_eq L5 0 cb__Nstd__Nlinux__NtestMain__Aint$if1254$else;
 
-cb__Nstd__Nlinux__NtestMain__Aint$if1283$body:
-# ir_make_label cb__Nstd__Nlinux__NtestMain__Aint$if1283$body;
+cb__Nstd__Nlinux__NtestMain__Aint$if1254$body:
+# ir_make_label cb__Nstd__Nlinux__NtestMain__Aint$if1254$body;
 
  mov $1,%edi
  call cb__Nstd__Nsystem__Nexit__Aint
 # ir_call cb__Nstd__Nsystem__Nexit__Aint 1;
 
-cb__Nstd__Nlinux__NtestMain__Aint$if1283$else:
-# ir_make_label cb__Nstd__Nlinux__NtestMain__Aint$if1283$else;
+cb__Nstd__Nlinux__NtestMain__Aint$if1254$else:
+# ir_make_label cb__Nstd__Nlinux__NtestMain__Aint$if1254$else;
 
  call cb__Nstd__Nsystem__Nstdout
 # ir_call cb__Nstd__Nsystem__Nstdout; (push)
@@ -1319,16 +1315,16 @@ cb__Nstd__Nlinux__NtestMain__Aint$if1283$else:
  mov %r10d,-148(%rbp)
 # ir_load L10 [L11 . 0];
 
-cb__Nstd__Nlinux__NtestMain__Aint$f1374$cond:
-# ir_make_label cb__Nstd__Nlinux__NtestMain__Aint$f1374$cond;
+cb__Nstd__Nlinux__NtestMain__Aint$f1345$cond:
+# ir_make_label cb__Nstd__Nlinux__NtestMain__Aint$f1345$cond;
 
  mov -148(%rbp),%r10d
  cmp -152(%rbp),%r10d
- jge cb__Nstd__Nlinux__NtestMain__Aint$f1374$end
-# ir_jmp_gte L10 [L11 . 1] cb__Nstd__Nlinux__NtestMain__Aint$f1374$end;
+ jge cb__Nstd__Nlinux__NtestMain__Aint$f1345$end
+# ir_jmp_gte L10 [L11 . 1] cb__Nstd__Nlinux__NtestMain__Aint$f1345$end;
 
-cb__Nstd__Nlinux__NtestMain__Aint$f1374$body:
-# ir_make_label cb__Nstd__Nlinux__NtestMain__Aint$f1374$body;
+cb__Nstd__Nlinux__NtestMain__Aint$f1345$body:
+# ir_make_label cb__Nstd__Nlinux__NtestMain__Aint$f1345$body;
 
  mov -32(%rbp),%rax
 # ir_deref [L1 . 0]; (push)
@@ -1380,11 +1376,11 @@ cb__Nstd__Nlinux__NtestMain__Aint$f1374$body:
  mov %eax,-148(%rbp)
 # ir_load L10 POP();
 
- jmp cb__Nstd__Nlinux__NtestMain__Aint$f1374$cond
-# ir_jmp cb__Nstd__Nlinux__NtestMain__Aint$f1374$cond;
+ jmp cb__Nstd__Nlinux__NtestMain__Aint$f1345$cond
+# ir_jmp cb__Nstd__Nlinux__NtestMain__Aint$f1345$cond;
 
-cb__Nstd__Nlinux__NtestMain__Aint$f1374$end:
-# ir_make_label cb__Nstd__Nlinux__NtestMain__Aint$f1374$end;
+cb__Nstd__Nlinux__NtestMain__Aint$f1345$end:
+# ir_make_label cb__Nstd__Nlinux__NtestMain__Aint$f1345$end;
 
  xor %r10d,%r10d
  mov %r10d,-168(%rbp)
@@ -1398,16 +1394,16 @@ cb__Nstd__Nlinux__NtestMain__Aint$f1374$end:
  mov %r10d,-160(%rbp)
 # ir_load L12 [L13 . 0];
 
-cb__Nstd__Nlinux__NtestMain__Aint$f1401$cond:
-# ir_make_label cb__Nstd__Nlinux__NtestMain__Aint$f1401$cond;
+cb__Nstd__Nlinux__NtestMain__Aint$f1372$cond:
+# ir_make_label cb__Nstd__Nlinux__NtestMain__Aint$f1372$cond;
 
  mov -160(%rbp),%r10d
  cmp -164(%rbp),%r10d
- jge cb__Nstd__Nlinux__NtestMain__Aint$f1401$end
-# ir_jmp_gte L12 [L13 . 1] cb__Nstd__Nlinux__NtestMain__Aint$f1401$end;
+ jge cb__Nstd__Nlinux__NtestMain__Aint$f1372$end
+# ir_jmp_gte L12 [L13 . 1] cb__Nstd__Nlinux__NtestMain__Aint$f1372$end;
 
-cb__Nstd__Nlinux__NtestMain__Aint$f1401$body:
-# ir_make_label cb__Nstd__Nlinux__NtestMain__Aint$f1401$body;
+cb__Nstd__Nlinux__NtestMain__Aint$f1372$body:
+# ir_make_label cb__Nstd__Nlinux__NtestMain__Aint$f1372$body;
 
  call cb__Nstd__Nsystem__Nstdout
  mov %rax,%rbx
@@ -1456,11 +1452,11 @@ cb__Nstd__Nlinux__NtestMain__Aint$f1401$body:
  mov %eax,-160(%rbp)
 # ir_load L12 POP();
 
- jmp cb__Nstd__Nlinux__NtestMain__Aint$f1401$cond
-# ir_jmp cb__Nstd__Nlinux__NtestMain__Aint$f1401$cond;
+ jmp cb__Nstd__Nlinux__NtestMain__Aint$f1372$cond
+# ir_jmp cb__Nstd__Nlinux__NtestMain__Aint$f1372$cond;
 
-cb__Nstd__Nlinux__NtestMain__Aint$f1401$end:
-# ir_make_label cb__Nstd__Nlinux__NtestMain__Aint$f1401$end;
+cb__Nstd__Nlinux__NtestMain__Aint$f1372$end:
+# ir_make_label cb__Nstd__Nlinux__NtestMain__Aint$f1372$end;
 
  lea .cbstr2,%rax
 # ir_load_addr STR2; (push)
@@ -1618,18 +1614,18 @@ cb__Nstd__Nsystem__Nstat__Aptr__Tslice__Tpure__Tuint8__Aptr__TStat:
 # ir_call cb__Nstd__Nlinux__Nsyscall__Nstat__Aptr__Tpure__Tuint8__Aptr__Topaque [POP() . 0] POP(); (push)
 
  cmp $0,%eax
- jge cb__Nstd__Nsystem__Nstat__Aptr__Tslice__Tpure__Tuint8__Aptr__TStat$if1618$else
-# ir_jmp_gte POP() 0 cb__Nstd__Nsystem__Nstat__Aptr__Tslice__Tpure__Tuint8__Aptr__TStat$if1618$else;
+ jge cb__Nstd__Nsystem__Nstat__Aptr__Tslice__Tpure__Tuint8__Aptr__TStat$if1589$else
+# ir_jmp_gte POP() 0 cb__Nstd__Nsystem__Nstat__Aptr__Tslice__Tpure__Tuint8__Aptr__TStat$if1589$else;
 
-cb__Nstd__Nsystem__Nstat__Aptr__Tslice__Tpure__Tuint8__Aptr__TStat$if1618$body:
-# ir_make_label cb__Nstd__Nsystem__Nstat__Aptr__Tslice__Tpure__Tuint8__Aptr__TStat$if1618$body;
+cb__Nstd__Nsystem__Nstat__Aptr__Tslice__Tpure__Tuint8__Aptr__TStat$if1589$body:
+# ir_make_label cb__Nstd__Nsystem__Nstat__Aptr__Tslice__Tpure__Tuint8__Aptr__TStat$if1589$body;
 
  mov $2669138376,%eax
  jmp cb__Nstd__Nsystem__Nstat__Aptr__Tslice__Tpure__Tuint8__Aptr__TStat$end
 # ir_return 2669138376;
 
-cb__Nstd__Nsystem__Nstat__Aptr__Tslice__Tpure__Tuint8__Aptr__TStat$if1618$else:
-# ir_make_label cb__Nstd__Nsystem__Nstat__Aptr__Tslice__Tpure__Tuint8__Aptr__TStat$if1618$else;
+cb__Nstd__Nsystem__Nstat__Aptr__Tslice__Tpure__Tuint8__Aptr__TStat$if1589$else:
+# ir_make_label cb__Nstd__Nsystem__Nstat__Aptr__Tslice__Tpure__Tuint8__Aptr__TStat$if1589$else;
 
  mov 40(%rbp),%rax
 # ir_deref A1; (push)
@@ -1680,18 +1676,18 @@ cb__Nstd__Nsystem__Nstat__Afile_handle__Aptr__TStat:
 # ir_call cb__Nstd__Nlinux__Nsyscall__Nfstat__Aint__Aptr__Topaque POP() POP(); (push)
 
  cmp $0,%eax
- jge cb__Nstd__Nsystem__Nstat__Afile_handle__Aptr__TStat$if1672$else
-# ir_jmp_gte POP() 0 cb__Nstd__Nsystem__Nstat__Afile_handle__Aptr__TStat$if1672$else;
+ jge cb__Nstd__Nsystem__Nstat__Afile_handle__Aptr__TStat$if1643$else
+# ir_jmp_gte POP() 0 cb__Nstd__Nsystem__Nstat__Afile_handle__Aptr__TStat$if1643$else;
 
-cb__Nstd__Nsystem__Nstat__Afile_handle__Aptr__TStat$if1672$body:
-# ir_make_label cb__Nstd__Nsystem__Nstat__Afile_handle__Aptr__TStat$if1672$body;
+cb__Nstd__Nsystem__Nstat__Afile_handle__Aptr__TStat$if1643$body:
+# ir_make_label cb__Nstd__Nsystem__Nstat__Afile_handle__Aptr__TStat$if1643$body;
 
  mov $2669138376,%eax
  jmp cb__Nstd__Nsystem__Nstat__Afile_handle__Aptr__TStat$end
 # ir_return 2669138376;
 
-cb__Nstd__Nsystem__Nstat__Afile_handle__Aptr__TStat$if1672$else:
-# ir_make_label cb__Nstd__Nsystem__Nstat__Afile_handle__Aptr__TStat$if1672$else;
+cb__Nstd__Nsystem__Nstat__Afile_handle__Aptr__TStat$if1643$else:
+# ir_make_label cb__Nstd__Nsystem__Nstat__Afile_handle__Aptr__TStat$if1643$else;
 
  mov 40(%rbp),%rax
 # ir_deref A1; (push)

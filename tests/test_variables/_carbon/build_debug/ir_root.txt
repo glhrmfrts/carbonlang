@@ -10,10 +10,10 @@ func cb__Nroot__Nrun_compiler__Aptr__Tslice__Tpure__Tuint8 -> int
     arg #0 folder: ptr__Tslice__Tpure__Tuint8;
     local #0 argsbuf: array__I10__Tslice__Tpure__Tuint8;
     local #1 args: slice__Tslice__Tpure__Tuint8;
-    local #2 $cbT1: tuple__Tint__Terror;
-    local #3 $cbT6: slice__Tpure__Tuint8;
-    local #4 $cbT7: slice__Tpure__Tuint8;
-    local #5 $cbT8: slice__Tslice__Tpure__Tuint8;
+    local #2 $cbT2: tuple__Tint__Terror;
+    local #3 $cbT7: slice__Tpure__Tuint8;
+    local #4 $cbT8: slice__Tpure__Tuint8;
+    local #5 $cbT9: slice__Tslice__Tpure__Tuint8;
     local #6 temp$receiver$0: ptr__Tslice__Tpure__Tuint8;
     local #7 temp$receiver$1: ptr__Tslice__Tpure__Tuint8;
     local #8 temp$receiver$2: ptr__Tslice__Tpure__Tuint8;
@@ -90,7 +90,7 @@ func cb__Nroot__Nrun_compiler__Aptr__Tslice__Tpure__Tuint8 -> int
 endf
 
 func cb__Nroot__Nmain -> void
-    local #0 $cbT9: slice__Tpure__Tuint8;
+    local #0 $cbT10: slice__Tpure__Tuint8;
     ir_load_addr STR7; (push)
     ir_load [L0 . 0] POP();
     ir_load [L0 . 1] 8;

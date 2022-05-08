@@ -18,19 +18,20 @@ carbonc - running assembler: as _carbon/build_debug/std_linux_x86_64_start.s -o 
 carbonc - compiling module: std/mem
     process_code_unit: ../../stdlib/src/std/mem/arena.cb
     process_code_unit: ../../stdlib/src/std/mem/mem.cb
+    process_code_unit: ../../stdlib/src/std/mem/slice.cb
 carbonc - compiling module: std/string
     process_code_unit: ../../stdlib/src/std/string/equals.cb
     process_code_unit: ../../stdlib/src/std/string/find.cb
     process_code_unit: ../../stdlib/src/std/string/string.cb
 carbonc - compiling module: std/system
     process_code_unit: ../../stdlib/src/std/system/system.cb
-carbonc - parsing time: 354ms
+carbonc - parsing time: 380ms
 
 carbonc - type checking 
-carbonc - type checking time: 92ms
+carbonc - type checking time: 91ms
 
 carbonc - generating IR 
-carbonc - IR generation time: 36ms
+carbonc - IR generation time: 37ms
 
 carbonc - generating assembly 
 carbonc - running assembler: as _carbon/build_debug/root.asm -o _carbon/build_debug/root.o
@@ -40,10 +41,10 @@ carbonc - running assembler: as _carbon/build_debug/std_linux_syscall.asm -o _ca
 carbonc - running assembler: as _carbon/build_debug/std_mem.asm -o _carbon/build_debug/std_mem.o
 carbonc - running assembler: as _carbon/build_debug/std_string.asm -o _carbon/build_debug/std_string.o
 carbonc - running assembler: as _carbon/build_debug/std_system.asm -o _carbon/build_debug/std_system.o
-carbonc - assembly generation time: 229ms
+carbonc - assembly generation time: 234ms
 
 carbonc - running linker command: ld  -e _start -o _carbon/build_debug/test_strings _carbon/build_debug/std_linux_x86_64_start.o _carbon/build_debug/root.o _carbon/build_debug/std_io.o _carbon/build_debug/std_linux.o _carbon/build_debug/std_linux_syscall.o _carbon/build_debug/std_mem.o _carbon/build_debug/std_string.o _carbon/build_debug/std_system.o
 carbonc - output: a.out
 
-carbonc - total lines parsed: 887
-carbonc - total compilation time: 818ms
+carbonc - total lines parsed: 909
+carbonc - total compilation time: 853ms
