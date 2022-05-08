@@ -648,7 +648,7 @@ bool is_assignable_to(type_system& ts, type_id a, type_id b) {
         return true;
     }
 
-    if (ttarget.kind == tsrc.kind && (ttarget.flags & type_flags::is_pure)) {
+    if ((ttarget.flags & type_flags::is_pure) && ttarget.elem_type == tsrc.id) {
         return true;
     }
 
@@ -2768,6 +2768,9 @@ void resolve_call_funcdef(type_system& ts, ast_node& node) {
     auto pair = separate_module_identifier(node.call_func()->id_parts);
 
     separate_call_args(ts, node);
+    if (node.node_id == 134) {
+        printf("ASD\n");
+    }
 
     for (const auto& linkage : { func_linkage::local_carbon, func_linkage::external_c }) {
         node.call.mangled_name = mangle_func_name(ts, { pair.second.str }, node.call.const_args, node.call_args(), linkage);

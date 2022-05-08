@@ -1,7 +1,20 @@
 import module
 
-func alloc_slice(type T, size: usize) {
-    return []T{ nil, size }
+func alloc_slice(type T, size: usize): {[]T, error} {
+    let buf, err = cast(&opaque)nil, noerr
+    if (err != noerr) {
+        return nil, err
+    }
+
+    let result = []T{ cast(&T)buf, size }
+    return result, noerr
+}
+
+func free(p: &opaque) {
+}
+
+func free_slice(s) {
+    free(s.ptr)
 }
 
 extern(C) func carbon_main() : int {
@@ -37,5 +50,12 @@ extern(C) func carbon_main() : int {
         eq = 0
     }
 */
-    let a = alloc_slice(type &pure uint8, 1)
+    let a, err = alloc_slice(type &pure uint8, 1)
+    free_slice(a)
+
+    let b, err = alloc_slice(type &pure int32, 1)
+    free_slice(b)
+
+    //let b, err = alloc_slice(type &pure uint8, 1)
+    //free_slice(b)
 }

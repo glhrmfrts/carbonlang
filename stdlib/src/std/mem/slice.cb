@@ -1,0 +1,13 @@
+func alloc_slice(type T, size: usize): {[]T, error} {
+    let buf, err = mem::alloc(size * sizeof(T))
+    if (err != noerr) {
+        return nil, err
+    }
+
+    let result = []&pure uint8{ cast(&T)buf, size }
+    return result, noerr
+}
+
+func free_slice(s) {
+    free(s.ptr)
+}
