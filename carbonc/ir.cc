@@ -1150,9 +1150,17 @@ void generate_ir_node(ast_node& node) {
     case ast_type::type_expr:
     case ast_type::type_constructor_decl:
     case ast_type::ternary_expr:
-    case ast_type::error_decl:
     case ast_type::c_struct_decl:
     case ast_type::c_struct_field:
+        break;
+    case ast_type::error_decl:
+        for (auto& idnode : node.children) {
+            const_value value = idnode->lvalue.symbol->ctvalue;
+            prog->errors.push_back(ir_error_data{
+                (std::int32_t)std::get<int_type>(value),
+                idnode->id_parts.front()
+            });
+        }
         break;
     case ast_type::module_:
         ts->enter_scope(node);

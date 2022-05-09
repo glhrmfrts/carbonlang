@@ -6,6 +6,8 @@ module root
         identifier std::io
       import_decl
         identifier std::system
+      import_decl
+        identifier std::string
       func_decl
         identifier test_div
         arg_list

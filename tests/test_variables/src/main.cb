@@ -1,5 +1,6 @@
 import std::io
 import std::system
+import std::mem
 
 func run_compiler(folder: []pure uint8): int {
     let argsbuf : [10][]pure uint8
@@ -15,6 +16,9 @@ func run_compiler(folder: []pure uint8): int {
 }
 
 func main() {
+    let a, err = alloc_slice(type int, 10)
+    let b, err = alloc_slice(type int, 20)
+    
     println(run_compiler("subtest1") == 0)
     // println(run_compiler("subtest2") == 1)
 }

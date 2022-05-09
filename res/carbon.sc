@@ -5,39 +5,23 @@ PHDRS {
 }
 ENTRY(_start);
 SECTIONS {
-	. = 0x8000000;
+	. = 0x2000000;
 	.text : {
 		KEEP (*(.text))
 		*(.text.*)
 	} :text
-	. = 0x80000000;
+
+	. = 0x8000000;
+
 	.data : {
 		KEEP (*(.data))
 		*(.data.*)
 	} :data
 
-	.init_array : {
-		PROVIDE_HIDDEN (__init_array_start = .);
-		KEEP (*(.init_array))
-		PROVIDE_HIDDEN (__init_array_end = .);
-	} :data
-
-	.fini_array : {
-		PROVIDE_HIDDEN (__fini_array_start = .);
-		KEEP (*(.fini_array))
-		PROVIDE_HIDDEN (__fini_array_end = .);
-	} :data
-
-	.test_array : {
-		PROVIDE_HIDDEN (__test_array_start = .);
-		KEEP (*(.test_array))
-		PROVIDE_HIDDEN (__test_array_end = .);
-	} :data
-
     .error_array : {
-		PROVIDE (__error_array_start = .);
+		PROVIDE_HIDDEN (__error_array_start = .);
 		KEEP (*(.error_array))
-		PROVIDE (__error_array_end = .);
+		PROVIDE_HIDDEN (__error_array_end = .);
 	} :data
 
 	.bss : {

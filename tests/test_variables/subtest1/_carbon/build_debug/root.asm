@@ -1,6 +1,6 @@
 .global cb__Nroot__Nmain
 .data
-    .align 16
+    .balign 16
     .size .cmp16selector, 16
 .cmp16selector:
     .byte 0x0
@@ -21,7 +21,7 @@
     .byte 0x80
 .section .rodata
 .cbstr0:
-    .string "Hello world"
+    .asciz "Hello world"
 .text
 cb__Nroot__Nmain:
 # func main(): {}
@@ -30,7 +30,7 @@ cb__Nroot__Nmain:
  sub $32,%rsp
 # prolog end
 
- lea .cbstr0,%rax
+ lea .cbstr0(%rip),%rax
 # ir_load_addr STR0; (push)
 
  mov %rax,-16(%rbp)

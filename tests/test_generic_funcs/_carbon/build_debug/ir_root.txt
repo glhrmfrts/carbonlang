@@ -1,0 +1,35 @@
+func cb__Nroot__Nmain -> void
+    local #0 a: uint8;
+    local #1 b: uint16;
+    local #2 c: uint32;
+    local #3 d: uint64;
+    ir_load L0 0;
+    ir_load L1 0;
+    ir_load L2 0;
+    ir_load L3 0;
+    ir_call cb__Nroot__Nprintsize__Auint8 L0;
+    ir_call cb__Nroot__Nprintsize__Auint16 L1;
+    ir_call cb__Nroot__Nprintsize__Auint32 L2;
+    ir_call cb__Nroot__Nprintsize__Auint64 L3;
+endf
+
+func cb__Nroot__Nprintsize__Auint8 -> void
+    arg #0 i: uint8;
+    ir_call cb__Nstd__Nio__Nprintln__Ausize 1;
+endf
+
+func cb__Nroot__Nprintsize__Auint16 -> void
+    arg #0 i: uint16;
+    ir_call cb__Nstd__Nio__Nprintln__Ausize 2;
+endf
+
+func cb__Nroot__Nprintsize__Auint32 -> void
+    arg #0 i: uint32;
+    ir_call cb__Nstd__Nio__Nprintln__Ausize 4;
+endf
+
+func cb__Nroot__Nprintsize__Auint64 -> void
+    arg #0 i: uint64;
+    ir_call cb__Nstd__Nio__Nprintln__Ausize 8;
+endf
+

@@ -1,7 +1,7 @@
 .global cb__Nroot__Nrun_compiler__Aptr__Tslice__Tpure__Tuint8
 .global cb__Nroot__Nmain
 .data
-    .align 16
+    .balign 16
     .size .cmp16selector, 16
 .cmp16selector:
     .byte 0x0
@@ -22,21 +22,21 @@
     .byte 0x80
 .section .rodata
 .cbstr0:
-    .string "-p"
+    .asciz "-p"
 .cbstr1:
-    .string "../../.."
+    .asciz "../../.."
 .cbstr2:
-    .string "-I"
+    .asciz "-I"
 .cbstr3:
-    .string "stdlib"
+    .asciz "stdlib"
 .cbstr4:
-    .string "-o"
+    .asciz "-o"
 .cbstr5:
-    .string "test.out"
+    .asciz "test.out"
 .cbstr6:
-    .string "/usr/bin/carbonc"
+    .asciz "/usr/bin/carbonc"
 .cbstr7:
-    .string "subtest1"
+    .asciz "subtest1"
 .text
 cb__Nroot__Nrun_compiler__Aptr__Tslice__Tpure__Tuint8:
 # func run_compiler([]pure uint8): int
@@ -86,7 +86,7 @@ cb__Nroot__Nrun_compiler__Aptr__Tslice__Tpure__Tuint8:
  mov -248(%rbp),%rbx
 # ir_deref L6; (push)
 
- lea .cbstr0,%rax
+ lea .cbstr0(%rip),%rax
 # ir_load_addr STR0; (push)
 
  mov %rax,0(%rbx)
@@ -114,7 +114,7 @@ cb__Nroot__Nrun_compiler__Aptr__Tslice__Tpure__Tuint8:
  mov -256(%rbp),%rbx
 # ir_deref L7; (push)
 
- lea .cbstr1,%rax
+ lea .cbstr1(%rip),%rax
 # ir_load_addr STR1; (push)
 
  mov %rax,0(%rbx)
@@ -142,7 +142,7 @@ cb__Nroot__Nrun_compiler__Aptr__Tslice__Tpure__Tuint8:
  mov -264(%rbp),%rbx
 # ir_deref L8; (push)
 
- lea .cbstr2,%rax
+ lea .cbstr2(%rip),%rax
 # ir_load_addr STR2; (push)
 
  mov %rax,0(%rbx)
@@ -170,7 +170,7 @@ cb__Nroot__Nrun_compiler__Aptr__Tslice__Tpure__Tuint8:
  mov -272(%rbp),%rbx
 # ir_deref L9; (push)
 
- lea .cbstr3,%rax
+ lea .cbstr3(%rip),%rax
 # ir_load_addr STR3; (push)
 
  mov %rax,0(%rbx)
@@ -198,7 +198,7 @@ cb__Nroot__Nrun_compiler__Aptr__Tslice__Tpure__Tuint8:
  mov -280(%rbp),%rbx
 # ir_deref L10; (push)
 
- lea .cbstr4,%rax
+ lea .cbstr4(%rip),%rax
 # ir_load_addr STR4; (push)
 
  mov %rax,0(%rbx)
@@ -226,7 +226,7 @@ cb__Nroot__Nrun_compiler__Aptr__Tslice__Tpure__Tuint8:
  mov -288(%rbp),%rbx
 # ir_deref L11; (push)
 
- lea .cbstr5,%rax
+ lea .cbstr5(%rip),%rax
 # ir_load_addr STR5; (push)
 
  mov %rax,0(%rbx)
@@ -261,7 +261,7 @@ cb__Nroot__Nrun_compiler__Aptr__Tslice__Tpure__Tuint8:
 
 # ir_noop POP();
 
- lea .cbstr6,%rax
+ lea .cbstr6(%rip),%rax
 # ir_load_addr STR6; (push)
 
  mov %rax,-224(%rbp)
@@ -311,21 +311,65 @@ cb__Nroot__Nmain:
 # func main(): {}
  push %rbp
  mov %rsp,%rbp
- sub $32,%rsp
+ sub $144,%rsp
 # prolog end
 
- lea .cbstr7,%rax
+ lea -32(%rbp),%rax
+# ir_load_addr L0; (push)
+
+ mov $10,%esi
+ mov %rax,%rdi
+ call cb__Nstd__Nmem__Nalloc_slice__Cint__Aptr__Ttuple__Tslice__Tint__Terror__Ausize
+# ir_call cb__Nstd__Nmem__Nalloc_slice__Cint__Aptr__Ttuple__Tslice__Tint__Terror__Ausize POP() 10;
+
+ lea -96(%rbp),%rax
+# ir_load_addr L3; (push)
+
+ mov $20,%esi
+ mov %rax,%rdi
+ call cb__Nstd__Nmem__Nalloc_slice__Cint__Aptr__Ttuple__Tslice__Tint__Terror__Ausize
+# ir_call cb__Nstd__Nmem__Nalloc_slice__Cint__Aptr__Ttuple__Tslice__Tint__Terror__Ausize POP() 20;
+
+ push %rdi
+ push %rsi
+ lea -112(%rbp),%rdi
+ lea -96(%rbp),%rsi
+ mov $16,%rcx
+ rep movsb
+ pop %rsi
+ pop %rdi
+# ir_copy L4 [L3 . 0] 16;
+
+ mov -80(%rbp),%r10d
+ mov %r10d,-52(%rbp)
+# ir_load L2 [L3 . 1];
+
+ push %rdi
+ push %rsi
+ lea -48(%rbp),%rdi
+ lea -32(%rbp),%rsi
+ mov $16,%rcx
+ rep movsb
+ pop %rsi
+ pop %rdi
+# ir_copy L1 [L0 . 0] 16;
+
+ mov -16(%rbp),%r10d
+ mov %r10d,-52(%rbp)
+# ir_load L2 [L0 . 1];
+
+ lea .cbstr7(%rip),%rax
 # ir_load_addr STR7; (push)
 
- mov %rax,-16(%rbp)
-# ir_load [L0 . 0] POP();
+ mov %rax,-128(%rbp)
+# ir_load [L5 . 0] POP();
 
  mov $8,%r10d
- mov %r10,-8(%rbp)
-# ir_load [L0 . 1] 8;
+ mov %r10,-120(%rbp)
+# ir_load [L5 . 1] 8;
 
- lea -16(%rbp),%rax
-# ir_load_addr L0; (push)
+ lea -128(%rbp),%rax
+# ir_load_addr L5; (push)
 
  mov %rax,%rdi
  call cb__Nroot__Nrun_compiler__Aptr__Tslice__Tpure__Tuint8
@@ -340,7 +384,7 @@ cb__Nroot__Nmain:
 # ir_call cb__Nstd__Nio__Nprintln__Abool POP();
 
 cb__Nroot__Nmain$end:
- add $32,%rsp
+ add $144,%rsp
  pop %rbp
  ret
 

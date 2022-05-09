@@ -1,5 +1,6 @@
 import std::io
 import std::system
+import std::string
 
 func test_div(a, b) {
     return a / b

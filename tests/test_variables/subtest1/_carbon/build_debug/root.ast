@@ -13,7 +13,7 @@ module root
             .pre_nodes
               var_decl
                 arg_list
-                  identifier $cbT6
+                  identifier $cbT7
                 arg_list end
               .value
                 init_expr
@@ -28,7 +28,7 @@ module root
               identifier println
               arg_list
                 unary &
-                  identifier $cbT6
+                  identifier $cbT7
               arg_list end
           stmt_list end
         compound_stmt end

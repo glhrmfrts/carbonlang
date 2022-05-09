@@ -179,6 +179,11 @@ struct ir_func {
     int index = 0;
 };
 
+struct ir_error_data {
+    std::int32_t code;
+    std::string name;
+};
+
 struct ir_node_data {
     std::string bin_self_label;
     std::string bin_target_label;
@@ -197,6 +202,7 @@ struct ir_program {
     std::vector<std::string> strings;
     std::vector<ir_global_data> globals;
     std::vector<ir_func> funcs;
+    std::vector<ir_error_data> errors;
 };
 
 int ref_opstack_consumption(const ir_ref& ref);

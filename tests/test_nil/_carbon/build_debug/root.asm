@@ -1,6 +1,6 @@
 .global cb__Nroot__Nmain
 .data
-    .align 16
+    .balign 16
     .size .cmp16selector, 16
 .cmp16selector:
     .byte 0x0
@@ -21,9 +21,9 @@
     .byte 0x80
 .section .rodata
 .cbstr0:
-    .string ","
+    .asciz ","
 .cbstr1:
-    .string ""
+    .asciz ""
 .text
 cb__Nroot__Nmain:
 # func main(): {}
@@ -44,7 +44,7 @@ cb__Nroot__Nmain:
  call cb__Nstd__Nio__Nprint__Aint
 # ir_call cb__Nstd__Nio__Nprint__Aint [L0 . 0];
 
- lea .cbstr0,%rax
+ lea .cbstr0(%rip),%rax
 # ir_load_addr STR0; (push)
 
  mov %rax,-32(%rbp)
@@ -65,7 +65,7 @@ cb__Nroot__Nmain:
  call cb__Nstd__Nio__Nprint__Aint
 # ir_call cb__Nstd__Nio__Nprint__Aint [L0 . 1];
 
- lea .cbstr1,%rax
+ lea .cbstr1(%rip),%rax
 # ir_load_addr STR1; (push)
 
  mov %rax,-48(%rbp)
@@ -81,10 +81,6 @@ cb__Nroot__Nmain:
  mov %rax,%rdi
  call cb__Nstd__Nio__Nprintln__Aptr__Tslice__Tpure__Tuint8
 # ir_call cb__Nstd__Nio__Nprintln__Aptr__Tslice__Tpure__Tuint8 POP();
-
- mov $1304468645,%edi
- call cb__Nstd__Nio__Nprintln__Aint
-# ir_call cb__Nstd__Nio__Nprintln__Aint 1304468645;
 
 cb__Nroot__Nmain$end:
  add $64,%rsp

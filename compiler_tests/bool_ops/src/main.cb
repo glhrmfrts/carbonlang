@@ -1,5 +1,24 @@
 import module
 
+error {
+    ALLOC_FAILED
+
+    PATH_NOT_FOUND
+
+    INVALID_HANDLE
+
+    UNKNOWN_ERROR
+}
+
+extern(C) let __error_array_start : uint8
+extern(C) let __error_array_end : uint8
+
+extern(carbon, std::system)
+func error_string(err: error): []pure uint8 {
+    let addr_begin = &__error_array_start
+    let addr_end = &__error_array_end
+}
+
 func alloc_slice(type T, size: usize): {[]T, error} {
     let buf, err = cast(&opaque)nil, noerr
     if (err != noerr) {

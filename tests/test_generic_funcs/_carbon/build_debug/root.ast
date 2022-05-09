@@ -1,0 +1,178 @@
+module root
+
+  code_unit ./src/main.cb
+    decl_list
+      import_decl
+        identifier std::io
+      func_decl
+        identifier printsize
+        arg_list
+          var_decl
+            arg_list
+              identifier i
+            arg_list end
+        arg_list end
+        compound_stmt
+          stmt_list
+            call
+              identifier println
+              arg_list
+                call
+                  identifier sizeof
+                  arg_list
+                    identifier i
+                  arg_list end
+              arg_list end
+          stmt_list end
+        compound_stmt end
+      func_decl
+        identifier main
+        arg_list
+        arg_list end
+        compound_stmt
+          decl_list
+            var_decl
+              arg_list
+                identifier a
+              arg_list end
+            .type
+              type_expr
+                identifier uint8
+            .value
+              int_literal 0
+            var_decl
+              arg_list
+                identifier b
+              arg_list end
+            .type
+              type_expr
+                identifier uint16
+            .value
+              int_literal 0
+            var_decl
+              arg_list
+                identifier c
+              arg_list end
+            .type
+              type_expr
+                identifier uint32
+            .value
+              int_literal 0
+            var_decl
+              arg_list
+                identifier d
+              arg_list end
+            .type
+              type_expr
+                identifier uint64
+            .value
+              int_literal 0
+          decl_list end
+          stmt_list
+            call
+              identifier printsize
+              arg_list
+                identifier a
+              arg_list end
+          stmt_list end
+          stmt_list
+            call
+              identifier printsize
+              arg_list
+                identifier b
+              arg_list end
+          stmt_list end
+          stmt_list
+            call
+              identifier printsize
+              arg_list
+                identifier c
+              arg_list end
+          stmt_list end
+          stmt_list
+            call
+              identifier printsize
+              arg_list
+                identifier d
+              arg_list end
+          stmt_list end
+        compound_stmt end
+      func_decl
+        identifier printsize
+        arg_list
+          var_decl
+            arg_list
+              identifier i
+            arg_list end
+          .type
+            type_resolver uint8
+        arg_list end
+        compound_stmt
+          stmt_list
+            call
+              identifier println
+              arg_list
+                int_literal 1
+              arg_list end
+          stmt_list end
+        compound_stmt end
+      func_decl
+        identifier printsize
+        arg_list
+          var_decl
+            arg_list
+              identifier i
+            arg_list end
+          .type
+            type_resolver uint16
+        arg_list end
+        compound_stmt
+          stmt_list
+            call
+              identifier println
+              arg_list
+                int_literal 2
+              arg_list end
+          stmt_list end
+        compound_stmt end
+      func_decl
+        identifier printsize
+        arg_list
+          var_decl
+            arg_list
+              identifier i
+            arg_list end
+          .type
+            type_resolver uint32
+        arg_list end
+        compound_stmt
+          stmt_list
+            call
+              identifier println
+              arg_list
+                int_literal 4
+              arg_list end
+          stmt_list end
+        compound_stmt end
+      func_decl
+        identifier printsize
+        arg_list
+          var_decl
+            arg_list
+              identifier i
+            arg_list end
+          .type
+            type_resolver uint64
+        arg_list end
+        compound_stmt
+          stmt_list
+            call
+              identifier println
+              arg_list
+                int_literal 8
+              arg_list end
+          stmt_list end
+        compound_stmt end
+    decl_list end
+  code_unit ./src/main.cb end
+module root end

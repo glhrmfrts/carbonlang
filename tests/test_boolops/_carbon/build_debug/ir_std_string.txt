@@ -1,4 +1,26 @@
 string #0: "";
+func cb__Nstd__Nstring__Nfrom_cstring__Aptr__Tslice__Tpure__Tuint8__Aptr__Tpure__Tuint8 -> ptr__Tslice__Tpure__Tuint8
+    arg #0 $cb_agg_ret: ptr__Tslice__Tpure__Tuint8;
+    arg #1 ptr: ptr__Tpure__Tuint8;
+    local #0 result: slice__Tpure__Tuint8;
+    ir_load [L0 . 0] A1;
+    ir_load [L0 . 1] 0;
+    ir_make_label cb__Nstd__Nstring__Nfrom_cstring__Aptr__Tslice__Tpure__Tuint8__Aptr__Tpure__Tuint8$w3289$cond;
+    ir_deref A1; (push)
+    ir_cast POP(); (push)
+    ir_jmp_eq POP() 0 cb__Nstd__Nstring__Nfrom_cstring__Aptr__Tslice__Tpure__Tuint8__Aptr__Tpure__Tuint8$w3289$end;
+    ir_make_label cb__Nstd__Nstring__Nfrom_cstring__Aptr__Tslice__Tpure__Tuint8__Aptr__Tpure__Tuint8$w3289$body;
+    ir_add A1 1; (push)
+    ir_load A1 POP();
+    ir_add [L0 . 1] 1; (push)
+    ir_load [L0 . 1] POP();
+    ir_jmp cb__Nstd__Nstring__Nfrom_cstring__Aptr__Tslice__Tpure__Tuint8__Aptr__Tpure__Tuint8$w3289$cond;
+    ir_make_label cb__Nstd__Nstring__Nfrom_cstring__Aptr__Tslice__Tpure__Tuint8__Aptr__Tpure__Tuint8$w3289$end;
+    ir_deref A0; (push)
+    ir_copy POP() L0 16;
+    ir_return A0;
+endf
+
 func cb__Nstd__Nstring__Nequals__Aptr__Tstring__Aptr__Tstring -> bool
     arg #0 a: ptr__Tstring;
     arg #1 b: ptr__Tstring;
@@ -6,32 +28,32 @@ func cb__Nstd__Nstring__Nequals__Aptr__Tstring__Aptr__Tstring -> bool
     local #1 $foriter: tuple__Tint__Tusize;
     ir_deref A0; (push)
     ir_deref A1; (push)
-    ir_jmp_eq [POP() . 1] [POP() . 1] cb__Nstd__Nstring__Nequals__Aptr__Tstring__Aptr__Tstring$if2966$else;
-    ir_make_label cb__Nstd__Nstring__Nequals__Aptr__Tstring__Aptr__Tstring$if2966$body;
+    ir_jmp_eq [POP() . 1] [POP() . 1] cb__Nstd__Nstring__Nequals__Aptr__Tstring__Aptr__Tstring$if3333$else;
+    ir_make_label cb__Nstd__Nstring__Nequals__Aptr__Tstring__Aptr__Tstring$if3333$body;
     ir_return 0;
-    ir_make_label cb__Nstd__Nstring__Nequals__Aptr__Tstring__Aptr__Tstring$if2966$else;
+    ir_make_label cb__Nstd__Nstring__Nequals__Aptr__Tstring__Aptr__Tstring$if3333$else;
     ir_load [L1 . 0] 0;
     ir_deref A0; (push)
     ir_load [L1 . 1] [POP() . 1];
     ir_load L0 [L1 . 0];
-    ir_make_label cb__Nstd__Nstring__Nequals__Aptr__Tstring__Aptr__Tstring$f2990$cond;
+    ir_make_label cb__Nstd__Nstring__Nequals__Aptr__Tstring__Aptr__Tstring$f3357$cond;
     ir_cast L0; (push)
-    ir_jmp_gte POP() [L1 . 1] cb__Nstd__Nstring__Nequals__Aptr__Tstring__Aptr__Tstring$f2990$end;
-    ir_make_label cb__Nstd__Nstring__Nequals__Aptr__Tstring__Aptr__Tstring$f2990$body;
+    ir_jmp_gte POP() [L1 . 1] cb__Nstd__Nstring__Nequals__Aptr__Tstring__Aptr__Tstring$f3357$end;
+    ir_make_label cb__Nstd__Nstring__Nequals__Aptr__Tstring__Aptr__Tstring$f3357$body;
     ir_deref A0; (push)
     ir_deref [POP() . 0]; (push)
     ir_index POP() L0; (push)
     ir_deref A1; (push)
     ir_deref [POP() . 0]; (push)
     ir_index POP() L0; (push)
-    ir_jmp_eq POP() POP() cb__Nstd__Nstring__Nequals__Aptr__Tstring__Aptr__Tstring$if2987$else;
-    ir_make_label cb__Nstd__Nstring__Nequals__Aptr__Tstring__Aptr__Tstring$if2987$body;
+    ir_jmp_eq POP() POP() cb__Nstd__Nstring__Nequals__Aptr__Tstring__Aptr__Tstring$if3354$else;
+    ir_make_label cb__Nstd__Nstring__Nequals__Aptr__Tstring__Aptr__Tstring$if3354$body;
     ir_return 0;
-    ir_make_label cb__Nstd__Nstring__Nequals__Aptr__Tstring__Aptr__Tstring$if2987$else;
+    ir_make_label cb__Nstd__Nstring__Nequals__Aptr__Tstring__Aptr__Tstring$if3354$else;
     ir_add L0 1; (push)
     ir_load L0 POP();
-    ir_jmp cb__Nstd__Nstring__Nequals__Aptr__Tstring__Aptr__Tstring$f2990$cond;
-    ir_make_label cb__Nstd__Nstring__Nequals__Aptr__Tstring__Aptr__Tstring$f2990$end;
+    ir_jmp cb__Nstd__Nstring__Nequals__Aptr__Tstring__Aptr__Tstring$f3357$cond;
+    ir_make_label cb__Nstd__Nstring__Nequals__Aptr__Tstring__Aptr__Tstring$f3357$end;
     ir_return 1;
 endf
 
@@ -41,21 +63,21 @@ func cb__Nstd__Nstring__Nfind__Aptr__Ttuple__Tusize__Tbool__Aptr__Tstring__Auint
     arg #2 needle: uint8;
     local #0 i: int;
     local #1 $foriter: tuple__Tint__Tusize;
-    local #2 temp$receiver$11: ptr__Ttuple__Tusize__Tbool;
-    local #3 temp$receiver$12: ptr__Ttuple__Tusize__Tbool;
+    local #2 temp$receiver$13: ptr__Ttuple__Tusize__Tbool;
+    local #3 temp$receiver$14: ptr__Ttuple__Tusize__Tbool;
     ir_load [L1 . 0] 0;
     ir_deref A1; (push)
     ir_load [L1 . 1] [POP() . 1];
     ir_load L0 [L1 . 0];
-    ir_make_label cb__Nstd__Nstring__Nfind__Aptr__Ttuple__Tusize__Tbool__Aptr__Tstring__Auint8$f3044$cond;
+    ir_make_label cb__Nstd__Nstring__Nfind__Aptr__Ttuple__Tusize__Tbool__Aptr__Tstring__Auint8$f3411$cond;
     ir_cast L0; (push)
-    ir_jmp_gte POP() [L1 . 1] cb__Nstd__Nstring__Nfind__Aptr__Ttuple__Tusize__Tbool__Aptr__Tstring__Auint8$f3044$end;
-    ir_make_label cb__Nstd__Nstring__Nfind__Aptr__Ttuple__Tusize__Tbool__Aptr__Tstring__Auint8$f3044$body;
+    ir_jmp_gte POP() [L1 . 1] cb__Nstd__Nstring__Nfind__Aptr__Ttuple__Tusize__Tbool__Aptr__Tstring__Auint8$f3411$end;
+    ir_make_label cb__Nstd__Nstring__Nfind__Aptr__Ttuple__Tusize__Tbool__Aptr__Tstring__Auint8$f3411$body;
     ir_deref A1; (push)
     ir_deref [POP() . 0]; (push)
     ir_index POP() L0; (push)
-    ir_jmp_neq POP() A2 cb__Nstd__Nstring__Nfind__Aptr__Ttuple__Tusize__Tbool__Aptr__Tstring__Auint8$if3041$else;
-    ir_make_label cb__Nstd__Nstring__Nfind__Aptr__Ttuple__Tusize__Tbool__Aptr__Tstring__Auint8$if3041$body;
+    ir_jmp_neq POP() A2 cb__Nstd__Nstring__Nfind__Aptr__Ttuple__Tusize__Tbool__Aptr__Tstring__Auint8$if3408$else;
+    ir_make_label cb__Nstd__Nstring__Nfind__Aptr__Ttuple__Tusize__Tbool__Aptr__Tstring__Auint8$if3408$body;
     ir_load L2 A0;
     ir_deref L2; (push)
     ir_cast L0; (push)
@@ -63,11 +85,11 @@ func cb__Nstd__Nstring__Nfind__Aptr__Ttuple__Tusize__Tbool__Aptr__Tstring__Auint
     ir_deref L2; (push)
     ir_load [POP() . 1] 1;
     ir_return A0;
-    ir_make_label cb__Nstd__Nstring__Nfind__Aptr__Ttuple__Tusize__Tbool__Aptr__Tstring__Auint8$if3041$else;
+    ir_make_label cb__Nstd__Nstring__Nfind__Aptr__Ttuple__Tusize__Tbool__Aptr__Tstring__Auint8$if3408$else;
     ir_add L0 1; (push)
     ir_load L0 POP();
-    ir_jmp cb__Nstd__Nstring__Nfind__Aptr__Ttuple__Tusize__Tbool__Aptr__Tstring__Auint8$f3044$cond;
-    ir_make_label cb__Nstd__Nstring__Nfind__Aptr__Ttuple__Tusize__Tbool__Aptr__Tstring__Auint8$f3044$end;
+    ir_jmp cb__Nstd__Nstring__Nfind__Aptr__Ttuple__Tusize__Tbool__Aptr__Tstring__Auint8$f3411$cond;
+    ir_make_label cb__Nstd__Nstring__Nfind__Aptr__Ttuple__Tusize__Tbool__Aptr__Tstring__Auint8$f3411$end;
     ir_load L3 A0;
     ir_deref L3; (push)
     ir_load [POP() . 0] 0;
@@ -82,30 +104,30 @@ func cb__Nstd__Nstring__Nfind__Aptr__Ttuple__Tusize__Tbool__Aptr__Tstring__Aptr_
     arg #2 needle: ptr__Tstring;
     local #0 i: int;
     local #1 $foriter: tuple__Tint__Tusize;
-    local #2 $cbT34: string;
-    local #3 $cbT33: slice__Tpure__Tuint8;
-    local #4 temp$receiver$13: ptr__Ttuple__Tusize__Tbool;
-    local #5 temp$receiver$14: ptr__Ttuple__Tusize__Tbool;
+    local #2 $cbT39: string;
+    local #3 $cbT38: slice__Tpure__Tuint8;
+    local #4 temp$receiver$15: ptr__Ttuple__Tusize__Tbool;
+    local #5 temp$receiver$16: ptr__Ttuple__Tusize__Tbool;
     ir_load [L1 . 0] 0;
     ir_deref A1; (push)
     ir_load [L1 . 1] [POP() . 1];
     ir_load L0 [L1 . 0];
-    ir_make_label cb__Nstd__Nstring__Nfind__Aptr__Ttuple__Tusize__Tbool__Aptr__Tstring__Aptr__Tstring$f3120$cond;
+    ir_make_label cb__Nstd__Nstring__Nfind__Aptr__Ttuple__Tusize__Tbool__Aptr__Tstring__Aptr__Tstring$f3487$cond;
     ir_cast L0; (push)
-    ir_jmp_gte POP() [L1 . 1] cb__Nstd__Nstring__Nfind__Aptr__Ttuple__Tusize__Tbool__Aptr__Tstring__Aptr__Tstring$f3120$end;
-    ir_make_label cb__Nstd__Nstring__Nfind__Aptr__Ttuple__Tusize__Tbool__Aptr__Tstring__Aptr__Tstring$f3120$body;
+    ir_jmp_gte POP() [L1 . 1] cb__Nstd__Nstring__Nfind__Aptr__Ttuple__Tusize__Tbool__Aptr__Tstring__Aptr__Tstring$f3487$end;
+    ir_make_label cb__Nstd__Nstring__Nfind__Aptr__Ttuple__Tusize__Tbool__Aptr__Tstring__Aptr__Tstring$f3487$body;
     ir_deref A1; (push)
     ir_deref [POP() . 0]; (push)
     ir_index POP() L0; (push)
     ir_deref A2; (push)
     ir_deref [POP() . 0]; (push)
     ir_index POP() 0; (push)
-    ir_jmp_neq POP() POP() cb__Nstd__Nstring__Nfind__Aptr__Ttuple__Tusize__Tbool__Aptr__Tstring__Aptr__Tstring$if3117$else;
+    ir_jmp_neq POP() POP() cb__Nstd__Nstring__Nfind__Aptr__Ttuple__Tusize__Tbool__Aptr__Tstring__Aptr__Tstring$if3484$else;
     ir_cast L0; (push)
     ir_deref A2; (push)
     ir_add POP() [POP() . 1]; (push)
     ir_deref A1; (push)
-    ir_jmp_gte POP() [POP() . 1] cb__Nstd__Nstring__Nfind__Aptr__Ttuple__Tusize__Tbool__Aptr__Tstring__Aptr__Tstring$if3117$else;
+    ir_jmp_gte POP() [POP() . 1] cb__Nstd__Nstring__Nfind__Aptr__Ttuple__Tusize__Tbool__Aptr__Tstring__Aptr__Tstring$if3484$else;
     ir_load_addr STR0; (push)
     ir_load [L3 . 0] POP();
     ir_load [L3 . 1] 0;
@@ -114,8 +136,8 @@ func cb__Nstd__Nstring__Nfind__Aptr__Ttuple__Tusize__Tbool__Aptr__Tstring__Aptr_
     ir_load_addr L3; (push)
     ir_load_addr L2; (push)
     ir_call cb__Nstd__Nstring__Nequals__Aptr__Tstring__Aptr__Tstring POP() POP(); (push)
-    ir_jmp_eq POP() 0 cb__Nstd__Nstring__Nfind__Aptr__Ttuple__Tusize__Tbool__Aptr__Tstring__Aptr__Tstring$if3117$else;
-    ir_make_label cb__Nstd__Nstring__Nfind__Aptr__Ttuple__Tusize__Tbool__Aptr__Tstring__Aptr__Tstring$if3117$body;
+    ir_jmp_eq POP() 0 cb__Nstd__Nstring__Nfind__Aptr__Ttuple__Tusize__Tbool__Aptr__Tstring__Aptr__Tstring$if3484$else;
+    ir_make_label cb__Nstd__Nstring__Nfind__Aptr__Ttuple__Tusize__Tbool__Aptr__Tstring__Aptr__Tstring$if3484$body;
     ir_load L4 A0;
     ir_deref L4; (push)
     ir_cast L0; (push)
@@ -123,11 +145,11 @@ func cb__Nstd__Nstring__Nfind__Aptr__Ttuple__Tusize__Tbool__Aptr__Tstring__Aptr_
     ir_deref L4; (push)
     ir_load [POP() . 1] 1;
     ir_return A0;
-    ir_make_label cb__Nstd__Nstring__Nfind__Aptr__Ttuple__Tusize__Tbool__Aptr__Tstring__Aptr__Tstring$if3117$else;
+    ir_make_label cb__Nstd__Nstring__Nfind__Aptr__Ttuple__Tusize__Tbool__Aptr__Tstring__Aptr__Tstring$if3484$else;
     ir_add L0 1; (push)
     ir_load L0 POP();
-    ir_jmp cb__Nstd__Nstring__Nfind__Aptr__Ttuple__Tusize__Tbool__Aptr__Tstring__Aptr__Tstring$f3120$cond;
-    ir_make_label cb__Nstd__Nstring__Nfind__Aptr__Ttuple__Tusize__Tbool__Aptr__Tstring__Aptr__Tstring$f3120$end;
+    ir_jmp cb__Nstd__Nstring__Nfind__Aptr__Ttuple__Tusize__Tbool__Aptr__Tstring__Aptr__Tstring$f3487$cond;
+    ir_make_label cb__Nstd__Nstring__Nfind__Aptr__Ttuple__Tusize__Tbool__Aptr__Tstring__Aptr__Tstring$f3487$end;
     ir_load L5 A0;
     ir_deref L5; (push)
     ir_load [POP() . 0] 0;

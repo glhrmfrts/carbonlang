@@ -40,7 +40,7 @@ static std::string offset_tostr(const gen_addr& r) {
 
     if (r.base == invalid && std::holds_alternative<gen_data_offset>(r.offset)) {
         result.append(std::get<gen_data_offset>(r.offset).label);
-        //result.append("(%rip)");
+        result.append("(%rip)");
         return result;
     }
 
@@ -77,6 +77,7 @@ static std::string tostr(const gen_destination& d) {
         [](gen_data_offset r) -> std::string {
             std::string result = "";
             result.append(r.label);
+            result.append("(%rip)");
             return result;
         },
         [](gen_addr r) -> std::string {
@@ -93,6 +94,7 @@ static std::string tostr(const gen_operand& d) {
         [](gen_data_offset r) -> std::string {
             std::string result = "";
             result.append(r.label);
+            result.append("(%rip)");
             return result;
         },
         [](gen_addr r) -> std::string {
@@ -115,6 +117,7 @@ static std::string tostr_sized(const gen_destination& d) {
         [](gen_data_offset r) -> std::string {
             std::string result = "";
             result.append(r.label);
+            result.append("(%rip)");
             return result;
         },
         [](gen_addr r) -> std::string {
@@ -131,6 +134,7 @@ static std::string tostr_sized(const gen_operand& d) {
         [](gen_data_offset r) -> std::string {
             std::string result = "";
             result.append(r.label);
+            result.append("(%rip)");
             return result;
         },
         [](gen_addr r) -> std::string {
@@ -210,12 +214,27 @@ struct codegen_x64_linux_gas_emitter : public codegen_x64_emitter {
         out_file << ".section .rodata\n";
     }
 
+    virtual void begin_error_segment() {
+        out_file << ".section .error_array, \"a\"\n";
+    }
+
+    virtual void align(std::size_t bytes) {
+        emitln("    .align %zu", bytes);
+    }
+
+    virtual void add_int32(std::int32_t value) {
+        emitln("    .long %d", value);
+    }
+
+    virtual void add_stringz(std::string_view value) {
+        auto escaped = escape(value);
+        emitln("    .asciz \"%s\"", escaped.c_str());
+    }
+
     virtual void add_string_data(std::string_view label, std::string_view data) {
         // TODO: escape string
         emitln("%s:", label.data());
-
-        auto escaped = escape(data);
-        emitln("    .string \"%s\"", escaped.c_str());
+        add_stringz(data);
     }
 
     virtual void add_global(std::string_view label, type_id type, decl_visibility vis) {
@@ -230,28 +249,28 @@ struct codegen_x64_linux_gas_emitter : public codegen_x64_emitter {
     }
 
     virtual void add_global_int16(std::string_view label, int16_t v) {
-        emitln("    .align 2");
+        emitln("    .balign 2");
         emitln("    .size %s, 2", label.data());
         emitln("%s:", label.data());
         emitln("    .value %d", (int32_t)v);
     }
 
     virtual void add_global_int32(std::string_view label, int32_t v) {
-        emitln("    .align 4");
+        emitln("    .balign 4");
         emitln("    .size %s, 4", label.data());
         emitln("%s:", label.data());
         emitln("    .value %d", (int32_t)v);
     }
 
     virtual void add_global_int64(std::string_view label, int64_t v) {
-        emitln("    .align 8");
+        emitln("    .balign 8");
         emitln("    .size %s, 8", label.data());
         emitln("%s:", label.data());
         emitln("    .value %lld", v);
     }
 
     virtual void add_global_bytes(std::string_view label, const std::vector<std::uint8_t>& bytes) {
-        emitln("    .align 16");
+        emitln("    .balign 16");
         emitln("    .size %s, %zu", label.data(), bytes.size());
         emitln("%s:", label.data());
         for (auto b : bytes) {

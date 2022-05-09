@@ -10,10 +10,10 @@ func cb__Nroot__Nrun_compiler__Aptr__Tslice__Tpure__Tuint8 -> int
     arg #0 folder: ptr__Tslice__Tpure__Tuint8;
     local #0 argsbuf: array__I10__Tslice__Tpure__Tuint8;
     local #1 args: slice__Tslice__Tpure__Tuint8;
-    local #2 $cbT2: tuple__Tint__Terror;
-    local #3 $cbT7: slice__Tpure__Tuint8;
-    local #4 $cbT8: slice__Tpure__Tuint8;
-    local #5 $cbT9: slice__Tslice__Tpure__Tuint8;
+    local #2 $cbT4: tuple__Tint__Terror;
+    local #3 $cbT11: slice__Tpure__Tuint8;
+    local #4 $cbT12: slice__Tpure__Tuint8;
+    local #5 $cbT13: slice__Tslice__Tpure__Tuint8;
     local #6 temp$receiver$0: ptr__Tslice__Tpure__Tuint8;
     local #7 temp$receiver$1: ptr__Tslice__Tpure__Tuint8;
     local #8 temp$receiver$2: ptr__Tslice__Tpure__Tuint8;
@@ -90,11 +90,24 @@ func cb__Nroot__Nrun_compiler__Aptr__Tslice__Tpure__Tuint8 -> int
 endf
 
 func cb__Nroot__Nmain -> void
-    local #0 $cbT10: slice__Tpure__Tuint8;
-    ir_load_addr STR7; (push)
-    ir_load [L0 . 0] POP();
-    ir_load [L0 . 1] 8;
+    local #0 $cbT0: tuple__Tslice__Tint__Terror;
+    local #1 a: slice__Tint;
+    local #2 err: error;
+    local #3 $cbT1: tuple__Tslice__Tint__Terror;
+    local #4 b: slice__Tint;
+    local #5 $cbT14: slice__Tpure__Tuint8;
     ir_load_addr L0; (push)
+    ir_call cb__Nstd__Nmem__Nalloc_slice__Cint__Aptr__Ttuple__Tslice__Tint__Terror__Ausize POP() 10;
+    ir_load_addr L3; (push)
+    ir_call cb__Nstd__Nmem__Nalloc_slice__Cint__Aptr__Ttuple__Tslice__Tint__Terror__Ausize POP() 20;
+    ir_copy L4 [L3 . 0] 16;
+    ir_load L2 [L3 . 1];
+    ir_copy L1 [L0 . 0] 16;
+    ir_load L2 [L0 . 1];
+    ir_load_addr STR7; (push)
+    ir_load [L5 . 0] POP();
+    ir_load [L5 . 1] 8;
+    ir_load_addr L5; (push)
     ir_call cb__Nroot__Nrun_compiler__Aptr__Tslice__Tpure__Tuint8 POP(); (push)
     ir_cmp_eq POP() 0; (push)
     ir_call cb__Nstd__Nio__Nprintln__Abool POP();

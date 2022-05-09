@@ -201,12 +201,29 @@ struct codegen_x64_windows_nasm_emitter : public codegen_x64_emitter {
         out_file << "section .rodata\n";
     }
 
-    virtual void add_string_data(std::string_view label, std::string_view data) {
-        emit("%s: db ", label.data());
-        for (char c : data) {
+    virtual void begin_error_segment() {
+        out_file << "section .error_array\n";
+    }
+
+    virtual void align(std::size_t bytes) {
+        emitln("    align %zu", bytes);
+    }
+
+    virtual void add_int32(std::int32_t value) {
+        emitln("    dd 0x%x", value);
+    }
+
+    virtual void add_stringz(std::string_view value) {
+        emit("    db ");
+        for (char c : value) {
             emit("%d,", (int)c);
         }
         emitln("0");
+    }
+
+    virtual void add_string_data(std::string_view label, std::string_view data) {
+        emit("%s:", label.data());
+        add_stringz(data);
     }
 
     virtual void add_global(std::string_view label, type_id type, decl_visibility vis) {
@@ -313,7 +330,14 @@ struct codegen_x64_windows_nasm_emitter : public codegen_x64_emitter {
     }
 
     virtual void movzx(gen_destination reg, gen_operand src) {
-        emitln(" movzx %s,%s", tostr_sized(reg).c_str(), tostr_sized(src).c_str());
+        std::size_t destsize = get_size(reg);
+        std::size_t fromsize = get_size(src);
+        if (fromsize >= 4) {
+            emitln(" mov %s,%s", tostr_sized(reg).c_str(), tostr_sized(src).c_str());
+        }
+        else {
+            emitln(" movzx %s,%s", tostr_sized(reg).c_str(), tostr_sized(src).c_str());
+        }
     }
 
     virtual void movq(gen_destination reg, gen_operand src) {

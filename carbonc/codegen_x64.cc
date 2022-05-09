@@ -473,6 +473,11 @@ struct generator {
             si++;
         }
 
+        if (prog.errors.size() > 0) { em->begin_error_segment(); }
+        for (const auto& e : prog.errors) {
+            generate_error(e);
+        }
+
         em->begin_code_segment();
         
         for (auto& func : prog.funcs) {
@@ -521,6 +526,12 @@ struct generator {
         else {
             assert(!"generate_global_var: type not handled");
         }
+    }
+
+    void generate_error(const ir_error_data& err) {
+        em->align(16);
+        em->add_int32(err.code);
+        em->add_stringz(err.name);
     }
 
     void generate_func_code(ir_func& func) {

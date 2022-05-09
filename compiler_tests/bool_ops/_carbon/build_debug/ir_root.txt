@@ -1,3 +1,14 @@
+func cb__Nstd__Nsystem__Nerror_string__Aptr__Tslice__Tpure__Tuint8__Aerror -> ptr__Tslice__Tpure__Tuint8
+    arg #0 $cb_agg_ret: ptr__Tslice__Tpure__Tuint8;
+    arg #1 err: error;
+    local #0 addr_begin: ptr__Tuint8;
+    local #1 addr_end: ptr__Tuint8;
+    ir_load_addr ; (push)
+    ir_load L0 POP();
+    ir_load_addr ; (push)
+    ir_load L1 POP();
+endf
+
 func cb__Nroot__Nfree__Aptr__Topaque -> void
     arg #0 p: ptr__Topaque;
 endf
@@ -39,15 +50,15 @@ func cb__Nroot__Nalloc_slice__Cptr__Tpure__Tuint8__Aptr__Ttuple__Tslice__Tptr__T
     ir_load [L0 . 1] 0;
     ir_load L1 [L0 . 0];
     ir_load L2 [L0 . 1];
-    ir_jmp_eq L2 0 cb__Nroot__Nalloc_slice__Cptr__Tpure__Tuint8__Aptr__Ttuple__Tslice__Tptr__Tpure__Tuint8__Terror__Ausize$if164$else;
-    ir_make_label cb__Nroot__Nalloc_slice__Cptr__Tpure__Tuint8__Aptr__Ttuple__Tslice__Tptr__Tpure__Tuint8__Terror__Ausize$if164$body;
+    ir_jmp_eq L2 0 cb__Nroot__Nalloc_slice__Cptr__Tpure__Tuint8__Aptr__Ttuple__Tslice__Tptr__Tpure__Tuint8__Terror__Ausize$if210$else;
+    ir_make_label cb__Nroot__Nalloc_slice__Cptr__Tpure__Tuint8__Aptr__Ttuple__Tslice__Tptr__Tpure__Tuint8__Terror__Ausize$if210$body;
     ir_load L4 A0;
     ir_deref L4; (push)
     ir_store [POP() . 0] 0 0 16;
     ir_deref L4; (push)
     ir_load [POP() . 1] L2;
     ir_return A0;
-    ir_make_label cb__Nroot__Nalloc_slice__Cptr__Tpure__Tuint8__Aptr__Ttuple__Tslice__Tptr__Tpure__Tuint8__Terror__Ausize$if164$else;
+    ir_make_label cb__Nroot__Nalloc_slice__Cptr__Tpure__Tuint8__Aptr__Ttuple__Tslice__Tptr__Tpure__Tuint8__Terror__Ausize$if210$else;
     ir_load [L3 . 0] L1;
     ir_load [L3 . 1] A1;
     ir_load L5 A0;
@@ -77,15 +88,15 @@ func cb__Nroot__Nalloc_slice__Cptr__Tpure__Tint32__Aptr__Ttuple__Tslice__Tptr__T
     ir_load [L0 . 1] 0;
     ir_load L1 [L0 . 0];
     ir_load L2 [L0 . 1];
-    ir_jmp_eq L2 0 cb__Nroot__Nalloc_slice__Cptr__Tpure__Tint32__Aptr__Ttuple__Tslice__Tptr__Tpure__Tint32__Terror__Ausize$if331$else;
-    ir_make_label cb__Nroot__Nalloc_slice__Cptr__Tpure__Tint32__Aptr__Ttuple__Tslice__Tptr__Tpure__Tint32__Terror__Ausize$if331$body;
+    ir_jmp_eq L2 0 cb__Nroot__Nalloc_slice__Cptr__Tpure__Tint32__Aptr__Ttuple__Tslice__Tptr__Tpure__Tint32__Terror__Ausize$if377$else;
+    ir_make_label cb__Nroot__Nalloc_slice__Cptr__Tpure__Tint32__Aptr__Ttuple__Tslice__Tptr__Tpure__Tint32__Terror__Ausize$if377$body;
     ir_load L4 A0;
     ir_deref L4; (push)
     ir_store [POP() . 0] 0 0 16;
     ir_deref L4; (push)
     ir_load [POP() . 1] L2;
     ir_return A0;
-    ir_make_label cb__Nroot__Nalloc_slice__Cptr__Tpure__Tint32__Aptr__Ttuple__Tslice__Tptr__Tpure__Tint32__Terror__Ausize$if331$else;
+    ir_make_label cb__Nroot__Nalloc_slice__Cptr__Tpure__Tint32__Aptr__Ttuple__Tslice__Tptr__Tpure__Tint32__Terror__Ausize$if377$else;
     ir_load [L3 . 0] L1;
     ir_load [L3 . 1] A1;
     ir_load L5 A0;

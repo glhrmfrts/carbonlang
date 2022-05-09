@@ -3,14 +3,16 @@
 .global cb__Nstd__Nio__Nprint__Ausize
 .global cb__Nstd__Nio__Nprint__Abool
 .global cb__Nstd__Nio__Nprint__Anil
+.global cb__Nstd__Nio__Nprint__Aerror
 .global cb__Nstd__Nio__Nprintln__Aptr__Tslice__Tpure__Tuint8
 .global cb__Nstd__Nio__Nprintln__Aint
 .global cb__Nstd__Nio__Nprintln__Ausize
 .global cb__Nstd__Nio__Nprintln__Aptr__Topaque
 .global cb__Nstd__Nio__Nprintln__Abool
 .global cb__Nstd__Nio__Nprintln__Anil
+.global cb__Nstd__Nio__Nprintln__Aerror
 .data
-    .align 16
+    .balign 16
     .size .cmp16selector, 16
 .cmp16selector:
     .byte 0x0
@@ -31,15 +33,15 @@
     .byte 0x80
 .section .rodata
 .cbstr0:
-    .string "true"
+    .asciz "true"
 .cbstr1:
-    .string "false"
+    .asciz "false"
 .cbstr2:
-    .string "nil"
+    .asciz "nil"
 .cbstr3:
-    .string "\n"
+    .asciz "\n"
 .cbstr4:
-    .string ""
+    .asciz ""
 .text
 cb__Nstd__Nio__Nprint__Aptr__Tslice__Tpure__Tuint8:
 # func print([]pure uint8): {}
@@ -139,13 +141,13 @@ cb__Nstd__Nio__Nprint__Abool:
 
  mov 16(%rbp),%r10b
  cmp $0,%r10b
- je cb__Nstd__Nio__Nprint__Abool$if250$else
-# ir_jmp_eq A0 0 cb__Nstd__Nio__Nprint__Abool$if250$else;
+ je cb__Nstd__Nio__Nprint__Abool$if275$else
+# ir_jmp_eq A0 0 cb__Nstd__Nio__Nprint__Abool$if275$else;
 
-cb__Nstd__Nio__Nprint__Abool$if250$body:
-# ir_make_label cb__Nstd__Nio__Nprint__Abool$if250$body;
+cb__Nstd__Nio__Nprint__Abool$if275$body:
+# ir_make_label cb__Nstd__Nio__Nprint__Abool$if275$body;
 
- lea .cbstr0,%rax
+ lea .cbstr0(%rip),%rax
 # ir_load_addr STR0; (push)
 
  mov %rax,-16(%rbp)
@@ -162,13 +164,13 @@ cb__Nstd__Nio__Nprint__Abool$if250$body:
  call cb__Nstd__Nio__Nprint__Aptr__Tslice__Tpure__Tuint8
 # ir_call cb__Nstd__Nio__Nprint__Aptr__Tslice__Tpure__Tuint8 POP();
 
- jmp cb__Nstd__Nio__Nprint__Abool$if250$end
-# ir_jmp cb__Nstd__Nio__Nprint__Abool$if250$end;
+ jmp cb__Nstd__Nio__Nprint__Abool$if275$end
+# ir_jmp cb__Nstd__Nio__Nprint__Abool$if275$end;
 
-cb__Nstd__Nio__Nprint__Abool$if250$else:
-# ir_make_label cb__Nstd__Nio__Nprint__Abool$if250$else;
+cb__Nstd__Nio__Nprint__Abool$if275$else:
+# ir_make_label cb__Nstd__Nio__Nprint__Abool$if275$else;
 
- lea .cbstr1,%rax
+ lea .cbstr1(%rip),%rax
 # ir_load_addr STR1; (push)
 
  mov %rax,-32(%rbp)
@@ -185,8 +187,8 @@ cb__Nstd__Nio__Nprint__Abool$if250$else:
  call cb__Nstd__Nio__Nprint__Aptr__Tslice__Tpure__Tuint8
 # ir_call cb__Nstd__Nio__Nprint__Aptr__Tslice__Tpure__Tuint8 POP();
 
-cb__Nstd__Nio__Nprint__Abool$if250$end:
-# ir_make_label cb__Nstd__Nio__Nprint__Abool$if250$end;
+cb__Nstd__Nio__Nprint__Abool$if275$end:
+# ir_make_label cb__Nstd__Nio__Nprint__Abool$if275$end;
 
 cb__Nstd__Nio__Nprint__Abool$end:
  add $48,%rsp
@@ -202,7 +204,7 @@ cb__Nstd__Nio__Nprint__Anil:
  sub $32,%rsp
 # prolog end
 
- lea .cbstr2,%rax
+ lea .cbstr2(%rip),%rax
 # ir_load_addr STR2; (push)
 
  mov %rax,-16(%rbp)
@@ -221,6 +223,45 @@ cb__Nstd__Nio__Nprint__Anil:
 
 cb__Nstd__Nio__Nprint__Anil$end:
  add $32,%rsp
+ pop %rbp
+ ret
+
+
+cb__Nstd__Nio__Nprint__Aerror:
+# func print(error): {}
+ mov %edi,8(%rsp)
+ push %rbp
+ mov %rsp,%rbp
+ sub $48,%rsp
+# prolog end
+
+ lea -16(%rbp),%rax
+# ir_load_addr L0; (push)
+
+ mov 16(%rbp),%esi
+ mov %rax,%rdi
+ call cb__Nstd__Nsystem__Nerror_string__Aptr__Tslice__Tpure__Tuint8__Aerror
+# ir_call cb__Nstd__Nsystem__Nerror_string__Aptr__Tslice__Tpure__Tuint8__Aerror POP() A0;
+
+ push %rdi
+ push %rsi
+ lea -32(%rbp),%rdi
+ lea -16(%rbp),%rsi
+ mov $16,%rcx
+ rep movsb
+ pop %rsi
+ pop %rdi
+# ir_copy L1 L0 16;
+
+ lea -32(%rbp),%rax
+# ir_load_addr L1; (push)
+
+ mov %rax,%rdi
+ call cb__Nstd__Nio__Nprint__Aptr__Tslice__Tpure__Tuint8
+# ir_call cb__Nstd__Nio__Nprint__Aptr__Tslice__Tpure__Tuint8 POP();
+
+cb__Nstd__Nio__Nprint__Aerror$end:
+ add $48,%rsp
  pop %rbp
  ret
 
@@ -262,7 +303,7 @@ cb__Nstd__Nio__Nprintln__Aptr__Tslice__Tpure__Tuint8:
 
 # ir_noop POP();
 
- lea .cbstr3,%rax
+ lea .cbstr3(%rip),%rax
 # ir_load_addr STR3; (push)
 
  mov %rax,-32(%rbp)
@@ -311,7 +352,7 @@ cb__Nstd__Nio__Nprintln__Aint:
  call cb__Nstd__Nsystem__Nwrite_int__Afile_handle__Aint
 # ir_call cb__Nstd__Nsystem__Nwrite_int__Afile_handle__Aint POP() A0;
 
- lea .cbstr3,%rax
+ lea .cbstr3(%rip),%rax
 # ir_load_addr STR3; (push)
 
  mov %rax,-16(%rbp)
@@ -398,7 +439,7 @@ cb__Nstd__Nio__Nprintln__Abool:
  call cb__Nstd__Nio__Nprint__Abool
 # ir_call cb__Nstd__Nio__Nprint__Abool A0;
 
- lea .cbstr4,%rax
+ lea .cbstr4(%rip),%rax
 # ir_load_addr STR4; (push)
 
  mov %rax,-16(%rbp)
@@ -433,7 +474,7 @@ cb__Nstd__Nio__Nprintln__Anil:
  call cb__Nstd__Nio__Nprint__Anil
 # ir_call cb__Nstd__Nio__Nprint__Anil A0;
 
- lea .cbstr4,%rax
+ lea .cbstr4(%rip),%rax
 # ir_load_addr STR4; (push)
 
  mov %rax,-16(%rbp)
@@ -451,6 +492,41 @@ cb__Nstd__Nio__Nprintln__Anil:
 # ir_call cb__Nstd__Nio__Nprintln__Aptr__Tslice__Tpure__Tuint8 POP();
 
 cb__Nstd__Nio__Nprintln__Anil$end:
+ add $32,%rsp
+ pop %rbp
+ ret
+
+
+cb__Nstd__Nio__Nprintln__Aerror:
+# func println(error): {}
+ mov %edi,8(%rsp)
+ push %rbp
+ mov %rsp,%rbp
+ sub $32,%rsp
+# prolog end
+
+ mov 16(%rbp),%edi
+ call cb__Nstd__Nio__Nprint__Aerror
+# ir_call cb__Nstd__Nio__Nprint__Aerror A0;
+
+ lea .cbstr4(%rip),%rax
+# ir_load_addr STR4; (push)
+
+ mov %rax,-16(%rbp)
+# ir_load [L0 . 0] POP();
+
+ xor %r10d,%r10d
+ mov %r10,-8(%rbp)
+# ir_load [L0 . 1] 0;
+
+ lea -16(%rbp),%rax
+# ir_load_addr L0; (push)
+
+ mov %rax,%rdi
+ call cb__Nstd__Nio__Nprintln__Aptr__Tslice__Tpure__Tuint8
+# ir_call cb__Nstd__Nio__Nprintln__Aptr__Tslice__Tpure__Tuint8 POP();
+
+cb__Nstd__Nio__Nprintln__Aerror$end:
  add $32,%rsp
  pop %rbp
  ret

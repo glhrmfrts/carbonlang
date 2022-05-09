@@ -1,0 +1,16 @@
+import std::io
+
+func printsize(i) {
+    println(sizeof(i))
+}
+
+func main() {
+    let a : uint8
+    let b : uint16
+    let c : uint32
+    let d : uint64
+    printsize(a)
+    printsize(b)
+    printsize(c)
+    printsize(d)
+}

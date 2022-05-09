@@ -1,6 +1,6 @@
 string #0: "Hello world";
 func cb__Nroot__Nmain -> void
-    local #0 $cbT6: slice__Tpure__Tuint8;
+    local #0 $cbT7: slice__Tpure__Tuint8;
     ir_load_addr STR0; (push)
     ir_load [L0 . 0] POP();
     ir_load [L0 . 1] 11;

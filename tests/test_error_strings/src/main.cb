@@ -1,0 +1,10 @@
+import std::io
+import std::system
+
+func main() {
+    println(noerr)
+    println(ALLOC_FAILED)
+    println(PATH_NOT_FOUND)
+    println(INVALID_HANDLE)
+    println(UNKNOWN_ERROR)
+}

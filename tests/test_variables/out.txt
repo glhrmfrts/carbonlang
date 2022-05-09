@@ -1,6 +1,7 @@
 std::mem - Allocating block of 4096 bytes
-std::mem - Growing block fill to 64 bytes
-0
+std::mem - Growing block fill to 48 bytes
+std::mem - Growing block fill to 128 bytes
+std::mem - Growing block fill to 192 bytes
 carbonc - compiling target: subtest1
 
 carbonc - compiling module: root
@@ -8,6 +9,7 @@ carbonc - compiling module: root
 carbonc - compiling module: std/io
     process_code_unit: ../../../stdlib/src/std/io/print.cb
 carbonc - compiling module: std/linux
+    process_code_unit: ../../../stdlib/src/std/linux/error.cb
     process_code_unit: ../../../stdlib/src/std/linux/io.cb
     process_code_unit: ../../../stdlib/src/std/linux/mem.cb
     process_code_unit: ../../../stdlib/src/std/linux/open.cb
@@ -22,6 +24,7 @@ carbonc - compiling module: std/mem
     process_code_unit: ../../../stdlib/src/std/mem/mem.cb
     process_code_unit: ../../../stdlib/src/std/mem/slice.cb
 carbonc - compiling module: std/string
+    process_code_unit: ../../../stdlib/src/std/string/cstring.cb
     process_code_unit: ../../../stdlib/src/std/string/equals.cb
     process_code_unit: ../../../stdlib/src/std/string/find.cb
     process_code_unit: ../../../stdlib/src/std/string/string.cb

@@ -34,6 +34,16 @@ test:
 		carbonc -p ../.. -I stdlib -V -o a.out > compile.txt && \
 		./a.out > out.txt && diff out.txt expected.txt && echo "\033[1;32mtest_strings: OK\033[0m"
 
+	@echo "test_error_strings: ..." && \
+		cd tests/test_error_strings && \
+		carbonc -p ../.. -I stdlib -V -o a.out > compile.txt && \
+		./a.out > out.txt && diff out.txt expected.txt && echo "\033[1;32mtest_error_strings: OK\033[0m"
+
+	@echo "test_generic_funcs: ..." && \
+		cd tests/test_generic_funcs && \
+		carbonc -p ../.. -I stdlib -V -o a.out > compile.txt && \
+		./a.out > out.txt && diff out.txt expected.txt && echo "\033[1;32mtest_generic_funcs: OK\033[0m"
+
 	@echo "test_variables: ..." && \
 		cd tests/test_variables && \
 		carbonc -p ../.. -I stdlib -V -o a.out > compile.txt && \

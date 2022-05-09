@@ -1,0 +1,47 @@
+import std::mem
+import std::string
+import std::io
+
+private const ALIGNMENT : usize = 16
+
+private extern(C) let __error_array_start : uint8
+private extern(C) let __error_array_end : uint8
+
+private func printbytes(ptr: &pure uint8, sz: usize) {
+    for (i in 0,sz) {
+        let b : uint8 = ptr[i]
+        print(cast(int)(b))
+        print(",")
+    }
+    println("")
+}
+
+extern(carbon, std::system)
+func error_string(err: error): []pure uint8 {
+    if (err == noerr) {
+        return "noerr"
+    }
+
+    let addr_begin = cast(uintptr)(cast(&opaque)(&__error_array_start))
+    let addr_end = cast(uintptr)(cast(&opaque)(&__error_array_end))
+    let addr = addr_begin
+
+    //printbytes(cast(&uint8)(addr), addr_end - addr_begin)
+
+    let errcode = cast(int)err
+
+    for (addr < addr_end) {
+        let codeptr = cast(&int32)(cast(&opaque)addr)
+        addr += sizeof(int32)
+
+        let str = from_cstring(cast(&uint8)(cast(&opaque)addr))
+        if (errcode == @codeptr) {
+            return str
+        }
+
+        addr += str.len
+        addr = align(addr, ALIGNMENT)
+    }
+
+    return "Unknown error"
+}

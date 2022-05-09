@@ -285,6 +285,9 @@ std::string run_linker(
         cmd.append(obj_file);
     }
 
+    cmd.append(" -T ");
+    cmd.append(join(p.cb_path, "res/carbon.sc"));
+
     if (p.verbose) {
         std::cout << "carbonc - running linker command: " << cmd << "\n";
     }

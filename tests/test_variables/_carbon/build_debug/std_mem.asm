@@ -4,9 +4,10 @@
 .global cb__Nstd__Nmem__Nmemset__Aptr__Topaque__Auint8__Ausize
 .global cb__Nstd__Nmem__Nalloc__Aptr__Ttuple__Tptr__Topaque__Terror__Ausize
 .global cb__Nstd__Nmem__Nfree__Aptr__Topaque
+.global cb__Nstd__Nmem__Nalloc_slice__Cint__Aptr__Ttuple__Tslice__Tint__Terror__Ausize
 .global cb__Nstd__Nmem__Nalloc_slice__Cptr__Tpure__Tuint8__Aptr__Ttuple__Tslice__Tptr__Tpure__Tuint8__Terror__Ausize
 .data
-    .align 16
+    .balign 16
     .size .cmp16selector, 16
 .cmp16selector:
     .byte 0x0
@@ -29,13 +30,13 @@
     .comm std__mem__last_block,8,8
 .section .rodata
 .cbstr0:
-    .string "std::mem - Growing block fill to "
+    .asciz "std::mem - Growing block fill to "
 .cbstr1:
-    .string " bytes\n"
+    .asciz " bytes\n"
 .cbstr2:
-    .string "std::mem - Allocating block of "
+    .asciz "std::mem - Allocating block of "
 .cbstr3:
-    .string "std::mem - Freeing block of "
+    .asciz "std::mem - Freeing block of "
 .text
 cb__Nstd__Nmem__Nalloc_in_block__Aptr__Tmemory_block__Ausize:
 # func alloc_in_block(&memory_block, usize): &opaque
@@ -93,7 +94,7 @@ cb__Nstd__Nmem__Nalloc_in_block__Aptr__Tmemory_block__Ausize:
  mov %rax,16(%rbx)
 # ir_load [POP() . 2] POP();
 
- lea .cbstr0,%rax
+ lea .cbstr0(%rip),%rax
 # ir_load_addr STR0; (push)
 
  mov %rax,-32(%rbp)
@@ -133,7 +134,7 @@ cb__Nstd__Nmem__Nalloc_in_block__Aptr__Tmemory_block__Ausize:
  call cb__Nstd__Nsystem__Nwrite_int__Afile_handle__Aint
 # ir_call cb__Nstd__Nsystem__Nwrite_int__Afile_handle__Aint POP() POP();
 
- lea .cbstr1,%rax
+ lea .cbstr1(%rip),%rax
 # ir_load_addr STR1; (push)
 
  mov %rax,-48(%rbp)
@@ -249,20 +250,20 @@ cb__Nstd__Nmem__Nalloc__Aptr__Ttuple__Tptr__Topaque__Terror__Ausize:
  mov %rax,-24(%rbp)
 # ir_load L2 POP();
 
- mov std__mem__last_block,%r10
+ mov std__mem__last_block(%rip),%r10
  mov %r10,-8(%rbp)
 # ir_load L0 ;
 
-cb__Nstd__Nmem__Nalloc__Aptr__Ttuple__Tptr__Topaque__Terror__Ausize$w2515$cond:
-# ir_make_label cb__Nstd__Nmem__Nalloc__Aptr__Ttuple__Tptr__Topaque__Terror__Ausize$w2515$cond;
+cb__Nstd__Nmem__Nalloc__Aptr__Ttuple__Tptr__Topaque__Terror__Ausize$w2845$cond:
+# ir_make_label cb__Nstd__Nmem__Nalloc__Aptr__Ttuple__Tptr__Topaque__Terror__Ausize$w2845$cond;
 
  mov -8(%rbp),%r10
  cmp $0,%r10
- je cb__Nstd__Nmem__Nalloc__Aptr__Ttuple__Tptr__Topaque__Terror__Ausize$w2515$end
-# ir_jmp_eq L0 0 cb__Nstd__Nmem__Nalloc__Aptr__Ttuple__Tptr__Topaque__Terror__Ausize$w2515$end;
+ je cb__Nstd__Nmem__Nalloc__Aptr__Ttuple__Tptr__Topaque__Terror__Ausize$w2845$end
+# ir_jmp_eq L0 0 cb__Nstd__Nmem__Nalloc__Aptr__Ttuple__Tptr__Topaque__Terror__Ausize$w2845$end;
 
-cb__Nstd__Nmem__Nalloc__Aptr__Ttuple__Tptr__Topaque__Terror__Ausize$w2515$body:
-# ir_make_label cb__Nstd__Nmem__Nalloc__Aptr__Ttuple__Tptr__Topaque__Terror__Ausize$w2515$body;
+cb__Nstd__Nmem__Nalloc__Aptr__Ttuple__Tptr__Topaque__Terror__Ausize$w2845$body:
+# ir_make_label cb__Nstd__Nmem__Nalloc__Aptr__Ttuple__Tptr__Topaque__Terror__Ausize$w2845$body;
 
  mov -8(%rbp),%rax
 # ir_deref L0; (push)
@@ -276,17 +277,17 @@ cb__Nstd__Nmem__Nalloc__Aptr__Ttuple__Tptr__Topaque__Terror__Ausize$w2515$body:
 # ir_deref L0; (push)
 
  cmp 8(%rax),%rbx
- jge cb__Nstd__Nmem__Nalloc__Aptr__Ttuple__Tptr__Topaque__Terror__Ausize$if2506$else
-# ir_jmp_gte POP() [POP() . 1] cb__Nstd__Nmem__Nalloc__Aptr__Ttuple__Tptr__Topaque__Terror__Ausize$if2506$else;
+ jge cb__Nstd__Nmem__Nalloc__Aptr__Ttuple__Tptr__Topaque__Terror__Ausize$if2836$else
+# ir_jmp_gte POP() [POP() . 1] cb__Nstd__Nmem__Nalloc__Aptr__Ttuple__Tptr__Topaque__Terror__Ausize$if2836$else;
 
-cb__Nstd__Nmem__Nalloc__Aptr__Ttuple__Tptr__Topaque__Terror__Ausize$if2506$body:
-# ir_make_label cb__Nstd__Nmem__Nalloc__Aptr__Ttuple__Tptr__Topaque__Terror__Ausize$if2506$body;
+cb__Nstd__Nmem__Nalloc__Aptr__Ttuple__Tptr__Topaque__Terror__Ausize$if2836$body:
+# ir_make_label cb__Nstd__Nmem__Nalloc__Aptr__Ttuple__Tptr__Topaque__Terror__Ausize$if2836$body;
 
- jmp cb__Nstd__Nmem__Nalloc__Aptr__Ttuple__Tptr__Topaque__Terror__Ausize$w2515$end
-# ir_jmp cb__Nstd__Nmem__Nalloc__Aptr__Ttuple__Tptr__Topaque__Terror__Ausize$w2515$end;
+ jmp cb__Nstd__Nmem__Nalloc__Aptr__Ttuple__Tptr__Topaque__Terror__Ausize$w2845$end
+# ir_jmp cb__Nstd__Nmem__Nalloc__Aptr__Ttuple__Tptr__Topaque__Terror__Ausize$w2845$end;
 
-cb__Nstd__Nmem__Nalloc__Aptr__Ttuple__Tptr__Topaque__Terror__Ausize$if2506$else:
-# ir_make_label cb__Nstd__Nmem__Nalloc__Aptr__Ttuple__Tptr__Topaque__Terror__Ausize$if2506$else;
+cb__Nstd__Nmem__Nalloc__Aptr__Ttuple__Tptr__Topaque__Terror__Ausize$if2836$else:
+# ir_make_label cb__Nstd__Nmem__Nalloc__Aptr__Ttuple__Tptr__Topaque__Terror__Ausize$if2836$else;
 
  mov -8(%rbp),%rax
 # ir_deref L0; (push)
@@ -295,19 +296,19 @@ cb__Nstd__Nmem__Nalloc__Aptr__Ttuple__Tptr__Topaque__Terror__Ausize$if2506$else:
  mov %r10,-8(%rbp)
 # ir_load L0 [POP() . 3];
 
- jmp cb__Nstd__Nmem__Nalloc__Aptr__Ttuple__Tptr__Topaque__Terror__Ausize$w2515$cond
-# ir_jmp cb__Nstd__Nmem__Nalloc__Aptr__Ttuple__Tptr__Topaque__Terror__Ausize$w2515$cond;
+ jmp cb__Nstd__Nmem__Nalloc__Aptr__Ttuple__Tptr__Topaque__Terror__Ausize$w2845$cond
+# ir_jmp cb__Nstd__Nmem__Nalloc__Aptr__Ttuple__Tptr__Topaque__Terror__Ausize$w2845$cond;
 
-cb__Nstd__Nmem__Nalloc__Aptr__Ttuple__Tptr__Topaque__Terror__Ausize$w2515$end:
-# ir_make_label cb__Nstd__Nmem__Nalloc__Aptr__Ttuple__Tptr__Topaque__Terror__Ausize$w2515$end;
+cb__Nstd__Nmem__Nalloc__Aptr__Ttuple__Tptr__Topaque__Terror__Ausize$w2845$end:
+# ir_make_label cb__Nstd__Nmem__Nalloc__Aptr__Ttuple__Tptr__Topaque__Terror__Ausize$w2845$end;
 
  mov -8(%rbp),%r10
  cmp $0,%r10
- je cb__Nstd__Nmem__Nalloc__Aptr__Ttuple__Tptr__Topaque__Terror__Ausize$if2531$else
-# ir_jmp_eq L0 0 cb__Nstd__Nmem__Nalloc__Aptr__Ttuple__Tptr__Topaque__Terror__Ausize$if2531$else;
+ je cb__Nstd__Nmem__Nalloc__Aptr__Ttuple__Tptr__Topaque__Terror__Ausize$if2861$else
+# ir_jmp_eq L0 0 cb__Nstd__Nmem__Nalloc__Aptr__Ttuple__Tptr__Topaque__Terror__Ausize$if2861$else;
 
-cb__Nstd__Nmem__Nalloc__Aptr__Ttuple__Tptr__Topaque__Terror__Ausize$if2531$body:
-# ir_make_label cb__Nstd__Nmem__Nalloc__Aptr__Ttuple__Tptr__Topaque__Terror__Ausize$if2531$body;
+cb__Nstd__Nmem__Nalloc__Aptr__Ttuple__Tptr__Topaque__Terror__Ausize$if2861$body:
+# ir_make_label cb__Nstd__Nmem__Nalloc__Aptr__Ttuple__Tptr__Topaque__Terror__Ausize$if2861$body;
 
  mov 32(%rbp),%r10
  mov %r10,-104(%rbp)
@@ -335,8 +336,8 @@ cb__Nstd__Nmem__Nalloc__Aptr__Ttuple__Tptr__Topaque__Terror__Ausize$if2531$body:
  jmp cb__Nstd__Nmem__Nalloc__Aptr__Ttuple__Tptr__Topaque__Terror__Ausize$end
 # ir_return A0;
 
-cb__Nstd__Nmem__Nalloc__Aptr__Ttuple__Tptr__Topaque__Terror__Ausize$if2531$else:
-# ir_make_label cb__Nstd__Nmem__Nalloc__Aptr__Ttuple__Tptr__Topaque__Terror__Ausize$if2531$else;
+cb__Nstd__Nmem__Nalloc__Aptr__Ttuple__Tptr__Topaque__Terror__Ausize$if2861$else:
+# ir_make_label cb__Nstd__Nmem__Nalloc__Aptr__Ttuple__Tptr__Topaque__Terror__Ausize$if2861$else;
 
  mov $32,%r10
  add -24(%rbp),%r10
@@ -369,11 +370,11 @@ cb__Nstd__Nmem__Nalloc__Aptr__Ttuple__Tptr__Topaque__Terror__Ausize$if2531$else:
 
  mov -60(%rbp),%r10d
  cmp $0,%r10d
- je cb__Nstd__Nmem__Nalloc__Aptr__Ttuple__Tptr__Topaque__Terror__Ausize$if2565$else
-# ir_jmp_eq L6 0 cb__Nstd__Nmem__Nalloc__Aptr__Ttuple__Tptr__Topaque__Terror__Ausize$if2565$else;
+ je cb__Nstd__Nmem__Nalloc__Aptr__Ttuple__Tptr__Topaque__Terror__Ausize$if2895$else
+# ir_jmp_eq L6 0 cb__Nstd__Nmem__Nalloc__Aptr__Ttuple__Tptr__Topaque__Terror__Ausize$if2895$else;
 
-cb__Nstd__Nmem__Nalloc__Aptr__Ttuple__Tptr__Topaque__Terror__Ausize$if2565$body:
-# ir_make_label cb__Nstd__Nmem__Nalloc__Aptr__Ttuple__Tptr__Topaque__Terror__Ausize$if2565$body;
+cb__Nstd__Nmem__Nalloc__Aptr__Ttuple__Tptr__Topaque__Terror__Ausize$if2895$body:
+# ir_make_label cb__Nstd__Nmem__Nalloc__Aptr__Ttuple__Tptr__Topaque__Terror__Ausize$if2895$body;
 
  mov 32(%rbp),%r10
  mov %r10,-112(%rbp)
@@ -397,8 +398,8 @@ cb__Nstd__Nmem__Nalloc__Aptr__Ttuple__Tptr__Topaque__Terror__Ausize$if2565$body:
  jmp cb__Nstd__Nmem__Nalloc__Aptr__Ttuple__Tptr__Topaque__Terror__Ausize$end
 # ir_return A0;
 
-cb__Nstd__Nmem__Nalloc__Aptr__Ttuple__Tptr__Topaque__Terror__Ausize$if2565$else:
-# ir_make_label cb__Nstd__Nmem__Nalloc__Aptr__Ttuple__Tptr__Topaque__Terror__Ausize$if2565$else;
+cb__Nstd__Nmem__Nalloc__Aptr__Ttuple__Tptr__Topaque__Terror__Ausize$if2895$else:
+# ir_make_label cb__Nstd__Nmem__Nalloc__Aptr__Ttuple__Tptr__Topaque__Terror__Ausize$if2895$else;
 
  mov $32,%rdx
  xor %sil,%sil
@@ -420,11 +421,11 @@ cb__Nstd__Nmem__Nalloc__Aptr__Ttuple__Tptr__Topaque__Terror__Ausize$if2565$else:
  mov -16(%rbp),%rax
 # ir_deref L1; (push)
 
- mov std__mem__last_block,%r10
+ mov std__mem__last_block(%rip),%r10
  mov %r10,24(%rax)
 # ir_load [POP() . 3] ;
 
- lea .cbstr2,%rax
+ lea .cbstr2(%rip),%rax
 # ir_load_addr STR2; (push)
 
  mov %rax,-80(%rbp)
@@ -464,7 +465,7 @@ cb__Nstd__Nmem__Nalloc__Aptr__Ttuple__Tptr__Topaque__Terror__Ausize$if2565$else:
  call cb__Nstd__Nsystem__Nwrite_int__Afile_handle__Aint
 # ir_call cb__Nstd__Nsystem__Nwrite_int__Afile_handle__Aint POP() POP();
 
- lea .cbstr1,%rax
+ lea .cbstr1(%rip),%rax
 # ir_load_addr STR1; (push)
 
  mov %rax,-96(%rbp)
@@ -489,7 +490,7 @@ cb__Nstd__Nmem__Nalloc__Aptr__Ttuple__Tptr__Topaque__Terror__Ausize$if2565$else:
 # ir_noop POP();
 
  mov -16(%rbp),%r10
- mov %r10,std__mem__last_block
+ mov %r10,std__mem__last_block(%rip)
 # ir_load  L1;
 
  mov 32(%rbp),%r10
@@ -534,7 +535,7 @@ cb__Nstd__Nmem__Nfree__Aptr__Topaque:
  sub $80,%rsp
 # prolog end
 
- mov std__mem__last_block,%r10
+ mov std__mem__last_block(%rip),%r10
  mov %r10,-8(%rbp)
 # ir_load L0 ;
 
@@ -542,16 +543,16 @@ cb__Nstd__Nmem__Nfree__Aptr__Topaque:
  mov %r10,-16(%rbp)
 # ir_store L1 0 0 8;
 
-cb__Nstd__Nmem__Nfree__Aptr__Topaque$w2711$cond:
-# ir_make_label cb__Nstd__Nmem__Nfree__Aptr__Topaque$w2711$cond;
+cb__Nstd__Nmem__Nfree__Aptr__Topaque$w3041$cond:
+# ir_make_label cb__Nstd__Nmem__Nfree__Aptr__Topaque$w3041$cond;
 
  mov -8(%rbp),%r10
  cmp $0,%r10
- je cb__Nstd__Nmem__Nfree__Aptr__Topaque$w2711$end
-# ir_jmp_eq L0 0 cb__Nstd__Nmem__Nfree__Aptr__Topaque$w2711$end;
+ je cb__Nstd__Nmem__Nfree__Aptr__Topaque$w3041$end
+# ir_jmp_eq L0 0 cb__Nstd__Nmem__Nfree__Aptr__Topaque$w3041$end;
 
-cb__Nstd__Nmem__Nfree__Aptr__Topaque$w2711$body:
-# ir_make_label cb__Nstd__Nmem__Nfree__Aptr__Topaque$w2711$body;
+cb__Nstd__Nmem__Nfree__Aptr__Topaque$w3041$body:
+# ir_make_label cb__Nstd__Nmem__Nfree__Aptr__Topaque$w3041$body;
 
  mov -8(%rbp),%r10
  add $32,%r10
@@ -563,8 +564,8 @@ cb__Nstd__Nmem__Nfree__Aptr__Topaque$w2711$body:
 
  mov 32(%rbp),%r10
  cmp -24(%rbp),%r10
- jl cb__Nstd__Nmem__Nfree__Aptr__Topaque$if2698$else
-# ir_jmp_lt A0 L2 cb__Nstd__Nmem__Nfree__Aptr__Topaque$if2698$else;
+ jl cb__Nstd__Nmem__Nfree__Aptr__Topaque$if3028$else
+# ir_jmp_lt A0 L2 cb__Nstd__Nmem__Nfree__Aptr__Topaque$if3028$else;
 
  mov -8(%rbp),%rax
 # ir_deref L0; (push)
@@ -576,17 +577,17 @@ cb__Nstd__Nmem__Nfree__Aptr__Topaque$w2711$body:
 
  mov 32(%rbp),%r10
  cmp %rax,%r10
- jge cb__Nstd__Nmem__Nfree__Aptr__Topaque$if2698$else
-# ir_jmp_gte A0 POP() cb__Nstd__Nmem__Nfree__Aptr__Topaque$if2698$else;
+ jge cb__Nstd__Nmem__Nfree__Aptr__Topaque$if3028$else
+# ir_jmp_gte A0 POP() cb__Nstd__Nmem__Nfree__Aptr__Topaque$if3028$else;
 
-cb__Nstd__Nmem__Nfree__Aptr__Topaque$if2698$body:
-# ir_make_label cb__Nstd__Nmem__Nfree__Aptr__Topaque$if2698$body;
+cb__Nstd__Nmem__Nfree__Aptr__Topaque$if3028$body:
+# ir_make_label cb__Nstd__Nmem__Nfree__Aptr__Topaque$if3028$body;
 
- jmp cb__Nstd__Nmem__Nfree__Aptr__Topaque$w2711$end
-# ir_jmp cb__Nstd__Nmem__Nfree__Aptr__Topaque$w2711$end;
+ jmp cb__Nstd__Nmem__Nfree__Aptr__Topaque$w3041$end
+# ir_jmp cb__Nstd__Nmem__Nfree__Aptr__Topaque$w3041$end;
 
-cb__Nstd__Nmem__Nfree__Aptr__Topaque$if2698$else:
-# ir_make_label cb__Nstd__Nmem__Nfree__Aptr__Topaque$if2698$else;
+cb__Nstd__Nmem__Nfree__Aptr__Topaque$if3028$else:
+# ir_make_label cb__Nstd__Nmem__Nfree__Aptr__Topaque$if3028$else;
 
  mov -8(%rbp),%r10
  mov %r10,-16(%rbp)
@@ -599,25 +600,25 @@ cb__Nstd__Nmem__Nfree__Aptr__Topaque$if2698$else:
  mov %r10,-8(%rbp)
 # ir_load L0 [POP() . 3];
 
- jmp cb__Nstd__Nmem__Nfree__Aptr__Topaque$w2711$cond
-# ir_jmp cb__Nstd__Nmem__Nfree__Aptr__Topaque$w2711$cond;
+ jmp cb__Nstd__Nmem__Nfree__Aptr__Topaque$w3041$cond
+# ir_jmp cb__Nstd__Nmem__Nfree__Aptr__Topaque$w3041$cond;
 
-cb__Nstd__Nmem__Nfree__Aptr__Topaque$w2711$end:
-# ir_make_label cb__Nstd__Nmem__Nfree__Aptr__Topaque$w2711$end;
+cb__Nstd__Nmem__Nfree__Aptr__Topaque$w3041$end:
+# ir_make_label cb__Nstd__Nmem__Nfree__Aptr__Topaque$w3041$end;
 
  mov -8(%rbp),%r10
  cmp $0,%r10
- jne cb__Nstd__Nmem__Nfree__Aptr__Topaque$if2719$else
-# ir_jmp_neq L0 0 cb__Nstd__Nmem__Nfree__Aptr__Topaque$if2719$else;
+ jne cb__Nstd__Nmem__Nfree__Aptr__Topaque$if3049$else
+# ir_jmp_neq L0 0 cb__Nstd__Nmem__Nfree__Aptr__Topaque$if3049$else;
 
-cb__Nstd__Nmem__Nfree__Aptr__Topaque$if2719$body:
-# ir_make_label cb__Nstd__Nmem__Nfree__Aptr__Topaque$if2719$body;
+cb__Nstd__Nmem__Nfree__Aptr__Topaque$if3049$body:
+# ir_make_label cb__Nstd__Nmem__Nfree__Aptr__Topaque$if3049$body;
 
  jmp cb__Nstd__Nmem__Nfree__Aptr__Topaque$end
 # ir_return #0;
 
-cb__Nstd__Nmem__Nfree__Aptr__Topaque$if2719$else:
-# ir_make_label cb__Nstd__Nmem__Nfree__Aptr__Topaque$if2719$else;
+cb__Nstd__Nmem__Nfree__Aptr__Topaque$if3049$else:
+# ir_make_label cb__Nstd__Nmem__Nfree__Aptr__Topaque$if3049$else;
 
  mov -8(%rbp),%rbx
 # ir_deref L0; (push)
@@ -637,32 +638,32 @@ cb__Nstd__Nmem__Nfree__Aptr__Topaque$if2719$else:
 
  mov 16(%rax),%r10
  cmp $0,%r10
- jne cb__Nstd__Nmem__Nfree__Aptr__Topaque$if2791$else
-# ir_jmp_neq [POP() . 2] 0 cb__Nstd__Nmem__Nfree__Aptr__Topaque$if2791$else;
+ jne cb__Nstd__Nmem__Nfree__Aptr__Topaque$if3121$else
+# ir_jmp_neq [POP() . 2] 0 cb__Nstd__Nmem__Nfree__Aptr__Topaque$if3121$else;
 
-cb__Nstd__Nmem__Nfree__Aptr__Topaque$if2791$body:
-# ir_make_label cb__Nstd__Nmem__Nfree__Aptr__Topaque$if2791$body;
+cb__Nstd__Nmem__Nfree__Aptr__Topaque$if3121$body:
+# ir_make_label cb__Nstd__Nmem__Nfree__Aptr__Topaque$if3121$body;
 
- mov std__mem__last_block,%r10
+ mov std__mem__last_block(%rip),%r10
  cmp -8(%rbp),%r10
- jne cb__Nstd__Nmem__Nfree__Aptr__Topaque$if2751$else
-# ir_jmp_neq  L0 cb__Nstd__Nmem__Nfree__Aptr__Topaque$if2751$else;
+ jne cb__Nstd__Nmem__Nfree__Aptr__Topaque$if3081$else
+# ir_jmp_neq  L0 cb__Nstd__Nmem__Nfree__Aptr__Topaque$if3081$else;
 
-cb__Nstd__Nmem__Nfree__Aptr__Topaque$if2751$body:
-# ir_make_label cb__Nstd__Nmem__Nfree__Aptr__Topaque$if2751$body;
+cb__Nstd__Nmem__Nfree__Aptr__Topaque$if3081$body:
+# ir_make_label cb__Nstd__Nmem__Nfree__Aptr__Topaque$if3081$body;
 
  mov -8(%rbp),%rax
 # ir_deref L0; (push)
 
  mov 24(%rax),%r10
- mov %r10,std__mem__last_block
+ mov %r10,std__mem__last_block(%rip)
 # ir_load  [POP() . 3];
 
- jmp cb__Nstd__Nmem__Nfree__Aptr__Topaque$if2751$end
-# ir_jmp cb__Nstd__Nmem__Nfree__Aptr__Topaque$if2751$end;
+ jmp cb__Nstd__Nmem__Nfree__Aptr__Topaque$if3081$end
+# ir_jmp cb__Nstd__Nmem__Nfree__Aptr__Topaque$if3081$end;
 
-cb__Nstd__Nmem__Nfree__Aptr__Topaque$if2751$else:
-# ir_make_label cb__Nstd__Nmem__Nfree__Aptr__Topaque$if2751$else;
+cb__Nstd__Nmem__Nfree__Aptr__Topaque$if3081$else:
+# ir_make_label cb__Nstd__Nmem__Nfree__Aptr__Topaque$if3081$else;
 
  mov -16(%rbp),%rbx
 # ir_deref L1; (push)
@@ -674,10 +675,10 @@ cb__Nstd__Nmem__Nfree__Aptr__Topaque$if2751$else:
  mov %r10,24(%rbx)
 # ir_load [POP() . 3] [POP() . 3];
 
-cb__Nstd__Nmem__Nfree__Aptr__Topaque$if2751$end:
-# ir_make_label cb__Nstd__Nmem__Nfree__Aptr__Topaque$if2751$end;
+cb__Nstd__Nmem__Nfree__Aptr__Topaque$if3081$end:
+# ir_make_label cb__Nstd__Nmem__Nfree__Aptr__Topaque$if3081$end;
 
- lea .cbstr3,%rax
+ lea .cbstr3(%rip),%rax
 # ir_load_addr STR3; (push)
 
  mov %rax,-64(%rbp)
@@ -717,7 +718,7 @@ cb__Nstd__Nmem__Nfree__Aptr__Topaque$if2751$end:
  call cb__Nstd__Nsystem__Nwrite_int__Afile_handle__Aint
 # ir_call cb__Nstd__Nsystem__Nwrite_int__Afile_handle__Aint POP() POP();
 
- lea .cbstr1,%rax
+ lea .cbstr1(%rip),%rax
 # ir_load_addr STR1; (push)
 
  mov %rax,-48(%rbp)
@@ -749,10 +750,112 @@ cb__Nstd__Nmem__Nfree__Aptr__Topaque$if2751$end:
  call cb__Nstd__Nsystem__Nfree__Aptr__Topaque__Ausize
 # ir_call cb__Nstd__Nsystem__Nfree__Aptr__Topaque__Ausize L0 [POP() . 1];
 
-cb__Nstd__Nmem__Nfree__Aptr__Topaque$if2791$else:
-# ir_make_label cb__Nstd__Nmem__Nfree__Aptr__Topaque$if2791$else;
+cb__Nstd__Nmem__Nfree__Aptr__Topaque$if3121$else:
+# ir_make_label cb__Nstd__Nmem__Nfree__Aptr__Topaque$if3121$else;
 
 cb__Nstd__Nmem__Nfree__Aptr__Topaque$end:
+ add $88,%rsp
+ pop %rbx
+ pop %rbp
+ ret
+
+
+cb__Nstd__Nmem__Nalloc_slice__Cint__Aptr__Ttuple__Tslice__Tint__Terror__Ausize:
+# func alloc_slice(&{[]int, error}, usize): &{[]int, error}
+ mov %rsi,16(%rsp)
+ mov %rdi,8(%rsp)
+ push %rbp
+ push %rbx
+ sub $8,%rsp
+ mov %rsp,%rbp
+ sub $80,%rsp
+# prolog end
+
+ lea -32(%rbp),%rbx
+# ir_load_addr L1; (push)
+
+ mov 40(%rbp),%r10
+ imul $4,%r10
+ mov %r10,%rax
+# ir_mul A1 4; (push)
+
+ mov %rax,%rsi
+ mov %rbx,%rdi
+ call cb__Nstd__Nmem__Nalloc__Aptr__Ttuple__Tptr__Topaque__Terror__Ausize
+# ir_call cb__Nstd__Nmem__Nalloc__Aptr__Ttuple__Tptr__Topaque__Terror__Ausize POP() POP();
+
+ mov -32(%rbp),%r10
+ mov %r10,-40(%rbp)
+# ir_load L2 [L1 . 0];
+
+ mov -24(%rbp),%r10d
+ mov %r10d,-44(%rbp)
+# ir_load L3 [L1 . 1];
+
+ mov -44(%rbp),%r10d
+ cmp $0,%r10d
+ je cb__Nstd__Nmem__Nalloc_slice__Cint__Aptr__Ttuple__Tslice__Tint__Terror__Ausize$if4365$else
+# ir_jmp_eq L3 0 cb__Nstd__Nmem__Nalloc_slice__Cint__Aptr__Ttuple__Tslice__Tint__Terror__Ausize$if4365$else;
+
+cb__Nstd__Nmem__Nalloc_slice__Cint__Aptr__Ttuple__Tslice__Tint__Terror__Ausize$if4365$body:
+# ir_make_label cb__Nstd__Nmem__Nalloc_slice__Cint__Aptr__Ttuple__Tslice__Tint__Terror__Ausize$if4365$body;
+
+ mov 32(%rbp),%r10
+ mov %r10,-56(%rbp)
+# ir_load L4 A0;
+
+ mov -56(%rbp),%rax
+# ir_deref L4; (push)
+
+ xor %r10,%r10
+ mov %r10,0(%rax)
+ mov %r10,8(%rax)
+# ir_store [POP() . 0] 0 0 16;
+
+ mov -56(%rbp),%rax
+# ir_deref L4; (push)
+
+ mov -44(%rbp),%r10d
+ mov %r10d,16(%rax)
+# ir_load [POP() . 1] L3;
+
+ mov 32(%rbp),%rax
+ jmp cb__Nstd__Nmem__Nalloc_slice__Cint__Aptr__Ttuple__Tslice__Tint__Terror__Ausize$end
+# ir_return A0;
+
+cb__Nstd__Nmem__Nalloc_slice__Cint__Aptr__Ttuple__Tslice__Tint__Terror__Ausize$if4365$else:
+# ir_make_label cb__Nstd__Nmem__Nalloc_slice__Cint__Aptr__Ttuple__Tslice__Tint__Terror__Ausize$if4365$else;
+
+ mov -40(%rbp),%r10
+ mov %r10,-16(%rbp)
+# ir_load [L0 . 0] L2;
+
+ mov 40(%rbp),%r10
+ mov %r10,-8(%rbp)
+# ir_load [L0 . 1] A1;
+
+ mov 32(%rbp),%r10
+ mov %r10,-64(%rbp)
+# ir_load L5 A0;
+
+ mov -64(%rbp),%rax
+# ir_deref L5; (push)
+
+ mov -16(%rbp),%r10
+ mov %r10,0(%rax)
+# ir_load [POP() . 0] L0;
+
+ mov -64(%rbp),%rax
+# ir_deref L5; (push)
+
+ xor %r10d,%r10d
+ mov %r10d,16(%rax)
+# ir_load [POP() . 1] 0;
+
+ mov 32(%rbp),%rax
+# ir_return A0;
+
+cb__Nstd__Nmem__Nalloc_slice__Cint__Aptr__Ttuple__Tslice__Tint__Terror__Ausize$end:
  add $88,%rsp
  pop %rbx
  pop %rbp
@@ -793,11 +896,11 @@ cb__Nstd__Nmem__Nalloc_slice__Cptr__Tpure__Tuint8__Aptr__Ttuple__Tslice__Tptr__T
 
  mov -44(%rbp),%r10d
  cmp $0,%r10d
- je cb__Nstd__Nmem__Nalloc_slice__Cptr__Tpure__Tuint8__Aptr__Ttuple__Tslice__Tptr__Tpure__Tuint8__Terror__Ausize$if3980$else
-# ir_jmp_eq L3 0 cb__Nstd__Nmem__Nalloc_slice__Cptr__Tpure__Tuint8__Aptr__Ttuple__Tslice__Tptr__Tpure__Tuint8__Terror__Ausize$if3980$else;
+ je cb__Nstd__Nmem__Nalloc_slice__Cptr__Tpure__Tuint8__Aptr__Ttuple__Tslice__Tptr__Tpure__Tuint8__Terror__Ausize$if4511$else
+# ir_jmp_eq L3 0 cb__Nstd__Nmem__Nalloc_slice__Cptr__Tpure__Tuint8__Aptr__Ttuple__Tslice__Tptr__Tpure__Tuint8__Terror__Ausize$if4511$else;
 
-cb__Nstd__Nmem__Nalloc_slice__Cptr__Tpure__Tuint8__Aptr__Ttuple__Tslice__Tptr__Tpure__Tuint8__Terror__Ausize$if3980$body:
-# ir_make_label cb__Nstd__Nmem__Nalloc_slice__Cptr__Tpure__Tuint8__Aptr__Ttuple__Tslice__Tptr__Tpure__Tuint8__Terror__Ausize$if3980$body;
+cb__Nstd__Nmem__Nalloc_slice__Cptr__Tpure__Tuint8__Aptr__Ttuple__Tslice__Tptr__Tpure__Tuint8__Terror__Ausize$if4511$body:
+# ir_make_label cb__Nstd__Nmem__Nalloc_slice__Cptr__Tpure__Tuint8__Aptr__Ttuple__Tslice__Tptr__Tpure__Tuint8__Terror__Ausize$if4511$body;
 
  mov 32(%rbp),%r10
  mov %r10,-56(%rbp)
@@ -822,8 +925,8 @@ cb__Nstd__Nmem__Nalloc_slice__Cptr__Tpure__Tuint8__Aptr__Ttuple__Tslice__Tptr__T
  jmp cb__Nstd__Nmem__Nalloc_slice__Cptr__Tpure__Tuint8__Aptr__Ttuple__Tslice__Tptr__Tpure__Tuint8__Terror__Ausize$end
 # ir_return A0;
 
-cb__Nstd__Nmem__Nalloc_slice__Cptr__Tpure__Tuint8__Aptr__Ttuple__Tslice__Tptr__Tpure__Tuint8__Terror__Ausize$if3980$else:
-# ir_make_label cb__Nstd__Nmem__Nalloc_slice__Cptr__Tpure__Tuint8__Aptr__Ttuple__Tslice__Tptr__Tpure__Tuint8__Terror__Ausize$if3980$else;
+cb__Nstd__Nmem__Nalloc_slice__Cptr__Tpure__Tuint8__Aptr__Ttuple__Tslice__Tptr__Tpure__Tuint8__Terror__Ausize$if4511$else:
+# ir_make_label cb__Nstd__Nmem__Nalloc_slice__Cptr__Tpure__Tuint8__Aptr__Ttuple__Tslice__Tptr__Tpure__Tuint8__Terror__Ausize$if4511$else;
 
  mov -40(%rbp),%r10
  mov %r10,-16(%rbp)

@@ -150,6 +150,14 @@ struct codegen_x64_emitter {
 
     virtual void begin_readonly_data_segment() = 0;
 
+    virtual void begin_error_segment() = 0;
+
+    virtual void align(std::size_t bytes) = 0;
+
+    virtual void add_int32(std::int32_t value) = 0;
+
+    virtual void add_stringz(std::string_view value) = 0;
+
     virtual void add_string_data(std::string_view label, std::string_view data) = 0;
 
     virtual void add_global(std::string_view label, type_id type, decl_visibility vis) = 0;

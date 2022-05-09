@@ -6,13 +6,13 @@ func cb__Nroot__Nmain -> void
     local #2 sub: slice__Tpure__Tuint8;
     local #3 begin: slice__Tpure__Tuint8;
     local #4 end: slice__Tpure__Tuint8;
-    local #5 $cbT6: slice__Tpure__Tuint8;
-    local #6 $cbT7: slice__Tpure__Tuint8;
-    local #7 $cbT8: slice__Tpure__Tuint8;
-    local #8 $cbT9: slice__Tpure__Tuint8;
-    local #9 $cbT10: slice__Tpure__Tuint8;
-    local #10 $cbT11: slice__Tpure__Tuint8;
-    local #11 $cbT12: slice__Tpure__Tuint8;
+    local #5 $cbT7: slice__Tpure__Tuint8;
+    local #6 $cbT8: slice__Tpure__Tuint8;
+    local #7 $cbT9: slice__Tpure__Tuint8;
+    local #8 $cbT10: slice__Tpure__Tuint8;
+    local #9 $cbT11: slice__Tpure__Tuint8;
+    local #10 $cbT12: slice__Tpure__Tuint8;
+    local #11 $cbT13: slice__Tpure__Tuint8;
     local #12 temp$receiver$0: slice__Tpure__Tuint8;
     local #13 temp$receiver$1: slice__Tpure__Tuint8;
     ir_load_addr STR0; (push)

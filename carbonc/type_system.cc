@@ -1797,11 +1797,13 @@ bool match_arg_list(type_system& ts, std::vector<arena_ptr<ast_node>>& func_args
     return true;
 }
 
-string_hash mangle_global_name(type_system& ts, const std::vector<std::string>& mod_parts, const string_hash& name) {
+string_hash mangle_global_name(type_system& ts, const std::vector<std::string>& mod_parts, const string_hash& name, func_linkage linkage) {
     std::string result;
-    for (const auto& part : mod_parts) {
-        result.append(part);
-        result.append("__");
+    if (linkage != func_linkage::external_c) {
+        for (const auto& part : mod_parts) {
+            result.append(part);
+            result.append("__");
+        }
     }
     result.append(name.str);
     return string_hash{ result };
@@ -3076,6 +3078,7 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
             uint32_t mmhash = murmur_hash2_32bit(MMHASH_SEED, id.str.c_str(), id.str.size());
             const_value value = mmhash;
             declare_const_symbol(ts, id, value, node.tid);
+            idnode->lvalue.symbol = find_symbol_in_current_scope(ts, id);
         }
         break;
     }
@@ -4178,7 +4181,7 @@ void remangle_names(type_system& ts, ast_node* nodeptr) {
         for (auto& pair : node.scope.symbols) {
             if (pair.second->kind == symbol_kind::global) {
                 auto local = get_symbol_local(*pair.second);
-                local->mangled_name = mangle_global_name(ts, node.scope.self_module_parts, local->name);
+                local->mangled_name = mangle_global_name(ts, node.scope.self_module_parts, local->name, local->self->func.linkage);
             }
         }
         visit_pre_children(ts, node);

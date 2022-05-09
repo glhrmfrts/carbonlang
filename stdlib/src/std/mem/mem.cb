@@ -51,10 +51,10 @@ func alloc_in_block(pblock: &memory_block, size: usize): &opaque {
     return ptr
 }
 
-func align(size: usize, alignment: usize): usize {
-    return size + (-size & (alignment - cast(usize)1))
 }
 
+func align(size: usize, alignment: usize): usize {
+    return size + (-size & (alignment - cast(usize)1))
 }
 
 func memcopy(dest: &opaque, src: &pure opaque, size: usize) {

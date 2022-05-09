@@ -1,6 +1,6 @@
 .global cb__Nroot__Nmain
 .data
-    .align 16
+    .balign 16
     .size .cmp16selector, 16
 .cmp16selector:
     .byte 0x0
@@ -21,9 +21,9 @@
     .byte 0x80
 .section .rodata
 .cbstr0:
-    .string "a string"
+    .asciz "a string"
 .cbstr1:
-    .string ","
+    .asciz ","
 .text
 cb__Nroot__Nmain:
 # func main(): {}
@@ -32,7 +32,7 @@ cb__Nroot__Nmain:
  sub $240,%rsp
 # prolog end
 
- lea .cbstr0,%rax
+ lea .cbstr0(%rip),%rax
 # ir_load_addr STR0; (push)
 
  mov %rax,-96(%rbp)
@@ -49,7 +49,7 @@ cb__Nroot__Nmain:
  call cb__Nstd__Nio__Nprintln__Aptr__Tslice__Tpure__Tuint8
 # ir_call cb__Nstd__Nio__Nprintln__Aptr__Tslice__Tpure__Tuint8 POP();
 
- lea .cbstr0,%rax
+ lea .cbstr0(%rip),%rax
 # ir_load_addr STR0; (push)
 
  mov %rax,-16(%rbp)
@@ -59,7 +59,7 @@ cb__Nroot__Nmain:
  mov %r10,-8(%rbp)
 # ir_load [L0 . 1] 8;
 
- lea .cbstr0,%rax
+ lea .cbstr0(%rip),%rax
 # ir_load_addr STR0; (push)
 
  mov %rax,-208(%rbp)
@@ -78,7 +78,7 @@ cb__Nroot__Nmain:
  call cb__Nstd__Nio__Nprintln__Abool
 # ir_call cb__Nstd__Nio__Nprintln__Abool POP();
 
- lea .cbstr0,%rax
+ lea .cbstr0(%rip),%rax
 # ir_load_addr STR0; (push)
 
  mov %rax,-224(%rbp)
@@ -170,7 +170,7 @@ cb__Nroot__Nmain:
  call cb__Nstd__Nio__Nprint__Aptr__Tslice__Tpure__Tuint8
 # ir_call cb__Nstd__Nio__Nprint__Aptr__Tslice__Tpure__Tuint8 POP();
 
- lea .cbstr1,%rax
+ lea .cbstr1(%rip),%rax
 # ir_load_addr STR1; (push)
 
  mov %rax,-128(%rbp)
@@ -230,7 +230,7 @@ cb__Nroot__Nmain:
  call cb__Nstd__Nio__Nprint__Aptr__Tslice__Tpure__Tuint8
 # ir_call cb__Nstd__Nio__Nprint__Aptr__Tslice__Tpure__Tuint8 POP();
 
- lea .cbstr1,%rax
+ lea .cbstr1(%rip),%rax
 # ir_load_addr STR1; (push)
 
  mov %rax,-160(%rbp)
@@ -289,7 +289,7 @@ cb__Nroot__Nmain:
  call cb__Nstd__Nio__Nprint__Aptr__Tslice__Tpure__Tuint8
 # ir_call cb__Nstd__Nio__Nprint__Aptr__Tslice__Tpure__Tuint8 POP();
 
- lea .cbstr1,%rax
+ lea .cbstr1(%rip),%rax
 # ir_load_addr STR1; (push)
 
  mov %rax,-192(%rbp)

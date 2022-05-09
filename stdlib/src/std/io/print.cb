@@ -1,18 +1,18 @@
 import std::system as sys
 
-func print(s : []pure uint8) {
+func print(s: []pure uint8) {
     sys::write(sys::stdout(), s)
 }
 
-func print(i : int) {
+func print(i: int) {
     sys::write_int(sys::stdout(), i)
 }
 
-func print(i : usize) {
+func print(i: usize) {
     print(cast(int)i)
 }
 
-func print(b : bool) {
+func print(b: bool) {
     if (b) {
         print("true")
     }
@@ -21,21 +21,25 @@ func print(b : bool) {
     }
 }
 
-func print(v : nil) {
+func print(v: nil) {
     print("nil")
 }
 
-func println(s : []pure uint8) {
+func print(err: error) {
+    print(sys::error_string(err))
+}
+
+func println(s: []pure uint8) {
     sys::write(sys::stdout(), s)
     sys::write(sys::stdout(), "\n")
 }
 
-func println(i : int) {
+func println(i: int) {
     sys::write_int(sys::stdout(), i)
     sys::write(sys::stdout(), "\n")
 }
 
-func println(i : usize) {
+func println(i: usize) {
     println(cast(int)i)
 }
 
@@ -50,5 +54,10 @@ func println(b: bool) {
 
 func println(v: nil) {
     print(v)
+    println("")
+}
+
+func println(e: error) {
+    print(e)
     println("")
 }

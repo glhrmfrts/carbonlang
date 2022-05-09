@@ -214,7 +214,7 @@ module std/mem
                 .pre_nodes
                   var_decl
                     arg_list
-                      identifier $cbT27
+                      identifier $cbT35
                     arg_list end
                   .value
                     init_expr
@@ -233,7 +233,7 @@ module std/mem
                       arg_list
                       arg_list end
                     unary &
-                      identifier $cbT27
+                      identifier $cbT35
                   arg_list end
               stmt_list end
               stmt_list
@@ -256,7 +256,7 @@ module std/mem
                 .pre_nodes
                   var_decl
                     arg_list
-                      identifier $cbT28
+                      identifier $cbT36
                     arg_list end
                   .value
                     init_expr
@@ -276,7 +276,7 @@ module std/mem
                       arg_list
                       arg_list end
                     unary &
-                      identifier $cbT28
+                      identifier $cbT36
                   arg_list end
               stmt_list end
               stmt_list
@@ -284,44 +284,44 @@ module std/mem
                   identifier ptr
               stmt_list end
             compound_stmt end
-          func_decl
-            identifier align
-            arg_list
-              var_decl
-                arg_list
-                  identifier size
-                arg_list end
-              .type
-                type_expr
-                  identifier usize
-              var_decl
-                arg_list
-                  identifier alignment
-                arg_list end
-              .type
-                type_expr
-                  identifier usize
-            arg_list end
-            type_expr
-              identifier usize
-            compound_stmt
-              stmt_list
-                return_stmt
-                  binary +
-                    identifier size
-                    binary &
-                      unary -
-                        identifier size
-                      binary -
-                        identifier alignment
-                        cast_expr
-                          type_expr
-                            identifier usize
-                          int_literal 1
-              stmt_list end
-            compound_stmt end
         decl_list end
       visibility_specifier end
+      func_decl
+        identifier align
+        arg_list
+          var_decl
+            arg_list
+              identifier size
+            arg_list end
+          .type
+            type_expr
+              identifier usize
+          var_decl
+            arg_list
+              identifier alignment
+            arg_list end
+          .type
+            type_expr
+              identifier usize
+        arg_list end
+        type_expr
+          identifier usize
+        compound_stmt
+          stmt_list
+            return_stmt
+              binary +
+                identifier size
+                binary &
+                  unary -
+                    identifier size
+                  binary -
+                    identifier alignment
+                    cast_expr
+                      type_expr
+                        identifier usize
+                      int_literal 1
+          stmt_list end
+        compound_stmt end
       func_decl
         identifier memcopy
         arg_list
@@ -501,12 +501,12 @@ module std/mem
                 identifier sys::alloc
                 arg_list
                   unary &
-                    identifier $cbT5
+                    identifier $cbT8
                   identifier memsize
                 arg_list end
             var_decl
               arg_list
-                identifier $cbT5
+                identifier $cbT8
               arg_list end
             .value
               
@@ -519,7 +519,7 @@ module std/mem
                 type_resolver &opaque
             .value
               field_expr
-                identifier $cbT5
+                identifier $cbT8
                 identifier first
             var_decl
               arg_list
@@ -530,7 +530,7 @@ module std/mem
                 type_resolver error
             .value
               field_expr
-                identifier $cbT5
+                identifier $cbT8
                 identifier second
 
           decl_list end
@@ -593,7 +593,7 @@ module std/mem
             .pre_nodes
               var_decl
                 arg_list
-                  identifier $cbT29
+                  identifier $cbT37
                 arg_list end
               .value
                 init_expr
@@ -612,7 +612,7 @@ module std/mem
                   arg_list
                   arg_list end
                 unary &
-                  identifier $cbT29
+                  identifier $cbT37
               arg_list end
           stmt_list end
           stmt_list
@@ -635,7 +635,7 @@ module std/mem
             .pre_nodes
               var_decl
                 arg_list
-                  identifier $cbT30
+                  identifier $cbT38
                 arg_list end
               .value
                 init_expr
@@ -655,7 +655,7 @@ module std/mem
                   arg_list
                   arg_list end
                 unary &
-                  identifier $cbT30
+                  identifier $cbT38
               arg_list end
           stmt_list end
           stmt_list
@@ -825,7 +825,7 @@ module std/mem
                   .pre_nodes
                     var_decl
                       arg_list
-                        identifier $cbT31
+                        identifier $cbT39
                       arg_list end
                     .value
                       init_expr
@@ -844,7 +844,7 @@ module std/mem
                         arg_list
                         arg_list end
                       unary &
-                        identifier $cbT31
+                        identifier $cbT39
                     arg_list end
                 stmt_list end
                 stmt_list
@@ -867,7 +867,7 @@ module std/mem
                   .pre_nodes
                     var_decl
                       arg_list
-                        identifier $cbT32
+                        identifier $cbT40
                       arg_list end
                     .value
                       init_expr
@@ -887,7 +887,7 @@ module std/mem
                         arg_list
                         arg_list end
                       unary &
-                        identifier $cbT32
+                        identifier $cbT40
                     arg_list end
                 stmt_list end
                 stmt_list
@@ -1023,6 +1023,121 @@ module std/mem
               identifier $cb_agg_ret
             arg_list end
           .type
+            type_resolver &{[]int, error}
+          var_decl
+            arg_list
+              identifier size
+            arg_list end
+          .type
+            type_resolver usize
+        arg_list end
+        type_resolver &{[]int, error}
+        compound_stmt
+          decl_list
+            .pre_nodes
+              call
+                identifier alloc
+                arg_list
+                  unary &
+                    identifier $cbT9
+                  binary *
+                    identifier size
+                    int_literal 4
+                arg_list end
+            var_decl
+              arg_list
+                identifier $cbT9
+              arg_list end
+            .value
+              
+            var_decl
+              arg_list
+                identifier buf
+              arg_list end
+            .type
+              type_expr
+                type_resolver &opaque
+            .value
+              field_expr
+                identifier $cbT9
+                identifier first
+            var_decl
+              arg_list
+                identifier err
+              arg_list end
+            .type
+              type_expr
+                type_resolver error
+            .value
+              field_expr
+                identifier $cbT9
+                identifier second
+
+          decl_list end
+          stmt_list
+            if{binary  
+                identifier err
+                int_literal 0 compound_stmt
+                stmt_list
+                  .pre_nodes
+                    binary =
+                      unary @
+                        identifier $cb_agg_ret
+                      init_expr
+                        arg_list
+                          nil_literal
+                          identifier err
+                        arg_list end
+                      init_expr end
+                  return_stmt
+                    identifier $cb_agg_ret
+                stmt_list end
+              compound_stmt end}
+          stmt_list end
+          decl_list
+            var_decl
+              arg_list
+                identifier result
+              arg_list end
+            .value
+              init_expr
+                type_expr
+                  slice_type [ ] 
+                    type_expr
+                      identifier T
+                arg_list
+                  cast_expr
+                    type_expr
+                      type_qualifier ptr
+                        identifier T
+                    identifier buf
+                  identifier size
+                arg_list end
+              init_expr end
+          decl_list end
+          stmt_list
+            .pre_nodes
+              binary =
+                unary @
+                  identifier $cb_agg_ret
+                init_expr
+                  arg_list
+                    identifier result
+                    int_literal 0
+                  arg_list end
+                init_expr end
+            return_stmt
+              identifier $cb_agg_ret
+          stmt_list end
+        compound_stmt end
+      func_decl
+        identifier alloc_slice
+        arg_list
+          var_decl
+            arg_list
+              identifier $cb_agg_ret
+            arg_list end
+          .type
             type_resolver &{[]&pure uint8, error}
           var_decl
             arg_list
@@ -1039,14 +1154,14 @@ module std/mem
                 identifier alloc
                 arg_list
                   unary &
-                    identifier $cbT6
+                    identifier $cbT10
                   binary *
                     identifier size
                     int_literal 8
                 arg_list end
             var_decl
               arg_list
-                identifier $cbT6
+                identifier $cbT10
               arg_list end
             .value
               
@@ -1059,7 +1174,7 @@ module std/mem
                 type_resolver &opaque
             .value
               field_expr
-                identifier $cbT6
+                identifier $cbT10
                 identifier first
             var_decl
               arg_list
@@ -1070,7 +1185,7 @@ module std/mem
                 type_resolver error
             .value
               field_expr
-                identifier $cbT6
+                identifier $cbT10
                 identifier second
 
           decl_list end

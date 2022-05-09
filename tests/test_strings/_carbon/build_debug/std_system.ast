@@ -5,6 +5,26 @@ module std/system
               identifier ALLOC_FAILED        identifier PATH_NOT_FOUND        identifier INVALID_HANDLE        identifier UNKNOWN_ERROR
       linkage_specifier extern
         func_decl
+          identifier error_string
+          arg_list
+            var_decl
+              arg_list
+                identifier $cb_agg_ret
+              arg_list end
+            .type
+              type_resolver &[]pure uint8
+            var_decl
+              arg_list
+                identifier err
+              arg_list end
+            .type
+              type_expr
+                identifier $error
+          arg_list end
+          type_resolver &[]pure uint8
+      linkage_specifier end
+      linkage_specifier extern
+        func_decl
           identifier alloc
           arg_list
             var_decl
@@ -939,7 +959,7 @@ module std/system
                 .pre_nodes
                   var_decl
                     arg_list
-                      identifier $cbT37
+                      identifier $cbT42
                     arg_list end
                   .value
                     identifier dest
@@ -949,14 +969,14 @@ module std/system
                     identifier value
                     int_literal 10
                     unary &
-                      identifier $cbT37
+                      identifier $cbT42
                   arg_list end
           stmt_list end
           stmt_list
             .pre_nodes
               var_decl
                 arg_list
-                  identifier $cbT38
+                  identifier $cbT43
                 arg_list end
               .value
                 identifier dest
@@ -965,7 +985,7 @@ module std/system
               arg_list
                 identifier fd
                 unary &
-                  identifier $cbT38
+                  identifier $cbT43
               arg_list end
           stmt_list end
         compound_stmt end
