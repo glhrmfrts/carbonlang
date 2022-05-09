@@ -1159,6 +1159,7 @@ struct parser_impl {
         return std::move(lhs);
     }
 
+    // unary_expr -> unary_op cast_expr
     arena_ptr<ast_node> parse_unary_expr() {
         auto pos = lex->pos();
         auto op = TOK;
@@ -1171,6 +1172,7 @@ struct parser_impl {
         return parse_cast_expr();
     }
 
+    // cast_expr -> 'cast' '(' type_expr ')' unary_expr
     arena_ptr<ast_node> parse_cast_expr() {
         auto pos = lex->pos();
         if (TOK == token_type::cast_) {
@@ -1187,7 +1189,7 @@ struct parser_impl {
             }
             lex->next();
 
-            auto value = parse_init_expr();
+            auto value = parse_unary_expr();
             if (!value) {
                 throw parse_error(filename, lex->pos(), "invalid cast expression");
             }
@@ -1198,6 +1200,7 @@ struct parser_impl {
         return parse_init_expr();
     }
 
+    // init_expr -> (type_expr '{' init_list '}') | call_or_index_or_field_expr
     arena_ptr<ast_node> parse_init_expr() {
         auto pos = lex->pos();
         auto expr = parse_call_or_index_or_field_expr();
@@ -1216,6 +1219,10 @@ struct parser_impl {
         return expr;
     }
 
+    // call_or_index_or_field_expr
+    //      -> primary_expr '(' arg_list ')'
+    //      -> primary_expr '[' braceless_tuple_expr ']'
+    //      -> primary_expr '.' identifier
     arena_ptr<ast_node> parse_call_or_index_or_field_expr() {
         auto pos = lex->pos();
         auto expr = parse_primary_expr();

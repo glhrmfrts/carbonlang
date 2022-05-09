@@ -10,7 +10,7 @@ private extern(C) let __error_array_end : uint8
 private func printbytes(ptr: &pure uint8, sz: usize) {
     for (i in 0,sz) {
         let b : uint8 = ptr[i]
-        print(cast(int)(b))
+        print(cast(int) b)
         print(",")
     }
     println("")
@@ -22,19 +22,27 @@ func error_string(err: error): []pure uint8 {
         return "noerr"
     }
 
-    let addr_begin = cast(uintptr)(cast(&opaque)(&__error_array_start))
-    let addr_end = cast(uintptr)(cast(&opaque)(&__error_array_end))
+    // Find the error name by traversing the ELF .error_array section
+    // TODO(maybe): cache this to a dict on initialization?
+
+    let addr_begin = cast(uintptr) cast(&opaque) &__error_array_start
+    let addr_end = cast(uintptr) cast(&opaque) &__error_array_end
     let addr = addr_begin
 
-    //printbytes(cast(&uint8)(addr), addr_end - addr_begin)
-
-    let errcode = cast(int)err
+    let errcode = cast(int) err
 
     for (addr < addr_end) {
-        let codeptr = cast(&int32)(cast(&opaque)addr)
+        // imaginary error struct:
+        // ...16-byte alignment 
+        // {
+        //     code : int32
+        //     name : null-terminated-string
+        // }
+        let codeptr = cast(&int32) cast(&opaque) addr
         addr += sizeof(int32)
 
-        let str = from_cstring(cast(&uint8)(cast(&opaque)addr))
+        let str = from_cstring(cast(&uint8) cast(&opaque) addr)
+
         if (errcode == @codeptr) {
             return str
         }
@@ -43,5 +51,5 @@ func error_string(err: error): []pure uint8 {
         addr = align(addr, ALIGNMENT)
     }
 
-    return "Unknown error"
+    return "(Unknown error)"
 }
