@@ -2549,11 +2549,12 @@ void register_for_declarations(type_system& ts, ast_node& node) {
     if (!node.forinfo.self && node.children[1]->tid.valid() && elem_node) {
         if (node.children[1]->tid.get().kind == type_kind::tuple) {
             int numfields = node.children[1]->tid.get().structure.fields.size();
-            if (numfields != 2) {
-                add_type_error(ts, node.children[1]->pos, "a for statement requires a tuple of {start, end} or {start, end, step}");
+            if (numfields != 2 && numfields != 3) {
+                add_type_error(ts, node.children[1]->pos, "a numeric for statement requires a tuple of {start, end} or {start, end, step}");
                 return;
             }
 
+            // TODO: cast to greater type
             type_id greater_type{};
             for (int i = 0; i < numfields; i++) {
             }
@@ -2574,7 +2575,7 @@ void register_for_declarations(type_system& ts, ast_node& node) {
             resolve_node_type(ts, iterend.get());
 
             // declare the variable to hold the element of the range
-            auto elem_decl_node = make_var_decl_with_value(*ts.ast_arena, elem_node->id_parts.front(), std::move(iterstart));
+            auto elem_decl_node = make_var_decl_with_value(*ts.ast_arena, elem_node->id_parts.front(), copy_node(ts, iterstart.get()));
             resolve_node_type(ts, elem_decl_node.get());
 
             auto elemref = make_identifier_node(*ts.ast_arena, {}, elem_node->id_parts);
@@ -2582,26 +2583,29 @@ void register_for_declarations(type_system& ts, ast_node& node) {
 
             node.forinfo.declare_for_iter = std::move(iterdecl);
             node.forinfo.declare_elem_to_range_start = std::move(elem_decl_node);
-            node.forinfo.compare_elem_to_range_end = make_binary_expr_node(*ts.ast_arena, {},
-                token_from_char('<'), copy_node(ts, elemref.get()), std::move(iterend)
-            );
+            node.forinfo.iterstart = copy_node(ts, iterstart.get());
+            node.forinfo.iterend = copy_node(ts, iterend.get());
+            node.forinfo.elemref = copy_node(ts, elemref.get());
 
-            // TODO: handle custom step
-            auto step = make_int_literal_node(*ts.ast_arena, {}, 1);
-            auto elem_plus = make_binary_expr_node(*ts.ast_arena, {},
-                token_from_char('+'), copy_node(ts, elemref.get()), std::move(step)
-            );
-            node.forinfo.increase_elem = make_assignment(*ts.ast_arena, copy_node(ts, elemref.get()), std::move(elem_plus));
+            arena_ptr<ast_node> step_expr{nullptr, nullptr};
+            if (numfields == 3) {
+                auto iterref3 = make_identifier_node(*ts.ast_arena, {}, { "$foriter" });
+                resolve_node_type(ts, iterref3.get());
+
+                node.forinfo.iterstep = make_struct_field_access(*ts.ast_arena, std::move(iterref3), "third");
+                node.forinfo.iterstep->parent = &node;
+
+                resolve_node_type(ts, node.forinfo.iterstep.get());
+            }
 
             resolve_node_type(ts, node.forinfo.declare_elem_to_range_start.get());
-            resolve_node_type(ts, node.forinfo.compare_elem_to_range_end.get());
-            resolve_node_type(ts, node.forinfo.increase_elem.get());
             node.forinfo.self = &node;
 
             node.forinfo.declare_for_iter->parent = &node;
             node.forinfo.declare_elem_to_range_start->parent = &node;
-            node.forinfo.compare_elem_to_range_end->parent = &node;
-            node.forinfo.increase_elem->parent = &node;
+            node.forinfo.iterstart->parent = &node;
+            node.forinfo.iterend->parent = &node;
+            node.forinfo.elemref->parent = &node;
         }
         else {
             add_type_error(ts, node.children[1]->pos, "a for statement requires a tuple of {start, end} or {start, end, step}");
@@ -4124,8 +4128,10 @@ void remangle_names(type_system& ts, ast_node* nodeptr) {
     case ast_type::for_numeric_stmt: {
         visit_tree(ts, *node.forinfo.declare_for_iter);
         visit_tree(ts, *node.forinfo.declare_elem_to_range_start);
-        visit_tree(ts, *node.forinfo.compare_elem_to_range_end);
-        visit_tree(ts, *node.forinfo.increase_elem);
+        visit_tree(ts, *node.forinfo.iterstart);
+        visit_tree(ts, *node.forinfo.iterstep);
+        visit_tree(ts, *node.forinfo.iterend);
+        visit_tree(ts, *node.forinfo.elemref);
         visit_tree(ts, *node.for_body());
         break;
     }

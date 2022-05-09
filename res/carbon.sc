@@ -18,7 +18,7 @@ SECTIONS {
 		*(.data.*)
 	} :data
 
-    .error_array : {
+	.error_array : {
 		PROVIDE_HIDDEN (__error_array_start = .);
 		KEEP (*(.error_array))
 		PROVIDE_HIDDEN (__error_array_end = .);

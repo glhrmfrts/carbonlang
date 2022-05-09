@@ -5,7 +5,7 @@ module root
       import_decl
         identifier std::io
       func_decl
-        identifier printsize
+        identifier print_size
         arg_list
           var_decl
             arg_list
@@ -25,6 +25,61 @@ module root
               arg_list end
           stmt_list end
         compound_stmt end
+      func_decl
+        identifier print_size_type
+        arg_list
+                      type_expr
+              identifier T
+        arg_list end
+        compound_stmt
+          stmt_list
+            call
+              identifier println
+              arg_list
+                call
+                  identifier sizeof
+                  arg_list
+                    identifier T
+                  arg_list end
+              arg_list end
+          stmt_list end
+        compound_stmt end
+      type_decl
+        identifier Data
+        type_expr
+          struct_type
+            decl_list
+              var_decl
+                arg_list
+                  identifier x
+                arg_list end
+              .type
+                type_expr
+                  identifier int
+              var_decl
+                arg_list
+                  identifier y
+                arg_list end
+              .type
+                type_expr
+                  identifier int
+              var_decl
+                arg_list
+                  identifier n
+                arg_list end
+              .type
+                type_expr
+                  type_qualifier ptr
+                    identifier Data
+              var_decl
+                arg_list
+                  identifier p
+                arg_list end
+              .type
+                type_expr
+                  type_qualifier ptr
+                    identifier Data
+            decl_list end
       func_decl
         identifier main
         arg_list
@@ -67,38 +122,90 @@ module root
                 identifier uint64
             .value
               int_literal 0
+            var_decl
+              arg_list
+                identifier data
+              arg_list end
+            .type
+              type_expr
+                identifier Data
           decl_list end
           stmt_list
             call
-              identifier printsize
+              identifier print_size
               arg_list
                 identifier a
               arg_list end
           stmt_list end
           stmt_list
             call
-              identifier printsize
+              identifier print_size
               arg_list
                 identifier b
               arg_list end
           stmt_list end
           stmt_list
             call
-              identifier printsize
+              identifier print_size
               arg_list
                 identifier c
               arg_list end
           stmt_list end
           stmt_list
             call
-              identifier printsize
+              identifier print_size
               arg_list
                 identifier d
               arg_list end
           stmt_list end
+          stmt_list
+            .pre_nodes
+              var_decl
+                arg_list
+                  identifier $cbT7
+                arg_list end
+              .value
+                identifier data
+            call
+              identifier print_size
+              arg_list
+                unary &
+                  identifier $cbT7
+              arg_list end
+          stmt_list end
+          stmt_list
+            call
+              identifier print_size_type
+              arg_list
+              arg_list end
+          stmt_list end
+          stmt_list
+            call
+              identifier print_size_type
+              arg_list
+              arg_list end
+          stmt_list end
+          stmt_list
+            call
+              identifier print_size_type
+              arg_list
+              arg_list end
+          stmt_list end
+          stmt_list
+            call
+              identifier print_size_type
+              arg_list
+              arg_list end
+          stmt_list end
+          stmt_list
+            call
+              identifier print_size_type
+              arg_list
+              arg_list end
+          stmt_list end
         compound_stmt end
       func_decl
-        identifier printsize
+        identifier print_size
         arg_list
           var_decl
             arg_list
@@ -117,7 +224,7 @@ module root
           stmt_list end
         compound_stmt end
       func_decl
-        identifier printsize
+        identifier print_size
         arg_list
           var_decl
             arg_list
@@ -136,7 +243,7 @@ module root
           stmt_list end
         compound_stmt end
       func_decl
-        identifier printsize
+        identifier print_size
         arg_list
           var_decl
             arg_list
@@ -155,7 +262,7 @@ module root
           stmt_list end
         compound_stmt end
       func_decl
-        identifier printsize
+        identifier print_size
         arg_list
           var_decl
             arg_list
@@ -170,6 +277,90 @@ module root
               identifier println
               arg_list
                 int_literal 8
+              arg_list end
+          stmt_list end
+        compound_stmt end
+      func_decl
+        identifier print_size
+        arg_list
+          var_decl
+            arg_list
+              identifier i
+            arg_list end
+          .type
+            type_resolver &Data
+        arg_list end
+        compound_stmt
+          stmt_list
+            call
+              identifier println
+              arg_list
+                int_literal 32
+              arg_list end
+          stmt_list end
+        compound_stmt end
+      func_decl
+        identifier print_size_type
+        arg_list
+        arg_list end
+        compound_stmt
+          stmt_list
+            call
+              identifier println
+              arg_list
+                int_literal 1
+              arg_list end
+          stmt_list end
+        compound_stmt end
+      func_decl
+        identifier print_size_type
+        arg_list
+        arg_list end
+        compound_stmt
+          stmt_list
+            call
+              identifier println
+              arg_list
+                int_literal 2
+              arg_list end
+          stmt_list end
+        compound_stmt end
+      func_decl
+        identifier print_size_type
+        arg_list
+        arg_list end
+        compound_stmt
+          stmt_list
+            call
+              identifier println
+              arg_list
+                int_literal 4
+              arg_list end
+          stmt_list end
+        compound_stmt end
+      func_decl
+        identifier print_size_type
+        arg_list
+        arg_list end
+        compound_stmt
+          stmt_list
+            call
+              identifier println
+              arg_list
+                int_literal 8
+              arg_list end
+          stmt_list end
+        compound_stmt end
+      func_decl
+        identifier print_size_type
+        arg_list
+        arg_list end
+        compound_stmt
+          stmt_list
+            call
+              identifier println
+              arg_list
+                int_literal 32
               arg_list end
           stmt_list end
         compound_stmt end

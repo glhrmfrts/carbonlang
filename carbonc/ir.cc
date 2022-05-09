@@ -199,7 +199,7 @@ ir_operand fromref(const ir_ref& opr) {
 std::string generate_label_for_short_circuit(ast_node& node) {
     auto scope = ts->find_nearest_scope(scope_kind::func_body);
     auto& funcname = scope->self->tdef.mangled_name.str;
-    node.ir.bin_self_label = funcname + "_short" + std::to_string(node.node_id);
+    node.ir.bin_self_label = ".short" + std::to_string(node.node_id);
     return node.ir.bin_self_label;
 }
 
@@ -296,11 +296,10 @@ void analyse_node(ast_node& node) {
         auto scope = ts->find_nearest_scope(scope_kind::func_body);
         auto& funcname = scope->self->tdef.mangled_name.str;
 
-        node.ir.if_body_label = funcname + "$f" + std::to_string(node.node_id) + "$body";
-        node.ir.if_end_label = funcname + "$f" + std::to_string(node.node_id) + "$end";
-        node.ir.while_cond_label = funcname + "$f" + std::to_string(node.node_id) + "$cond";
-
-        distribute_bool_op_targets(*node.forinfo.compare_elem_to_range_end, node.ir.if_body_label, node.ir.if_end_label);
+        node.ir.if_body_label = ".f" + std::to_string(node.node_id) + "$body";
+        node.ir.if_end_label = ".f" + std::to_string(node.node_id) + "$end";
+        node.ir.while_cond_label = ".f" + std::to_string(node.node_id) + "$cond";
+        node.ir.for_negative_label = ".f" + std::to_string(node.node_id) + "$neg";
 
         ts->enter_scope(node);
         send_locals_to_func_scope(node);
@@ -312,9 +311,9 @@ void analyse_node(ast_node& node) {
         auto scope = ts->find_nearest_scope(scope_kind::func_body);
         auto& funcname = scope->self->tdef.mangled_name.str;
 
-        node.ir.if_body_label = funcname + "$w" + std::to_string(node.node_id) + "$body";
-        node.ir.if_end_label = funcname + "$w" + std::to_string(node.node_id) + "$end";
-        node.ir.while_cond_label = funcname + "$w" + std::to_string(node.node_id) + "$cond";
+        node.ir.if_body_label = ".w" + std::to_string(node.node_id) + "$body";
+        node.ir.if_end_label = ".w" + std::to_string(node.node_id) + "$end";
+        node.ir.while_cond_label = ".w" + std::to_string(node.node_id) + "$cond";
 
         distribute_bool_op_targets(*node.children[0], node.ir.if_body_label, node.ir.if_end_label);
 
@@ -328,11 +327,11 @@ void analyse_node(ast_node& node) {
         auto scope = ts->find_nearest_scope(scope_kind::func_body);
         auto& funcname = scope->self->tdef.mangled_name.str;
 
-        node.ir.if_body_label = funcname + "$if" + std::to_string(node.node_id) + "$body";
-        node.ir.if_else_label = funcname + "$if" + std::to_string(node.node_id) + "$else";
+        node.ir.if_body_label = ".if" + std::to_string(node.node_id) + "$body";
+        node.ir.if_else_label = ".if" + std::to_string(node.node_id) + "$else";
 
         if (node.children.size() == 3) {
-            node.ir.if_end_label = funcname + "$if" + std::to_string(node.node_id) + "$end";
+            node.ir.if_end_label = ".if" + std::to_string(node.node_id) + "$end";
         }
 
         distribute_bool_op_targets(*node.children[0], node.ir.if_body_label, node.ir.if_else_label);
@@ -519,9 +518,9 @@ void generate_ir_func(ast_node& node) {
     ts->leave_scope();
 }
 
-ir_ref create_temp_receiver(type_id tid) {
+ir_ref create_temp_local(type_id tid) {
     static int counter;
-    auto name = "temp$receiver$" + std::to_string(counter);
+    auto name = "$irtemp" + std::to_string(counter);
     counter++;
 
     ir_local_data ilocal;
@@ -538,21 +537,68 @@ void generate_for_stmt(ast_node& node) {
     generate_ir_node(*node.forinfo.declare_for_iter);
     generate_ir_node(*node.forinfo.declare_elem_to_range_start);
 
+    auto stepvar = create_temp_local(node.forinfo.iterstart->tid);
+
+    if (node.forinfo.iterstep) {
+        generate_ir_node(*node.forinfo.iterstep);
+        emit(ir_load, fromref(stepvar), pop());
+    }
+
     // check if the elem is still inside the range
-    emit(ir_make_label, ir_label{ node.ir.while_cond_label });
-    generate_ir_node(*node.forinfo.compare_elem_to_range_end);
+    {
+        emit(ir_make_label, ir_label{ node.ir.while_cond_label });
+        generate_ir_node(*node.forinfo.iterstart);
+        generate_ir_node(*node.forinfo.iterend);
+        auto b = pop();
+        auto a = pop();
+        emit(ir_jmp_gte, a, b, ir_label { node.ir.for_negative_label });
+    }
+
+    {
+        if (!node.forinfo.iterstep) {
+            // step = 1
+            emit(ir_load, fromref(stepvar), ir_int{ int_type(1), ts->int32_type });
+        }
+        generate_ir_node(*node.forinfo.elemref);
+        generate_ir_node(*node.forinfo.iterend);
+        auto b = pop();
+        auto a = pop();
+        emit(ir_jmp_gte, a, b, ir_label { node.ir.if_end_label });
+    }
+
+    emit(ir_jmp, ir_label{node.ir.if_body_label});
+
+    {
+        emit(ir_make_label, ir_label{ node.ir.for_negative_label });
+        if (!node.forinfo.iterstep) {
+            // step = -1
+            emit(ir_load, fromref(stepvar), ir_int{ int_type(-1), ts->int32_type });
+        }
+        generate_ir_node(*node.forinfo.elemref);
+        generate_ir_node(*node.forinfo.iterend);
+        auto b = pop();
+        auto a = pop();
+        emit(ir_jmp_lte, a, b, ir_label { node.ir.if_end_label });
+    }
 
     push_control_labels({ node.ir.while_cond_label, node.ir.if_end_label });
 
     // evaluate the body
     emit(ir_make_label, ir_label{ node.ir.if_body_label });
     generate_ir_node(*node.children[2]);
+    
+    {
+        // elem = elem + step
+        generate_ir_node(*node.forinfo.elemref);
+        temit(ir_add, node.forinfo.elemref->tid, pop(), fromref(stepvar));
 
-    // increase the elem
-    generate_ir_node(*node.forinfo.increase_elem);
+        generate_ir_node(*node.forinfo.elemref);
+        auto dest = pop();
+        
+        emit(ir_load, dest, ir_stackpop{ node.forinfo.elemref->tid });
 
-    // jump to elem < range.end
-    emit(ir_jmp, ir_label{ node.ir.while_cond_label });
+        emit(ir_jmp, ir_label{ node.ir.while_cond_label });
+    }
 
     // end
     emit(ir_make_label, ir_label{ node.ir.if_end_label });
@@ -1018,7 +1064,7 @@ void generate_ir_init_expr(ast_node& node) {
 
             // Create a temp to hold the pointer
             auto ptr_type = get_ptr_type_to(*ts, orginstr.result_type);
-            receiver = create_temp_receiver(ptr_type);
+            receiver = create_temp_local(ptr_type);
             orginstr.operands = { fromref(*receiver), derefop };
             orginstr.op = ir_load;
             orginstr.result_type = ptr_type;
@@ -1027,20 +1073,20 @@ void generate_ir_init_expr(ast_node& node) {
             needsderef = true;
         }
         else if (orginstr.op == ir_index) {
-            auto temp = create_temp_receiver(get_ptr_type_to(*ts, node.tid));
+            auto temp = create_temp_local(get_ptr_type_to(*ts, node.tid));
             emit(ir_load_ptr, fromref(temp), fromref(*receiver));
             receiver = temp;
             needsderef = true;
         }
     }
     else if (receiver && std::holds_alternative<std::shared_ptr<ir_field>>(*receiver)) {
-        auto temp = create_temp_receiver(get_ptr_type_to(*ts, node.tid));
+        auto temp = create_temp_local(get_ptr_type_to(*ts, node.tid));
         emit(ir_load_ptr, fromref(temp), fromref(*receiver));
         receiver = temp;
         needsderef = true;
     }
     else if (!receiver) {
-        receiver = create_temp_receiver(node.tid);
+        receiver = create_temp_local(node.tid);
         is_receiver_temp = true;
     }
 

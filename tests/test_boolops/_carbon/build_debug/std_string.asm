@@ -43,8 +43,8 @@ cb__Nstd__Nstring__Nfrom_cstring__Aptr__Tslice__Tpure__Tuint8__Aptr__Tpure__Tuin
  mov %r10,-8(%rbp)
 # ir_load [L0 . 1] 0;
 
-cb__Nstd__Nstring__Nfrom_cstring__Aptr__Tslice__Tpure__Tuint8__Aptr__Tpure__Tuint8$w3289$cond:
-# ir_make_label cb__Nstd__Nstring__Nfrom_cstring__Aptr__Tslice__Tpure__Tuint8__Aptr__Tpure__Tuint8$w3289$cond;
+.w3210$cond:
+# ir_make_label .w3210$cond;
 
  mov 24(%rbp),%rax
 # ir_deref A1; (push)
@@ -54,11 +54,11 @@ cb__Nstd__Nstring__Nfrom_cstring__Aptr__Tslice__Tpure__Tuint8__Aptr__Tpure__Tuin
 # ir_cast POP(); (push)
 
  cmp $0,%eax
- je cb__Nstd__Nstring__Nfrom_cstring__Aptr__Tslice__Tpure__Tuint8__Aptr__Tpure__Tuint8$w3289$end
-# ir_jmp_eq POP() 0 cb__Nstd__Nstring__Nfrom_cstring__Aptr__Tslice__Tpure__Tuint8__Aptr__Tpure__Tuint8$w3289$end;
+ je .w3210$end
+# ir_jmp_eq POP() 0 .w3210$end;
 
-cb__Nstd__Nstring__Nfrom_cstring__Aptr__Tslice__Tpure__Tuint8__Aptr__Tpure__Tuint8$w3289$body:
-# ir_make_label cb__Nstd__Nstring__Nfrom_cstring__Aptr__Tslice__Tpure__Tuint8__Aptr__Tpure__Tuint8$w3289$body;
+.w3210$body:
+# ir_make_label .w3210$body;
 
  mov 24(%rbp),%r10
  add $1,%r10
@@ -76,11 +76,11 @@ cb__Nstd__Nstring__Nfrom_cstring__Aptr__Tslice__Tpure__Tuint8__Aptr__Tpure__Tuin
  mov %rax,-8(%rbp)
 # ir_load [L0 . 1] POP();
 
- jmp cb__Nstd__Nstring__Nfrom_cstring__Aptr__Tslice__Tpure__Tuint8__Aptr__Tpure__Tuint8$w3289$cond
-# ir_jmp cb__Nstd__Nstring__Nfrom_cstring__Aptr__Tslice__Tpure__Tuint8__Aptr__Tpure__Tuint8$w3289$cond;
+ jmp .w3210$cond
+# ir_jmp .w3210$cond;
 
-cb__Nstd__Nstring__Nfrom_cstring__Aptr__Tslice__Tpure__Tuint8__Aptr__Tpure__Tuint8$w3289$end:
-# ir_make_label cb__Nstd__Nstring__Nfrom_cstring__Aptr__Tslice__Tpure__Tuint8__Aptr__Tpure__Tuint8$w3289$end;
+.w3210$end:
+# ir_make_label .w3210$end;
 
  mov 16(%rbp),%rax
 # ir_deref A0; (push)
@@ -98,7 +98,7 @@ cb__Nstd__Nstring__Nfrom_cstring__Aptr__Tslice__Tpure__Tuint8__Aptr__Tpure__Tuin
  mov 16(%rbp),%rax
 # ir_return A0;
 
-cb__Nstd__Nstring__Nfrom_cstring__Aptr__Tslice__Tpure__Tuint8__Aptr__Tpure__Tuint8$end:
+.cb__Nstd__Nstring__Nfrom_cstring__Aptr__Tslice__Tpure__Tuint8__Aptr__Tpure__Tuint8$end:
  add $16,%rsp
  pop %rbp
  ret
@@ -110,7 +110,7 @@ cb__Nstd__Nstring__Nequals__Aptr__Tstring__Aptr__Tstring:
  push %rbx
  sub $8,%rsp
  mov %rsp,%rbp
- sub $32,%rsp
+ sub $48,%rsp
 # prolog end
 
  mov %rdi,%rbx
@@ -121,18 +121,18 @@ cb__Nstd__Nstring__Nequals__Aptr__Tstring__Aptr__Tstring:
 
  mov 8(%rbx),%r10
  cmp 8(%rax),%r10
- je cb__Nstd__Nstring__Nequals__Aptr__Tstring__Aptr__Tstring$if3333$else
-# ir_jmp_eq [POP() . 1] [POP() . 1] cb__Nstd__Nstring__Nequals__Aptr__Tstring__Aptr__Tstring$if3333$else;
+ je .if3254$else
+# ir_jmp_eq [POP() . 1] [POP() . 1] .if3254$else;
 
-cb__Nstd__Nstring__Nequals__Aptr__Tstring__Aptr__Tstring$if3333$body:
-# ir_make_label cb__Nstd__Nstring__Nequals__Aptr__Tstring__Aptr__Tstring$if3333$body;
+.if3254$body:
+# ir_make_label .if3254$body;
 
  xor %al,%al
- jmp cb__Nstd__Nstring__Nequals__Aptr__Tstring__Aptr__Tstring$end
+ jmp .cb__Nstd__Nstring__Nequals__Aptr__Tstring__Aptr__Tstring$end
 # ir_return 0;
 
-cb__Nstd__Nstring__Nequals__Aptr__Tstring__Aptr__Tstring$if3333$else:
-# ir_make_label cb__Nstd__Nstring__Nequals__Aptr__Tstring__Aptr__Tstring$if3333$else;
+.if3254$else:
+# ir_make_label .if3254$else;
 
  xor %r10d,%r10d
  mov %r10d,-32(%rbp)
@@ -149,19 +149,40 @@ cb__Nstd__Nstring__Nequals__Aptr__Tstring__Aptr__Tstring$if3333$else:
  mov %r10d,-4(%rbp)
 # ir_load L0 [L1 . 0];
 
-cb__Nstd__Nstring__Nequals__Aptr__Tstring__Aptr__Tstring$f3357$cond:
-# ir_make_label cb__Nstd__Nstring__Nequals__Aptr__Tstring__Aptr__Tstring$f3357$cond;
+.f3278$cond:
+# ir_make_label .f3278$cond;
+
+ mov -32(%rbp),%r10d
+ cmp -24(%rbp),%r10d
+ jge .f3278$neg
+# ir_jmp_gte [L1 . 0] [L1 . 1] .f3278$neg;
+
+ mov $1,%r10d
+ mov %r10d,-36(%rbp)
+# ir_load L2 1;
 
  mov -4(%rbp),%r10d
- mov %r10,%rax
-# ir_cast L0; (push)
+ cmp -24(%rbp),%r10d
+ jge .f3278$end
+# ir_jmp_gte L0 [L1 . 1] .f3278$end;
 
- cmp -24(%rbp),%rax
- jge cb__Nstd__Nstring__Nequals__Aptr__Tstring__Aptr__Tstring$f3357$end
-# ir_jmp_gte POP() [L1 . 1] cb__Nstd__Nstring__Nequals__Aptr__Tstring__Aptr__Tstring$f3357$end;
+ jmp .f3278$body
+# ir_jmp .f3278$body;
 
-cb__Nstd__Nstring__Nequals__Aptr__Tstring__Aptr__Tstring$f3357$body:
-# ir_make_label cb__Nstd__Nstring__Nequals__Aptr__Tstring__Aptr__Tstring$f3357$body;
+.f3278$neg:
+# ir_make_label .f3278$neg;
+
+ mov $-1,%r10d
+ mov %r10d,-36(%rbp)
+# ir_load L2 -1;
+
+ mov -4(%rbp),%r10d
+ cmp -24(%rbp),%r10d
+ jle .f3278$end
+# ir_jmp_lte L0 [L1 . 1] .f3278$end;
+
+.f3278$body:
+# ir_make_label .f3278$body;
 
  mov %rdi,%rax
 # ir_deref A0; (push)
@@ -187,38 +208,38 @@ cb__Nstd__Nstring__Nequals__Aptr__Tstring__Aptr__Tstring$f3357$body:
 
  mov (%rbx),%r10b
  cmp (%rax),%r10b
- je cb__Nstd__Nstring__Nequals__Aptr__Tstring__Aptr__Tstring$if3354$else
-# ir_jmp_eq POP() POP() cb__Nstd__Nstring__Nequals__Aptr__Tstring__Aptr__Tstring$if3354$else;
+ je .if3275$else
+# ir_jmp_eq POP() POP() .if3275$else;
 
-cb__Nstd__Nstring__Nequals__Aptr__Tstring__Aptr__Tstring$if3354$body:
-# ir_make_label cb__Nstd__Nstring__Nequals__Aptr__Tstring__Aptr__Tstring$if3354$body;
+.if3275$body:
+# ir_make_label .if3275$body;
 
  xor %al,%al
- jmp cb__Nstd__Nstring__Nequals__Aptr__Tstring__Aptr__Tstring$end
+ jmp .cb__Nstd__Nstring__Nequals__Aptr__Tstring__Aptr__Tstring$end
 # ir_return 0;
 
-cb__Nstd__Nstring__Nequals__Aptr__Tstring__Aptr__Tstring$if3354$else:
-# ir_make_label cb__Nstd__Nstring__Nequals__Aptr__Tstring__Aptr__Tstring$if3354$else;
+.if3275$else:
+# ir_make_label .if3275$else;
 
  mov -4(%rbp),%r10d
- add $1,%r10d
+ add -36(%rbp),%r10d
  mov %r10d,%eax
-# ir_add L0 1; (push)
+# ir_add L0 L2; (push)
 
  mov %eax,-4(%rbp)
 # ir_load L0 POP();
 
- jmp cb__Nstd__Nstring__Nequals__Aptr__Tstring__Aptr__Tstring$f3357$cond
-# ir_jmp cb__Nstd__Nstring__Nequals__Aptr__Tstring__Aptr__Tstring$f3357$cond;
+ jmp .f3278$cond
+# ir_jmp .f3278$cond;
 
-cb__Nstd__Nstring__Nequals__Aptr__Tstring__Aptr__Tstring$f3357$end:
-# ir_make_label cb__Nstd__Nstring__Nequals__Aptr__Tstring__Aptr__Tstring$f3357$end;
+.f3278$end:
+# ir_make_label .f3278$end;
 
  mov $1,%al
 # ir_return 1;
 
-cb__Nstd__Nstring__Nequals__Aptr__Tstring__Aptr__Tstring$end:
- add $40,%rsp
+.cb__Nstd__Nstring__Nequals__Aptr__Tstring__Aptr__Tstring$end:
+ add $56,%rsp
  pop %rbx
  pop %rbp
  ret
@@ -230,7 +251,7 @@ cb__Nstd__Nstring__Nfind__Aptr__Ttuple__Tusize__Tbool__Aptr__Tstring__Auint8:
  push %rbx
  sub $8,%rsp
  mov %rsp,%rbp
- sub $48,%rsp
+ sub $64,%rsp
 # prolog end
 
  xor %r10d,%r10d
@@ -248,19 +269,40 @@ cb__Nstd__Nstring__Nfind__Aptr__Ttuple__Tusize__Tbool__Aptr__Tstring__Auint8:
  mov %r10d,-4(%rbp)
 # ir_load L0 [L1 . 0];
 
-cb__Nstd__Nstring__Nfind__Aptr__Ttuple__Tusize__Tbool__Aptr__Tstring__Auint8$f3411$cond:
-# ir_make_label cb__Nstd__Nstring__Nfind__Aptr__Ttuple__Tusize__Tbool__Aptr__Tstring__Auint8$f3411$cond;
+.f3332$cond:
+# ir_make_label .f3332$cond;
+
+ mov -32(%rbp),%r10d
+ cmp -24(%rbp),%r10d
+ jge .f3332$neg
+# ir_jmp_gte [L1 . 0] [L1 . 1] .f3332$neg;
+
+ mov $1,%r10d
+ mov %r10d,-36(%rbp)
+# ir_load L2 1;
 
  mov -4(%rbp),%r10d
- mov %r10,%rax
-# ir_cast L0; (push)
+ cmp -24(%rbp),%r10d
+ jge .f3332$end
+# ir_jmp_gte L0 [L1 . 1] .f3332$end;
 
- cmp -24(%rbp),%rax
- jge cb__Nstd__Nstring__Nfind__Aptr__Ttuple__Tusize__Tbool__Aptr__Tstring__Auint8$f3411$end
-# ir_jmp_gte POP() [L1 . 1] cb__Nstd__Nstring__Nfind__Aptr__Ttuple__Tusize__Tbool__Aptr__Tstring__Auint8$f3411$end;
+ jmp .f3332$body
+# ir_jmp .f3332$body;
 
-cb__Nstd__Nstring__Nfind__Aptr__Ttuple__Tusize__Tbool__Aptr__Tstring__Auint8$f3411$body:
-# ir_make_label cb__Nstd__Nstring__Nfind__Aptr__Ttuple__Tusize__Tbool__Aptr__Tstring__Auint8$f3411$body;
+.f3332$neg:
+# ir_make_label .f3332$neg;
+
+ mov $-1,%r10d
+ mov %r10d,-36(%rbp)
+# ir_load L2 -1;
+
+ mov -4(%rbp),%r10d
+ cmp -24(%rbp),%r10d
+ jle .f3332$end
+# ir_jmp_lte L0 [L1 . 1] .f3332$end;
+
+.f3332$body:
+# ir_make_label .f3332$body;
 
  mov %rsi,%rax
 # ir_deref A1; (push)
@@ -275,17 +317,17 @@ cb__Nstd__Nstring__Nfind__Aptr__Ttuple__Tusize__Tbool__Aptr__Tstring__Auint8$f34
 
  mov (%rax),%r10b
  cmp %dl,%r10b
- jne cb__Nstd__Nstring__Nfind__Aptr__Ttuple__Tusize__Tbool__Aptr__Tstring__Auint8$if3408$else
-# ir_jmp_neq POP() A2 cb__Nstd__Nstring__Nfind__Aptr__Ttuple__Tusize__Tbool__Aptr__Tstring__Auint8$if3408$else;
+ jne .if3329$else
+# ir_jmp_neq POP() A2 .if3329$else;
 
-cb__Nstd__Nstring__Nfind__Aptr__Ttuple__Tusize__Tbool__Aptr__Tstring__Auint8$if3408$body:
-# ir_make_label cb__Nstd__Nstring__Nfind__Aptr__Ttuple__Tusize__Tbool__Aptr__Tstring__Auint8$if3408$body;
+.if3329$body:
+# ir_make_label .if3329$body;
 
- mov %rdi,-40(%rbp)
-# ir_load L2 A0;
+ mov %rdi,-48(%rbp)
+# ir_load L3 A0;
 
- mov -40(%rbp),%rbx
-# ir_deref L2; (push)
+ mov -48(%rbp),%rbx
+# ir_deref L3; (push)
 
  mov -4(%rbp),%r10d
  mov %r10,%rax
@@ -294,46 +336,46 @@ cb__Nstd__Nstring__Nfind__Aptr__Ttuple__Tusize__Tbool__Aptr__Tstring__Auint8$if3
  mov %rax,0(%rbx)
 # ir_load [POP() . 0] POP();
 
- mov -40(%rbp),%rax
-# ir_deref L2; (push)
+ mov -48(%rbp),%rax
+# ir_deref L3; (push)
 
  mov $1,%r10b
  mov %r10b,8(%rax)
 # ir_load [POP() . 1] 1;
 
  mov %rdi,%rax
- jmp cb__Nstd__Nstring__Nfind__Aptr__Ttuple__Tusize__Tbool__Aptr__Tstring__Auint8$end
+ jmp .cb__Nstd__Nstring__Nfind__Aptr__Ttuple__Tusize__Tbool__Aptr__Tstring__Auint8$end
 # ir_return A0;
 
-cb__Nstd__Nstring__Nfind__Aptr__Ttuple__Tusize__Tbool__Aptr__Tstring__Auint8$if3408$else:
-# ir_make_label cb__Nstd__Nstring__Nfind__Aptr__Ttuple__Tusize__Tbool__Aptr__Tstring__Auint8$if3408$else;
+.if3329$else:
+# ir_make_label .if3329$else;
 
  mov -4(%rbp),%r10d
- add $1,%r10d
+ add -36(%rbp),%r10d
  mov %r10d,%eax
-# ir_add L0 1; (push)
+# ir_add L0 L2; (push)
 
  mov %eax,-4(%rbp)
 # ir_load L0 POP();
 
- jmp cb__Nstd__Nstring__Nfind__Aptr__Ttuple__Tusize__Tbool__Aptr__Tstring__Auint8$f3411$cond
-# ir_jmp cb__Nstd__Nstring__Nfind__Aptr__Ttuple__Tusize__Tbool__Aptr__Tstring__Auint8$f3411$cond;
+ jmp .f3332$cond
+# ir_jmp .f3332$cond;
 
-cb__Nstd__Nstring__Nfind__Aptr__Ttuple__Tusize__Tbool__Aptr__Tstring__Auint8$f3411$end:
-# ir_make_label cb__Nstd__Nstring__Nfind__Aptr__Ttuple__Tusize__Tbool__Aptr__Tstring__Auint8$f3411$end;
+.f3332$end:
+# ir_make_label .f3332$end;
 
- mov %rdi,-48(%rbp)
-# ir_load L3 A0;
+ mov %rdi,-56(%rbp)
+# ir_load L4 A0;
 
- mov -48(%rbp),%rax
-# ir_deref L3; (push)
+ mov -56(%rbp),%rax
+# ir_deref L4; (push)
 
  xor %r10d,%r10d
  mov %r10,0(%rax)
 # ir_load [POP() . 0] 0;
 
- mov -48(%rbp),%rax
-# ir_deref L3; (push)
+ mov -56(%rbp),%rax
+# ir_deref L4; (push)
 
  xor %r10b,%r10b
  mov %r10b,8(%rax)
@@ -342,8 +384,8 @@ cb__Nstd__Nstring__Nfind__Aptr__Ttuple__Tusize__Tbool__Aptr__Tstring__Auint8$f34
  mov %rdi,%rax
 # ir_return A0;
 
-cb__Nstd__Nstring__Nfind__Aptr__Ttuple__Tusize__Tbool__Aptr__Tstring__Auint8$end:
- add $56,%rsp
+.cb__Nstd__Nstring__Nfind__Aptr__Ttuple__Tusize__Tbool__Aptr__Tstring__Auint8$end:
+ add $72,%rsp
  pop %rbx
  pop %rbp
  ret
@@ -358,7 +400,7 @@ cb__Nstd__Nstring__Nfind__Aptr__Ttuple__Tusize__Tbool__Aptr__Tstring__Aptr__Tstr
  push %rbx
  sub $8,%rsp
  mov %rsp,%rbp
- sub $96,%rsp
+ sub $112,%rsp
 # prolog end
 
  xor %r10d,%r10d
@@ -376,19 +418,40 @@ cb__Nstd__Nstring__Nfind__Aptr__Ttuple__Tusize__Tbool__Aptr__Tstring__Aptr__Tstr
  mov %r10d,-4(%rbp)
 # ir_load L0 [L1 . 0];
 
-cb__Nstd__Nstring__Nfind__Aptr__Ttuple__Tusize__Tbool__Aptr__Tstring__Aptr__Tstring$f3487$cond:
-# ir_make_label cb__Nstd__Nstring__Nfind__Aptr__Ttuple__Tusize__Tbool__Aptr__Tstring__Aptr__Tstring$f3487$cond;
+.f3408$cond:
+# ir_make_label .f3408$cond;
+
+ mov -32(%rbp),%r10d
+ cmp -24(%rbp),%r10d
+ jge .f3408$neg
+# ir_jmp_gte [L1 . 0] [L1 . 1] .f3408$neg;
+
+ mov $1,%r10d
+ mov %r10d,-68(%rbp)
+# ir_load L4 1;
 
  mov -4(%rbp),%r10d
- mov %r10,%rax
-# ir_cast L0; (push)
+ cmp -24(%rbp),%r10d
+ jge .f3408$end
+# ir_jmp_gte L0 [L1 . 1] .f3408$end;
 
- cmp -24(%rbp),%rax
- jge cb__Nstd__Nstring__Nfind__Aptr__Ttuple__Tusize__Tbool__Aptr__Tstring__Aptr__Tstring$f3487$end
-# ir_jmp_gte POP() [L1 . 1] cb__Nstd__Nstring__Nfind__Aptr__Ttuple__Tusize__Tbool__Aptr__Tstring__Aptr__Tstring$f3487$end;
+ jmp .f3408$body
+# ir_jmp .f3408$body;
 
-cb__Nstd__Nstring__Nfind__Aptr__Ttuple__Tusize__Tbool__Aptr__Tstring__Aptr__Tstring$f3487$body:
-# ir_make_label cb__Nstd__Nstring__Nfind__Aptr__Ttuple__Tusize__Tbool__Aptr__Tstring__Aptr__Tstring$f3487$body;
+.f3408$neg:
+# ir_make_label .f3408$neg;
+
+ mov $-1,%r10d
+ mov %r10d,-68(%rbp)
+# ir_load L4 -1;
+
+ mov -4(%rbp),%r10d
+ cmp -24(%rbp),%r10d
+ jle .f3408$end
+# ir_jmp_lte L0 [L1 . 1] .f3408$end;
+
+.f3408$body:
+# ir_make_label .f3408$body;
 
  mov 40(%rbp),%rax
 # ir_deref A1; (push)
@@ -413,8 +476,8 @@ cb__Nstd__Nstring__Nfind__Aptr__Ttuple__Tusize__Tbool__Aptr__Tstring__Aptr__Tstr
 
  mov (%rbx),%r10b
  cmp (%rax),%r10b
- jne cb__Nstd__Nstring__Nfind__Aptr__Ttuple__Tusize__Tbool__Aptr__Tstring__Aptr__Tstring$if3484$else
-# ir_jmp_neq POP() POP() cb__Nstd__Nstring__Nfind__Aptr__Ttuple__Tusize__Tbool__Aptr__Tstring__Aptr__Tstring$if3484$else;
+ jne .if3405$else
+# ir_jmp_neq POP() POP() .if3405$else;
 
  mov -4(%rbp),%r10d
  mov %r10,%rbx
@@ -430,8 +493,8 @@ cb__Nstd__Nstring__Nfind__Aptr__Ttuple__Tusize__Tbool__Aptr__Tstring__Aptr__Tstr
 # ir_deref A1; (push)
 
  cmp 8(%rax),%rbx
- jge cb__Nstd__Nstring__Nfind__Aptr__Ttuple__Tusize__Tbool__Aptr__Tstring__Aptr__Tstring$if3484$else
-# ir_jmp_gte POP() [POP() . 1] cb__Nstd__Nstring__Nfind__Aptr__Ttuple__Tusize__Tbool__Aptr__Tstring__Aptr__Tstring$if3484$else;
+ jge .if3405$else
+# ir_jmp_gte POP() [POP() . 1] .if3405$else;
 
  lea .cbstr0(%rip),%rax
 # ir_load_addr STR0; (push)
@@ -468,18 +531,18 @@ cb__Nstd__Nstring__Nfind__Aptr__Ttuple__Tusize__Tbool__Aptr__Tstring__Aptr__Tstr
 # ir_call cb__Nstd__Nstring__Nequals__Aptr__Tstring__Aptr__Tstring POP() POP(); (push)
 
  cmp $0,%al
- je cb__Nstd__Nstring__Nfind__Aptr__Ttuple__Tusize__Tbool__Aptr__Tstring__Aptr__Tstring$if3484$else
-# ir_jmp_eq POP() 0 cb__Nstd__Nstring__Nfind__Aptr__Ttuple__Tusize__Tbool__Aptr__Tstring__Aptr__Tstring$if3484$else;
+ je .if3405$else
+# ir_jmp_eq POP() 0 .if3405$else;
 
-cb__Nstd__Nstring__Nfind__Aptr__Ttuple__Tusize__Tbool__Aptr__Tstring__Aptr__Tstring$if3484$body:
-# ir_make_label cb__Nstd__Nstring__Nfind__Aptr__Ttuple__Tusize__Tbool__Aptr__Tstring__Aptr__Tstring$if3484$body;
+.if3405$body:
+# ir_make_label .if3405$body;
 
  mov 32(%rbp),%r10
- mov %r10,-72(%rbp)
-# ir_load L4 A0;
+ mov %r10,-80(%rbp)
+# ir_load L5 A0;
 
- mov -72(%rbp),%rbx
-# ir_deref L4; (push)
+ mov -80(%rbp),%rbx
+# ir_deref L5; (push)
 
  mov -4(%rbp),%r10d
  mov %r10,%rax
@@ -488,47 +551,47 @@ cb__Nstd__Nstring__Nfind__Aptr__Ttuple__Tusize__Tbool__Aptr__Tstring__Aptr__Tstr
  mov %rax,0(%rbx)
 # ir_load [POP() . 0] POP();
 
- mov -72(%rbp),%rax
-# ir_deref L4; (push)
+ mov -80(%rbp),%rax
+# ir_deref L5; (push)
 
  mov $1,%r10b
  mov %r10b,8(%rax)
 # ir_load [POP() . 1] 1;
 
  mov 32(%rbp),%rax
- jmp cb__Nstd__Nstring__Nfind__Aptr__Ttuple__Tusize__Tbool__Aptr__Tstring__Aptr__Tstring$end
+ jmp .cb__Nstd__Nstring__Nfind__Aptr__Ttuple__Tusize__Tbool__Aptr__Tstring__Aptr__Tstring$end
 # ir_return A0;
 
-cb__Nstd__Nstring__Nfind__Aptr__Ttuple__Tusize__Tbool__Aptr__Tstring__Aptr__Tstring$if3484$else:
-# ir_make_label cb__Nstd__Nstring__Nfind__Aptr__Ttuple__Tusize__Tbool__Aptr__Tstring__Aptr__Tstring$if3484$else;
+.if3405$else:
+# ir_make_label .if3405$else;
 
  mov -4(%rbp),%r10d
- add $1,%r10d
+ add -68(%rbp),%r10d
  mov %r10d,%eax
-# ir_add L0 1; (push)
+# ir_add L0 L4; (push)
 
  mov %eax,-4(%rbp)
 # ir_load L0 POP();
 
- jmp cb__Nstd__Nstring__Nfind__Aptr__Ttuple__Tusize__Tbool__Aptr__Tstring__Aptr__Tstring$f3487$cond
-# ir_jmp cb__Nstd__Nstring__Nfind__Aptr__Ttuple__Tusize__Tbool__Aptr__Tstring__Aptr__Tstring$f3487$cond;
+ jmp .f3408$cond
+# ir_jmp .f3408$cond;
 
-cb__Nstd__Nstring__Nfind__Aptr__Ttuple__Tusize__Tbool__Aptr__Tstring__Aptr__Tstring$f3487$end:
-# ir_make_label cb__Nstd__Nstring__Nfind__Aptr__Ttuple__Tusize__Tbool__Aptr__Tstring__Aptr__Tstring$f3487$end;
+.f3408$end:
+# ir_make_label .f3408$end;
 
  mov 32(%rbp),%r10
- mov %r10,-80(%rbp)
-# ir_load L5 A0;
+ mov %r10,-88(%rbp)
+# ir_load L6 A0;
 
- mov -80(%rbp),%rax
-# ir_deref L5; (push)
+ mov -88(%rbp),%rax
+# ir_deref L6; (push)
 
  xor %r10d,%r10d
  mov %r10,0(%rax)
 # ir_load [POP() . 0] 0;
 
- mov -80(%rbp),%rax
-# ir_deref L5; (push)
+ mov -88(%rbp),%rax
+# ir_deref L6; (push)
 
  xor %r10b,%r10b
  mov %r10b,8(%rax)
@@ -537,8 +600,8 @@ cb__Nstd__Nstring__Nfind__Aptr__Ttuple__Tusize__Tbool__Aptr__Tstring__Aptr__Tstr
  mov 32(%rbp),%rax
 # ir_return A0;
 
-cb__Nstd__Nstring__Nfind__Aptr__Ttuple__Tusize__Tbool__Aptr__Tstring__Aptr__Tstring$end:
- add $104,%rsp
+.cb__Nstd__Nstring__Nfind__Aptr__Ttuple__Tusize__Tbool__Aptr__Tstring__Aptr__Tstring$end:
+ add $120,%rsp
  pop %rbx
  pop %rbp
  ret

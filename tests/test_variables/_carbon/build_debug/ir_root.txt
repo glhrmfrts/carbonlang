@@ -14,12 +14,12 @@ func cb__Nroot__Nrun_compiler__Aptr__Tslice__Tpure__Tuint8 -> int
     local #3 $cbT11: slice__Tpure__Tuint8;
     local #4 $cbT12: slice__Tpure__Tuint8;
     local #5 $cbT13: slice__Tslice__Tpure__Tuint8;
-    local #6 temp$receiver$0: ptr__Tslice__Tpure__Tuint8;
-    local #7 temp$receiver$1: ptr__Tslice__Tpure__Tuint8;
-    local #8 temp$receiver$2: ptr__Tslice__Tpure__Tuint8;
-    local #9 temp$receiver$3: ptr__Tslice__Tpure__Tuint8;
-    local #10 temp$receiver$4: ptr__Tslice__Tpure__Tuint8;
-    local #11 temp$receiver$5: ptr__Tslice__Tpure__Tuint8;
+    local #6 $irtemp0: ptr__Tslice__Tpure__Tuint8;
+    local #7 $irtemp1: ptr__Tslice__Tpure__Tuint8;
+    local #8 $irtemp2: ptr__Tslice__Tpure__Tuint8;
+    local #9 $irtemp3: ptr__Tslice__Tpure__Tuint8;
+    local #10 $irtemp4: ptr__Tslice__Tpure__Tuint8;
+    local #11 $irtemp5: ptr__Tslice__Tpure__Tuint8;
     ir_store L0 0 0 160;
     ir_index L0 0; (push)
     ir_load_addr POP(); (push)

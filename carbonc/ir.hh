@@ -195,6 +195,8 @@ struct ir_node_data {
 
     std::string while_cond_label;
 
+    std::string for_negative_label;
+
     std::vector<ast_node*> scope_defer_statements;
 };
 

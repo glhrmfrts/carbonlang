@@ -3,33 +3,69 @@ func cb__Nroot__Nmain -> void
     local #1 b: uint16;
     local #2 c: uint32;
     local #3 d: uint64;
+    local #4 data: Data;
+    local #5 $cbT7: Data;
     ir_load L0 0;
     ir_load L1 0;
     ir_load L2 0;
     ir_load L3 0;
-    ir_call cb__Nroot__Nprintsize__Auint8 L0;
-    ir_call cb__Nroot__Nprintsize__Auint16 L1;
-    ir_call cb__Nroot__Nprintsize__Auint32 L2;
-    ir_call cb__Nroot__Nprintsize__Auint64 L3;
+    ir_store L4 0 0 32;
+    ir_call cb__Nroot__Nprint_size__Auint8 L0;
+    ir_call cb__Nroot__Nprint_size__Auint16 L1;
+    ir_call cb__Nroot__Nprint_size__Auint32 L2;
+    ir_call cb__Nroot__Nprint_size__Auint64 L3;
+    ir_copy L5 L4 32;
+    ir_load_addr L5; (push)
+    ir_call cb__Nroot__Nprint_size__Aptr__TData POP();
+    ir_call cb__Nroot__Nprint_size_type__Cint8;
+    ir_call cb__Nroot__Nprint_size_type__Cint16;
+    ir_call cb__Nroot__Nprint_size_type__Cint32;
+    ir_call cb__Nroot__Nprint_size_type__Cint64;
+    ir_call cb__Nroot__Nprint_size_type__CData;
 endf
 
-func cb__Nroot__Nprintsize__Auint8 -> void
+func cb__Nroot__Nprint_size__Auint8 -> void
     arg #0 i: uint8;
     ir_call cb__Nstd__Nio__Nprintln__Ausize 1;
 endf
 
-func cb__Nroot__Nprintsize__Auint16 -> void
+func cb__Nroot__Nprint_size__Auint16 -> void
     arg #0 i: uint16;
     ir_call cb__Nstd__Nio__Nprintln__Ausize 2;
 endf
 
-func cb__Nroot__Nprintsize__Auint32 -> void
+func cb__Nroot__Nprint_size__Auint32 -> void
     arg #0 i: uint32;
     ir_call cb__Nstd__Nio__Nprintln__Ausize 4;
 endf
 
-func cb__Nroot__Nprintsize__Auint64 -> void
+func cb__Nroot__Nprint_size__Auint64 -> void
     arg #0 i: uint64;
     ir_call cb__Nstd__Nio__Nprintln__Ausize 8;
+endf
+
+func cb__Nroot__Nprint_size__Aptr__TData -> void
+    arg #0 i: ptr__TData;
+    ir_call cb__Nstd__Nio__Nprintln__Ausize 32;
+endf
+
+func cb__Nroot__Nprint_size_type__Cint8 -> void
+    ir_call cb__Nstd__Nio__Nprintln__Ausize 1;
+endf
+
+func cb__Nroot__Nprint_size_type__Cint16 -> void
+    ir_call cb__Nstd__Nio__Nprintln__Ausize 2;
+endf
+
+func cb__Nroot__Nprint_size_type__Cint32 -> void
+    ir_call cb__Nstd__Nio__Nprintln__Ausize 4;
+endf
+
+func cb__Nroot__Nprint_size_type__Cint64 -> void
+    ir_call cb__Nstd__Nio__Nprintln__Ausize 8;
+endf
+
+func cb__Nroot__Nprint_size_type__CData -> void
+    ir_call cb__Nstd__Nio__Nprintln__Ausize 32;
 endf
 

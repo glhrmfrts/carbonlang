@@ -80,7 +80,7 @@ cb__Nstd__Nio__Nprint__Aptr__Tslice__Tpure__Tuint8:
 
 # ir_noop POP();
 
-cb__Nstd__Nio__Nprint__Aptr__Tslice__Tpure__Tuint8$end:
+.cb__Nstd__Nio__Nprint__Aptr__Tslice__Tpure__Tuint8$end:
  add $40,%rsp
  pop %rbx
  pop %rbp
@@ -103,7 +103,7 @@ cb__Nstd__Nio__Nprint__Aint:
  call cb__Nstd__Nsystem__Nwrite_int__Afile_handle__Aint
 # ir_call cb__Nstd__Nsystem__Nwrite_int__Afile_handle__Aint POP() A0;
 
-cb__Nstd__Nio__Nprint__Aint$end:
+.cb__Nstd__Nio__Nprint__Aint$end:
  add $16,%rsp
  pop %rbp
  ret
@@ -125,7 +125,7 @@ cb__Nstd__Nio__Nprint__Ausize:
  call cb__Nstd__Nio__Nprint__Aint
 # ir_call cb__Nstd__Nio__Nprint__Aint POP();
 
-cb__Nstd__Nio__Nprint__Ausize$end:
+.cb__Nstd__Nio__Nprint__Ausize$end:
  add $16,%rsp
  pop %rbp
  ret
@@ -141,11 +141,11 @@ cb__Nstd__Nio__Nprint__Abool:
 
  mov 16(%rbp),%r10b
  cmp $0,%r10b
- je cb__Nstd__Nio__Nprint__Abool$if148$else
-# ir_jmp_eq A0 0 cb__Nstd__Nio__Nprint__Abool$if148$else;
+ je .if148$else
+# ir_jmp_eq A0 0 .if148$else;
 
-cb__Nstd__Nio__Nprint__Abool$if148$body:
-# ir_make_label cb__Nstd__Nio__Nprint__Abool$if148$body;
+.if148$body:
+# ir_make_label .if148$body;
 
  lea .cbstr0(%rip),%rax
 # ir_load_addr STR0; (push)
@@ -164,11 +164,11 @@ cb__Nstd__Nio__Nprint__Abool$if148$body:
  call cb__Nstd__Nio__Nprint__Aptr__Tslice__Tpure__Tuint8
 # ir_call cb__Nstd__Nio__Nprint__Aptr__Tslice__Tpure__Tuint8 POP();
 
- jmp cb__Nstd__Nio__Nprint__Abool$if148$end
-# ir_jmp cb__Nstd__Nio__Nprint__Abool$if148$end;
+ jmp .if148$end
+# ir_jmp .if148$end;
 
-cb__Nstd__Nio__Nprint__Abool$if148$else:
-# ir_make_label cb__Nstd__Nio__Nprint__Abool$if148$else;
+.if148$else:
+# ir_make_label .if148$else;
 
  lea .cbstr1(%rip),%rax
 # ir_load_addr STR1; (push)
@@ -187,10 +187,10 @@ cb__Nstd__Nio__Nprint__Abool$if148$else:
  call cb__Nstd__Nio__Nprint__Aptr__Tslice__Tpure__Tuint8
 # ir_call cb__Nstd__Nio__Nprint__Aptr__Tslice__Tpure__Tuint8 POP();
 
-cb__Nstd__Nio__Nprint__Abool$if148$end:
-# ir_make_label cb__Nstd__Nio__Nprint__Abool$if148$end;
+.if148$end:
+# ir_make_label .if148$end;
 
-cb__Nstd__Nio__Nprint__Abool$end:
+.cb__Nstd__Nio__Nprint__Abool$end:
  add $48,%rsp
  pop %rbp
  ret
@@ -221,7 +221,7 @@ cb__Nstd__Nio__Nprint__Anil:
  call cb__Nstd__Nio__Nprint__Aptr__Tslice__Tpure__Tuint8
 # ir_call cb__Nstd__Nio__Nprint__Aptr__Tslice__Tpure__Tuint8 POP();
 
-cb__Nstd__Nio__Nprint__Anil$end:
+.cb__Nstd__Nio__Nprint__Anil$end:
  add $32,%rsp
  pop %rbp
  ret
@@ -260,7 +260,7 @@ cb__Nstd__Nio__Nprint__Aerror:
  call cb__Nstd__Nio__Nprint__Aptr__Tslice__Tpure__Tuint8
 # ir_call cb__Nstd__Nio__Nprint__Aptr__Tslice__Tpure__Tuint8 POP();
 
-cb__Nstd__Nio__Nprint__Aerror$end:
+.cb__Nstd__Nio__Nprint__Aerror$end:
  add $48,%rsp
  pop %rbp
  ret
@@ -327,7 +327,7 @@ cb__Nstd__Nio__Nprintln__Aptr__Tslice__Tpure__Tuint8:
 
 # ir_noop POP();
 
-cb__Nstd__Nio__Nprintln__Aptr__Tslice__Tpure__Tuint8$end:
+.cb__Nstd__Nio__Nprintln__Aptr__Tslice__Tpure__Tuint8$end:
  add $56,%rsp
  pop %rbx
  pop %rbp
@@ -376,7 +376,7 @@ cb__Nstd__Nio__Nprintln__Aint:
 
 # ir_noop POP();
 
-cb__Nstd__Nio__Nprintln__Aint$end:
+.cb__Nstd__Nio__Nprintln__Aint$end:
  add $40,%rsp
  pop %rbx
  pop %rbp
@@ -399,7 +399,7 @@ cb__Nstd__Nio__Nprintln__Ausize:
  call cb__Nstd__Nio__Nprintln__Aint
 # ir_call cb__Nstd__Nio__Nprintln__Aint POP();
 
-cb__Nstd__Nio__Nprintln__Ausize$end:
+.cb__Nstd__Nio__Nprintln__Ausize$end:
  add $16,%rsp
  pop %rbp
  ret
@@ -421,7 +421,7 @@ cb__Nstd__Nio__Nprintln__Aptr__Topaque:
  call cb__Nstd__Nio__Nprintln__Aint
 # ir_call cb__Nstd__Nio__Nprintln__Aint POP();
 
-cb__Nstd__Nio__Nprintln__Aptr__Topaque$end:
+.cb__Nstd__Nio__Nprintln__Aptr__Topaque$end:
  add $16,%rsp
  pop %rbp
  ret
@@ -456,7 +456,7 @@ cb__Nstd__Nio__Nprintln__Abool:
  call cb__Nstd__Nio__Nprintln__Aptr__Tslice__Tpure__Tuint8
 # ir_call cb__Nstd__Nio__Nprintln__Aptr__Tslice__Tpure__Tuint8 POP();
 
-cb__Nstd__Nio__Nprintln__Abool$end:
+.cb__Nstd__Nio__Nprintln__Abool$end:
  add $32,%rsp
  pop %rbp
  ret
@@ -491,7 +491,7 @@ cb__Nstd__Nio__Nprintln__Anil:
  call cb__Nstd__Nio__Nprintln__Aptr__Tslice__Tpure__Tuint8
 # ir_call cb__Nstd__Nio__Nprintln__Aptr__Tslice__Tpure__Tuint8 POP();
 
-cb__Nstd__Nio__Nprintln__Anil$end:
+.cb__Nstd__Nio__Nprintln__Anil$end:
  add $32,%rsp
  pop %rbp
  ret
@@ -526,7 +526,7 @@ cb__Nstd__Nio__Nprintln__Aerror:
  call cb__Nstd__Nio__Nprintln__Aptr__Tslice__Tpure__Tuint8
 # ir_call cb__Nstd__Nio__Nprintln__Aptr__Tslice__Tpure__Tuint8 POP();
 
-cb__Nstd__Nio__Nprintln__Aerror$end:
+.cb__Nstd__Nio__Nprintln__Aerror$end:
  add $32,%rsp
  pop %rbp
  ret

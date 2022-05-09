@@ -48,7 +48,7 @@ cb__Nroot__Nmain:
  call cb__Nstd__Nio__Nprintln__Aerror
 # ir_call cb__Nstd__Nio__Nprintln__Aerror 2669138376;
 
-cb__Nroot__Nmain$end:
+.cb__Nroot__Nmain$end:
  add $16,%rsp
  pop %rbp
  ret

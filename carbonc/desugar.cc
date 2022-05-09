@@ -217,15 +217,13 @@ void desugar(type_system& ts, ast_node* nodeptr) {
         enter_scope_local(ts, node);
         visit_tree(ts, *node.forinfo.declare_for_iter);
         visit_tree(ts, *node.forinfo.declare_elem_to_range_start);
-        visit_tree(ts, *node.forinfo.compare_elem_to_range_end);
-        visit_tree(ts, *node.forinfo.increase_elem);
         visit_tree(ts, *node.children[ast_node::child_for_stmt_body]);
         leave_scope_local(ts);
         break;
     }
     case ast_type::if_stmt:
     case ast_type::for_cond_stmt:
-    case ast_type::compound_stmt: {        
+    case ast_type::compound_stmt: {
         if (node.scope.self) {
             enter_scope_local(ts, node);
             visit_pre_children(ts, node);

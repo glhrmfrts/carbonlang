@@ -268,6 +268,18 @@ struct generator {
         return res;
     }
 
+    bool is_const_reg(gen_operand op) {
+        if (std::holds_alternative<gen_register>(op)) {
+            auto reg = std::get<gen_register>(op);
+            for (const auto& areg : this->register_args) {
+                if (areg == reg) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     std::pair<std::int32_t, bool> find_max_call_arg_size(const ir_func& func) {
         std::int32_t sz = 0;
         bool calls_ever_made = false;
@@ -536,7 +548,7 @@ struct generator {
 
     void generate_func_code(ir_func& func) {
         auto& fdata = funcdata[func.index];
-        fdata.end_label = func.name + "$end";
+        fdata.end_label = "." + func.name + "$end";
         fdata.instrdata.resize(func.instrs.size());
         fdata.arg_data.resize(func.args.size());
         fdata.local_data.resize(func.locals.size());
@@ -974,7 +986,7 @@ struct generator {
 
                 a = toop(adjust_for_type(rax, atype));
             } else {
-                if (!is_reg(a)) {
+                if (!is_reg(a) || is_const_reg(a)) {
                     move(adjust_for_type(reg_intermediate, instr.result_type), instr.result_type, a, atype);
                     a = toop(adjust_for_type(reg_intermediate, instr.result_type));
                 }
@@ -997,7 +1009,7 @@ struct generator {
 
             gen_destination op = todest(a);
 
-            if (!is_reg(a)) {
+            if (!is_reg(a) || is_const_reg(a)) {
                 auto reg = adjust_for_type(reg_intermediate, atype);
                 move(reg, atype, a, atype);
                 op = reg;
@@ -1032,7 +1044,6 @@ struct generator {
             move(dest, instr.result_type, toop(op), atype);
 
             push(toop(dest));
-
             break;
         }
         case ir_cast: {

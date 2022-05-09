@@ -1,0 +1,6 @@
+import std::io
+
+func main() {
+    let a,b = 1,2
+    print(a) print(",") println(b)
+}

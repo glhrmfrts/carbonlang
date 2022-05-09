@@ -1,7 +1,3 @@
-std::mem - Allocating block of 4096 bytes
-std::mem - Growing block fill to 48 bytes
-std::mem - Growing block fill to 128 bytes
-std::mem - Growing block fill to 192 bytes
 carbonc - compiling target: subtest1
 
 carbonc - compiling module: root

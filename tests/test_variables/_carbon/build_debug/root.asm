@@ -299,7 +299,7 @@ cb__Nroot__Nrun_compiler__Aptr__Tslice__Tpure__Tuint8:
  mov -184(%rbp),%eax
 # ir_return [L2 . 0];
 
-cb__Nroot__Nrun_compiler__Aptr__Tslice__Tpure__Tuint8$end:
+.cb__Nroot__Nrun_compiler__Aptr__Tslice__Tpure__Tuint8$end:
  add $320,%rsp
  pop %r12
  pop %rbx
@@ -383,7 +383,7 @@ cb__Nroot__Nmain:
  call cb__Nstd__Nio__Nprintln__Abool
 # ir_call cb__Nstd__Nio__Nprintln__Abool POP();
 
-cb__Nroot__Nmain$end:
+.cb__Nroot__Nmain$end:
  add $144,%rsp
  pop %rbp
  ret

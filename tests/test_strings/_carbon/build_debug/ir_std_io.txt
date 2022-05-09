@@ -31,21 +31,21 @@ func cb__Nstd__Nio__Nprint__Abool -> void
     arg #0 b: bool;
     local #0 $cbT15: slice__Tpure__Tuint8;
     local #1 $cbT16: slice__Tpure__Tuint8;
-    ir_jmp_eq A0 0 cb__Nstd__Nio__Nprint__Abool$if277$else;
-    ir_make_label cb__Nstd__Nio__Nprint__Abool$if277$body;
+    ir_jmp_eq A0 0 .if277$else;
+    ir_make_label .if277$body;
     ir_load_addr STR0; (push)
     ir_load [L0 . 0] POP();
     ir_load [L0 . 1] 4;
     ir_load_addr L0; (push)
     ir_call cb__Nstd__Nio__Nprint__Aptr__Tslice__Tpure__Tuint8 POP();
-    ir_jmp cb__Nstd__Nio__Nprint__Abool$if277$end;
-    ir_make_label cb__Nstd__Nio__Nprint__Abool$if277$else;
+    ir_jmp .if277$end;
+    ir_make_label .if277$else;
     ir_load_addr STR1; (push)
     ir_load [L1 . 0] POP();
     ir_load [L1 . 1] 5;
     ir_load_addr L1; (push)
     ir_call cb__Nstd__Nio__Nprint__Aptr__Tslice__Tpure__Tuint8 POP();
-    ir_make_label cb__Nstd__Nio__Nprint__Abool$if277$end;
+    ir_make_label .if277$end;
 endf
 
 func cb__Nstd__Nio__Nprint__Anil -> void

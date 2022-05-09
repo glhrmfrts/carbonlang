@@ -82,7 +82,7 @@ cb__Nroot__Nmain:
  call cb__Nstd__Nio__Nprintln__Aptr__Tslice__Tpure__Tuint8
 # ir_call cb__Nstd__Nio__Nprintln__Aptr__Tslice__Tpure__Tuint8 POP();
 
-cb__Nroot__Nmain$end:
+.cb__Nroot__Nmain$end:
  add $64,%rsp
  pop %rbp
  ret

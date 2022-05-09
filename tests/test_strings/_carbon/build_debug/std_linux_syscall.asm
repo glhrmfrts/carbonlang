@@ -51,7 +51,7 @@ cb__Nstd__Nlinux__Nsyscall__Nread__Auint__Aptr__Tuint8__Ausize:
     syscall
 
 
-cb__Nstd__Nlinux__Nsyscall__Nread__Auint__Aptr__Tuint8__Ausize$end:
+.cb__Nstd__Nlinux__Nsyscall__Nread__Auint__Aptr__Tuint8__Ausize$end:
  pop %rbp
  ret
 
@@ -70,7 +70,7 @@ cb__Nstd__Nlinux__Nsyscall__Nwrite__Auint__Aptr__Tpure__Tuint8__Ausize:
     syscall
 
 
-cb__Nstd__Nlinux__Nsyscall__Nwrite__Auint__Aptr__Tpure__Tuint8__Ausize$end:
+.cb__Nstd__Nlinux__Nsyscall__Nwrite__Auint__Aptr__Tpure__Tuint8__Ausize$end:
  pop %rbp
  ret
 
@@ -84,7 +84,7 @@ cb__Nstd__Nlinux__Nsyscall__Nopen__Aptr__Tpure__Tuint8__Aint__Aint16:
     mov $2, %rax
     syscall
 
-cb__Nstd__Nlinux__Nsyscall__Nopen__Aptr__Tpure__Tuint8__Aint__Aint16$end:
+.cb__Nstd__Nlinux__Nsyscall__Nopen__Aptr__Tpure__Tuint8__Aint__Aint16$end:
  pop %rbp
  ret
 
@@ -98,7 +98,7 @@ cb__Nstd__Nlinux__Nsyscall__Nclose__Auint:
     mov $3, %rax
     syscall
 
-cb__Nstd__Nlinux__Nsyscall__Nclose__Auint$end:
+.cb__Nstd__Nlinux__Nsyscall__Nclose__Auint$end:
  pop %rbp
  ret
 
@@ -112,7 +112,7 @@ cb__Nstd__Nlinux__Nsyscall__Nstat__Aptr__Tpure__Tuint8__Aptr__Topaque:
     mov $4, %rax
     syscall
 
-cb__Nstd__Nlinux__Nsyscall__Nstat__Aptr__Tpure__Tuint8__Aptr__Topaque$end:
+.cb__Nstd__Nlinux__Nsyscall__Nstat__Aptr__Tpure__Tuint8__Aptr__Topaque$end:
  pop %rbp
  ret
 
@@ -126,7 +126,7 @@ cb__Nstd__Nlinux__Nsyscall__Nfstat__Aint__Aptr__Topaque:
     mov $5, %rax
     syscall
 
-cb__Nstd__Nlinux__Nsyscall__Nfstat__Aint__Aptr__Topaque$end:
+.cb__Nstd__Nlinux__Nsyscall__Nfstat__Aint__Aptr__Topaque$end:
  pop %rbp
  ret
 
@@ -141,7 +141,7 @@ cb__Nstd__Nlinux__Nsyscall__Nmmap__Aptr__Topaque__Ausize__Aint__Aint__Aint__Ausi
     mov %rcx, %r10
     syscall
 
-cb__Nstd__Nlinux__Nsyscall__Nmmap__Aptr__Topaque__Ausize__Aint__Aint__Aint__Ausize$end:
+.cb__Nstd__Nlinux__Nsyscall__Nmmap__Aptr__Topaque__Ausize__Aint__Aint__Aint__Ausize$end:
  pop %rbp
  ret
 
@@ -155,7 +155,7 @@ cb__Nstd__Nlinux__Nsyscall__Nmunmap__Aptr__Topaque__Ausize:
     mov $0xB, %rax
     syscall
 
-cb__Nstd__Nlinux__Nsyscall__Nmunmap__Aptr__Topaque__Ausize$end:
+.cb__Nstd__Nlinux__Nsyscall__Nmunmap__Aptr__Topaque__Ausize$end:
  pop %rbp
  ret
 
@@ -169,7 +169,7 @@ cb__Nstd__Nlinux__Nsyscall__Nchdir__Aptr__Tpure__Tuint8:
     mov $0x50, %rax
     syscall
 
-cb__Nstd__Nlinux__Nsyscall__Nchdir__Aptr__Tpure__Tuint8$end:
+.cb__Nstd__Nlinux__Nsyscall__Nchdir__Aptr__Tpure__Tuint8$end:
  pop %rbp
  ret
 
@@ -183,7 +183,7 @@ cb__Nstd__Nlinux__Nsyscall__Nrename__Aptr__Tpure__Tuint8__Aptr__Tpure__Tuint8:
     mov $0x52, %rax
     syscall
 
-cb__Nstd__Nlinux__Nsyscall__Nrename__Aptr__Tpure__Tuint8__Aptr__Tpure__Tuint8$end:
+.cb__Nstd__Nlinux__Nsyscall__Nrename__Aptr__Tpure__Tuint8__Aptr__Tpure__Tuint8$end:
  pop %rbp
  ret
 
@@ -197,7 +197,7 @@ cb__Nstd__Nlinux__Nsyscall__Nmkdir__Aptr__Tpure__Tuint8__Aint16:
     mov $0x53, %rax
     syscall
 
-cb__Nstd__Nlinux__Nsyscall__Nmkdir__Aptr__Tpure__Tuint8__Aint16$end:
+.cb__Nstd__Nlinux__Nsyscall__Nmkdir__Aptr__Tpure__Tuint8__Aint16$end:
  pop %rbp
  ret
 
@@ -211,7 +211,7 @@ cb__Nstd__Nlinux__Nsyscall__Nrmdir__Aptr__Tpure__Tuint8:
     mov $0x54, %rax
     syscall
 
-cb__Nstd__Nlinux__Nsyscall__Nrmdir__Aptr__Tpure__Tuint8$end:
+.cb__Nstd__Nlinux__Nsyscall__Nrmdir__Aptr__Tpure__Tuint8$end:
  pop %rbp
  ret
 
@@ -225,7 +225,7 @@ cb__Nstd__Nlinux__Nsyscall__Nunlink__Aptr__Tpure__Tuint8:
     mov $0x57, %rax
     syscall
 
-cb__Nstd__Nlinux__Nsyscall__Nunlink__Aptr__Tpure__Tuint8$end:
+.cb__Nstd__Nlinux__Nsyscall__Nunlink__Aptr__Tpure__Tuint8$end:
  pop %rbp
  ret
 
@@ -240,7 +240,7 @@ cb__Nstd__Nlinux__Nsyscall__Nexit__Aint:
                             # code is already in rdi
     syscall
 
-cb__Nstd__Nlinux__Nsyscall__Nexit__Aint$end:
+.cb__Nstd__Nlinux__Nsyscall__Nexit__Aint$end:
  pop %rbp
  ret
 
@@ -253,7 +253,7 @@ cb__Nstd__Nlinux__Nsyscall__Nfork:
     mov $57, %rax
     syscall
 
-cb__Nstd__Nlinux__Nsyscall__Nfork$end:
+.cb__Nstd__Nlinux__Nsyscall__Nfork$end:
  add $8,%rsp
  ret
 
@@ -267,7 +267,7 @@ cb__Nstd__Nlinux__Nsyscall__Nexecve__Aptr__Tpure__Tuint8__Aptr__Tptr__Tpure__Tui
     mov $59, %rax
     syscall
 
-cb__Nstd__Nlinux__Nsyscall__Nexecve__Aptr__Tpure__Tuint8__Aptr__Tptr__Tpure__Tuint8__Aptr__Tptr__Tpure__Tuint8$end:
+.cb__Nstd__Nlinux__Nsyscall__Nexecve__Aptr__Tpure__Tuint8__Aptr__Tptr__Tpure__Tuint8__Aptr__Tptr__Tpure__Tuint8$end:
  pop %rbp
  ret
 
@@ -282,7 +282,7 @@ cb__Nstd__Nlinux__Nsyscall__Nwait4__Aint__Aptr__Tint__Aint__Aptr__Topaque:
     mov %rcx,%r10
     syscall
 
-cb__Nstd__Nlinux__Nsyscall__Nwait4__Aint__Aptr__Tint__Aint__Aptr__Topaque$end:
+.cb__Nstd__Nlinux__Nsyscall__Nwait4__Aint__Aptr__Tint__Aint__Aptr__Topaque$end:
  pop %rbp
  ret
 

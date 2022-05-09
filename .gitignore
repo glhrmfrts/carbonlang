@@ -2,3 +2,5 @@ build/
 build_linux/
 *.o
 *.obj
+_carbon
+*.out

@@ -310,7 +310,7 @@ cb__Nroot__Nmain:
  call cb__Nstd__Nio__Nprintln__Ausize
 # ir_call cb__Nstd__Nio__Nprintln__Ausize [L4 . 1];
 
-cb__Nroot__Nmain$end:
+.cb__Nroot__Nmain$end:
  add $240,%rsp
  pop %rbp
  ret

@@ -41,7 +41,7 @@ cb__Nroot__Nmain:
  call cb__Nstd__Nio__Nprintln__Aint
 # ir_call cb__Nstd__Nio__Nprintln__Aint L0;
 
-cb__Nroot__Nmain$end:
+.cb__Nroot__Nmain$end:
  add $32,%rsp
  pop %rbp
  ret
@@ -62,7 +62,7 @@ cb__Nroot__Ntest_div__Aint__Aint:
 
 # ir_return POP();
 
-cb__Nroot__Ntest_div__Aint__Aint$end:
+.cb__Nroot__Ntest_div__Aint__Aint$end:
  pop %rbp
  ret
 

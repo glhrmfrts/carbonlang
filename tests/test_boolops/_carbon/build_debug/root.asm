@@ -39,7 +39,7 @@ cb__Nroot__Nside_effect:
  mov $1,%al
 # ir_return 1;
 
-cb__Nroot__Nside_effect$end:
+.cb__Nroot__Nside_effect$end:
  add $8,%rsp
  ret
 
@@ -71,33 +71,33 @@ cb__Nroot__Nmain:
 
  mov $2,%r10d
  cmp $5,%r10d
- jge cb__Nroot__Nmain$if5050$else
-# ir_jmp_gte 2 5 cb__Nroot__Nmain$if5050$else;
+ jge .if4938$else
+# ir_jmp_gte 2 5 .if4938$else;
 
  mov $10,%r10d
  cmp $10,%r10d
- jne cb__Nroot__Nmain$if5050$else
-# ir_jmp_neq 10 10 cb__Nroot__Nmain$if5050$else;
+ jne .if4938$else
+# ir_jmp_neq 10 10 .if4938$else;
 
-cb__Nroot__Nmain$if5050$body:
-# ir_make_label cb__Nroot__Nmain$if5050$body;
+.if4938$body:
+# ir_make_label .if4938$body;
 
  mov $1,%r10b
  mov %r10b,-2(%rbp)
 # ir_load L1 1;
 
- jmp cb__Nroot__Nmain$if5050$end
-# ir_jmp cb__Nroot__Nmain$if5050$end;
+ jmp .if4938$end
+# ir_jmp .if4938$end;
 
-cb__Nroot__Nmain$if5050$else:
-# ir_make_label cb__Nroot__Nmain$if5050$else;
+.if4938$else:
+# ir_make_label .if4938$else;
 
  xor %r10b,%r10b
  mov %r10b,-2(%rbp)
 # ir_load L1 0;
 
-cb__Nroot__Nmain$if5050$end:
-# ir_make_label cb__Nroot__Nmain$if5050$end;
+.if4938$end:
+# ir_make_label .if4938$end;
 
  mov -2(%rbp),%dil
  call cb__Nstd__Nio__Nprintln__Abool
@@ -105,33 +105,33 @@ cb__Nroot__Nmain$if5050$end:
 
  mov $2,%r10d
  cmp $5,%r10d
- jge cb__Nroot__Nmain$if5071$else
-# ir_jmp_gte 2 5 cb__Nroot__Nmain$if5071$else;
+ jge .if4959$else
+# ir_jmp_gte 2 5 .if4959$else;
 
  mov $10,%r10d
  cmp $11,%r10d
- jne cb__Nroot__Nmain$if5071$else
-# ir_jmp_neq 10 11 cb__Nroot__Nmain$if5071$else;
+ jne .if4959$else
+# ir_jmp_neq 10 11 .if4959$else;
 
-cb__Nroot__Nmain$if5071$body:
-# ir_make_label cb__Nroot__Nmain$if5071$body;
+.if4959$body:
+# ir_make_label .if4959$body;
 
  mov $1,%r10b
  mov %r10b,-3(%rbp)
 # ir_load L2 1;
 
- jmp cb__Nroot__Nmain$if5071$end
-# ir_jmp cb__Nroot__Nmain$if5071$end;
+ jmp .if4959$end
+# ir_jmp .if4959$end;
 
-cb__Nroot__Nmain$if5071$else:
-# ir_make_label cb__Nroot__Nmain$if5071$else;
+.if4959$else:
+# ir_make_label .if4959$else;
 
  xor %r10b,%r10b
  mov %r10b,-3(%rbp)
 # ir_load L2 0;
 
-cb__Nroot__Nmain$if5071$end:
-# ir_make_label cb__Nroot__Nmain$if5071$end;
+.if4959$end:
+# ir_make_label .if4959$end;
 
  mov -3(%rbp),%dil
  call cb__Nstd__Nio__Nprintln__Abool
@@ -139,38 +139,38 @@ cb__Nroot__Nmain$if5071$end:
 
  mov $2,%r10d
  cmp $5,%r10d
- jge cb__Nroot__Nmain$if5096$else
-# ir_jmp_gte 2 5 cb__Nroot__Nmain$if5096$else;
+ jge .if4984$else
+# ir_jmp_gte 2 5 .if4984$else;
 
  mov $10,%r10d
  cmp $11,%r10d
- jne cb__Nroot__Nmain$if5096$else
-# ir_jmp_neq 10 11 cb__Nroot__Nmain$if5096$else;
+ jne .if4984$else
+# ir_jmp_neq 10 11 .if4984$else;
 
  mov $90,%r10d
  cmp $10,%r10d
- jge cb__Nroot__Nmain$if5096$else
-# ir_jmp_gte 90 10 cb__Nroot__Nmain$if5096$else;
+ jge .if4984$else
+# ir_jmp_gte 90 10 .if4984$else;
 
-cb__Nroot__Nmain$if5096$body:
-# ir_make_label cb__Nroot__Nmain$if5096$body;
+.if4984$body:
+# ir_make_label .if4984$body;
 
  mov $1,%r10b
  mov %r10b,-4(%rbp)
 # ir_load L3 1;
 
- jmp cb__Nroot__Nmain$if5096$end
-# ir_jmp cb__Nroot__Nmain$if5096$end;
+ jmp .if4984$end
+# ir_jmp .if4984$end;
 
-cb__Nroot__Nmain$if5096$else:
-# ir_make_label cb__Nroot__Nmain$if5096$else;
+.if4984$else:
+# ir_make_label .if4984$else;
 
  xor %r10b,%r10b
  mov %r10b,-4(%rbp)
 # ir_load L3 0;
 
-cb__Nroot__Nmain$if5096$end:
-# ir_make_label cb__Nroot__Nmain$if5096$end;
+.if4984$end:
+# ir_make_label .if4984$end;
 
  mov -4(%rbp),%dil
  call cb__Nstd__Nio__Nprintln__Abool
@@ -178,33 +178,33 @@ cb__Nroot__Nmain$if5096$end:
 
  mov $2,%r10d
  cmp $5,%r10d
- jl cb__Nroot__Nmain$if5117$body
-# ir_jmp_lt 2 5 cb__Nroot__Nmain$if5117$body;
+ jl .if5005$body
+# ir_jmp_lt 2 5 .if5005$body;
 
  mov $10,%r10d
  cmp $10,%r10d
- jne cb__Nroot__Nmain$if5117$else
-# ir_jmp_neq 10 10 cb__Nroot__Nmain$if5117$else;
+ jne .if5005$else
+# ir_jmp_neq 10 10 .if5005$else;
 
-cb__Nroot__Nmain$if5117$body:
-# ir_make_label cb__Nroot__Nmain$if5117$body;
+.if5005$body:
+# ir_make_label .if5005$body;
 
  mov $1,%r10b
  mov %r10b,-5(%rbp)
 # ir_load L4 1;
 
- jmp cb__Nroot__Nmain$if5117$end
-# ir_jmp cb__Nroot__Nmain$if5117$end;
+ jmp .if5005$end
+# ir_jmp .if5005$end;
 
-cb__Nroot__Nmain$if5117$else:
-# ir_make_label cb__Nroot__Nmain$if5117$else;
+.if5005$else:
+# ir_make_label .if5005$else;
 
  xor %r10b,%r10b
  mov %r10b,-5(%rbp)
 # ir_load L4 0;
 
-cb__Nroot__Nmain$if5117$end:
-# ir_make_label cb__Nroot__Nmain$if5117$end;
+.if5005$end:
+# ir_make_label .if5005$end;
 
  mov -5(%rbp),%dil
  call cb__Nstd__Nio__Nprintln__Abool
@@ -212,38 +212,38 @@ cb__Nroot__Nmain$if5117$end:
 
  mov $2,%r10d
  cmp $5,%r10d
- jl cb__Nroot__Nmain$if5142$body
-# ir_jmp_lt 2 5 cb__Nroot__Nmain$if5142$body;
+ jl .if5030$body
+# ir_jmp_lt 2 5 .if5030$body;
 
  mov $10,%r10d
  cmp $11,%r10d
- jne cb__Nroot__Nmain$if5142$else
-# ir_jmp_neq 10 11 cb__Nroot__Nmain$if5142$else;
+ jne .if5030$else
+# ir_jmp_neq 10 11 .if5030$else;
 
  mov $90,%r10d
  cmp $10,%r10d
- jle cb__Nroot__Nmain$if5142$else
-# ir_jmp_lte 90 10 cb__Nroot__Nmain$if5142$else;
+ jle .if5030$else
+# ir_jmp_lte 90 10 .if5030$else;
 
-cb__Nroot__Nmain$if5142$body:
-# ir_make_label cb__Nroot__Nmain$if5142$body;
+.if5030$body:
+# ir_make_label .if5030$body;
 
  mov $1,%r10b
  mov %r10b,-6(%rbp)
 # ir_load L5 1;
 
- jmp cb__Nroot__Nmain$if5142$end
-# ir_jmp cb__Nroot__Nmain$if5142$end;
+ jmp .if5030$end
+# ir_jmp .if5030$end;
 
-cb__Nroot__Nmain$if5142$else:
-# ir_make_label cb__Nroot__Nmain$if5142$else;
+.if5030$else:
+# ir_make_label .if5030$else;
 
  xor %r10b,%r10b
  mov %r10b,-6(%rbp)
 # ir_load L5 0;
 
-cb__Nroot__Nmain$if5142$end:
-# ir_make_label cb__Nroot__Nmain$if5142$end;
+.if5030$end:
+# ir_make_label .if5030$end;
 
  mov -6(%rbp),%dil
  call cb__Nstd__Nio__Nprintln__Abool
@@ -251,73 +251,73 @@ cb__Nroot__Nmain$if5142$end:
 
  mov $2,%r10d
  cmp $5,%r10d
- jl cb__Nroot__Nmain$if120$body
-# ir_jmp_lt 2 5 cb__Nroot__Nmain$if120$body;
+ jl .if120$body
+# ir_jmp_lt 2 5 .if120$body;
 
  mov $10,%r10d
  cmp $11,%r10d
- jne cb__Nroot__Nmain$if120$else
-# ir_jmp_neq 10 11 cb__Nroot__Nmain$if120$else;
+ jne .if120$else
+# ir_jmp_neq 10 11 .if120$else;
 
  mov $90,%r10d
  cmp $10,%r10d
- jle cb__Nroot__Nmain$if120$else
-# ir_jmp_lte 90 10 cb__Nroot__Nmain$if120$else;
+ jle .if120$else
+# ir_jmp_lte 90 10 .if120$else;
 
-cb__Nroot__Nmain$if120$body:
-# ir_make_label cb__Nroot__Nmain$if120$body;
+.if120$body:
+# ir_make_label .if120$body;
 
  mov $1,%dil
  call cb__Nstd__Nio__Nprintln__Abool
 # ir_call cb__Nstd__Nio__Nprintln__Abool 1;
 
- jmp cb__Nroot__Nmain$if120$end
-# ir_jmp cb__Nroot__Nmain$if120$end;
+ jmp .if120$end
+# ir_jmp .if120$end;
 
-cb__Nroot__Nmain$if120$else:
-# ir_make_label cb__Nroot__Nmain$if120$else;
+.if120$else:
+# ir_make_label .if120$else;
 
  xor %dil,%dil
  call cb__Nstd__Nio__Nprintln__Abool
 # ir_call cb__Nstd__Nio__Nprintln__Abool 0;
 
-cb__Nroot__Nmain$if120$end:
-# ir_make_label cb__Nroot__Nmain$if120$end;
+.if120$end:
+# ir_make_label .if120$end;
 
  mov $2,%r10d
  cmp $5,%r10d
- jge cb__Nroot__Nmain$if145$else
-# ir_jmp_gte 2 5 cb__Nroot__Nmain$if145$else;
+ jge .if145$else
+# ir_jmp_gte 2 5 .if145$else;
 
  mov $10,%r10d
  cmp $11,%r10d
- jne cb__Nroot__Nmain$if145$else
-# ir_jmp_neq 10 11 cb__Nroot__Nmain$if145$else;
+ jne .if145$else
+# ir_jmp_neq 10 11 .if145$else;
 
  mov $90,%r10d
  cmp $10,%r10d
- jge cb__Nroot__Nmain$if145$else
-# ir_jmp_gte 90 10 cb__Nroot__Nmain$if145$else;
+ jge .if145$else
+# ir_jmp_gte 90 10 .if145$else;
 
-cb__Nroot__Nmain$if145$body:
-# ir_make_label cb__Nroot__Nmain$if145$body;
+.if145$body:
+# ir_make_label .if145$body;
 
  mov $1,%dil
  call cb__Nstd__Nio__Nprintln__Abool
 # ir_call cb__Nstd__Nio__Nprintln__Abool 1;
 
- jmp cb__Nroot__Nmain$if145$end
-# ir_jmp cb__Nroot__Nmain$if145$end;
+ jmp .if145$end
+# ir_jmp .if145$end;
 
-cb__Nroot__Nmain$if145$else:
-# ir_make_label cb__Nroot__Nmain$if145$else;
+.if145$else:
+# ir_make_label .if145$else;
 
  xor %dil,%dil
  call cb__Nstd__Nio__Nprintln__Abool
 # ir_call cb__Nstd__Nio__Nprintln__Abool 0;
 
-cb__Nroot__Nmain$if145$end:
-# ir_make_label cb__Nroot__Nmain$if145$end;
+.if145$end:
+# ir_make_label .if145$end;
 
  xor %r10b,%r10b
  mov %r10b,-1(%rbp)
@@ -325,35 +325,35 @@ cb__Nroot__Nmain$if145$end:
 
  mov $2,%r10d
  cmp $5,%r10d
- jle cb__Nroot__Nmain$if5149$else
-# ir_jmp_lte 2 5 cb__Nroot__Nmain$if5149$else;
+ jle .if5037$else
+# ir_jmp_lte 2 5 .if5037$else;
 
  call cb__Nroot__Nside_effect
 # ir_call cb__Nroot__Nside_effect; (push)
 
  cmp $0,%al
- je cb__Nroot__Nmain$if5149$else
-# ir_jmp_eq POP() 0 cb__Nroot__Nmain$if5149$else;
+ je .if5037$else
+# ir_jmp_eq POP() 0 .if5037$else;
 
-cb__Nroot__Nmain$if5149$body:
-# ir_make_label cb__Nroot__Nmain$if5149$body;
+.if5037$body:
+# ir_make_label .if5037$body;
 
  mov $1,%r10b
  mov %r10b,-1(%rbp)
 # ir_load L0 1;
 
- jmp cb__Nroot__Nmain$if5149$end
-# ir_jmp cb__Nroot__Nmain$if5149$end;
+ jmp .if5037$end
+# ir_jmp .if5037$end;
 
-cb__Nroot__Nmain$if5149$else:
-# ir_make_label cb__Nroot__Nmain$if5149$else;
+.if5037$else:
+# ir_make_label .if5037$else;
 
  xor %r10b,%r10b
  mov %r10b,-1(%rbp)
 # ir_load L0 0;
 
-cb__Nroot__Nmain$if5149$end:
-# ir_make_label cb__Nroot__Nmain$if5149$end;
+.if5037$end:
+# ir_make_label .if5037$end;
 
  mov root__a(%rip),%edi
  call cb__Nstd__Nio__Nprintln__Aint
@@ -361,35 +361,35 @@ cb__Nroot__Nmain$if5149$end:
 
  mov $2,%r10d
  cmp $5,%r10d
- jg cb__Nroot__Nmain$if5156$body
-# ir_jmp_gt 2 5 cb__Nroot__Nmain$if5156$body;
+ jg .if5044$body
+# ir_jmp_gt 2 5 .if5044$body;
 
  call cb__Nroot__Nside_effect
 # ir_call cb__Nroot__Nside_effect; (push)
 
  cmp $0,%al
- je cb__Nroot__Nmain$if5156$else
-# ir_jmp_eq POP() 0 cb__Nroot__Nmain$if5156$else;
+ je .if5044$else
+# ir_jmp_eq POP() 0 .if5044$else;
 
-cb__Nroot__Nmain$if5156$body:
-# ir_make_label cb__Nroot__Nmain$if5156$body;
+.if5044$body:
+# ir_make_label .if5044$body;
 
  mov $1,%r10b
  mov %r10b,-1(%rbp)
 # ir_load L0 1;
 
- jmp cb__Nroot__Nmain$if5156$end
-# ir_jmp cb__Nroot__Nmain$if5156$end;
+ jmp .if5044$end
+# ir_jmp .if5044$end;
 
-cb__Nroot__Nmain$if5156$else:
-# ir_make_label cb__Nroot__Nmain$if5156$else;
+.if5044$else:
+# ir_make_label .if5044$else;
 
  xor %r10b,%r10b
  mov %r10b,-1(%rbp)
 # ir_load L0 0;
 
-cb__Nroot__Nmain$if5156$end:
-# ir_make_label cb__Nroot__Nmain$if5156$end;
+.if5044$end:
+# ir_make_label .if5044$end;
 
  mov root__a(%rip),%edi
  call cb__Nstd__Nio__Nprintln__Aint
@@ -397,41 +397,41 @@ cb__Nroot__Nmain$if5156$end:
 
  mov $2,%r10d
  cmp $5,%r10d
- jl cb__Nroot__Nmain$if5163$body
-# ir_jmp_lt 2 5 cb__Nroot__Nmain$if5163$body;
+ jl .if5051$body
+# ir_jmp_lt 2 5 .if5051$body;
 
  call cb__Nroot__Nside_effect
 # ir_call cb__Nroot__Nside_effect; (push)
 
  cmp $0,%al
- je cb__Nroot__Nmain$if5163$else
-# ir_jmp_eq POP() 0 cb__Nroot__Nmain$if5163$else;
+ je .if5051$else
+# ir_jmp_eq POP() 0 .if5051$else;
 
-cb__Nroot__Nmain$if5163$body:
-# ir_make_label cb__Nroot__Nmain$if5163$body;
+.if5051$body:
+# ir_make_label .if5051$body;
 
  mov $1,%r10b
  mov %r10b,-1(%rbp)
 # ir_load L0 1;
 
- jmp cb__Nroot__Nmain$if5163$end
-# ir_jmp cb__Nroot__Nmain$if5163$end;
+ jmp .if5051$end
+# ir_jmp .if5051$end;
 
-cb__Nroot__Nmain$if5163$else:
-# ir_make_label cb__Nroot__Nmain$if5163$else;
+.if5051$else:
+# ir_make_label .if5051$else;
 
  xor %r10b,%r10b
  mov %r10b,-1(%rbp)
 # ir_load L0 0;
 
-cb__Nroot__Nmain$if5163$end:
-# ir_make_label cb__Nroot__Nmain$if5163$end;
+.if5051$end:
+# ir_make_label .if5051$end;
 
  mov root__a(%rip),%edi
  call cb__Nstd__Nio__Nprintln__Aint
 # ir_call cb__Nstd__Nio__Nprintln__Aint ;
 
-cb__Nroot__Nmain$end:
+.cb__Nroot__Nmain$end:
  add $32,%rsp
  pop %rbp
  ret

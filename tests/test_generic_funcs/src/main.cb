@@ -1,7 +1,18 @@
 import std::io
 
-func printsize(i) {
+func print_size(i) {
     println(sizeof(i))
+}
+
+func print_size_type(type T) {
+    println(sizeof(T))
+}
+
+type Data = struct {
+    x: int
+    y: int
+    n: &Data
+    p: &Data
 }
 
 func main() {
@@ -9,8 +20,15 @@ func main() {
     let b : uint16
     let c : uint32
     let d : uint64
-    printsize(a)
-    printsize(b)
-    printsize(c)
-    printsize(d)
+    let data : Data
+    print_size(a)
+    print_size(b)
+    print_size(c)
+    print_size(d)
+    print_size(data)
+    print_size_type(type int8)
+    print_size_type(type int16)
+    print_size_type(type int32)
+    print_size_type(type int64)
+    print_size_type(type Data)
 }

@@ -214,8 +214,10 @@ struct for_info {
     ast_node* self = nullptr;
     arena_ptr<ast_node> declare_for_iter{nullptr, nullptr};
     arena_ptr<ast_node> declare_elem_to_range_start{nullptr, nullptr};
-    arena_ptr<ast_node> compare_elem_to_range_end{nullptr, nullptr};
-    arena_ptr<ast_node> increase_elem{nullptr, nullptr};
+    arena_ptr<ast_node> iterstart{nullptr, nullptr};
+    arena_ptr<ast_node> iterstep{nullptr, nullptr};
+    arena_ptr<ast_node> iterend{nullptr, nullptr};
+    arena_ptr<ast_node> elemref{nullptr, nullptr};
 };
 
 struct slice_info {

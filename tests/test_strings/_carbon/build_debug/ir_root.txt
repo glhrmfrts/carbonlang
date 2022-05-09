@@ -13,8 +13,8 @@ func cb__Nroot__Nmain -> void
     local #9 $cbT11: slice__Tpure__Tuint8;
     local #10 $cbT12: slice__Tpure__Tuint8;
     local #11 $cbT13: slice__Tpure__Tuint8;
-    local #12 temp$receiver$0: slice__Tpure__Tuint8;
-    local #13 temp$receiver$1: slice__Tpure__Tuint8;
+    local #12 $irtemp0: slice__Tpure__Tuint8;
+    local #13 $irtemp1: slice__Tpure__Tuint8;
     ir_load_addr STR0; (push)
     ir_load [L5 . 0] POP();
     ir_load [L5 . 1] 8;
