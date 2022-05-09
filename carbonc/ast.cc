@@ -633,6 +633,7 @@ std::string visibility_name(decl_visibility op) {
     case decl_visibility::internal_:
         return "internal";
     }
+    return "(unknown visibility)";
 }
 
 std::string func_linkage_name(func_linkage l) {
@@ -644,5 +645,6 @@ std::string func_linkage_name(func_linkage l) {
     case func_linkage::local_carbon:
         return "local";
     }
+    return "(unknown linkage)";
 }
 }

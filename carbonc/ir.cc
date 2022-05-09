@@ -173,6 +173,8 @@ ir_ref toref(const ir_operand& opr) {
     if (auto arg = std::get_if<ir_field>(&opr); arg) {
         return std::make_shared<ir_field>(*arg);
     }
+    assert(!"unhandled toref");
+    return {};
 }
 
 ir_operand fromref(const ir_ref& opr) {
@@ -188,6 +190,8 @@ ir_operand fromref(const ir_ref& opr) {
     if (auto arg = std::get_if<std::shared_ptr<ir_field>>(&opr); arg) {
         return *(arg->get());
     }
+    assert(!"unhandled fromref");
+    return {};
 }
 
 // Section: analysis

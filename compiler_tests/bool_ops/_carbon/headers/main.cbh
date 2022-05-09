@@ -1,2 +1,0 @@
-import module as mod;
-extern(C) func carbon_main():int;

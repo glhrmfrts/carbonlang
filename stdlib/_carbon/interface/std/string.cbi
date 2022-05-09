@@ -1,4 +1,0 @@
-import std::memory as mem;
-extern copy():;
-extern copy():;
-extern len():;

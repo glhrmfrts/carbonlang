@@ -1,1 +1,0 @@
-\code\pl\carbon\build\carbonc\Debug\carbonc.exe -p /code/pl/carbon -F -e carbon_main --verbose

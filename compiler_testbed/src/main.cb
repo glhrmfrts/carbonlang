@@ -1,5 +1,3 @@
-import module
-
 error {
     ALLOC_FAILED
 

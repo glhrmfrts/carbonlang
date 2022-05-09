@@ -36,7 +36,7 @@ template <typename... Args> void add_module_error(type_system& ts, const positio
     }
 
     static char wholeb[1024*2];
-    static char msgb[1024*2];
+    static char msgb[1024];
     snprintf(msgb, sizeof(msgb), fmt, std::forward<Args>(args)...);
 
     string_hash error_hash = string_hash{ std::string{ fmt } };
@@ -55,7 +55,7 @@ template <typename... Args> void unk_type_error(type_system& ts, type_id tid, co
         string_hash error_hash = string_hash{ std::string{ fmt } };
 
         static char wholeb[1024*2];
-        static char msgb[1024*2];
+        static char msgb[1024];
         snprintf(msgb, sizeof(msgb), fmt, std::forward<Args>(args)...);
 
         const char* filename = pos.filename.c_str();
@@ -71,7 +71,7 @@ template <typename... Args> void add_type_error(type_system& ts, const position&
 template <typename... Args> void complement_error(type_system& ts, const position& pos, const char* fmt, Args&&... args) {
     if (!ts.current_error.msg.empty() && ts.pass == type_system_pass::perform_checks) {
         static char wholeb[1024*2];
-        static char msgb[1024*2];
+        static char msgb[1024];
         snprintf(msgb, sizeof(msgb), fmt, std::forward<Args>(args)...);
 
         const char* filename = pos.filename.c_str();
@@ -199,6 +199,7 @@ type_id get_unsigned_type(type_system& ts, type_id tid) {
     else if (tid == ts.int64_type) {
         return ts.uint64_type;
     }
+    return {};
 }
 
 type_id get_alias_root(type_system& ts, type_id tid) {
@@ -945,6 +946,7 @@ arena_ptr<ast_node> make_assignment_for_init_list_item(type_system& ts, ast_node
         auto indexexpr = make_index_access(*ts.ast_arena, copy_node(ts, &receiver), idx);
         return make_assignment(*ts.ast_arena, std::move(indexexpr), std::move(value));
     }
+    return {nullptr, nullptr};
 }
 
 void generate_assignments_for_init_list(type_system& ts, ast_node& node, ast_node& receiver) {

@@ -1,1 +1,0 @@
-extern(C) func exit(:int):{};

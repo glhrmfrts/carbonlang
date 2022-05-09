@@ -1,3 +1,0 @@
-import std::platform;
-extern func print(:[]pure uint8):isize;
-extern func println(:[]pure uint8):{};

@@ -1,5 +1,0 @@
-code_unit{
-  std/libc/stdlib.cb
-  decl_list{
-    linkage_specifier{ extern(C) decl_list{
-        func_decl{exit (var_decl{status: type_expr{int}}): type_expr{tuple_type{}} }}}}}

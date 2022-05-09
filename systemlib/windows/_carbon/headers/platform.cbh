@@ -1,2 +1,0 @@
-extern(C) func QueryPerformanceFrequency(:*int64):bool;
-extern(C) func QueryPerformanceCounter(:*int64):bool;

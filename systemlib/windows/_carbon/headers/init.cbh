@@ -1,3 +1,0 @@
-import std::system;
-extern func mmap(:&opaque, :usize, :int, :int, :int, :int):&opaque;
-extern func asmfunc():{};

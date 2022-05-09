@@ -1,3 +1,0 @@
-extern alloc():;
-extern dealloc():;
-extern copy():;

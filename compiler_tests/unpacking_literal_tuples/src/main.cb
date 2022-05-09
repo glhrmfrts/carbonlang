@@ -1,9 +1,0 @@
-func get_values() {
-    return "Nice",2
-}
-
-extern(C) func carbon_main(): int {
-    //let a,b = 1,2
-    let sz = "Hello".len
-    return cast(int)sz
-}
