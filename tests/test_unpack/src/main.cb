@@ -12,12 +12,18 @@ func big_unpack() {
 }
 
 func rest_unpack() {
-    let a, rest... = 0,1,2,3,4,5,6,7,8,9,10
-    //print("rest.len: ") println(rest.len)
-    print(a) print(",") print(rest.first) print(",") println(rest.second)
+    let a, b, rest... = 0,1,2,3,4,5,6
+    print("rest.len: ") println(rest.len)
+
+    print(a)            print(",")
+    print(rest.first)   print(",")
+    print(rest.second)  print(",")
+    println(rest.third)
 }
 
 func main() {
+    let a : pure int = 3
+    a = 5
     simple_unpack()
     big_unpack()
     rest_unpack()

@@ -2529,6 +2529,12 @@ void resolve_assignment_type(type_system& ts, ast_node& node) {
         return;
     }
 
+    auto left_type = get_alias_root(ts, node.children[0]->tid);
+    if (left_type.get().flags & type_flags::is_pure) {
+        add_type_error(ts, node.pos, "left-side of assignment has pure type '%s'", type_to_string(left_type).c_str());
+        return;
+    }
+
     // Check if we can re-assign the variable
     if (node.children[0]->type == ast_type::identifier) {
         auto local = get_symbol_local(*node.children[0]->lvalue.symbol);
@@ -3836,6 +3842,21 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
                 }
             }
             assert(stype.valid());
+
+            if (stype.get().kind == type_kind::tuple && (fieldid == "len")) {
+                node.type = ast_type::int_literal;
+                node.int_value = stype.get().structure.fields.size();
+                node.tid = ts.usize_type;
+                node.children.clear();
+                break;
+            }
+            else if (stype.get().kind == type_kind::static_array && (fieldid == "len")) {
+                node.type = ast_type::int_literal;
+                node.int_value = stype.get().array.length;
+                node.tid = ts.usize_type;
+                node.children.clear();
+                break;
+            }
 
             int field_index = aggregate_find_field(stype, fieldid);
             if (is_struct && field_index != -1) {

@@ -1,3 +1,6 @@
+func print(l: usize) {
+}
+
 extern(C) func carbon_main() : int {
     let err = late_err()
     if (err != noerr) {
@@ -7,6 +10,9 @@ extern(C) func carbon_main() : int {
     let fd,err = late_expression()
 
     let numbers,err = 0,noerr
+
+    let tup = 0,1,2,3,4
+    print(tup.len)
 }
 
 func late_err() {

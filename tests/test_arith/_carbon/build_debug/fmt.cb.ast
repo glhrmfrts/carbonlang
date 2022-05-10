@@ -1,4 +1,0 @@
-code_unit{
-  std/fmt.cb
-  decl_list{
-    import_decl{ std::string}}}

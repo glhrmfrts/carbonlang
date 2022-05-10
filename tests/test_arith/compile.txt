@@ -27,7 +27,7 @@ carbonc - compiling module: std/string
     process_code_unit: ../../stdlib/src/std/string/string.cb
 carbonc - compiling module: std/system
     process_code_unit: ../../stdlib/src/std/system/system.cb
-carbonc - parsing time: 383ms
+carbonc - parsing time: 385ms
 
 carbonc - type checking 
 generate_unpacking_operations: ../../stdlib/src/std/linux/process.cb
@@ -45,7 +45,7 @@ generate_unpacking_operations: ../../stdlib/src/std/linux/start.cb
 generate_unpacking_operations: ../../stdlib/src/std/mem/mem.cb
 	generating var_decl for newmem
 	generating var_decl for err
-carbonc - type checking time: 94ms
+carbonc - type checking time: 95ms
 
 carbonc - generating IR 
 carbonc - IR generation time: 35ms
@@ -58,10 +58,10 @@ carbonc - running assembler: as _carbon/build_debug/std_linux_syscall.asm -o _ca
 carbonc - running assembler: as _carbon/build_debug/std_mem.asm -o _carbon/build_debug/std_mem.o
 carbonc - running assembler: as _carbon/build_debug/std_string.asm -o _carbon/build_debug/std_string.o
 carbonc - running assembler: as _carbon/build_debug/std_system.asm -o _carbon/build_debug/std_system.o
-carbonc - assembly generation time: 220ms
+carbonc - assembly generation time: 223ms
 
 carbonc - running linker command: ld  -e _start -o _carbon/build_debug/test_arith _carbon/build_debug/std_linux_x86_64_start.o _carbon/build_debug/root.o _carbon/build_debug/std_io.o _carbon/build_debug/std_linux.o _carbon/build_debug/std_linux_syscall.o _carbon/build_debug/std_mem.o _carbon/build_debug/std_string.o _carbon/build_debug/std_system.o -T ../../res/carbon.sc
 carbonc - output: a.out
 
 carbonc - total lines parsed: 981
-carbonc - total compilation time: 837ms
+carbonc - total compilation time: 846ms

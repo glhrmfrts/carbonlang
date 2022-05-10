@@ -44,6 +44,11 @@ test:
 		carbonc -p ../.. -I stdlib -V -o a.out > compile.txt && \
 		./a.out > out.txt && diff out.txt expected.txt && echo "\033[1;32mtest_error_strings: OK\033[0m"
 
+	@echo "test_arrays: ..." && \
+		cd tests/test_arrays && \
+		carbonc -p ../.. -I stdlib -V -o a.out > compile.txt && \
+		./a.out > out.txt && diff out.txt expected.txt && echo "\033[1;32mtest_arrays: OK\033[0m"
+
 	@echo "test_unpack: ..." && \
 		cd tests/test_unpack && \
 		carbonc -p ../.. -I stdlib -V -o a.out > compile.txt && \

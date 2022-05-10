@@ -1,0 +1,21 @@
+import std::io
+
+func test_len_size() {
+    let arr : [33]uint32
+    print("arr.len: ") println(arr.len)
+    print("sizeof(arr): ") println(sizeof(arr))
+}
+
+func test_zero_init() {
+    let arr : [32]uint32
+    let sum = 0
+    for (i in 0,arr.len) {
+        sum += arr[i]
+    }
+    print("test_zero_init: ") println(sum)
+}
+
+func main() {
+    test_len_size()
+    test_zero_init()
+}

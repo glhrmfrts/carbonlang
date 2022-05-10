@@ -1,4 +1,0 @@
-code_unit{
-  std/tests1.cb
-  decl_list{
-    func_decl{ok () {}}}}
