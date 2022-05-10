@@ -289,6 +289,7 @@ enum
 
    CLEX_coloncolon,
    CLEX_dotdot,
+   CLEX_dotdotdot,
 
    CLEX_first_unused_token
 
@@ -643,7 +644,12 @@ int stb_c_lexer_get_token(stb_lexer *lexer)
 
       case '.':
          if (p+1 != lexer->eof) {
-            if (p[1] == '.') return stb__clex_token(lexer, CLEX_dotdot, p, p+1);
+            if (p[1] == '.') {
+               if (p+2 != lexer->eof && p[2] == '.') {
+                  return stb__clex_token(lexer, CLEX_dotdotdot, p, p+2);
+               }
+               return stb__clex_token(lexer, CLEX_dotdot, p, p+1);
+            }
          }
          goto single_char;
 

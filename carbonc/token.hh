@@ -50,6 +50,7 @@ enum class token_type : unsigned int {
     while_,
     coloncolon,
     dotdot,
+    dotdotdot,
     nil,
     nullptr_,
     defer,

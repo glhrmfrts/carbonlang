@@ -500,6 +500,14 @@ type_id get_func_pointer_type_to(type_system& ts, type_id func_type) {
     return execute_type_constructor(ts, ts.builtin_scope->scope, *ts.func_pointer_type_constructor, args);
 }
 
+type_id get_tuple_type(type_system& ts, std::vector<type_id> elem_types) {
+    std::vector<const_value> args;
+    for (auto& arg_type : elem_types) {
+        args.push_back(arg_type);
+    }
+    return execute_type_constructor(ts, ts.builtin_scope->scope, *ts.tuple_type_constructor, args);
+}
+
 // Section: type query - navigate through type trees
 
 enum type_query_path_segment
@@ -1591,12 +1599,16 @@ type_id resolve_identifier(type_system& ts, ast_node& node) {
         node.tid = local->self->tid;
 
         if (was_unresolved && node.tid.valid()) { 
+            bool isnew = true;
             for (auto ref : local->refs) {
                 if (ref == &node) {
-                    assert(!"about to insert duplicate ref");
+                    //assert(!"about to insert duplicate ref");
+                    isnew = false;
                 }
             }
-            local->refs.push_back(&node);
+            if (isnew) {
+                local->refs.push_back(&node);
+            }
         }
 
         if (!node.tid.valid()) {
@@ -2247,7 +2259,9 @@ arena_ptr<ast_node> generate_func_for_call(type_system& ts, ast_node& gnode, ast
     return std::move(node);
 }
 
-void generate_unpacking_operations(type_system& ts, ast_node& node) {
+bool generate_unpacking_operations(type_system& ts, ast_node& node) {
+    printf("generate_unpacking_operations: %s\n", node.pos.filename.c_str());
+
     auto thisidx = find_child_index(node.parent, &node);
 
     type_id aggtype{};
@@ -2273,7 +2287,8 @@ void generate_unpacking_operations(type_system& ts, ast_node& node) {
 
     if (aggtype.get().kind == type_kind::structure || aggtype.get().kind == type_kind::c_structure || aggtype.get().kind == type_kind::tuple) {
         const auto& fields = get_type_fields(aggtype);
-        int index = 0;
+        int field_index = 0;
+        int decl_index = 0;
 
         std::vector<arena_ptr<ast_node>>* idlist;
         if (node.type == ast_type::var_decl) {
@@ -2285,42 +2300,127 @@ void generate_unpacking_operations(type_system& ts, ast_node& node) {
         }
 
         for (auto& idnode : *idlist) {
-            auto id = string_hash{ idnode->id_parts.back() };
-            auto sym = find_symbol_in_current_scope(ts, id);
+            if (field_index >= fields.size()) { break; }
 
-            auto dest = make_identifier_node(*ts.ast_arena, idnode->pos, idnode->id_parts);
-            auto value = make_struct_field_access(*ts.ast_arena, copy_node(ts, tempref.get()), fields[index].names.front());
+            if ((*idlist)[field_index]->type == ast_type::rest_expr) {
+                auto id = string_hash{ idnode->children[0]->id_parts.back() };
+                auto sym = find_symbol_in_current_scope(ts, id);
 
-            if (sym || (node.type != ast_type::var_decl)) {
-                // Symbol exists, generate assignment
-                auto assign = make_assignment(*ts.ast_arena, std::move(dest), std::move(value));
+                auto dest = make_identifier_node(*ts.ast_arena, idnode->pos, idnode->children[0]->id_parts);
 
-                resolve_node_type(ts, assign.get());
-                node.parent->children_to_add.push_back({ *thisidx + index + 1, std::move(assign) });
-            }
-            else if (node.type == ast_type::var_decl) {
-                // Symbol does not exist yet, generate declaration
-                auto newdecl_type = make_type_expr_node(*ts.ast_arena, idnode->pos, make_type_resolver_node(*ts.ast_arena, fields[index].type));
+                std::vector<arena_ptr<ast_node>> fields_expr;
+                std::vector<type_id> fields_types;
+                for (; field_index < fields.size(); field_index++) {
+                    fields_expr.push_back(
+                        make_struct_field_access(*ts.ast_arena, copy_node(ts, tempref.get()), fields[field_index].names.front())
+                    );
+                    fields_types.push_back(fields[field_index].type);
+                }
+
+                auto newdecl_type = make_type_expr_node(*ts.ast_arena, idnode->pos,
+                    make_type_resolver_node(*ts.ast_arena, get_tuple_type(ts, fields_types)));
+
+                auto value = make_init_expr_node(*ts.ast_arena, node.pos, std::move(newdecl_type),
+                    make_arg_list_node(*ts.ast_arena, node.pos, std::move(fields_expr)));
 
                 auto newdecl = make_var_decl_node_single(*ts.ast_arena, node.pos, token_type::let,
                     std::move(dest), std::move(newdecl_type), std::move(value), node.var_modifiers);
 
                 resolve_node_type(ts, newdecl.get());
-                node.parent->children_to_add.push_back({ *thisidx + index + 1, std::move(newdecl) });
+                node.parent->children_to_add.push_back({ *thisidx + decl_index + 1, std::move(newdecl) });
             }
-            index++;
+            else {
+                auto id = string_hash{ idnode->id_parts.back() };
+                auto sym = find_symbol_in_current_scope(ts, id);
+
+                auto dest = make_identifier_node(*ts.ast_arena, idnode->pos, idnode->id_parts);
+                auto value = make_struct_field_access(*ts.ast_arena, copy_node(ts, tempref.get()), fields[field_index].names.front());
+                value->pos = idnode->pos;
+
+                if (sym || (node.type != ast_type::var_decl)) {
+                    printf("\tgenerating assignment for %s\n", idnode->id_parts.back().c_str());
+
+                    // Symbol exists, generate assignment
+                    auto assign = make_assignment(*ts.ast_arena, std::move(dest), std::move(value));
+                    assign->pos = idnode->pos;
+
+                    resolve_node_type(ts, assign.get());
+                    node.parent->children_to_add.push_back({ *thisidx + field_index + 1, std::move(assign) });
+                }
+                else if (node.type == ast_type::var_decl) {
+                    printf("\tgenerating var_decl for %s\n", idnode->id_parts.back().c_str());
+
+                    // Symbol does not exist yet, generate declaration
+                    auto newdecl_type = make_type_expr_node(*ts.ast_arena, idnode->pos,
+                        make_type_resolver_node(*ts.ast_arena, fields[field_index].type));
+
+                    auto newdecl = make_var_decl_node_single(*ts.ast_arena, node.pos, token_type::let,
+                        std::move(dest), std::move(newdecl_type), std::move(value), node.var_modifiers);
+
+                    resolve_node_type(ts, newdecl.get());
+                    node.parent->children_to_add.push_back({ *thisidx + field_index + 1, std::move(newdecl) });
+                }
+
+                field_index++;
+            }
+            decl_index++;
         }
     }
+
+    return true;
 }
 
 void resolve_and_declare_local_variables(type_system& ts, ast_node& node) {
+    size_t num_new = 0;
+    bool diderror = false;
+    for (auto& idnode : node.var_decl_ids()) {
+        string_hash id;
+
+        bool is_rest = false;
+
+        if (idnode->type == ast_type::identifier) {
+            id = string_hash{ idnode->id_parts.back() };
+        }
+        else if (idnode->type == ast_type::rest_expr) {
+            id = string_hash{ idnode->children[0]->id_parts.back() };
+            is_rest = true;
+        }
+
+        auto prev = find_symbol_in_current_scope_thispass(ts, id);
+        if (prev && num_new == 0) {
+            node.tid = invalid_type;
+            add_type_error(ts, idnode->pos, "cannot re-declare name '%s'", id.str.c_str());
+            diderror = true;
+        }
+        else if (prev && is_rest) {
+            node.tid = invalid_type;
+            add_type_error(ts, idnode->pos, "cannot re-declare identifier of '...' expression '%s'", id.str.c_str());
+            diderror = true;
+        }
+        else {
+            num_new++;
+        }
+    }
+    if (num_new == 0) {
+        add_type_error(ts, node.pos, "at least one new variable must be declared in a 'let' declaration");
+        return;
+    }
+    if (diderror) {
+        return;
+    }
+
     resolve_local_variable_type(ts, node);
 
     // Check if we're unpacking a tuple / struct / array
     if (node.tid.valid() && is_aggregate(node.tid) && node.var_decl_ids().size() > 1) {
-        generate_unpacking_operations(ts, node);
-        node.desugar_flags |= desugar_flag::var_decl_unpacked;
-        node.disabled = true;
+        if (generate_unpacking_operations(ts, node)) {
+            node.desugar_flags |= desugar_flag::var_decl_unpacked;
+            node.disabled = true;
+        }
+        return;
+    }
+    
+    if (node.var_decl_ids().size() > 1) {
         return;
     }
 
@@ -2344,16 +2444,15 @@ void resolve_and_declare_local_variables(type_system& ts, ast_node& node) {
 
     auto id = string_hash{ build_identifier_value(node.var_id()->id_parts) };
 
-    if (node.tid.valid()) {
-        // Proceed with normal variable declaration (non-const, only 1 variable)
-        if (ts.current_scope->kind == scope_kind::module_) {
-            declare_global_symbol(ts, id, node);
-        }
-        else {
-            declare_local_symbol(ts, id, node);
-        }
-        node.local.self = &node;
+    // Proceed with normal variable declaration (non-const, only 1 variable)
+    if (ts.current_scope->kind == scope_kind::module_) {
+        declare_global_symbol(ts, id, node);
     }
+    else {
+        //printf("declaring local variable: %s\n", id.str.c_str());
+        declare_local_symbol(ts, id, node);
+    }
+    node.local.self = &node;
 
     if (node.tid.valid() && node.tid.get().size == 0) {
         add_type_error(ts, node.pos, "cannot create value of an anonymous empty type");
@@ -2403,15 +2502,6 @@ void resolve_and_declare_local_variables(type_system& ts, ast_node& node) {
 
 void register_var_declaration_node(type_system& ts, ast_node& node) {
     // First check if at least one identifier is new
-    for (auto& idnode : node.var_decl_ids()) {
-        auto id = string_hash{ idnode->id_parts.back() };
-        auto prev = find_symbol_in_current_scope(ts, id);
-        if (prev) {
-            add_type_error(ts, node.pos, "cannot redeclare name '%s'", idnode->id_parts.back().c_str());
-            return;
-        }
-    }
-
     resolve_and_declare_local_variables(ts, node);
 }
 
@@ -2611,6 +2701,8 @@ void register_for_declarations(type_system& ts, ast_node& node) {
             add_type_error(ts, node.children[1]->pos, "a for statement requires a tuple of {start, end} or {start, end, step}");
         }
     }
+
+    resolve_node_type(ts, node.forinfo.declare_elem_to_range_start.get());
 }
 
 arena_ptr<ast_node> make_neq_false_node(type_system& ts, arena_ptr<ast_node>&& val) {
@@ -2885,22 +2977,24 @@ void visit_pre_children(type_system& ts, ast_node& node) {
 }
 
 void visit_children(type_system& ts, ast_node& node) {
-    for (auto& child : node.children) {
+    for (size_t i = 0; i < node.children.size(); i++) {
+        auto& child = node.children[i];
         if (child) {
             child->parent = &node;
             visit_tree(ts, *child);
+
+            for (auto& [idx, newchild] : node.children_to_add) {
+                newchild->parent = &node;
+                if (idx == -1) {
+                    node.children.push_back(std::move(newchild));
+                }
+                else {
+                    node.children.insert(node.children.begin() + idx, std::move(newchild));
+                }
+            }
+            node.children_to_add.clear();
         }
     }
-    for (auto& [idx, child] : node.children_to_add) {
-        child->parent = &node;
-        if (idx == -1) {
-            node.children.push_back(std::move(child));
-        }
-        else {
-            node.children.insert(node.children.begin() + idx, std::move(child));
-        }
-    }
-    node.children_to_add.clear();
 }
 
 template <typename F> void for_each_child_recur(ast_node& node, ast_type type, F f) {
@@ -4696,6 +4790,7 @@ void type_system::process_code_unit(arena_ptr<ast_node> node) {
 
     for (int i = 0; i < 2; i++) {
         this->subpass = i;
+        update_symbols_pass_tokens(*this);
         parent_tree(*unit);
         visit_tree(*this, *unit);
     }
@@ -4704,6 +4799,7 @@ void type_system::process_code_unit(arena_ptr<ast_node> node) {
 void type_system::resolve_and_check() {
     this->pass = type_system_pass::resolve_imports;
     this->subpass = 0;
+    update_symbols_pass_tokens(*this);
 
     for (auto& mod : this->root->children) {
         enter_scope(*mod);
@@ -4723,6 +4819,7 @@ void type_system::resolve_and_check() {
     this->pass = type_system_pass::resolve_all;
     for (int i = 0; i < 100; i++) {
         this->subpass = i;
+        //update_symbols_pass_tokens(*this);
         this->unresolved_types = false;
         for (auto& mod : this->root->children) {
             clear_type_errors(*this, *mod);
@@ -4731,7 +4828,7 @@ void type_system::resolve_and_check() {
             leave_scope();
         }
         if (this->unresolved_types) {
-            // printf("unresolved types\n");
+            //printf("unresolved types\n");
         }
         else {
             break;
@@ -4740,13 +4837,13 @@ void type_system::resolve_and_check() {
 
     this->pass = type_system_pass::perform_checks;
     this->subpass = 0;
+    //update_symbols_pass_tokens(*this);
     for (auto& mod : this->root->children) {
         clear_type_errors(*this, *mod);
         enter_scope(*mod);
         visit_tree(*this, *mod);
         leave_scope();
     }
-
     if (!current_error.msg.empty()) {
         errors.push_back(current_error);
         current_error = {};
@@ -4759,6 +4856,7 @@ void type_system::resolve_and_check() {
         visit_tree(*this, *mod);
         leave_scope();
     }
+    update_symbols_pass_tokens(*this);
 
     if (errors.empty()) {
 #if 1
@@ -4772,6 +4870,7 @@ void type_system::resolve_and_check() {
                 visit_tree(*this, *mod);
                 leave_scope();
             }
+            update_symbols_pass_tokens(*this);
         }
         in_desugar = false;
 
@@ -4783,6 +4882,7 @@ void type_system::resolve_and_check() {
                 visit_tree(*this, *mod);
                 leave_scope();
             }
+            update_symbols_pass_tokens(*this);
         }
 #endif
     }

@@ -117,42 +117,42 @@ cb__Nstd__Nsystem__NintToString__Aint__Aint__Aptr__Tslice__Tuint8:
  lea .cbstr0(%rip),%rax
 # ir_load_addr STR0; (push)
 
- mov %rax,-80(%rbp)
-# ir_load [L7 . 0] POP();
+ mov %rax,-32(%rbp)
+# ir_load [L1 . 0] POP();
 
  mov $71,%r10d
- mov %r10,-72(%rbp)
-# ir_load [L7 . 1] 71;
+ mov %r10,-24(%rbp)
+# ir_load [L1 . 1] 71;
 
  mov 32(%rbp),%r10d
- mov %r10d,-20(%rbp)
-# ir_load L1 A0;
+ mov %r10d,-36(%rbp)
+# ir_load L2 A0;
 
  xor %r10d,%r10d
- mov %r10d,-24(%rbp)
-# ir_load L2 0;
+ mov %r10d,-40(%rbp)
+# ir_load L3 0;
 
  mov $1,%eax
  neg %eax
 # ir_neg 1; (push)
 
- mov %eax,-28(%rbp)
-# ir_load L3 POP();
+ mov %eax,-44(%rbp)
+# ir_load L4 POP();
 
 .w3913$cond:
 # ir_make_label .w3913$cond;
 
- mov -28(%rbp),%r10d
+ mov -44(%rbp),%r10d
  cmp $0,%r10d
  je .w3913$end
-# ir_jmp_eq L3 0 .w3913$end;
+# ir_jmp_eq L4 0 .w3913$end;
 
 .w3913$body:
 # ir_make_label .w3913$body;
 
- mov -24(%rbp),%r10d
+ mov -40(%rbp),%r10d
  mov %r10,%rax
-# ir_cast L2; (push)
+# ir_cast L3; (push)
 
  cmp -8(%rbp),%rax
  jl .if3878$else
@@ -161,13 +161,13 @@ cb__Nstd__Nsystem__NintToString__Aint__Aint__Aptr__Tslice__Tuint8:
 .if3878$body:
 # ir_make_label .if3878$body;
 
- mov -24(%rbp),%r10d
+ mov -40(%rbp),%r10d
  sub $1,%r10d
  mov %r10d,%eax
-# ir_sub L2 1; (push)
+# ir_sub L3 1; (push)
 
- mov %eax,-24(%rbp)
-# ir_load L2 POP();
+ mov %eax,-40(%rbp)
+# ir_load L3 POP();
 
  jmp .w3913$end
 # ir_jmp .w3913$end;
@@ -176,8 +176,8 @@ cb__Nstd__Nsystem__NintToString__Aint__Aint__Aptr__Tslice__Tuint8:
 # ir_make_label .if3878$else;
 
  mov 32(%rbp),%r10d
- mov %r10d,-20(%rbp)
-# ir_load L1 A0;
+ mov %r10d,-36(%rbp)
+# ir_load L2 A0;
 
  mov 32(%rbp),%eax
  cdq
@@ -188,29 +188,29 @@ cb__Nstd__Nsystem__NintToString__Aint__Aint__Aptr__Tslice__Tuint8:
 # ir_load A0 POP();
 
  mov 32(%rbp),%r10d
- mov %r10d,-28(%rbp)
-# ir_load L3 A0;
+ mov %r10d,-44(%rbp)
+# ir_load L4 A0;
 
  mov -16(%rbp),%rax
 # ir_deref [L0 . 0]; (push)
 
- mov -24(%rbp),%r10d
+ mov -40(%rbp),%r10d
  mov %r10,%r10
  lea 0(%rax,%r10,1),%rbx
-# ir_index POP() L2; (push)
+# ir_index POP() L3; (push)
 
- mov -80(%rbp),%r12
-# ir_deref [L7 . 0]; (push)
+ mov -32(%rbp),%r12
+# ir_deref [L1 . 0]; (push)
 
  mov 32(%rbp),%r10d
  imul 40(%rbp),%r10d
  mov %r10d,%eax
 # ir_mul A0 A1; (push)
 
- mov -20(%rbp),%r10d
+ mov -36(%rbp),%r10d
  sub %eax,%r10d
  mov %r10d,%eax
-# ir_sub L1 POP(); (push)
+# ir_sub L2 POP(); (push)
 
  mov $35,%r10d
  add %eax,%r10d
@@ -226,13 +226,13 @@ cb__Nstd__Nsystem__NintToString__Aint__Aint__Aptr__Tslice__Tuint8:
  mov %r10b,(%rbx)
 # ir_load POP() POP();
 
- mov -24(%rbp),%r10d
+ mov -40(%rbp),%r10d
  add $1,%r10d
  mov %r10d,%eax
-# ir_add L2 1; (push)
+# ir_add L3 1; (push)
 
- mov %eax,-24(%rbp)
-# ir_load L2 POP();
+ mov %eax,-40(%rbp)
+# ir_load L3 POP();
 
  jmp .w3913$cond
 # ir_jmp .w3913$cond;
@@ -243,16 +243,16 @@ cb__Nstd__Nsystem__NintToString__Aint__Aint__Aptr__Tslice__Tuint8:
  mov -16(%rbp),%rax
 # ir_deref [L0 . 0]; (push)
 
- mov -24(%rbp),%r10d
+ mov -40(%rbp),%r10d
  mov %r10,%r10
  lea 0(%rax,%r10,1),%rax
-# ir_index POP() L2; (push)
+# ir_index POP() L3; (push)
 
  lea (%rax),%rax
 # ir_load_addr POP(); (push)
 
- mov %rax,-40(%rbp)
-# ir_load L4 POP();
+ mov %rax,-56(%rbp)
+# ir_load L5 POP();
 
  mov -16(%rbp),%rax
 # ir_deref [L0 . 0]; (push)
@@ -264,104 +264,104 @@ cb__Nstd__Nsystem__NintToString__Aint__Aint__Aptr__Tslice__Tuint8:
  lea (%rax),%rax
 # ir_load_addr POP(); (push)
 
- mov %rax,-48(%rbp)
-# ir_load L5 POP();
+ mov %rax,-64(%rbp)
+# ir_load L6 POP();
 
- mov -20(%rbp),%r10d
+ mov -36(%rbp),%r10d
  cmp $0,%r10d
  jge .if3953$else
-# ir_jmp_gte L1 0 .if3953$else;
+# ir_jmp_gte L2 0 .if3953$else;
 
 .if3953$body:
 # ir_make_label .if3953$body;
 
- mov -40(%rbp),%rax
-# ir_deref L4; (push)
+ mov -56(%rbp),%rax
+# ir_deref L5; (push)
 
  mov $45,%r10b
  mov %r10b,0(%rax)
 # ir_load POP() #45;
 
- mov -40(%rbp),%r10
+ mov -56(%rbp),%r10
  add $1,%r10
  mov %r10,%rax
-# ir_add L4 1; (push)
+# ir_add L5 1; (push)
 
- mov %rax,-40(%rbp)
-# ir_load L4 POP();
+ mov %rax,-56(%rbp)
+# ir_load L5 POP();
 
 .if3953$else:
 # ir_make_label .if3953$else;
 
- mov -40(%rbp),%rax
-# ir_deref L4; (push)
+ mov -56(%rbp),%rax
+# ir_deref L5; (push)
 
  mov $0,%r10b
  mov %r10b,0(%rax)
 # ir_load POP() #0;
 
- mov -40(%rbp),%r10
+ mov -56(%rbp),%r10
  sub $1,%r10
  mov %r10,%rax
-# ir_sub L4 1; (push)
+# ir_sub L5 1; (push)
 
- mov %rax,-40(%rbp)
-# ir_load L4 POP();
+ mov %rax,-56(%rbp)
+# ir_load L5 POP();
 
  xor %r10b,%r10b
- mov %r10b,-49(%rbp)
-# ir_load L6 0;
+ mov %r10b,-65(%rbp)
+# ir_load L7 0;
 
 .w3999$cond:
 # ir_make_label .w3999$cond;
 
- mov -48(%rbp),%r10
- cmp -40(%rbp),%r10
+ mov -64(%rbp),%r10
+ cmp -56(%rbp),%r10
  jge .w3999$end
-# ir_jmp_gte L5 L4 .w3999$end;
+# ir_jmp_gte L6 L5 .w3999$end;
 
 .w3999$body:
 # ir_make_label .w3999$body;
 
- mov -40(%rbp),%rax
-# ir_deref L4; (push)
+ mov -56(%rbp),%rax
+# ir_deref L5; (push)
 
  mov 0(%rax),%r10b
- mov %r10b,-49(%rbp)
-# ir_load L6 POP();
+ mov %r10b,-65(%rbp)
+# ir_load L7 POP();
 
- mov -40(%rbp),%rbx
-# ir_deref L4; (push)
-
- mov -48(%rbp),%rax
+ mov -56(%rbp),%rbx
 # ir_deref L5; (push)
+
+ mov -64(%rbp),%rax
+# ir_deref L6; (push)
 
  mov 0(%rax),%r10b
  mov %r10b,0(%rbx)
 # ir_load POP() POP();
 
- mov -40(%rbp),%r10
+ mov -56(%rbp),%r10
  sub $1,%r10
  mov %r10,%rax
-# ir_sub L4 1; (push)
+# ir_sub L5 1; (push)
 
- mov %rax,-40(%rbp)
-# ir_load L4 POP();
+ mov %rax,-56(%rbp)
+# ir_load L5 POP();
 
- mov -48(%rbp),%rax
-# ir_deref L5; (push)
+ mov -64(%rbp),%rax
+# ir_deref L6; (push)
 
- mov -49(%rbp),%r10b
+ mov -65(%rbp),%r10b
  mov %r10b,0(%rax)
-# ir_load POP() L6;
+# ir_load POP() L7;
 
- mov -48(%rbp),%r10
+ mov -64(%rbp),%r10
  add $1,%r10
  mov %r10,%rax
-# ir_add L5 1; (push)
+# ir_add L6 1; (push)
 
- mov %rax,-48(%rbp)
-# ir_load L5 POP();
+ mov %rax,-64(%rbp)
+# ir_load L6 POP();
 
  jmp .w3999$cond
 # ir_jmp .w3999$cond;
@@ -369,8 +369,8 @@ cb__Nstd__Nsystem__NintToString__Aint__Aint__Aptr__Tslice__Tuint8:
 .w3999$end:
 # ir_make_label .w3999$end;
 
- mov -24(%rbp),%eax
-# ir_return L2;
+ mov -40(%rbp),%eax
+# ir_return L3;
 
 .cb__Nstd__Nsystem__NintToString__Aint__Aint__Aptr__Tslice__Tuint8$end:
  add $80,%rsp

@@ -322,6 +322,20 @@ cb__Nroot__Nmain:
  call cb__Nstd__Nmem__Nalloc_slice__Cint__Aptr__Ttuple__Tslice__Tint__Terror__Ausize
 # ir_call cb__Nstd__Nmem__Nalloc_slice__Cint__Aptr__Ttuple__Tslice__Tint__Terror__Ausize POP() 10;
 
+ push %rdi
+ push %rsi
+ lea -48(%rbp),%rdi
+ lea -32(%rbp),%rsi
+ mov $16,%rcx
+ rep movsb
+ pop %rsi
+ pop %rdi
+# ir_copy L1 [L0 . 0] 16;
+
+ mov -16(%rbp),%r10d
+ mov %r10d,-52(%rbp)
+# ir_load L2 [L0 . 1];
+
  lea -96(%rbp),%rax
 # ir_load_addr L3; (push)
 
@@ -343,20 +357,6 @@ cb__Nroot__Nmain:
  mov -80(%rbp),%r10d
  mov %r10d,-52(%rbp)
 # ir_load L2 [L3 . 1];
-
- push %rdi
- push %rsi
- lea -48(%rbp),%rdi
- lea -32(%rbp),%rsi
- mov $16,%rcx
- rep movsb
- pop %rsi
- pop %rdi
-# ir_copy L1 [L0 . 0] 16;
-
- mov -16(%rbp),%r10d
- mov %r10d,-52(%rbp)
-# ir_load L2 [L0 . 1];
 
  lea .cbstr7(%rip),%rax
 # ir_load_addr STR7; (push)

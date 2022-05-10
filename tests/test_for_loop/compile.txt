@@ -27,13 +27,28 @@ carbonc - compiling module: std/string
     process_code_unit: ../../stdlib/src/std/string/string.cb
 carbonc - compiling module: std/system
     process_code_unit: ../../stdlib/src/std/system/system.cb
-carbonc - parsing time: 392ms
+carbonc - parsing time: 395ms
 
 carbonc - type checking 
-carbonc - type checking time: 98ms
+generate_unpacking_operations: ../../stdlib/src/std/linux/process.cb
+	generating var_decl for argv
+	generating var_decl for err
+generate_unpacking_operations: ../../stdlib/src/std/mem/slice.cb
+	generating var_decl for buf
+	generating var_decl for err
+generate_unpacking_operations: ../../stdlib/src/std/linux/start.cb
+	generating var_decl for m
+	generating var_decl for err
+generate_unpacking_operations: ../../stdlib/src/std/linux/start.cb
+	generating var_decl for ptr
+	generating var_decl for err
+generate_unpacking_operations: ../../stdlib/src/std/mem/mem.cb
+	generating var_decl for newmem
+	generating var_decl for err
+carbonc - type checking time: 103ms
 
 carbonc - generating IR 
-carbonc - IR generation time: 39ms
+carbonc - IR generation time: 43ms
 
 carbonc - generating assembly 
 carbonc - running assembler: as _carbon/build_debug/root.asm -o _carbon/build_debug/root.o
@@ -43,10 +58,10 @@ carbonc - running assembler: as _carbon/build_debug/std_linux_syscall.asm -o _ca
 carbonc - running assembler: as _carbon/build_debug/std_mem.asm -o _carbon/build_debug/std_mem.o
 carbonc - running assembler: as _carbon/build_debug/std_string.asm -o _carbon/build_debug/std_string.o
 carbonc - running assembler: as _carbon/build_debug/std_system.asm -o _carbon/build_debug/std_system.o
-carbonc - assembly generation time: 225ms
+carbonc - assembly generation time: 247ms
 
 carbonc - running linker command: ld  -e _start -o _carbon/build_debug/test_for_loop _carbon/build_debug/std_linux_x86_64_start.o _carbon/build_debug/root.o _carbon/build_debug/std_io.o _carbon/build_debug/std_linux.o _carbon/build_debug/std_linux_syscall.o _carbon/build_debug/std_mem.o _carbon/build_debug/std_string.o _carbon/build_debug/std_system.o -T ../../res/carbon.sc
 carbonc - output: a.out
 
 carbonc - total lines parsed: 1034
-carbonc - total compilation time: 862ms
+carbonc - total compilation time: 895ms

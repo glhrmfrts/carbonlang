@@ -51,48 +51,48 @@ endf
 func cb__Nstd__Nmem__Nalloc__Aptr__Ttuple__Tptr__Topaque__Terror__Ausize -> ptr__Ttuple__Tptr__Topaque__Terror
     arg #0 $cb_agg_ret: ptr__Ttuple__Tptr__Topaque__Terror;
     arg #1 usersize: usize;
-    local #0 pblock: ptr__Tmemory_block;
-    local #1 newblock: ptr__Tmemory_block;
-    local #2 asize: usize;
-    local #3 memsize: usize;
-    local #4 $cbT5: tuple__Tptr__Topaque__Terror;
+    local #0 asize: usize;
+    local #1 pblock: ptr__Tmemory_block;
+    local #2 memsize: usize;
+    local #3 newblock: ptr__Tmemory_block;
+    local #4 $cbT6: tuple__Tptr__Topaque__Terror;
     local #5 newmem: ptr__Topaque;
     local #6 err: error;
     local #7 $irtemp12: ptr__Ttuple__Tptr__Topaque__Terror;
     local #8 $irtemp13: ptr__Ttuple__Tptr__Topaque__Terror;
     local #9 $irtemp14: ptr__Ttuple__Tptr__Topaque__Terror;
     ir_call cb__Nstd__Nmem__Nalign__Ausize__Ausize A1 16; (push)
-    ir_load L2 POP();
-    ir_load L0 ;
+    ir_load L0 POP();
+    ir_load L1 ;
     ir_make_label .w2684$cond;
-    ir_jmp_eq L0 0 .w2684$end;
+    ir_jmp_eq L1 0 .w2684$end;
     ir_make_label .w2684$body;
-    ir_deref L0; (push)
-    ir_add [POP() . 0] L2; (push)
-    ir_deref L0; (push)
+    ir_deref L1; (push)
+    ir_add [POP() . 0] L0; (push)
+    ir_deref L1; (push)
     ir_jmp_gte POP() [POP() . 1] .if2675$else;
     ir_make_label .if2675$body;
     ir_jmp .w2684$end;
     ir_make_label .if2675$else;
-    ir_deref L0; (push)
-    ir_load L0 [POP() . 3];
+    ir_deref L1; (push)
+    ir_load L1 [POP() . 3];
     ir_jmp .w2684$cond;
     ir_make_label .w2684$end;
-    ir_jmp_eq L0 0 .if2700$else;
+    ir_jmp_eq L1 0 .if2700$else;
     ir_make_label .if2700$body;
     ir_load L7 A0;
     ir_deref L7; (push)
-    ir_call cb__Nstd__Nmem__Nalloc_in_block__Aptr__Tmemory_block__Ausize L0 L2; (push)
+    ir_call cb__Nstd__Nmem__Nalloc_in_block__Aptr__Tmemory_block__Ausize L1 L0; (push)
     ir_load [POP() . 0] POP();
     ir_deref L7; (push)
     ir_load [POP() . 1] 0;
     ir_return A0;
     ir_make_label .if2700$else;
-    ir_add 32 L2; (push)
+    ir_add 32 L0; (push)
     ir_call cb__Nstd__Nmem__Nalign__Ausize__Ausize POP() 4096; (push)
-    ir_load L3 POP();
+    ir_load L2 POP();
     ir_load_addr L4; (push)
-    ir_call cb__Nstd__Nsystem__Nalloc__Aptr__Ttuple__Tptr__Topaque__Terror__Ausize POP() L3;
+    ir_call cb__Nstd__Nsystem__Nalloc__Aptr__Ttuple__Tptr__Topaque__Terror__Ausize POP() L2;
     ir_load L5 [L4 . 0];
     ir_load L6 [L4 . 1];
     ir_jmp_eq L6 0 .if2734$else;
@@ -105,15 +105,15 @@ func cb__Nstd__Nmem__Nalloc__Aptr__Ttuple__Tptr__Topaque__Terror__Ausize -> ptr_
     ir_return A0;
     ir_make_label .if2734$else;
     ir_call cb__Nstd__Nmem__Nmemset__Aptr__Topaque__Auint8__Ausize L5 0 32;
-    ir_load L1 L5;
-    ir_deref L1; (push)
-    ir_load [POP() . 1] L3;
-    ir_deref L1; (push)
+    ir_load L3 L5;
+    ir_deref L3; (push)
+    ir_load [POP() . 1] L2;
+    ir_deref L3; (push)
     ir_load [POP() . 3] ;
-    ir_load  L1;
+    ir_load  L3;
     ir_load L9 A0;
     ir_deref L9; (push)
-    ir_call cb__Nstd__Nmem__Nalloc_in_block__Aptr__Tmemory_block__Ausize L1 L2; (push)
+    ir_call cb__Nstd__Nmem__Nalloc_in_block__Aptr__Tmemory_block__Ausize L3 L0; (push)
     ir_load [POP() . 0] POP();
     ir_deref L9; (push)
     ir_load [POP() . 1] 0;
@@ -174,7 +174,7 @@ func cb__Nstd__Nmem__Nalloc_slice__Cptr__Tpure__Tuint8__Aptr__Ttuple__Tslice__Tp
     arg #0 $cb_agg_ret: ptr__Ttuple__Tslice__Tptr__Tpure__Tuint8__Terror;
     arg #1 size: usize;
     local #0 result: slice__Tptr__Tpure__Tuint8;
-    local #1 $cbT6: tuple__Tptr__Topaque__Terror;
+    local #1 $cbT2: tuple__Tptr__Topaque__Terror;
     local #2 buf: ptr__Topaque;
     local #3 err: error;
     local #4 $irtemp15: ptr__Ttuple__Tslice__Tptr__Tpure__Tuint8__Terror;

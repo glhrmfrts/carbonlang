@@ -415,7 +415,7 @@ func cb__Nstd__Nsystem__Nwtermsig__Aint -> int
 endf
 
 func cb__Nstd__Nlinux__NtestAlloc -> void
-    local #0 $cbT6: tuple__Tptr__Topaque__Terror;
+    local #0 $cbT8: tuple__Tptr__Topaque__Terror;
     local #1 m: ptr__Topaque;
     local #2 err: error;
     local #3 $cbT29: slice__Tpure__Tuint8;
@@ -448,7 +448,7 @@ func cb__Nstd__Nlinux__NtestMain__Aint -> void
     local #0 invalidMapValue: ptr__Topaque;
     local #1 arr: slice__Tint;
     local #2 val: int;
-    local #3 $cbT7: tuple__Tptr__Topaque__Terror;
+    local #3 $cbT9: tuple__Tptr__Topaque__Terror;
     local #4 ptr: ptr__Topaque;
     local #5 err: error;
     local #6 $cbT30: slice__Tpure__Tuint8;

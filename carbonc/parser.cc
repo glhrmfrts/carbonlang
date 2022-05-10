@@ -1066,8 +1066,14 @@ struct parser_impl {
             lex->next();
 
             if (TOK == token_type::identifier) {
+                auto pos = lex->pos();
+
                 auto curexpr = parse_qualified_identifier();
                 if (curexpr) {
+                    if (TOK == token_type::dotdotdot) {
+                        lex->next();
+                        curexpr = make_rest_expr_node(*ast_arena, pos, std::move(curexpr));
+                    }
                     list->children.push_back(std::move(curexpr));
                 }
                 else {

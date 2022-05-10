@@ -17,6 +17,7 @@ static std::unordered_map<int, token_type> stb_to_token = {
     {CLEX_dqstring, token_type::string_literal},
     {CLEX_coloncolon, token_type::coloncolon},
     {CLEX_dotdot, token_type::dotdot},
+    {CLEX_dotdotdot, token_type::dotdotdot},
     {CLEX_eq, token_type::eqeq},
     {CLEX_noteq, token_type::neq},
     {CLEX_greatereq, token_type::gteq},

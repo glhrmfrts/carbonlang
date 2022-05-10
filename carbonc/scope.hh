@@ -35,11 +35,15 @@ bool declare_const_symbol(type_system& ts, const string_hash& hash, const const_
 
 symbol_info* find_symbol_in_current_scope(type_system& ts, const string_hash& hash);
 
+symbol_info* find_symbol_in_current_scope_thispass(type_system& ts, const string_hash& hash);
+
 symbol_info* find_symbol(type_system& ts, const std::pair<string_hash, string_hash>& pair);
 
 // Finds the type in scope or parents
 type_id find_type_by_id_hash(type_system& ts, const std::pair<string_hash, string_hash>& pair);
 
 local_def* get_symbol_local(const symbol_info& sym);
+
+void update_symbols_pass_tokens(type_system& ts);
 
 }

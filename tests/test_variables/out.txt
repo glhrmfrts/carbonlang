@@ -26,5 +26,20 @@ carbonc - compiling module: std/string
     process_code_unit: ../../../stdlib/src/std/string/string.cb
 carbonc - compiling module: std/system
     process_code_unit: ../../../stdlib/src/std/system/system.cb
+generate_unpacking_operations: ../../../stdlib/src/std/linux/process.cb
+	generating var_decl for argv
+	generating var_decl for err
+generate_unpacking_operations: ../../../stdlib/src/std/mem/slice.cb
+	generating var_decl for buf
+	generating var_decl for err
+generate_unpacking_operations: ../../../stdlib/src/std/linux/start.cb
+	generating var_decl for m
+	generating var_decl for err
+generate_unpacking_operations: ../../../stdlib/src/std/linux/start.cb
+	generating var_decl for ptr
+	generating var_decl for err
+generate_unpacking_operations: ../../../stdlib/src/std/mem/mem.cb
+	generating var_decl for newmem
+	generating var_decl for err
 carbonc - output: test.out
 true

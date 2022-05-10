@@ -32,6 +32,7 @@ enum class ast_type {
     func_expr,
     func_overload_selector_expr,
     const_expr,
+    rest_expr,
 
     type_decl,
     type_constructor_decl,
@@ -226,6 +227,8 @@ arena_ptr<ast_node> make_identifier_node(memory_arena& arena, const position& po
 arena_ptr<ast_node> make_c_struct_decl_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& name, arena_ptr<ast_node>&& fieldlist);
 
 arena_ptr<ast_node> make_c_struct_field_node(memory_arena& arena, const position& pos, const std::vector<std::string>& values);
+
+arena_ptr<ast_node> make_rest_expr_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& expr);
 
 arena_ptr<ast_node> make_unary_expr_node(memory_arena& arena, const position& pos, token_type op, arena_ptr<ast_node>&& right);
 

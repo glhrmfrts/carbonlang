@@ -76,7 +76,6 @@ func main() {
     }
 
     let fd, err = sys::open("aoc01.txt", sys::Read, 0)
-    
     if (err != noerr) {
         println("OPEN ERROR")
         sys::exit(1)
@@ -149,4 +148,5 @@ func main() {
     print("sum increase count: ")
     print(suminccount)
     println("")
+
 }

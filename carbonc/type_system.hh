@@ -165,6 +165,7 @@ struct symbol_info {
     symbol_kind kind;
     scope_def* scope;
     string_hash id;
+    int pass_token;
 
     // if kind == local
     int local_index = -1;

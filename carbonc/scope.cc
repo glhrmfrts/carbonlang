@@ -88,6 +88,7 @@ bool declare_global_symbol(type_system& ts, const string_hash& hash, ast_node& l
     info.scope = ts.current_scope;
     info.local_index = ts.current_scope->local_defs.size();
     info.id = hash;
+    info.pass_token = ((int)ts.pass * 1000) + ts.subpass;
 
     ld.local.name = hash;
     ts.current_scope->local_defs.push_back(&ld.local);
@@ -106,6 +107,7 @@ bool declare_local_symbol(type_system& ts, const string_hash& hash, ast_node& ld
     info.scope = ts.current_scope;
     info.local_index = ts.current_scope->local_defs.size();
     info.id = hash;
+    info.pass_token = ((int)ts.pass * 1000) + ts.subpass;
 
     ld.local.name = hash;
     ts.current_scope->local_defs.push_back(&ld.local);
@@ -124,6 +126,8 @@ bool declare_top_level_func_symbol(type_system& ts, const string_hash& hash, ast
     info.scope = ts.current_scope;
     info.local_index = ts.current_scope->local_defs.size();
     info.id = hash;
+    info.pass_token = ((int)ts.pass * 1000) + ts.subpass;
+
     ts.current_scope->local_defs.push_back(&ld.local);
     ts.current_scope->symbols[hash] = std::make_unique<symbol_info>(info);
     return true;
@@ -144,6 +148,8 @@ bool declare_type_symbol(type_system& ts, scope_def& scope, const string_hash& h
     info.scope = &scope;
     info.type_index = scope.tdefs.size();
     info.id = hash;
+    info.pass_token = ((int)ts.pass * 1000) + ts.subpass;
+
     scope.symbols[hash] = std::make_unique<symbol_info>(info);
     scope.tdefs.push_back(&node.tdef);
     return true;
@@ -161,6 +167,8 @@ bool declare_const_symbol(type_system& ts, const string_hash& hash, const const_
     info.ctvalue = value;
     info.cttype = tid;
     info.id = hash;
+    info.pass_token = ((int)ts.pass * 1000) + ts.subpass;
+
     ts.current_scope->symbols[hash] = std::make_unique<symbol_info>(info);
     return true;
 }
@@ -175,6 +183,8 @@ bool declare_overloaded_func_base_symbol(type_system& ts, const string_hash& has
     info.kind = symbol_kind::overloaded_func_base;
     info.scope = ts.current_scope;
     info.id = hash;
+    info.pass_token = ((int)ts.pass * 1000) + ts.subpass;
+
     ts.current_scope->symbols[hash] = std::make_unique<symbol_info>(info);
     return true;
 }
@@ -184,6 +194,21 @@ symbol_info* find_symbol_in_current_scope(type_system& ts, const string_hash& ha
     if (it == ts.current_scope->symbols.end()) {
         return nullptr;
     }
+    return it->second.get();
+}
+
+symbol_info* find_symbol_in_current_scope_thispass(type_system& ts, const string_hash& hash) {
+    auto it = ts.current_scope->symbols.find(hash);
+    if (it == ts.current_scope->symbols.end()) {
+        return nullptr;
+    }
+
+    int pass_token = ((int)ts.pass * 1000) + ts.subpass;
+    if (it->second->pass_token != pass_token) {
+        it->second->pass_token = pass_token;
+        return nullptr;
+    }
+
     return it->second.get();
 }
 
@@ -240,6 +265,19 @@ local_def* get_symbol_local(const symbol_info& sym) {
         return sym.scope->local_defs[sym.local_index];
     }
     return nullptr;
+}
+
+static void update_pass_tokens(type_system& ts, scope_def& scope) {
+    for (auto& [id, sym] : scope.symbols) {
+        sym->pass_token = ((int)ts.pass * 1000) + ts.subpass;
+    }
+    for (auto& child : scope.children) {
+        update_pass_tokens(ts, *child);
+    }
+}
+
+void update_symbols_pass_tokens(type_system& ts) {
+    //update_pass_tokens(ts, ts.builtin_scope->scope);
 }
 
 }

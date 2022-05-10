@@ -432,12 +432,12 @@ module std/mem
                 identifier sys::alloc
                 arg_list
                   unary &
-                    identifier $cbT5
+                    identifier $cbT6
                   identifier memsize
                 arg_list end
             var_decl
               arg_list
-                identifier $cbT5
+                identifier $cbT6
               arg_list end
             .value
               
@@ -450,7 +450,7 @@ module std/mem
                 type_resolver &opaque
             .value
               field_expr
-                identifier $cbT5
+                identifier $cbT6
                 identifier first
             var_decl
               arg_list
@@ -461,7 +461,7 @@ module std/mem
                 type_resolver error
             .value
               field_expr
-                identifier $cbT5
+                identifier $cbT6
                 identifier second
 
           decl_list end
@@ -832,14 +832,14 @@ module std/mem
                 identifier alloc
                 arg_list
                   unary &
-                    identifier $cbT6
+                    identifier $cbT2
                   binary *
                     identifier size
                     int_literal 8
                 arg_list end
             var_decl
               arg_list
-                identifier $cbT6
+                identifier $cbT2
               arg_list end
             .value
               
@@ -852,7 +852,7 @@ module std/mem
                 type_resolver &opaque
             .value
               field_expr
-                identifier $cbT6
+                identifier $cbT2
                 identifier first
             var_decl
               arg_list
@@ -863,7 +863,7 @@ module std/mem
                 type_resolver error
             .value
               field_expr
-                identifier $cbT6
+                identifier $cbT2
                 identifier second
 
           decl_list end

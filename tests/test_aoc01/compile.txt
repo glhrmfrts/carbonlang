@@ -27,13 +27,47 @@ carbonc - compiling module: std/string
     process_code_unit: ../../stdlib/src/std/string/string.cb
 carbonc - compiling module: std/system
     process_code_unit: ../../stdlib/src/std/system/system.cb
-carbonc - parsing time: 400ms
+carbonc - parsing time: 393ms
 
 carbonc - type checking 
-carbonc - type checking time: 109ms
+generate_unpacking_operations: ./src/main.cb
+	generating var_decl for numbers
+	generating assignment for err
+generate_unpacking_operations: ./src/main.cb
+	generating var_decl for sums
+	generating assignment for err
+generate_unpacking_operations: ./src/main.cb
+	generating var_decl for n
+	generating var_decl for nbuf
+	generating var_decl for ok
+generate_unpacking_operations: ../../stdlib/src/std/linux/process.cb
+	generating var_decl for argv
+	generating var_decl for err
+generate_unpacking_operations: ../../stdlib/src/std/mem/slice.cb
+	generating var_decl for buf
+	generating var_decl for err
+generate_unpacking_operations: ./src/main.cb
+	generating var_decl for data
+	generating var_decl for err
+generate_unpacking_operations: ./src/main.cb
+	generating var_decl for buf
+	generating var_decl for err
+generate_unpacking_operations: ./src/main.cb
+	generating var_decl for fd
+	generating assignment for err
+generate_unpacking_operations: ../../stdlib/src/std/linux/start.cb
+	generating var_decl for m
+	generating var_decl for err
+generate_unpacking_operations: ../../stdlib/src/std/linux/start.cb
+	generating var_decl for ptr
+	generating var_decl for err
+generate_unpacking_operations: ../../stdlib/src/std/mem/mem.cb
+	generating var_decl for newmem
+	generating var_decl for err
+carbonc - type checking time: 112ms
 
 carbonc - generating IR 
-carbonc - IR generation time: 87ms
+carbonc - IR generation time: 44ms
 
 carbonc - generating assembly 
 carbonc - running assembler: as _carbon/build_debug/root.asm -o _carbon/build_debug/root.o
@@ -43,10 +77,10 @@ carbonc - running assembler: as _carbon/build_debug/std_linux_syscall.asm -o _ca
 carbonc - running assembler: as _carbon/build_debug/std_mem.asm -o _carbon/build_debug/std_mem.o
 carbonc - running assembler: as _carbon/build_debug/std_string.asm -o _carbon/build_debug/std_string.o
 carbonc - running assembler: as _carbon/build_debug/std_system.asm -o _carbon/build_debug/std_system.o
-carbonc - assembly generation time: 227ms
+carbonc - assembly generation time: 294ms
 
 carbonc - running linker command: ld  -e _start -o _carbon/build_debug/test_aoc01 _carbon/build_debug/std_linux_x86_64_start.o _carbon/build_debug/root.o _carbon/build_debug/std_io.o _carbon/build_debug/std_linux.o _carbon/build_debug/std_linux_syscall.o _carbon/build_debug/std_mem.o _carbon/build_debug/std_string.o _carbon/build_debug/std_system.o -T ../../res/carbon.sc
 carbonc - output: a.out
 
 carbonc - total lines parsed: 1121
-carbonc - total compilation time: 932ms
+carbonc - total compilation time: 949ms

@@ -174,34 +174,34 @@ cb__Nstd__Nmem__Nalloc__Aptr__Ttuple__Tptr__Topaque__Terror__Ausize:
  call cb__Nstd__Nmem__Nalign__Ausize__Ausize
 # ir_call cb__Nstd__Nmem__Nalign__Ausize__Ausize A1 16; (push)
 
- mov %rax,-24(%rbp)
-# ir_load L2 POP();
+ mov %rax,-8(%rbp)
+# ir_load L0 POP();
 
  mov std__mem__last_block(%rip),%r10
- mov %r10,-8(%rbp)
-# ir_load L0 ;
+ mov %r10,-16(%rbp)
+# ir_load L1 ;
 
 .w2684$cond:
 # ir_make_label .w2684$cond;
 
- mov -8(%rbp),%r10
+ mov -16(%rbp),%r10
  cmp $0,%r10
  je .w2684$end
-# ir_jmp_eq L0 0 .w2684$end;
+# ir_jmp_eq L1 0 .w2684$end;
 
 .w2684$body:
 # ir_make_label .w2684$body;
 
- mov -8(%rbp),%rax
-# ir_deref L0; (push)
+ mov -16(%rbp),%rax
+# ir_deref L1; (push)
 
  mov 0(%rax),%r10
- add -24(%rbp),%r10
+ add -8(%rbp),%r10
  mov %r10,%rbx
-# ir_add [POP() . 0] L2; (push)
+# ir_add [POP() . 0] L0; (push)
 
- mov -8(%rbp),%rax
-# ir_deref L0; (push)
+ mov -16(%rbp),%rax
+# ir_deref L1; (push)
 
  cmp 8(%rax),%rbx
  jge .if2675$else
@@ -216,12 +216,12 @@ cb__Nstd__Nmem__Nalloc__Aptr__Ttuple__Tptr__Topaque__Terror__Ausize:
 .if2675$else:
 # ir_make_label .if2675$else;
 
- mov -8(%rbp),%rax
-# ir_deref L0; (push)
+ mov -16(%rbp),%rax
+# ir_deref L1; (push)
 
  mov 24(%rax),%r10
- mov %r10,-8(%rbp)
-# ir_load L0 [POP() . 3];
+ mov %r10,-16(%rbp)
+# ir_load L1 [POP() . 3];
 
  jmp .w2684$cond
 # ir_jmp .w2684$cond;
@@ -229,10 +229,10 @@ cb__Nstd__Nmem__Nalloc__Aptr__Ttuple__Tptr__Topaque__Terror__Ausize:
 .w2684$end:
 # ir_make_label .w2684$end;
 
- mov -8(%rbp),%r10
+ mov -16(%rbp),%r10
  cmp $0,%r10
  je .if2700$else
-# ir_jmp_eq L0 0 .if2700$else;
+# ir_jmp_eq L1 0 .if2700$else;
 
 .if2700$body:
 # ir_make_label .if2700$body;
@@ -244,10 +244,10 @@ cb__Nstd__Nmem__Nalloc__Aptr__Ttuple__Tptr__Topaque__Terror__Ausize:
  mov -72(%rbp),%rbx
 # ir_deref L7; (push)
 
- mov -24(%rbp),%rsi
- mov -8(%rbp),%rdi
+ mov -8(%rbp),%rsi
+ mov -16(%rbp),%rdi
  call cb__Nstd__Nmem__Nalloc_in_block__Aptr__Tmemory_block__Ausize
-# ir_call cb__Nstd__Nmem__Nalloc_in_block__Aptr__Tmemory_block__Ausize L0 L2; (push)
+# ir_call cb__Nstd__Nmem__Nalloc_in_block__Aptr__Tmemory_block__Ausize L1 L0; (push)
 
  mov %rax,0(%rbx)
 # ir_load [POP() . 0] POP();
@@ -267,25 +267,25 @@ cb__Nstd__Nmem__Nalloc__Aptr__Ttuple__Tptr__Topaque__Terror__Ausize:
 # ir_make_label .if2700$else;
 
  mov $32,%r10
- add -24(%rbp),%r10
+ add -8(%rbp),%r10
  mov %r10,%rax
-# ir_add 32 L2; (push)
+# ir_add 32 L0; (push)
 
  mov $4096,%rsi
  mov %rax,%rdi
  call cb__Nstd__Nmem__Nalign__Ausize__Ausize
 # ir_call cb__Nstd__Nmem__Nalign__Ausize__Ausize POP() 4096; (push)
 
- mov %rax,-32(%rbp)
-# ir_load L3 POP();
+ mov %rax,-24(%rbp)
+# ir_load L2 POP();
 
  lea -48(%rbp),%rax
 # ir_load_addr L4; (push)
 
- mov -32(%rbp),%rsi
+ mov -24(%rbp),%rsi
  mov %rax,%rdi
  call cb__Nstd__Nsystem__Nalloc__Aptr__Ttuple__Tptr__Topaque__Terror__Ausize
-# ir_call cb__Nstd__Nsystem__Nalloc__Aptr__Ttuple__Tptr__Topaque__Terror__Ausize POP() L3;
+# ir_call cb__Nstd__Nsystem__Nalloc__Aptr__Ttuple__Tptr__Topaque__Terror__Ausize POP() L2;
 
  mov -48(%rbp),%r10
  mov %r10,-56(%rbp)
@@ -335,26 +335,26 @@ cb__Nstd__Nmem__Nalloc__Aptr__Ttuple__Tptr__Topaque__Terror__Ausize:
 # ir_call cb__Nstd__Nmem__Nmemset__Aptr__Topaque__Auint8__Ausize L5 0 32;
 
  mov -56(%rbp),%r10
- mov %r10,-16(%rbp)
-# ir_load L1 L5;
+ mov %r10,-32(%rbp)
+# ir_load L3 L5;
 
- mov -16(%rbp),%rax
-# ir_deref L1; (push)
+ mov -32(%rbp),%rax
+# ir_deref L3; (push)
 
- mov -32(%rbp),%r10
+ mov -24(%rbp),%r10
  mov %r10,8(%rax)
-# ir_load [POP() . 1] L3;
+# ir_load [POP() . 1] L2;
 
- mov -16(%rbp),%rax
-# ir_deref L1; (push)
+ mov -32(%rbp),%rax
+# ir_deref L3; (push)
 
  mov std__mem__last_block(%rip),%r10
  mov %r10,24(%rax)
 # ir_load [POP() . 3] ;
 
- mov -16(%rbp),%r10
+ mov -32(%rbp),%r10
  mov %r10,std__mem__last_block(%rip)
-# ir_load  L1;
+# ir_load  L3;
 
  mov 32(%rbp),%r10
  mov %r10,-88(%rbp)
@@ -363,10 +363,10 @@ cb__Nstd__Nmem__Nalloc__Aptr__Ttuple__Tptr__Topaque__Terror__Ausize:
  mov -88(%rbp),%rbx
 # ir_deref L9; (push)
 
- mov -24(%rbp),%rsi
- mov -16(%rbp),%rdi
+ mov -8(%rbp),%rsi
+ mov -32(%rbp),%rdi
  call cb__Nstd__Nmem__Nalloc_in_block__Aptr__Tmemory_block__Ausize
-# ir_call cb__Nstd__Nmem__Nalloc_in_block__Aptr__Tmemory_block__Ausize L1 L2; (push)
+# ir_call cb__Nstd__Nmem__Nalloc_in_block__Aptr__Tmemory_block__Ausize L3 L0; (push)
 
  mov %rax,0(%rbx)
 # ir_load [POP() . 0] POP();

@@ -1,106 +1,18 @@
-error {
-    ALLOC_FAILED
-
-    PATH_NOT_FOUND
-
-    INVALID_HANDLE
-
-    UNKNOWN_ERROR
-}
-
-extern(C) let __error_array_start : uint8
-extern(C) let __error_array_end : uint8
-
-extern(carbon, std::system)
-func error_string(err: error): []pure uint8 {
-    let addr_begin = &__error_array_start
-    let addr_end = &__error_array_end
-}
-
-func alloc_slice(type T, size: usize): {[]T, error} {
-    let buf, err = cast(&opaque)nil, noerr
-    if (err != noerr) {
-        return nil, err
-    }
-
-/*
-    make_array(type T, { 0, 1, 2, 3, 4 }) -> #callerowned array(T) // Returns a new array with the specified elements.
-    make_array(type T, &allocator, { 0, 1, 2, 3, 4 }) -> #callerowned array(T) // Returns a new array with the specified elements.
-    append(&arr, elem) -> error // Returns any error that ocurred allocating memory for the new elem.
-    insert(&arr, i, elem) -> {T,bool,error}
-    remove(&arr, i) -> {T,bool}
-    nth(&arr, i) -> {&T,bool} // Returns a pointer to the array element and whether the index is valid or not.
-    slice(&arr) -> []T // Returns a view of the array as a slice.
-    pure_slice(&arr) -> []pure T // Returns a view of the array as a pure slice.
-    free(&arr) -> {} // Release the array memory, but not that of it's elements if they are/contain pointers.
-    arr.allocator // The array allocator
-    arr.ptr // &T Pointer to the array data
-    arr.len // Effective length of the array
-    arr.cap // Capacity of the array buffer
-*/
-
-/*
-    make_list(type T, { elems... }) -> #callerowned list(T)
-    append(list(T), elem) -> list(T)
-    prepend(list(T), elem) -> list(T)
-    next(list(T)) -> list(T)
-    prev(list(T)) -> list(T)
-    elem(list(T)) -> elem
-    free(list(T)) -> {}
-*/
-
-    some_method(arr->pure_slice())
-
-    let result = []T{ cast(&T)buf, size }
-    return result, noerr
-}
-
-func free(p: &opaque) {
-}
-
-func free_slice(s) {
-    free(s.ptr)
-}
-
 extern(C) func carbon_main() : int {
-    // let haystack = "Hello world"
+    let err = late_err()
+    if (err != noerr) {
+        
+    }
     
-    // let hello = haystack[2, 5]
+    let fd,err = late_expression()
 
-// TODO: fix name clash with function
-    // let cstat : Stat
-    // let size = cstat.st_atime
-/*
-    let val : {usize, bool} = {0, false}
-    let val2 : {usize, bool} = {0, true}
+    let numbers,err = 0,noerr
+}
 
-    let eq = val == val2
-*/
+func late_err() {
+    return noerr
+}
 
-/*
-    let ptr : &{usize, usize}
-    @ptr = {cast(usize)0, cast(usize)0}
-
-    takeString("Hello")
-
-    takeString("Hello")
-
-    let values : {usize, {usize, usize}}
-
-    let eq : int
-    if (values == {cast(usize)0, {cast(usize)0, cast(usize)0}}) {
-        eq = 1
-    }
-    else {
-        eq = 0
-    }
-*/
-    let a, err = alloc_slice(type &pure uint8, 1)
-    free_slice(a)
-
-    let b, err = alloc_slice(type &pure int32, 1)
-    free_slice(b)
-
-    //let b, err = alloc_slice(type &pure uint8, 1)
-    //free_slice(b)
+func late_expression() {
+    return 2,noerr
 }

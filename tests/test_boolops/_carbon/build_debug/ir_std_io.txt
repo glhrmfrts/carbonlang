@@ -60,7 +60,7 @@ endf
 
 func cb__Nstd__Nio__Nprint__Aerror -> void
     arg #0 err: error;
-    local #0 $cbT2: slice__Tpure__Tuint8;
+    local #0 $cbT3: slice__Tpure__Tuint8;
     local #1 $cbT16: slice__Tpure__Tuint8;
     ir_load_addr L0; (push)
     ir_call cb__Nstd__Nsystem__Nerror_string__Aptr__Tslice__Tpure__Tuint8__Aerror POP() A0;
