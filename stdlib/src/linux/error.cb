@@ -1,6 +1,6 @@
-import std::mem
-import std::string
-import std::io
+import mem
+import string
+import io
 
 private const ALIGNMENT : usize = 16
 
@@ -16,7 +16,7 @@ private func printbytes(ptr: &pure uint8, sz: usize) {
     println("")
 }
 
-extern(carbon, std::system)
+extern(carbon, system)
 func error_string(err: error): []pure uint8 {
     if (err == noerr) {
         return "noerr"

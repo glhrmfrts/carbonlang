@@ -3,7 +3,7 @@ module root
   code_unit ./src/main.cb
     decl_list
       import_decl
-        identifier std::io
+        identifier io
       type_decl
         identifier data
         type_expr

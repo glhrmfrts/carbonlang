@@ -1,14 +1,7 @@
-import std::linux::syscall as syscall
-import std::io
+import linux::syscall as syscall
+import io
 
-extern(carbon, std::system) {
-
-/*
-func make_slice(`T, len: usize) {
-    let buf = cast(&T) mem::alloc(len * sizeof(T))
-    return []T{ buf, len }
-}
-*/
+extern(carbon, system) {
 
 func exit(code: int) {
     syscall::exit(code)

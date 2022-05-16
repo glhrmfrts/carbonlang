@@ -3,84 +3,1033 @@ carbonc - compiling target: test_unpack
 carbonc - compiling module: root
     process_code_unit: ./src/main.cb
 generate_unpacking_operations: ./src/main.cb
+declaring local $cbT0 of type {int, int} - 0x7fa689b01a78
 	generating var_decl for a
+declaring local a of type int - 0x7fa689b05d68
 	generating var_decl for b
+declaring local b of type int - 0x7fa689b098e8
 generate_unpacking_operations: ./src/main.cb
+declaring local $cbT1 of type {int, int, int, int, int, int, int, int, int, int, int, int, int, int, int, int, int} - 0x7fa689b18e60
 	generating var_decl for a
+declaring local a of type int - 0x7fa689b1d150
 	generating var_decl for b
+declaring local b of type int - 0x7fa689b20cd0
 	generating var_decl for c
+declaring local c of type int - 0x7fa689b24850
 	generating var_decl for d
+declaring local d of type int - 0x7fa689b283d0
 	generating var_decl for e
+declaring local e of type int - 0x7fa689b2bf50
 	generating var_decl for f
+declaring local f of type int - 0x7fa689b2fad0
 	generating var_decl for g
+declaring local g of type int - 0x7fa689b33650
 	generating var_decl for h
+declaring local h of type int - 0x7fa689b371d0
 	generating var_decl for i
+declaring local i of type int - 0x7fa689b3ad50
 	generating var_decl for j
+declaring local j of type int - 0x7fa689b3e8d0
 	generating var_decl for k
+declaring local k of type int - 0x7fa689b42450
 	generating var_decl for m
+declaring local m of type int - 0x7fa689b45fd0
 generate_unpacking_operations: ./src/main.cb
+declaring local $cbT2 of type {int, int, int, int, int, int, int} - 0x7fa689b59fb8
 	generating var_decl for a
+declaring local a of type int - 0x7fa689b5e2a8
 	generating var_decl for b
-carbonc - compiling module: std/io
-    process_code_unit: ../../stdlib/src/std/io/print.cb
-carbonc - compiling module: std/linux
-    process_code_unit: ../../stdlib/src/std/linux/error.cb
-    process_code_unit: ../../stdlib/src/std/linux/io.cb
-    process_code_unit: ../../stdlib/src/std/linux/mem.cb
-    process_code_unit: ../../stdlib/src/std/linux/open.cb
-    process_code_unit: ../../stdlib/src/std/linux/process.cb
-    process_code_unit: ../../stdlib/src/std/linux/start.cb
-    process_code_unit: ../../stdlib/src/std/linux/stat.cb
-carbonc - compiling module: std/linux/syscall
-    process_code_unit: ../../stdlib/src/std/linux/syscall/syscall.cb
-assembly file: std_linux_x86_64_start.s
-carbonc - running assembler: as _carbon/build_debug/std_linux_x86_64_start.s -o _carbon/build_debug/std_linux_x86_64_start.o
-carbonc - compiling module: std/mem
-    process_code_unit: ../../stdlib/src/std/mem/arena.cb
-    process_code_unit: ../../stdlib/src/std/mem/mem.cb
-    process_code_unit: ../../stdlib/src/std/mem/slice.cb
-carbonc - compiling module: std/string
-    process_code_unit: ../../stdlib/src/std/string/cstring.cb
-    process_code_unit: ../../stdlib/src/std/string/equals.cb
-    process_code_unit: ../../stdlib/src/std/string/find.cb
-    process_code_unit: ../../stdlib/src/std/string/string.cb
-carbonc - compiling module: std/system
-    process_code_unit: ../../stdlib/src/std/system/system.cb
-carbonc - parsing time: 380ms
+declaring local b of type int - 0x7fa689b61e28
+	generating var_decl for rest
+declaring local rest of type {int, int, int, int, int} - 0x7fa689b6c938
+declaring local $cbT0 of type {int, int} - 0x7fa689b01a78
+declaring local a of type int - 0x7fa689b05d68
+declaring local b of type int - 0x7fa689b098e8
+declaring local $cbT1 of type {int, int, int, int, int, int, int, int, int, int, int, int, int, int, int, int, int} - 0x7fa689b18e60
+declaring local a of type int - 0x7fa689b1d150
+declaring local b of type int - 0x7fa689b20cd0
+declaring local c of type int - 0x7fa689b24850
+declaring local d of type int - 0x7fa689b283d0
+declaring local e of type int - 0x7fa689b2bf50
+declaring local f of type int - 0x7fa689b2fad0
+declaring local g of type int - 0x7fa689b33650
+declaring local h of type int - 0x7fa689b371d0
+declaring local i of type int - 0x7fa689b3ad50
+declaring local j of type int - 0x7fa689b3e8d0
+declaring local k of type int - 0x7fa689b42450
+declaring local m of type int - 0x7fa689b45fd0
+declaring local $cbT2 of type {int, int, int, int, int, int, int} - 0x7fa689b59fb8
+declaring local a of type int - 0x7fa689b5e2a8
+declaring local b of type int - 0x7fa689b61e28
+declaring local rest of type {int, int, int, int, int} - 0x7fa689b6c938
+carbonc - compiling module: io
+    process_code_unit: ../../stdlib/src/io/print.cb
+if_stmt - b
+if_stmt - 
+carbonc - compiling module: linux
+    process_code_unit: ../../stdlib/src/linux/error.cb
+declaring local $foriter of type {int, usize} - 0x55a97cb5dd20
+declaring local i of type int - 0x55a97cb63660
+declaring local b of type uint8 - 0x55a97ca0db80
+if_stmt - 
+declaring local addr_begin of type uintptr - 0x55a97ca29250
+declaring local addr_end of type uintptr - 0x55a97ca2eb90
+declaring local addr of type uintptr - 0x55a97ca30950
+declaring local errcode of type int - 0x55a97ca33d60
+if_stmt - 
+declaring local codeptr of type &int32 - 0x55a97ca3bbd0
+declaring local str of type unknown - 0x55a97cb49d50
+if_stmt - 
+cannot determine type of symbol 'str' - 0x55a97cb49d50
+cannot determine type of symbol 'str' - 0x55a97cb49d50
+invalid field_expr: len
+declaring local i of type int - 0x55a97cb63660
+declaring local b of type uint8 - 0x55a97ca0db80
+if_stmt - 
+declaring local addr_begin of type uintptr - 0x55a97ca29250
+declaring local addr_end of type uintptr - 0x55a97ca2eb90
+declaring local addr of type uintptr - 0x55a97ca30950
+declaring local errcode of type int - 0x55a97ca33d60
+if_stmt - 
+declaring local codeptr of type &int32 - 0x55a97ca3bbd0
+declaring local str of type unknown - 0x55a97cb49d50
+if_stmt - 
+cannot determine type of symbol 'str' - 0x55a97cb49d50
+cannot determine type of symbol 'str' - 0x55a97cb49d50
+invalid field_expr: len
+    process_code_unit: ../../stdlib/src/linux/io.cb
+cannot determine type of symbol 'fd' - 0x55a97cb9ee60
+cannot determine type of symbol 'fd' - 0x55a97cbae3d0
+cannot determine type of symbol 'fd' - 0x55a97cbbe0b0
+cannot determine type of symbol 'fd' - 0x55a97cb9ee60
+cannot determine type of symbol 'fd' - 0x55a97cbae3d0
+cannot determine type of symbol 'fd' - 0x55a97cbbe0b0
+    process_code_unit: ../../stdlib/src/linux/mem.cb
+declaring local params of type &alloc_parameters - 0x55a97cbefc80
+declaring local ptr of type unknown - 0x55a97cbf7380
+if_stmt - 
+cannot determine type of symbol 'ptr' - 0x55a97cbf7380
+cannot determine type of symbol 'ptr' - 0x55a97cbf7380
+cannot determine type of symbol 'ptr' - 0x55a97cbf7380
+cannot determine type of symbol 'ptr' - 0x55a97cbf7380
+declaring local params of type alloc_parameters - 0x55a97cc0dff0
+declaring local params of type &alloc_parameters - 0x55a97cbefc80
+declaring local ptr of type unknown - 0x55a97cbf7380
+if_stmt - 
+cannot determine type of symbol 'ptr' - 0x55a97cbf7380
+cannot determine type of symbol 'ptr' - 0x55a97cbf7380
+cannot determine type of symbol 'ptr' - 0x55a97cbf7380
+cannot determine type of symbol 'ptr' - 0x55a97cbf7380
+declaring local params of type alloc_parameters - 0x55a97cc0dff0
+    process_code_unit: ../../stdlib/src/linux/open.cb
+declaring local lflags of type int - 0x55a97cc56630
+if_stmt - 
+cannot determine type of symbol 'flags' - 0x55a97cc52340
+cannot determine type of symbol 'flags' - 0x55a97cc52340
+if_stmt - 
+cannot determine type of symbol 'flags' - 0x55a97cc52340
+cannot determine type of symbol 'flags' - 0x55a97cc52340
+if_stmt - 
+cannot determine type of symbol 'flags' - 0x55a97cc52340
+cannot determine type of symbol 'flags' - 0x55a97cc52340
+if_stmt - 
+cannot determine type of symbol 'flags' - 0x55a97cc52340
+cannot determine type of symbol 'flags' - 0x55a97cc52340
+if_stmt - 
+cannot determine type of symbol 'flags' - 0x55a97cc52340
+cannot determine type of symbol 'flags' - 0x55a97cc52340
+if_stmt - 
+cannot determine type of symbol 'flags' - 0x55a97cc52340
+cannot determine type of symbol 'flags' - 0x55a97cc52340
+cannot determine type of symbol 'flags' - 0x55a97cc7b930
+declaring local kflags of type unknown - 0x55a97cc85560
+cannot determine type of symbol 'kflags' - 0x55a97cc85560
+declaring local fd of type unknown - 0x55a97cc8bd80
+cannot determine type of symbol 'fd' - 0x55a97cc8bd80
+cannot determine type of symbol 'fd' - 0x55a97cc8bd80
+declaring local lflags of type int - 0x55a97cc56630
+if_stmt - 
+cannot determine type of symbol 'flags' - 0x55a97cc52340
+cannot determine type of symbol 'flags' - 0x55a97cc52340
+if_stmt - 
+cannot determine type of symbol 'flags' - 0x55a97cc52340
+cannot determine type of symbol 'flags' - 0x55a97cc52340
+if_stmt - 
+cannot determine type of symbol 'flags' - 0x55a97cc52340
+cannot determine type of symbol 'flags' - 0x55a97cc52340
+if_stmt - 
+cannot determine type of symbol 'flags' - 0x55a97cc52340
+cannot determine type of symbol 'flags' - 0x55a97cc52340
+if_stmt - 
+cannot determine type of symbol 'flags' - 0x55a97cc52340
+cannot determine type of symbol 'flags' - 0x55a97cc52340
+if_stmt - 
+cannot determine type of symbol 'flags' - 0x55a97cc52340
+cannot determine type of symbol 'flags' - 0x55a97cc52340
+cannot determine type of symbol 'flags' - 0x55a97cc7b930
+declaring local kflags of type unknown - 0x55a97cc85560
+cannot determine type of symbol 'kflags' - 0x55a97cc85560
+declaring local fd of type unknown - 0x55a97cc8bd80
+cannot determine type of symbol 'fd' - 0x55a97cc8bd80
+cannot determine type of symbol 'fd' - 0x55a97cc8bd80
+    process_code_unit: ../../stdlib/src/linux/process.cb
+declaring local child of type unknown - 0x55a97ccb01a0
+if_stmt - 
+cannot determine type of symbol 'child' - 0x55a97ccb01a0
+cannot determine type of symbol 'child' - 0x55a97ccb01a0
+declaring local $foriter of type {int, usize} - 0x55a97cd20210
+declaring local i of type int - 0x55a97cd25b50
+invalid field_expr: ptr
+if_stmt - 
+cannot determine type of symbol 'child' - 0x55a97ccb01a0
+cannot determine type of symbol 'child' - 0x55a97ccb01a0
+declaring local status of type int - 0x55a97ccd9790
+cannot determine type of symbol 'child' - 0x55a97ccb01a0
+if_stmt - 
+if_stmt - 
+cannot determine type of symbol 'child' - 0x55a97ccb01a0
+cannot determine type of symbol 'child' - 0x55a97ccb01a0
+declaring local child of type unknown - 0x55a97ccb01a0
+if_stmt - 
+cannot determine type of symbol 'child' - 0x55a97ccb01a0
+cannot determine type of symbol 'child' - 0x55a97ccb01a0
+declaring local i of type int - 0x55a97cd25b50
+invalid field_expr: ptr
+if_stmt - 
+cannot determine type of symbol 'child' - 0x55a97ccb01a0
+cannot determine type of symbol 'child' - 0x55a97ccb01a0
+declaring local status of type int - 0x55a97ccd9790
+cannot determine type of symbol 'child' - 0x55a97ccb01a0
+if_stmt - 
+if_stmt - 
+cannot determine type of symbol 'child' - 0x55a97ccb01a0
+cannot determine type of symbol 'child' - 0x55a97ccb01a0
+    process_code_unit: ../../stdlib/src/linux/start.cb
+if_stmt - 
+declaring local invalidMapValue of type &opaque - 0x55a97cd4e060
+if_stmt - 
+declaring local arr of type []int - 0x55a97cd72480
+declaring local $foriter of type {int, int} - 0x55a97cdc0d70
+declaring local i of type int - 0x55a97cdc66b0
+declaring local $foriter of type {int, int} - 0x55a97cdcec90
+declaring local i of type int - 0x55a97cdd45d0
+declaring local val of type int - 0x55a97cd9ee80
+declaring local count of type int - 0x55a97cda56a0
+declaring local value of type bool - 0x55a97cda8340
+if_stmt - 
+declaring local invalidMapValue of type &opaque - 0x55a97cd4e060
+if_stmt - 
+declaring local arr of type []int - 0x55a97cd72480
+declaring local i of type int - 0x55a97cdc66b0
+declaring local i of type int - 0x55a97cdd45d0
+declaring local val of type int - 0x55a97cd9ee80
+declaring local count of type int - 0x55a97cda56a0
+declaring local value of type bool - 0x55a97cda8340
+    process_code_unit: ../../stdlib/src/linux/stat.cb
+declaring local cstat of type C_Stat - 0x55a97cdf4700
+if_stmt - 
+cannot determine type of symbol 'buf' - 0x55a97cdf0410
+invalid field_expr: size
+declaring local cstat of type C_Stat - 0x55a97ce0bae0
+if_stmt - 
+cannot determine type of symbol 'fd' - 0x55a97ce04b50
+cannot determine type of symbol 'fd' - 0x55a97ce04b50
+cannot determine type of symbol 'buf' - 0x55a97ce077f0
+invalid field_expr: size
+declaring local cstat of type C_Stat - 0x55a97cdf4700
+if_stmt - 
+cannot determine type of symbol 'buf' - 0x55a97cdf0410
+invalid field_expr: size
+declaring local cstat of type C_Stat - 0x55a97ce0bae0
+if_stmt - 
+cannot determine type of symbol 'fd' - 0x55a97ce04b50
+cannot determine type of symbol 'fd' - 0x55a97ce04b50
+cannot determine type of symbol 'buf' - 0x55a97ce077f0
+invalid field_expr: size
+carbonc - compiling module: linux/syscall
+    process_code_unit: ../../stdlib/src/linux/syscall/syscall.cb
+assembly file: linux_x86_64_start.s
+carbonc - running assembler: as _carbon/build_debug/linux_x86_64_start.s -o _carbon/build_debug/linux_x86_64_start.o
+carbonc - compiling module: mem
+    process_code_unit: ../../stdlib/src/mem/arena.cb
+    process_code_unit: ../../stdlib/src/mem/mem.cb
+declaring local blockdata of type &uint8 - 0x55a97cf23db0
+declaring local ptr of type &uint8 - 0x55a97cf27930
+declaring local asize of type unknown - 0x55a97cf5ec40
+declaring local pblock of type &memory_block - 0x55a97cf60a00
+if_stmt - 
+if_stmt - 
+cannot determine type of symbol 'asize' - 0x55a97cf5ec40
+cannot determine type of symbol 'asize' - 0x55a97cf5ec40
+if_stmt - 
+cannot determine type of symbol 'asize' - 0x55a97cf5ec40
+cannot determine type of symbol 'asize' - 0x55a97cf5ec40
+cannot determine type of symbol 'asize' - 0x55a97cf5ec40
+declaring local memsize of type unknown - 0x55a97cf7b1f0
+cannot determine type of symbol 'memsize' - 0x55a97cf7b1f0
+if_stmt - 
+declaring local newblock of type &memory_block - 0x55a97cf8d400
+cannot determine type of symbol 'memsize' - 0x55a97cf7b1f0
+cannot determine type of symbol 'asize' - 0x55a97cf5ec40
+cannot determine type of symbol 'asize' - 0x55a97cf5ec40
+declaring local pblock of type &memory_block - 0x55a97cfa04f0
+declaring local prevblock of type &memory_block - 0x55a97cfa3190
+if_stmt - 
+declaring local blockdata of type &uint8 - 0x55a97cfad530
+if_stmt - 
+if_stmt - 
+if_stmt - 
+if_stmt - 
+declaring local blockdata of type &uint8 - 0x55a97cf23db0
+declaring local ptr of type &uint8 - 0x55a97cf27930
+declaring local asize of type unknown - 0x55a97cf5ec40
+declaring local pblock of type &memory_block - 0x55a97cf60a00
+if_stmt - 
+if_stmt - 
+cannot determine type of symbol 'asize' - 0x55a97cf5ec40
+cannot determine type of symbol 'asize' - 0x55a97cf5ec40
+if_stmt - 
+cannot determine type of symbol 'asize' - 0x55a97cf5ec40
+cannot determine type of symbol 'asize' - 0x55a97cf5ec40
+cannot determine type of symbol 'asize' - 0x55a97cf5ec40
+declaring local memsize of type unknown - 0x55a97cf7b1f0
+cannot determine type of symbol 'memsize' - 0x55a97cf7b1f0
+if_stmt - 
+declaring local newblock of type &memory_block - 0x55a97cf8d400
+cannot determine type of symbol 'memsize' - 0x55a97cf7b1f0
+cannot determine type of symbol 'asize' - 0x55a97cf5ec40
+cannot determine type of symbol 'asize' - 0x55a97cf5ec40
+declaring local pblock of type &memory_block - 0x55a97cfa04f0
+declaring local prevblock of type &memory_block - 0x55a97cfa3190
+if_stmt - 
+declaring local blockdata of type &uint8 - 0x55a97cfad530
+if_stmt - 
+if_stmt - 
+if_stmt - 
+if_stmt - 
+    process_code_unit: ../../stdlib/src/mem/slice.cb
+carbonc - compiling module: string
+    process_code_unit: ../../stdlib/src/string/cstring.cb
+declaring local result of type []pure uint8 - 0x55a97d01ce30
+if_stmt - 
+declaring local result of type []pure uint8 - 0x55a97d01ce30
+if_stmt - 
+    process_code_unit: ../../stdlib/src/string/equals.cb
+if_stmt - 
+cannot determine type of symbol 'a' - 0x55a97d033aa0
+invalid field_expr: len
+cannot determine type of symbol 'b' - 0x55a97d035fd0
+invalid field_expr: len
+cannot determine type of symbol 'a' - 0x55a97d033aa0
+invalid field_expr: len
+cannot determine type of symbol 'b' - 0x55a97d035fd0
+invalid field_expr: len
+cannot determine type of symbol 'a' - 0x55a97d033aa0
+invalid field_expr: len
+cannot determine type of symbol 'a' - 0x55a97d033aa0
+invalid field_expr: len
+if_stmt - 
+cannot determine type of symbol 'a' - 0x55a97d033aa0
+cannot determine type of symbol 'b' - 0x55a97d035fd0
+cannot determine type of symbol 'a' - 0x55a97d033aa0
+cannot determine type of symbol 'b' - 0x55a97d035fd0
+if_stmt - 
+cannot determine type of symbol 'a' - 0x55a97d033aa0
+invalid field_expr: len
+cannot determine type of symbol 'b' - 0x55a97d035fd0
+invalid field_expr: len
+cannot determine type of symbol 'a' - 0x55a97d033aa0
+invalid field_expr: len
+cannot determine type of symbol 'b' - 0x55a97d035fd0
+invalid field_expr: len
+cannot determine type of symbol 'a' - 0x55a97d033aa0
+invalid field_expr: len
+cannot determine type of symbol 'a' - 0x55a97d033aa0
+invalid field_expr: len
+if_stmt - 
+cannot determine type of symbol 'a' - 0x55a97d033aa0
+cannot determine type of symbol 'b' - 0x55a97d035fd0
+cannot determine type of symbol 'a' - 0x55a97d033aa0
+cannot determine type of symbol 'b' - 0x55a97d035fd0
+    process_code_unit: ../../stdlib/src/string/find.cb
+cannot determine type of symbol 'haystack' - 0x55a97d04ef70
+invalid field_expr: len
+cannot determine type of symbol 'haystack' - 0x55a97d04ef70
+invalid field_expr: len
+if_stmt - 
+cannot determine type of symbol 'haystack' - 0x55a97d04ef70
+cannot determine type of symbol 'haystack' - 0x55a97d04ef70
+cannot determine type of symbol 'haystack' - 0x55a97d069ed0
+invalid field_expr: len
+cannot determine type of symbol 'haystack' - 0x55a97d069ed0
+invalid field_expr: len
+if_stmt - 
+cannot determine type of symbol 'haystack' - 0x55a97d069ed0
+cannot determine type of symbol 'needle' - 0x55a97d06c400
+cannot determine type of symbol 'needle' - 0x55a97d06c400
+invalid field_expr: len
+cannot determine type of symbol 'haystack' - 0x55a97d069ed0
+invalid field_expr: len
+cannot determine type of symbol 'haystack' - 0x55a97d069ed0
+cannot determine type of symbol 'needle' - 0x55a97d06c400
+invalid field_expr: len
+cannot determine type of symbol 'needle' - 0x55a97d06c400
+invalid field_expr: len
+cannot determine type of symbol 'haystack' - 0x55a97d069ed0
+cannot determine type of symbol 'needle' - 0x55a97d06c400
+cannot determine type of symbol 'needle' - 0x55a97d06c400
+invalid field_expr: len
+cannot determine type of symbol 'haystack' - 0x55a97d069ed0
+invalid field_expr: len
+cannot determine type of symbol 'haystack' - 0x55a97d069ed0
+cannot determine type of symbol 'needle' - 0x55a97d06c400
+invalid field_expr: len
+cannot determine type of symbol 'needle' - 0x55a97d06c400
+invalid field_expr: len
+cannot determine type of symbol 'haystack' - 0x55a97d04ef70
+invalid field_expr: len
+cannot determine type of symbol 'haystack' - 0x55a97d04ef70
+invalid field_expr: len
+if_stmt - 
+cannot determine type of symbol 'haystack' - 0x55a97d04ef70
+cannot determine type of symbol 'haystack' - 0x55a97d04ef70
+cannot determine type of symbol 'haystack' - 0x55a97d069ed0
+invalid field_expr: len
+cannot determine type of symbol 'haystack' - 0x55a97d069ed0
+invalid field_expr: len
+if_stmt - 
+cannot determine type of symbol 'haystack' - 0x55a97d069ed0
+cannot determine type of symbol 'needle' - 0x55a97d06c400
+cannot determine type of symbol 'needle' - 0x55a97d06c400
+invalid field_expr: len
+cannot determine type of symbol 'haystack' - 0x55a97d069ed0
+invalid field_expr: len
+cannot determine type of symbol 'haystack' - 0x55a97d069ed0
+cannot determine type of symbol 'needle' - 0x55a97d06c400
+invalid field_expr: len
+cannot determine type of symbol 'needle' - 0x55a97d06c400
+invalid field_expr: len
+cannot determine type of symbol 'haystack' - 0x55a97d069ed0
+cannot determine type of symbol 'needle' - 0x55a97d06c400
+cannot determine type of symbol 'needle' - 0x55a97d06c400
+invalid field_expr: len
+cannot determine type of symbol 'haystack' - 0x55a97d069ed0
+invalid field_expr: len
+cannot determine type of symbol 'haystack' - 0x55a97d069ed0
+cannot determine type of symbol 'needle' - 0x55a97d06c400
+invalid field_expr: len
+cannot determine type of symbol 'needle' - 0x55a97d06c400
+invalid field_expr: len
+    process_code_unit: ../../stdlib/src/string/string.cb
+carbonc - compiling module: system
+    process_code_unit: ../../stdlib/src/system/system.cb
+if_stmt - 
+declaring local result of type []uint8 - 0x55a97d1a4090
+declaring local tpl_str of type unknown - 0x55a97d1a5e50
+declaring local tmp_value of type int - 0x55a97d1a7c10
+declaring local offs of type int - 0x55a97d1aa140
+declaring local nvalue of type int - 0x55a97d1ac670
+if_stmt - 
+if_stmt - 
+cannot determine type of symbol 'tpl_str' - 0x55a97d1a5e50
+declaring local ptr of type &uint8 - 0x55a97d1cb150
+declaring local ptr1 of type &uint8 - 0x55a97d1d0a90
+if_stmt - 
+declaring local tmp_char of type uint8 - 0x55a97d1de9b0
+if_stmt - 
+declaring local buf of type [32]uint8 - 0x55a97d1f91a0
+declaring local dest of type []uint8 - 0x55a97d201010
+if_stmt - 
+declaring local result of type []uint8 - 0x55a97d1a4090
+declaring local tpl_str of type []pure uint8 - 0x55a97d1a5e50
+declaring local tmp_value of type int - 0x55a97d1a7c10
+declaring local offs of type int - 0x55a97d1aa140
+declaring local nvalue of type int - 0x55a97d1ac670
+if_stmt - 
+if_stmt - 
+declaring local ptr of type &uint8 - 0x55a97d1cb150
+declaring local ptr1 of type &uint8 - 0x55a97d1d0a90
+if_stmt - 
+declaring local tmp_char of type uint8 - 0x55a97d1de9b0
+if_stmt - 
+declaring local buf of type [32]uint8 - 0x55a97d1f91a0
+declaring local dest of type []uint8 - 0x55a97d201010
+carbonc - parsing time: 343ms
 
 carbonc - type checking 
-generate_unpacking_operations: ../../stdlib/src/std/linux/process.cb
+declaring local $cbT0 of type {int, int} - 0x7fa689b01a78
+declaring local a of type int - 0x7fa689b05d68
+declaring local b of type int - 0x7fa689b098e8
+declaring local $cbT1 of type {int, int, int, int, int, int, int, int, int, int, int, int, int, int, int, int, int} - 0x7fa689b18e60
+declaring local a of type int - 0x7fa689b1d150
+declaring local b of type int - 0x7fa689b20cd0
+declaring local c of type int - 0x7fa689b24850
+declaring local d of type int - 0x7fa689b283d0
+declaring local e of type int - 0x7fa689b2bf50
+declaring local f of type int - 0x7fa689b2fad0
+declaring local g of type int - 0x7fa689b33650
+declaring local h of type int - 0x7fa689b371d0
+declaring local i of type int - 0x7fa689b3ad50
+declaring local j of type int - 0x7fa689b3e8d0
+declaring local k of type int - 0x7fa689b42450
+declaring local m of type int - 0x7fa689b45fd0
+declaring local $cbT2 of type {int, int, int, int, int, int, int} - 0x7fa689b59fb8
+declaring local a of type int - 0x7fa689b5e2a8
+declaring local b of type int - 0x7fa689b61e28
+declaring local rest of type {int, int, int, int, int} - 0x7fa689b6c938
+if_stmt - 
+declaring local i of type int - 0x55a97cb63660
+declaring local b of type uint8 - 0x55a97ca0db80
+if_stmt - 
+declaring local addr_begin of type uintptr - 0x55a97ca29250
+declaring local addr_end of type uintptr - 0x55a97ca2eb90
+declaring local addr of type uintptr - 0x55a97ca30950
+declaring local errcode of type int - 0x55a97ca33d60
+if_stmt - 
+declaring local codeptr of type &int32 - 0x55a97ca3bbd0
+declaring local str of type unknown - 0x55a97cb49d50
+if_stmt - 
+cannot determine type of symbol 'str' - 0x55a97cb49d50
+cannot determine type of symbol 'str' - 0x55a97cb49d50
+invalid field_expr: len
+declaring local params of type &alloc_parameters - 0x55a97cbefc80
+declaring local ptr of type unknown - 0x55a97cbf7380
+if_stmt - 
+cannot determine type of symbol 'ptr' - 0x55a97cbf7380
+cannot determine type of symbol 'ptr' - 0x55a97cbf7380
+cannot determine type of symbol 'ptr' - 0x55a97cbf7380
+cannot determine type of symbol 'ptr' - 0x55a97cbf7380
+declaring local params of type alloc_parameters - 0x55a97cc0dff0
+declaring local $cbT3 of type {&opaque, error} - 0x55a97d244df0
+declaring local lflags of type int - 0x55a97cc56630
+if_stmt - 
+if_stmt - 
+if_stmt - 
+if_stmt - 
+if_stmt - 
+if_stmt - 
+declaring local kflags of type int - 0x55a97cc85560
+declaring local fd of type unknown - 0x55a97cc8bd80
+cannot determine type of symbol 'fd' - 0x55a97cc8bd80
+cannot determine type of symbol 'fd' - 0x55a97cc8bd80
+declaring local child of type unknown - 0x55a97ccb01a0
+if_stmt - 
+cannot determine type of symbol 'child' - 0x55a97ccb01a0
+cannot determine type of symbol 'child' - 0x55a97ccb01a0
+if_stmt - 
+declaring local result of type []&pure uint8 - 0x55a97ca61050
+generate_unpacking_operations: ../../stdlib/src/linux/process.cb
+declaring local $cbT4 of type {[]&pure uint8, error} - 0x55a97ca78430
 	generating var_decl for argv
+declaring local argv of type []&pure uint8 - 0x55a97ca7c720
 	generating var_decl for err
-generate_unpacking_operations: ../../stdlib/src/std/mem/slice.cb
+declaring local err of type error - 0x55a97ca802a0
+declaring local i of type int - 0x55a97cd25b50
+if_stmt - 
+cannot determine type of symbol 'child' - 0x55a97ccb01a0
+cannot determine type of symbol 'child' - 0x55a97ccb01a0
+declaring local status of type int - 0x55a97ccd9790
+cannot determine type of symbol 'child' - 0x55a97ccb01a0
+if_stmt - 
+if_stmt - 
+cannot determine type of symbol 'child' - 0x55a97ccb01a0
+cannot determine type of symbol 'child' - 0x55a97ccb01a0
+if_stmt - 
+declaring local invalidMapValue of type &opaque - 0x55a97cd4e060
+if_stmt - 
+declaring local arr of type []int - 0x55a97cd72480
+declaring local i of type int - 0x55a97cdc66b0
+declaring local i of type int - 0x55a97cdd45d0
+declaring local val of type int - 0x55a97cd9ee80
+declaring local count of type int - 0x55a97cda56a0
+declaring local value of type bool - 0x55a97cda8340
+declaring local cstat of type C_Stat - 0x55a97cdf4700
+if_stmt - 
+declaring local cstat of type C_Stat - 0x55a97ce0bae0
+if_stmt - 
+declaring local blockdata of type &uint8 - 0x55a97cf23db0
+declaring local ptr of type &uint8 - 0x55a97cf27930
+declaring local asize of type usize - 0x55a97cf5ec40
+declaring local pblock of type &memory_block - 0x55a97cf60a00
+if_stmt - 
+if_stmt - 
+if_stmt - 
+declaring local memsize of type usize - 0x55a97cf7b1f0
+if_stmt - 
+declaring local newblock of type &memory_block - 0x55a97cf8d400
+declaring local pblock of type &memory_block - 0x55a97cfa04f0
+declaring local prevblock of type &memory_block - 0x55a97cfa3190
+if_stmt - 
+declaring local blockdata of type &uint8 - 0x55a97cfad530
+if_stmt - 
+if_stmt - 
+if_stmt - 
+if_stmt - 
+generate_unpacking_operations: ../../stdlib/src/mem/slice.cb
+declaring local $cbT5 of type {&opaque, error} - 0x55a97caae2f0
 	generating var_decl for buf
+declaring local buf of type &opaque - 0x55a97cab25e0
 	generating var_decl for err
-generate_unpacking_operations: ../../stdlib/src/std/linux/start.cb
+declaring local err of type error - 0x55a97cab6160
+if_stmt - 
+declaring local result of type []pure uint8 - 0x55a97d01ce30
+if_stmt - 
+if_stmt - 
+declaring local $foriter of type {int, usize} - 0x55a97cab8690
+declaring local i of type int - 0x55a97cabdfd0
+if_stmt - 
+declaring local $foriter of type {int, usize} - 0x55a97cac56d0
+declaring local i of type int - 0x55a97cacb010
+if_stmt - 
+declaring local $foriter of type {int, usize} - 0x55a97cad2710
+declaring local i of type int - 0x55a97cad8050
+if_stmt - 
+if_stmt - 
+declaring local result of type []uint8 - 0x55a97d1a4090
+declaring local tpl_str of type []pure uint8 - 0x55a97d1a5e50
+declaring local tmp_value of type int - 0x55a97d1a7c10
+declaring local offs of type int - 0x55a97d1aa140
+declaring local nvalue of type int - 0x55a97d1ac670
+if_stmt - 
+if_stmt - 
+declaring local ptr of type &uint8 - 0x55a97d1cb150
+declaring local ptr1 of type &uint8 - 0x55a97d1d0a90
+if_stmt - 
+declaring local tmp_char of type uint8 - 0x55a97d1de9b0
+if_stmt - 
+declaring local buf of type [32]uint8 - 0x55a97d1f91a0
+declaring local dest of type []uint8 - 0x55a97d201010
+declaring local $cbT0 of type {int, int} - 0x7fa689b01a78
+declaring local a of type int - 0x7fa689b05d68
+declaring local b of type int - 0x7fa689b098e8
+declaring local $cbT1 of type {int, int, int, int, int, int, int, int, int, int, int, int, int, int, int, int, int} - 0x7fa689b18e60
+declaring local a of type int - 0x7fa689b1d150
+declaring local b of type int - 0x7fa689b20cd0
+declaring local c of type int - 0x7fa689b24850
+declaring local d of type int - 0x7fa689b283d0
+declaring local e of type int - 0x7fa689b2bf50
+declaring local f of type int - 0x7fa689b2fad0
+declaring local g of type int - 0x7fa689b33650
+declaring local h of type int - 0x7fa689b371d0
+declaring local i of type int - 0x7fa689b3ad50
+declaring local j of type int - 0x7fa689b3e8d0
+declaring local k of type int - 0x7fa689b42450
+declaring local m of type int - 0x7fa689b45fd0
+declaring local $cbT2 of type {int, int, int, int, int, int, int} - 0x7fa689b59fb8
+declaring local a of type int - 0x7fa689b5e2a8
+declaring local b of type int - 0x7fa689b61e28
+declaring local rest of type {int, int, int, int, int} - 0x7fa689b6c938
+if_stmt - 
+declaring local $cbT6 of type []pure uint8 - 0x55a97caeb140
+declaring local i of type int - 0x55a97cb63660
+declaring local b of type uint8 - 0x55a97ca0db80
+if_stmt - 
+declaring local addr_begin of type uintptr - 0x55a97ca29250
+declaring local addr_end of type uintptr - 0x55a97ca2eb90
+declaring local addr of type uintptr - 0x55a97ca30950
+declaring local errcode of type int - 0x55a97ca33d60
+if_stmt - 
+declaring local codeptr of type &int32 - 0x55a97ca3bbd0
+declaring local str of type []pure uint8 - 0x55a97cb49d50
+if_stmt - 
+declaring local params of type &alloc_parameters - 0x55a97cbefc80
+declaring local ptr of type &opaque - 0x55a97cbf7380
+if_stmt - 
+declaring local params of type alloc_parameters - 0x55a97cc0dff0
+declaring local lflags of type int - 0x55a97cc56630
+if_stmt - 
+if_stmt - 
+if_stmt - 
+if_stmt - 
+if_stmt - 
+if_stmt - 
+declaring local kflags of type int - 0x55a97cc85560
+declaring local fd of type int - 0x55a97cc8bd80
+declaring local child of type int - 0x55a97ccb01a0
+if_stmt - 
+declaring local $cbT4 of type {[]&pure uint8, error} - 0x55a97ca78430
+declaring local argv of type []&pure uint8 - 0x55a97ca7c720
+declaring local err of type error - 0x55a97ca802a0
+declaring local i of type int - 0x55a97cd25b50
+if_stmt - 
+declaring local status of type int - 0x55a97ccd9790
+if_stmt - 
+if_stmt - 
+generate_unpacking_operations: ../../stdlib/src/linux/start.cb
+declaring local $cbT7 of type {&opaque, error} - 0x55a97cb0b9e0
 	generating var_decl for m
+declaring local m of type &opaque - 0x55a97cb0fcd0
 	generating var_decl for err
-generate_unpacking_operations: ../../stdlib/src/std/linux/start.cb
+declaring local err of type error - 0x55a97cb13850
+if_stmt - 
+declaring local invalidMapValue of type &opaque - 0x55a97cd4e060
+generate_unpacking_operations: ../../stdlib/src/linux/start.cb
+declaring local $cbT8 of type {&opaque, error} - 0x55a97cb18a20
 	generating var_decl for ptr
+declaring local ptr of type &opaque - 0x55a97cb1cd10
 	generating var_decl for err
-generate_unpacking_operations: ../../stdlib/src/std/mem/mem.cb
+declaring local err of type error - 0x55a97cb20890
+if_stmt - 
+declaring local arr of type []int - 0x55a97cd72480
+declaring local i of type int - 0x55a97cdc66b0
+declaring local i of type int - 0x55a97cdd45d0
+declaring local val of type int - 0x55a97cd9ee80
+declaring local count of type int - 0x55a97cda56a0
+declaring local value of type bool - 0x55a97cda8340
+declaring local cstat of type C_Stat - 0x55a97cdf4700
+if_stmt - 
+declaring local cstat of type C_Stat - 0x55a97ce0bae0
+if_stmt - 
+declaring local blockdata of type &uint8 - 0x55a97cf23db0
+declaring local ptr of type &uint8 - 0x55a97cf27930
+declaring local asize of type usize - 0x55a97cf5ec40
+declaring local pblock of type &memory_block - 0x55a97cf60a00
+if_stmt - 
+if_stmt - 
+if_stmt - 
+declaring local memsize of type usize - 0x55a97cf7b1f0
+generate_unpacking_operations: ../../stdlib/src/mem/mem.cb
+declaring local $cbT9 of type {&opaque, error} - 0x55a97cb25a60
 	generating var_decl for newmem
+declaring local newmem of type &opaque - 0x55a97cb29d50
 	generating var_decl for err
-carbonc - type checking time: 113ms
+declaring local err of type error - 0x55a97cb2d8d0
+if_stmt - 
+declaring local newblock of type &memory_block - 0x55a97cf8d400
+declaring local pblock of type &memory_block - 0x55a97cfa04f0
+declaring local prevblock of type &memory_block - 0x55a97cfa3190
+if_stmt - 
+declaring local blockdata of type &uint8 - 0x55a97cfad530
+if_stmt - 
+if_stmt - 
+if_stmt - 
+if_stmt - 
+declaring local $cbT5 of type {&opaque, error} - 0x55a97caae2f0
+declaring local buf of type &opaque - 0x55a97cab25e0
+declaring local err of type error - 0x55a97cab6160
+if_stmt - 
+declaring local result of type []&pure uint8 - 0x55a97ca61050
+declaring local result of type []pure uint8 - 0x55a97d01ce30
+if_stmt - 
+if_stmt - 
+declaring local i of type int - 0x55a97cabdfd0
+if_stmt - 
+declaring local i of type int - 0x55a97cacb010
+if_stmt - 
+declaring local i of type int - 0x55a97cad8050
+if_stmt - 
+if_stmt - 
+declaring local result of type []uint8 - 0x55a97d1a4090
+declaring local tpl_str of type []pure uint8 - 0x55a97d1a5e50
+declaring local tmp_value of type int - 0x55a97d1a7c10
+declaring local offs of type int - 0x55a97d1aa140
+declaring local nvalue of type int - 0x55a97d1ac670
+if_stmt - 
+if_stmt - 
+declaring local ptr of type &uint8 - 0x55a97d1cb150
+declaring local ptr1 of type &uint8 - 0x55a97d1d0a90
+if_stmt - 
+declaring local tmp_char of type uint8 - 0x55a97d1de9b0
+if_stmt - 
+declaring local buf of type [32]uint8 - 0x55a97d1f91a0
+declaring local dest of type []uint8 - 0x55a97d201010
+declaring local $cbT0 of type {int, int} - 0x7fa689b01a78
+declaring local a of type int - 0x7fa689b05d68
+declaring local b of type int - 0x7fa689b098e8
+declaring local $cbT1 of type {int, int, int, int, int, int, int, int, int, int, int, int, int, int, int, int, int} - 0x7fa689b18e60
+declaring local a of type int - 0x7fa689b1d150
+declaring local b of type int - 0x7fa689b20cd0
+declaring local c of type int - 0x7fa689b24850
+declaring local d of type int - 0x7fa689b283d0
+declaring local e of type int - 0x7fa689b2bf50
+declaring local f of type int - 0x7fa689b2fad0
+declaring local g of type int - 0x7fa689b33650
+declaring local h of type int - 0x7fa689b371d0
+declaring local i of type int - 0x7fa689b3ad50
+declaring local j of type int - 0x7fa689b3e8d0
+declaring local k of type int - 0x7fa689b42450
+declaring local m of type int - 0x7fa689b45fd0
+declaring local $cbT2 of type {int, int, int, int, int, int, int} - 0x7fa689b59fb8
+declaring local a of type int - 0x7fa689b5e2a8
+declaring local b of type int - 0x7fa689b61e28
+declaring local rest of type {int, int, int, int, int} - 0x7fa689b6c938
+if_stmt - 
+declaring local i of type int - 0x55a97cb63660
+declaring local b of type uint8 - 0x55a97ca0db80
+if_stmt - 
+declaring local addr_begin of type uintptr - 0x55a97ca29250
+declaring local addr_end of type uintptr - 0x55a97ca2eb90
+declaring local addr of type uintptr - 0x55a97ca30950
+declaring local errcode of type int - 0x55a97ca33d60
+if_stmt - 
+declaring local codeptr of type &int32 - 0x55a97ca3bbd0
+declaring local str of type []pure uint8 - 0x55a97cb49d50
+if_stmt - 
+declaring local params of type &alloc_parameters - 0x55a97cbefc80
+declaring local ptr of type &opaque - 0x55a97cbf7380
+if_stmt - 
+declaring local params of type alloc_parameters - 0x55a97cc0dff0
+declaring local lflags of type int - 0x55a97cc56630
+if_stmt - 
+if_stmt - 
+if_stmt - 
+if_stmt - 
+if_stmt - 
+if_stmt - 
+declaring local kflags of type int - 0x55a97cc85560
+declaring local fd of type int - 0x55a97cc8bd80
+declaring local child of type int - 0x55a97ccb01a0
+if_stmt - 
+declaring local $cbT4 of type {[]&pure uint8, error} - 0x55a97ca78430
+declaring local argv of type []&pure uint8 - 0x55a97ca7c720
+declaring local err of type error - 0x55a97ca802a0
+declaring local i of type int - 0x55a97cd25b50
+if_stmt - 
+declaring local status of type int - 0x55a97ccd9790
+if_stmt - 
+if_stmt - 
+declaring local $cbT7 of type {&opaque, error} - 0x55a97cb0b9e0
+declaring local m of type &opaque - 0x55a97cb0fcd0
+declaring local err of type error - 0x55a97cb13850
+if_stmt - 
+declaring local invalidMapValue of type &opaque - 0x55a97cd4e060
+declaring local $cbT8 of type {&opaque, error} - 0x55a97cb18a20
+declaring local ptr of type &opaque - 0x55a97cb1cd10
+declaring local err of type error - 0x55a97cb20890
+if_stmt - 
+declaring local arr of type []int - 0x55a97cd72480
+declaring local i of type int - 0x55a97cdc66b0
+declaring local i of type int - 0x55a97cdd45d0
+declaring local val of type int - 0x55a97cd9ee80
+declaring local count of type int - 0x55a97cda56a0
+declaring local value of type bool - 0x55a97cda8340
+declaring local cstat of type C_Stat - 0x55a97cdf4700
+if_stmt - 
+declaring local cstat of type C_Stat - 0x55a97ce0bae0
+if_stmt - 
+declaring local blockdata of type &uint8 - 0x55a97cf23db0
+declaring local ptr of type &uint8 - 0x55a97cf27930
+declaring local asize of type usize - 0x55a97cf5ec40
+declaring local pblock of type &memory_block - 0x55a97cf60a00
+if_stmt - 
+if_stmt - 
+if_stmt - 
+declaring local memsize of type usize - 0x55a97cf7b1f0
+declaring local $cbT9 of type {&opaque, error} - 0x55a97cb25a60
+declaring local newmem of type &opaque - 0x55a97cb29d50
+declaring local err of type error - 0x55a97cb2d8d0
+if_stmt - 
+declaring local newblock of type &memory_block - 0x55a97cf8d400
+declaring local pblock of type &memory_block - 0x55a97cfa04f0
+declaring local prevblock of type &memory_block - 0x55a97cfa3190
+if_stmt - 
+declaring local blockdata of type &uint8 - 0x55a97cfad530
+if_stmt - 
+if_stmt - 
+if_stmt - 
+if_stmt - 
+declaring local $cbT5 of type {&opaque, error} - 0x55a97caae2f0
+declaring local buf of type &opaque - 0x55a97cab25e0
+declaring local err of type error - 0x55a97cab6160
+if_stmt - 
+declaring local result of type []&pure uint8 - 0x55a97ca61050
+declaring local result of type []pure uint8 - 0x55a97d01ce30
+if_stmt - 
+if_stmt - 
+declaring local i of type int - 0x55a97cabdfd0
+if_stmt - 
+declaring local i of type int - 0x55a97cacb010
+if_stmt - 
+declaring local i of type int - 0x55a97cad8050
+if_stmt - 
+if_stmt - 
+declaring local result of type []uint8 - 0x55a97d1a4090
+declaring local tpl_str of type []pure uint8 - 0x55a97d1a5e50
+declaring local tmp_value of type int - 0x55a97d1a7c10
+declaring local offs of type int - 0x55a97d1aa140
+declaring local nvalue of type int - 0x55a97d1ac670
+if_stmt - 
+if_stmt - 
+declaring local ptr of type &uint8 - 0x55a97d1cb150
+declaring local ptr1 of type &uint8 - 0x55a97d1d0a90
+if_stmt - 
+declaring local tmp_char of type uint8 - 0x55a97d1de9b0
+if_stmt - 
+declaring local buf of type [32]uint8 - 0x55a97d1f91a0
+declaring local dest of type []uint8 - 0x55a97d201010
+declaring local $cbT0 of type {int, int} - 0x7fa689b01a78
+declaring local a of type int - 0x7fa689b05d68
+declaring local b of type int - 0x7fa689b098e8
+declaring local $cbT1 of type {int, int, int, int, int, int, int, int, int, int, int, int, int, int, int, int, int} - 0x7fa689b18e60
+declaring local a of type int - 0x7fa689b1d150
+declaring local b of type int - 0x7fa689b20cd0
+declaring local c of type int - 0x7fa689b24850
+declaring local d of type int - 0x7fa689b283d0
+declaring local e of type int - 0x7fa689b2bf50
+declaring local f of type int - 0x7fa689b2fad0
+declaring local g of type int - 0x7fa689b33650
+declaring local h of type int - 0x7fa689b371d0
+declaring local i of type int - 0x7fa689b3ad50
+declaring local j of type int - 0x7fa689b3e8d0
+declaring local k of type int - 0x7fa689b42450
+declaring local m of type int - 0x7fa689b45fd0
+declaring local $cbT2 of type {int, int, int, int, int, int, int} - 0x7fa689b59fb8
+declaring local a of type int - 0x7fa689b5e2a8
+declaring local b of type int - 0x7fa689b61e28
+declaring local rest of type {int, int, int, int, int} - 0x7fa689b6c938
+if_stmt - 
+declaring local i of type int - 0x55a97cb63660
+declaring local b of type uint8 - 0x55a97ca0db80
+if_stmt - 
+declaring local addr_begin of type uintptr - 0x55a97ca29250
+declaring local addr_end of type uintptr - 0x55a97ca2eb90
+declaring local addr of type uintptr - 0x55a97ca30950
+declaring local errcode of type int - 0x55a97ca33d60
+if_stmt - 
+declaring local codeptr of type &int32 - 0x55a97ca3bbd0
+declaring local str of type []pure uint8 - 0x55a97cb49d50
+if_stmt - 
+declaring local params of type &alloc_parameters - 0x55a97cbefc80
+declaring local ptr of type &opaque - 0x55a97cbf7380
+if_stmt - 
+declaring local params of type alloc_parameters - 0x55a97cc0dff0
+declaring local lflags of type int - 0x55a97cc56630
+if_stmt - 
+if_stmt - 
+if_stmt - 
+if_stmt - 
+if_stmt - 
+if_stmt - 
+declaring local kflags of type int - 0x55a97cc85560
+declaring local fd of type int - 0x55a97cc8bd80
+declaring local child of type int - 0x55a97ccb01a0
+if_stmt - 
+declaring local $cbT4 of type {[]&pure uint8, error} - 0x55a97ca78430
+declaring local argv of type []&pure uint8 - 0x55a97ca7c720
+declaring local err of type error - 0x55a97ca802a0
+declaring local i of type int - 0x55a97cd25b50
+if_stmt - 
+declaring local status of type int - 0x55a97ccd9790
+if_stmt - 
+if_stmt - 
+declaring local $cbT7 of type {&opaque, error} - 0x55a97cb0b9e0
+declaring local m of type &opaque - 0x55a97cb0fcd0
+declaring local err of type error - 0x55a97cb13850
+if_stmt - 
+declaring local invalidMapValue of type &opaque - 0x55a97cd4e060
+declaring local $cbT8 of type {&opaque, error} - 0x55a97cb18a20
+declaring local ptr of type &opaque - 0x55a97cb1cd10
+declaring local err of type error - 0x55a97cb20890
+if_stmt - 
+declaring local arr of type []int - 0x55a97cd72480
+declaring local i of type int - 0x55a97cdc66b0
+declaring local i of type int - 0x55a97cdd45d0
+declaring local val of type int - 0x55a97cd9ee80
+declaring local count of type int - 0x55a97cda56a0
+declaring local value of type bool - 0x55a97cda8340
+declaring local cstat of type C_Stat - 0x55a97cdf4700
+if_stmt - 
+declaring local cstat of type C_Stat - 0x55a97ce0bae0
+if_stmt - 
+declaring local blockdata of type &uint8 - 0x55a97cf23db0
+declaring local ptr of type &uint8 - 0x55a97cf27930
+declaring local asize of type usize - 0x55a97cf5ec40
+declaring local pblock of type &memory_block - 0x55a97cf60a00
+if_stmt - 
+if_stmt - 
+if_stmt - 
+declaring local memsize of type usize - 0x55a97cf7b1f0
+declaring local $cbT9 of type {&opaque, error} - 0x55a97cb25a60
+declaring local newmem of type &opaque - 0x55a97cb29d50
+declaring local err of type error - 0x55a97cb2d8d0
+if_stmt - 
+declaring local newblock of type &memory_block - 0x55a97cf8d400
+declaring local pblock of type &memory_block - 0x55a97cfa04f0
+declaring local prevblock of type &memory_block - 0x55a97cfa3190
+if_stmt - 
+declaring local blockdata of type &uint8 - 0x55a97cfad530
+if_stmt - 
+if_stmt - 
+if_stmt - 
+if_stmt - 
+declaring local $cbT5 of type {&opaque, error} - 0x55a97caae2f0
+declaring local buf of type &opaque - 0x55a97cab25e0
+declaring local err of type error - 0x55a97cab6160
+if_stmt - 
+declaring local result of type []&pure uint8 - 0x55a97ca61050
+declaring local result of type []pure uint8 - 0x55a97d01ce30
+if_stmt - 
+if_stmt - 
+declaring local i of type int - 0x55a97cabdfd0
+if_stmt - 
+declaring local i of type int - 0x55a97cacb010
+if_stmt - 
+declaring local i of type int - 0x55a97cad8050
+if_stmt - 
+if_stmt - 
+declaring local result of type []uint8 - 0x55a97d1a4090
+declaring local tpl_str of type []pure uint8 - 0x55a97d1a5e50
+declaring local tmp_value of type int - 0x55a97d1a7c10
+declaring local offs of type int - 0x55a97d1aa140
+declaring local nvalue of type int - 0x55a97d1ac670
+if_stmt - 
+if_stmt - 
+declaring local ptr of type &uint8 - 0x55a97d1cb150
+declaring local ptr1 of type &uint8 - 0x55a97d1d0a90
+if_stmt - 
+declaring local tmp_char of type uint8 - 0x55a97d1de9b0
+if_stmt - 
+declaring local buf of type [32]uint8 - 0x55a97d1f91a0
+declaring local dest of type []uint8 - 0x55a97d201010
+declaring local $cbT10 of type []pure uint8 - 0x55a97d333360
+declaring local $cbT11 of type []pure uint8 - 0x55a97d336000
+declaring local $cbT12 of type []pure uint8 - 0x55a97d338ca0
+declaring local $cbT13 of type []pure uint8 - 0x55a97d33b940
+declaring local $cbT14 of type []pure uint8 - 0x55a97d33e5e0
+declaring local $cbT15 of type []pure uint8 - 0x55a97d341280
+declaring local $cbT16 of type []pure uint8 - 0x55a97d343f20
+declaring local $cbT17 of type []pure uint8 - 0x55a97d346bc0
+declaring local $cbT18 of type []pure uint8 - 0x55a97d349dd0
+declaring local $cbT19 of type []pure uint8 - 0x55a97d34ca70
+declaring local $cbT20 of type []pure uint8 - 0x55a97d34f710
+declaring local $cbT21 of type []pure uint8 - 0x55a97d3523b0
+declaring local $cbT22 of type []pure uint8 - 0x55a97d355050
+declaring local $cbT23 of type []pure uint8 - 0x55a97d358460
+declaring local $cbT24 of type []pure uint8 - 0x55a97d35b100
+declaring local $cbT25 of type []pure uint8 - 0x55a97d35dda0
+declaring local $cbT26 of type []pure uint8 - 0x55a97d360a40
+declaring local $cbT27 of type []pure uint8 - 0x55a97d3636e0
+declaring local $cbT28 of type []pure uint8 - 0x55a97d366380
+declaring local $cbT29 of type []pure uint8 - 0x55a97d369020
+declaring local $cbT30 of type []pure uint8 - 0x55a97d36bcc0
+declaring local $cbT31 of type []pure uint8 - 0x55a97d3767d0
+declaring local $cbT32 of type []pure uint8 - 0x55a97d379470
+declaring local $cbT33 of type []pure uint8 - 0x55a97d37e640
+declaring local $cbT34 of type []pure uint8 - 0x55a97d3812e0
+declaring local $cbT35 of type []pure uint8 - 0x55a97d383f80
+declaring local $cbT36 of type []pure uint8 - 0x55a97d386c20
+declaring local $cbT37 of type []pure uint8 - 0x55a97d3898c0
+declaring local $cbT38 of type []pure uint8 - 0x55a97d390fc0
+declaring local $cbT39 of type string - 0x55a97d3943d0
+declaring local $cbT40 of type []uint8 - 0x55a97d397070
+declaring local $cbT41 of type []uint8 - 0x55a97d399d10
+carbonc - type checking time: 109ms
 
 carbonc - generating IR 
-carbonc - IR generation time: 38ms
+carbonc - IR generation time: 37ms
 
 carbonc - generating assembly 
 carbonc - running assembler: as _carbon/build_debug/root.asm -o _carbon/build_debug/root.o
-carbonc - running assembler: as _carbon/build_debug/std_io.asm -o _carbon/build_debug/std_io.o
-carbonc - running assembler: as _carbon/build_debug/std_linux.asm -o _carbon/build_debug/std_linux.o
-carbonc - running assembler: as _carbon/build_debug/std_linux_syscall.asm -o _carbon/build_debug/std_linux_syscall.o
-carbonc - running assembler: as _carbon/build_debug/std_mem.asm -o _carbon/build_debug/std_mem.o
-carbonc - running assembler: as _carbon/build_debug/std_string.asm -o _carbon/build_debug/std_string.o
-carbonc - running assembler: as _carbon/build_debug/std_system.asm -o _carbon/build_debug/std_system.o
-carbonc - assembly generation time: 243ms
+carbonc - running assembler: as _carbon/build_debug/io.asm -o _carbon/build_debug/io.o
+carbonc - running assembler: as _carbon/build_debug/linux.asm -o _carbon/build_debug/linux.o
+carbonc - running assembler: as _carbon/build_debug/linux_syscall.asm -o _carbon/build_debug/linux_syscall.o
+carbonc - running assembler: as _carbon/build_debug/mem.asm -o _carbon/build_debug/mem.o
+carbonc - running assembler: as _carbon/build_debug/string.asm -o _carbon/build_debug/string.o
+carbonc - running assembler: as _carbon/build_debug/system.asm -o _carbon/build_debug/system.o
+carbonc - assembly generation time: 229ms
 
-carbonc - running linker command: ld  -e _start -o _carbon/build_debug/test_unpack _carbon/build_debug/std_linux_x86_64_start.o _carbon/build_debug/root.o _carbon/build_debug/std_io.o _carbon/build_debug/std_linux.o _carbon/build_debug/std_linux_syscall.o _carbon/build_debug/std_mem.o _carbon/build_debug/std_string.o _carbon/build_debug/std_system.o -T ../../res/carbon.sc
+carbonc - running linker command: ld  -e _start -o _carbon/build_debug/test_unpack _carbon/build_debug/linux_x86_64_start.o _carbon/build_debug/root.o _carbon/build_debug/io.o _carbon/build_debug/linux.o _carbon/build_debug/linux_syscall.o _carbon/build_debug/mem.o _carbon/build_debug/string.o _carbon/build_debug/system.o -T ../../res/carbon.sc
 carbonc - output: a.out
 
-carbonc - total lines parsed: 997
-carbonc - total compilation time: 880ms
+carbonc - total lines parsed: 1016
+carbonc - total compilation time: 823ms

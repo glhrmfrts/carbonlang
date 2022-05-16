@@ -7,12 +7,12 @@ It's syntax is a mix of Go, C, Swift and maybe Kotlin.
 Carbon doesn't have a hello world yet because it's so early that we still don't have the init/entrypoint setup yet. But look at this piece of code that parses an integer to get an idea:
 
 ```go
-func parseIntRem(s : []pure uint8, radix : int) : {int, []pure uint8, bool} {
+func parse_int(s : []pure uint8, radix : int) : {int, []pure uint8, bool} {
     let value : int
     let count : usize
 
     for (i in 0,s.len) {
-        if (isNumeric(s[i])) {
+        if (is_numeric(s[i])) {
             value = value * radix + (s[i] - '0')
             count += 1
         } else {
@@ -67,6 +67,12 @@ Currently, Linux x64 System V ABI is supported, Windows is not very solid but is
 - Very slim error handling mechanism.
 - Built-in vector math / linear algebra.
 - Closures.
+
+## Naming Convention
+
+Types, Type Constructors, Enums and Enumflags = Pascal_Snake_Case
+Constants and Errors = UPPER_SNAKE_CASE
+everything else, including modules and filenames = lower_snake_case
 
 ## Some art
 

@@ -143,6 +143,10 @@ arena_ptr<ast_node> copy_node_helper(type_system& ts, ast_node& node) {
         call->call = node.call;
         return call;
     }
+    else if (node.type == ast_type::rest_expr) {
+        auto rest = make_rest_expr_node(*ts.ast_arena, node.pos, copy_node(ts, node.children[0].get()));
+        return rest;
+    }
     else if (node.type == ast_type::func_overload_selector_expr) {
         auto ov = make_func_overload_selector_expr_node(*ts.ast_arena, node.pos,
             copy_node(ts, node.children[0].get()),

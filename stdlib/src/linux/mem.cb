@@ -1,13 +1,13 @@
-import std::linux::syscall
-import std::system
-import std::io
+import linux::syscall
+import system
+import io
 
 type alloc_parameters = struct {
     prot: int
     flags: int
 }
 
-extern(carbon, std::system) {
+extern(carbon, system) {
 
 func alloc(sz: usize, op: &opaque): {&opaque, error} {
     let params = cast(&alloc_parameters)op

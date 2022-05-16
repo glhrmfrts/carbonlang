@@ -620,7 +620,7 @@ struct generator {
         }
 
         // instead of adding +8 to the stack_size, subtract from %rsp so we can have %rbp aligned
-        if (num_pushes % 2 == 0) { em->sub(rsp, int_type(8)); } 
+        if (num_pushes % 2 == 0) { em->sub(rsp, int_type(8)); }
 
         if (needs_rbp)           { em->mov(rbp, rsp); }
         if (stack_size > 0)      { em->sub(rsp, (int_type)(stack_size)); }
@@ -924,7 +924,7 @@ struct generator {
                     em->emitln(" rep stosw");
                     break;
                 case 4:
-                    em->emitln(" rep stosd");
+                    em->emitln(" rep stosl");
                     break;
                 case 8:
                     em->emitln(" rep stosq");

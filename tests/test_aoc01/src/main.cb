@@ -1,8 +1,6 @@
-import std::system as sys
-import std::mem as mem
-import std::io
-//import std::fs as fs
-//import std::string
+import system as sys
+import mem as mem
+import io
 
 func alloc_string(sz: usize): []uint8 {
     let data, err = mem::alloc(sz + 1)

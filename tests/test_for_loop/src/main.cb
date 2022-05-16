@@ -1,4 +1,4 @@
-import std::io
+import io
 
 func test_numeric_for() {
     let counter = 0

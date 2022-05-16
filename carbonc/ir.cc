@@ -273,6 +273,8 @@ void analyse_children(ast_node& node) {
 }
 
 void analyse_node(ast_node& node) {
+    if (node.disabled) return;
+
     switch (node.type) {
     case ast_type::module_: {
         ts->enter_scope(node);

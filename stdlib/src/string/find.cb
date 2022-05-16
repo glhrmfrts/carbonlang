@@ -17,7 +17,7 @@ func find(haystack: string, needle: uint8): {usize, bool} {
 // Also returns true if it was found, otherwise returns false.
 func find(haystack: string, needle: string): {usize, bool} {
     for (i in 0, haystack.len) {
-        if (haystack[i] == needle[0] && i+needle.len < haystack.len && equals("", needle)) {
+        if (haystack[i] == needle[0] && i+needle.len < haystack.len && equals(haystack[i, needle.len], needle)) {
             return cast(usize)i, true
         }
     }
@@ -26,7 +26,7 @@ func find(haystack: string, needle: string): {usize, bool} {
 
 /*
 import unittestlib
-import std::fs
+import fs
 
 #test
 func test_find_char() {

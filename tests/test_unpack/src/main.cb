@@ -1,4 +1,4 @@
-import std::io
+import io
 
 func simple_unpack() {
     let a,b = 1,2
@@ -11,20 +11,25 @@ func big_unpack() {
     print(a) print(",") print(b) print(",") print(c) print(",") println(d)
 }
 
+// To test correct propagation of aggregate argument turning into pointer
+func arg_unpack(t: {int, int, int}) {
+    let a,rest... = t
+    print(a) print(" | ")
+    println_tuple(rest)
+}
+
 func rest_unpack() {
     let a, b, rest... = 0,1,2,3,4,5,6
     print("rest.len: ") println(rest.len)
 
-    print(a)            print(",")
-    print(rest.first)   print(",")
-    print(rest.second)  print(",")
-    println(rest.third)
+    print(a) print(" | ")
+    print(b) print(" | ")
+    println_tuple(rest)
 }
 
 func main() {
-    let a : pure int = 3
-    a = 5
     simple_unpack()
     big_unpack()
     rest_unpack()
+    arg_unpack({10,20,30})
 }

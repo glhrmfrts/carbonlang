@@ -1,4 +1,4 @@
-import std::io
+import io
 
 func test_len_size() {
     let arr : [33]uint32

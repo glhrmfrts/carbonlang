@@ -338,7 +338,7 @@ std::pair<string_hash, string_hash> separate_module_identifier(const std::vector
     return std::make_pair(string_hash{ mod }, string_hash{ id });
 }
 
-std::pair<const_value, bool> node_to_const_value(type_system& ts, ast_node& node) {
+std::pair<const_value, bool> node_to_const_value(type_system& ts, ast_node& node, bool emit_error = true) {
     const_value arg = {};
     switch (node.type) {
     case ast_type::type_expr: {
@@ -367,7 +367,7 @@ std::pair<const_value, bool> node_to_const_value(type_system& ts, ast_node& node
             node.type_error = false;
             arg = tid;
         }
-        else {
+        else if (emit_error) {
             add_type_error(ts, node.pos, "invalid const expression");
         }
         break;
@@ -388,18 +388,25 @@ std::pair<const_value, bool> node_to_const_value(type_system& ts, ast_node& node
         break;
     }
     default: {
-        add_type_error(ts, node.pos, "invalid const expression: '%s'", node_to_string(node).c_str());
+        if (emit_error) add_type_error(ts, node.pos, "invalid const expression: '%s'", node_to_string(node).c_str());
         break;
     }
     }
     return std::make_pair(arg, node.tid.valid());
 }
 
-std::pair<const_value, bool> node_to_const_value_fold(type_system& ts, ast_node& node) {
+std::pair<const_value, bool> node_to_const_value_fold(type_system& ts, ast_node& node, bool emit_error = true) {
     const_value arg = {};
     switch (node.type) {
+    case ast_type::cast_expr: {
+        auto [avalue, aok] = node_to_const_value_fold(ts, *node.children[1], emit_error);
+        if (aok && std::holds_alternative<int_type>(avalue)) {
+            arg = avalue;
+        }
+        break;
+    }
     case ast_type::unary_expr: {
-        auto [value, ok] = node_to_const_value_fold(ts, *node.children[0]);
+        auto [value, ok] = node_to_const_value_fold(ts, *node.children[0], emit_error);
         if (ok) {
             if (std::holds_alternative<int_type>(value)) {
                 switch (node.op) {
@@ -415,8 +422,8 @@ std::pair<const_value, bool> node_to_const_value_fold(type_system& ts, ast_node&
         break;
     }
     case ast_type::binary_expr: {
-        auto [avalue, aok] = node_to_const_value_fold(ts, *node.children[0]);
-        auto [bvalue, bok] = node_to_const_value_fold(ts, *node.children[1]);
+        auto [avalue, aok] = node_to_const_value_fold(ts, *node.children[0], emit_error);
+        auto [bvalue, bok] = node_to_const_value_fold(ts, *node.children[1], emit_error);
         if (aok && bok && std::holds_alternative<int_type>(avalue) && std::holds_alternative<int_type>(bvalue)) {
             int_type a = std::get<int_type>(avalue);
             int_type b = std::get<int_type>(bvalue);
@@ -451,12 +458,24 @@ std::pair<const_value, bool> node_to_const_value_fold(type_system& ts, ast_node&
             case token_from_char('%'):
                 arg = a % b;
                 break;
+            case token_from_char('>'):
+                arg = a > b;
+                break;
+            case token_from_char('<'):
+                arg = a < b;
+                break;
+            case token_type::gteq:
+                arg = a >= b;
+                break;
+            case token_type::lteq:
+                arg = a <= b;
+                break;
             }
         }
         break;
     }
     default:
-        return node_to_const_value(ts, node);
+        return node_to_const_value(ts, node, emit_error);
     }
     return std::make_pair(arg, true);
 }
@@ -1598,7 +1617,7 @@ type_id resolve_identifier(type_system& ts, ast_node& node) {
         node.lvalue.symbol = sym;
         node.tid = local->self->tid;
 
-        if (was_unresolved && node.tid.valid()) { 
+        if (node.tid.valid()) {
             bool isnew = true;
             for (auto ref : local->refs) {
                 if (ref == &node) {
@@ -1612,6 +1631,7 @@ type_id resolve_identifier(type_system& ts, ast_node& node) {
         }
 
         if (!node.tid.valid()) {
+            printf("cannot determine type of symbol '%s' - %p\n", node_to_string(node).c_str(), local->self);
             unk_type_error(ts, node.tid, node.pos, "cannot determine type of symbol '%s'", node_to_string(node).c_str());
         }
     }
@@ -2326,6 +2346,8 @@ bool generate_unpacking_operations(type_system& ts, ast_node& node) {
                 auto newdecl = make_var_decl_node_single(*ts.ast_arena, node.pos, token_type::let,
                     std::move(dest), std::move(newdecl_type), std::move(value), node.var_modifiers);
 
+                printf("\tgenerating var_decl for %s\n", idnode->children[0]->id_parts.back().c_str());
+
                 resolve_node_type(ts, newdecl.get());
                 node.parent->children_to_add.push_back({ *thisidx + decl_index + 1, std::move(newdecl) });
             }
@@ -2388,12 +2410,12 @@ void resolve_and_declare_local_variables(type_system& ts, ast_node& node) {
 
         auto prev = find_symbol_in_current_scope_thispass(ts, id);
         if (prev && num_new == 0) {
-            node.tid = invalid_type;
+            //node.tid = invalid_type;
             add_type_error(ts, idnode->pos, "cannot re-declare name '%s'", id.str.c_str());
             diderror = true;
         }
         else if (prev && is_rest) {
-            node.tid = invalid_type;
+            //node.tid = invalid_type;
             add_type_error(ts, idnode->pos, "cannot re-declare identifier of '...' expression '%s'", id.str.c_str());
             diderror = true;
         }
@@ -2449,7 +2471,7 @@ void resolve_and_declare_local_variables(type_system& ts, ast_node& node) {
         declare_global_symbol(ts, id, node);
     }
     else {
-        //printf("declaring local variable: %s\n", id.str.c_str());
+        //printf("declaring local %s of type %s - %p\n", id.str.c_str(), type_to_string(node.tid).c_str(), &node);
         declare_local_symbol(ts, id, node);
     }
     node.local.self = &node;
@@ -3528,22 +3550,49 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
         else {
             enter_scope_local(ts, node);
         }
-        visit_children(ts, node);
 
-        g_inside_loop = prevloop;
+        if (node.children[0]) node.children[0]->parent = &node;
+        if (node.children[1]) node.children[1]->parent = &node;
+        if (node.children.size() == 3) if (node.children[2]) node.children[2]->parent = &node;
 
-        const char* stmt = (node.type == ast_type::if_stmt) ? "if" : "for";
-        if (!node.children[0]->tid.valid() || node.children[0]->type_error) {
-            complement_error(ts, node.pos, "in %s statement condition", stmt);
-            node.type_error = true;
+        printf("if_stmt - %s\n", node_to_string(*node.children[0]).c_str());
+        visit_tree(ts, *node.children[0]);
+
+        auto [cond_value, ok] = node_to_const_value_fold(ts, *node.children[0], /*emit_error=*/false);
+        if (ok && node.type == ast_type::if_stmt && std::holds_alternative<int_type>(cond_value)) {
+            auto idx = find_child_index(node.parent, &node);
+            if (std::get<int_type>(cond_value)) {
+                printf("If statement evaluated to true - %s\n", node_to_string(*node.children[0]).c_str());
+                visit_tree(ts, *node.children[1]);
+                node.parent->children_to_add.push_back({ *idx, std::move(node.children[1]) });
+            }
+            else {
+                printf("If statement evaluated to false - %s\n", node_to_string(*node.children[0]).c_str());
+                if (node.children.size() == 3) {
+                    visit_tree(ts, *node.children[2]);
+                    node.parent->children_to_add.push_back({ *idx, std::move(node.children[2]) });
+                }
+            }
+            node.disabled = true;
         }
-        else if (!is_assignable_to(ts, node.children[0]->tid, ts.bool_type) && (node.children[0]->tid.get().kind != type_kind::enumflags)) {
-            add_type_error(ts, node.pos, "%s statement condition must have 'bool' or 'enumflags' type", stmt);
-            node.type_error = true;
-        }
+        else {
+            visit_children(ts, node);
 
-        if (!node.type_error && !is_bool_op(*node.children[0])) {
-            node.children[0] = make_neq_false_node(ts, std::move(node.children[0]));
+            g_inside_loop = prevloop;
+
+            const char* stmt = (node.type == ast_type::if_stmt) ? "if" : "for";
+            if (!node.children[0]->tid.valid() || node.children[0]->type_error) {
+                complement_error(ts, node.pos, "in %s statement condition", stmt);
+                node.type_error = true;
+            }
+            else if (!is_assignable_to(ts, node.children[0]->tid, ts.bool_type) && (node.children[0]->tid.get().kind != type_kind::enumflags)) {
+                add_type_error(ts, node.pos, "%s statement condition must have 'bool' or 'enumflags' type", stmt);
+                node.type_error = true;
+            }
+
+            if (!node.type_error && !is_bool_op(*node.children[0])) {
+                node.children[0] = make_neq_false_node(ts, std::move(node.children[0]));
+            }
         }
 
         leave_scope_local(ts);
@@ -3805,9 +3854,15 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
         break;
     }
     case ast_type::field_expr: {
+        auto fieldid = build_identifier_value(node.children[1]->id_parts);
+
+        node.children[0]->parent = &node;
         resolve_node_type(ts, node.children[0].get());
 
-        auto fieldid = build_identifier_value(node.children[1]->id_parts);
+        if (!node.children[0]->tid.valid()) {
+            printf("invalid field_expr: %s\n", fieldid.c_str());
+            //exit(1);
+        }
 
         if (node.children[0]->tid.valid()) {
             auto ltype = node.children[0]->tid;

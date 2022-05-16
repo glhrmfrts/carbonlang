@@ -4,19 +4,19 @@ func cb__Nroot__Nmain -> void
     local #0 d: data;
     local #1 $cbT7: slice__Tpure__Tuint8;
     local #2 $cbT8: slice__Tpure__Tuint8;
-    ir_call cb__Nstd__Nio__Nprintln__Anil 0;
+    ir_call cb__Nio__Nprintln__Anil 0;
     ir_store L0 0 0 8;
-    ir_call cb__Nstd__Nio__Nprint__Aint [L0 . 0];
+    ir_call cb__Nio__Nprint__Aint [L0 . 0];
     ir_load_addr STR0; (push)
     ir_load [L1 . 0] POP();
     ir_load [L1 . 1] 1;
     ir_load_addr L1; (push)
-    ir_call cb__Nstd__Nio__Nprint__Aptr__Tslice__Tpure__Tuint8 POP();
-    ir_call cb__Nstd__Nio__Nprint__Aint [L0 . 1];
+    ir_call cb__Nio__Nprint__Aptr__Tslice__Tpure__Tuint8 POP();
+    ir_call cb__Nio__Nprint__Aint [L0 . 1];
     ir_load_addr STR1; (push)
     ir_load [L2 . 0] POP();
     ir_load [L2 . 1] 0;
     ir_load_addr L2; (push)
-    ir_call cb__Nstd__Nio__Nprintln__Aptr__Tslice__Tpure__Tuint8 POP();
+    ir_call cb__Nio__Nprintln__Aptr__Tslice__Tpure__Tuint8 POP();
 endf
 

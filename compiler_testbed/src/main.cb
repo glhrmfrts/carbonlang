@@ -1,24 +1,28 @@
-func print(l: usize) {
+func print(i: int) {
+
+}
+
+func print(i: usize) {
+    print(cast(int)i)
+}
+
+func print(v: nil) {
+    print(0)
+}
+
+func print(err: error) {
+
+}
+
+func setup() {
+
+}
+
+func print_solid(t: {int, int}) {
+    let s, rest... = t
+    print(1)
 }
 
 extern(C) func carbon_main() : int {
-    let err = late_err()
-    if (err != noerr) {
-        
-    }
-    
-    let fd,err = late_expression()
-
-    let numbers,err = 0,noerr
-
-    let tup = 0,1,2,3,4
-    print(tup.len)
-}
-
-func late_err() {
-    return noerr
-}
-
-func late_expression() {
-    return 2,noerr
+    print_solid({0, 1})
 }

@@ -1,5 +1,5 @@
-import std::io
-import std::system
+import io
+import system
 
 func main() {
     println(noerr)

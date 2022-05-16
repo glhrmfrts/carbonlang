@@ -1,6 +1,6 @@
-import std::system
-import std::linux::syscall as syscall
-import std::io
+import system
+import linux::syscall as syscall
+import io
 
 #define O_ACCMODE       00000003                                                                                                                                                                                                              
 #define O_RDONLY        00000000                                                                                                                                                                                                              
@@ -21,35 +21,35 @@ import std::io
 #define O_NOATIME       01000000                                                                                                                                                                                                              
 #define O_CLOEXEC       02000000        /* set close_on_exec */         
 
-func to_kernel_flags(flags : open_flags) : int {
+func to_kernel_flags(flags : Open_Flags) : int {
     let lflags : int
 
-    if (flags & (Write | Read)) {
+    if (flags & (WRITE | READ)) {
         lflags = O_RDWR
     }
-    else if (flags & Write) {
+    else if (flags & WRITE) {
         lflags = O_WRONLY
     }
-    else if (flags & Read) {
+    else if (flags & READ) {
         lflags = O_RDONLY
     }
 
-    if (flags & Create) {
+    if (flags & CREATE) {
         lflags |= O_CREAT
     }
-    if (flags & Append) {
+    if (flags & APPEND) {
         lflags |= O_APPEND
     }
-    if (flags & Truncate) {
+    if (flags & TRUNCATE) {
         lflags |= O_TRUNC
     }
 
     return lflags
 }
 
-extern(carbon, std::system)
-func open(filename: []pure uint8, flags: open_flags, mode: int): {file_handle, error} {
+extern(carbon, system)
+func open(filename: []pure uint8, flags: Open_Flags, mode: int): {File_Handle, error} {
     let kflags = to_kernel_flags(flags)
     let fd = syscall::open(filename.ptr, kflags, cast(int16) mode)
-    return cast(file_handle)fd, noerr
+    return cast(File_Handle)fd, noerr
 }

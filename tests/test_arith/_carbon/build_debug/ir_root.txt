@@ -2,7 +2,7 @@ func cb__Nroot__Nmain -> void
     local #0 a: int;
     ir_call cb__Nroot__Ntest_div__Aint__Aint 10 5; (push)
     ir_load L0 POP();
-    ir_call cb__Nstd__Nio__Nprintln__Aint L0;
+    ir_call cb__Nio__Nprintln__Aint L0;
 endf
 
 func cb__Nroot__Ntest_div__Aint__Aint -> int

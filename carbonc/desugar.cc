@@ -83,6 +83,7 @@ void check_temp_ternary_expr(type_system& ts, ast_node& node) {
 
 void check_func_arg_aggregate_type(type_system& ts, ast_node& func, int idx) {
     if (is_aggregate_type(func.func_args()[idx]->tid) && !(func.func_args()[idx]->local.flags & local_flag::is_aggregate_argument)) {
+        printf("check_func_arg_aggregate_type: %s (%d) \n", func.tdef.name.str.c_str(), idx);
         func.func_args()[idx]->local.flags |= local_flag::is_aggregate_argument;
         update_local_aggregate_argument(ts, *func.func_args()[idx]);
     }

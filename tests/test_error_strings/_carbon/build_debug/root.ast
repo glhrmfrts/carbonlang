@@ -3,9 +3,9 @@ module root
   code_unit ./src/main.cb
     decl_list
       import_decl
-        identifier std::io
+        identifier io
       import_decl
-        identifier std::system
+        identifier system
       func_decl
         identifier main
         arg_list

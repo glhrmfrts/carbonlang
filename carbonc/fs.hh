@@ -27,4 +27,6 @@ bool split_extension(const std::string& filename, std::string& root, std::string
 
 bool getworkingdir(size_t sz, char* buf);
 
+bool setworkingdir(const char* buf);
+
 }

@@ -3,11 +3,7 @@ module root
   code_unit ./src/main.cb
     decl_list
       import_decl
-        identifier std::io
-      import_decl
-        identifier std::system
-      import_decl
-        identifier std::string
+        identifier io
       func_decl
         identifier test_div
         arg_list

@@ -24,33 +24,33 @@ extern func free(m: &opaque, sz: usize)
 
 // io.cb
 
-typealias file_handle = &opaque
+typealias File_Handle = &opaque
 
-extern func write(fd: file_handle, data: []pure uint8): isize
+extern func write(fd: File_Handle, data: []pure uint8): isize
 
-extern func read(fd: file_handle, data: []uint8): isize
+extern func read(fd: File_Handle, data: []uint8): isize
 
-type open_flags = enumflags { Write Read Create Append Truncate }
+type Open_Flags = enumflags { WRITE READ APPEND TRUNCATE CREATE }
 
-extern func open(path: []pure uint8, flags: open_flags, mode: int): {file_handle, error}
+extern func open(path: []pure uint8, flags: Open_Flags, mode: int): {File_Handle, error}
 
-extern func stdout(): file_handle
+extern func stdout(): File_Handle
 
-extern func stderr(): file_handle
+extern func stderr(): File_Handle
 
-extern func stdin(): file_handle
+extern func stdin(): File_Handle
 
-extern func fdflags(fd: file_handle): int
+extern func fdflags(fd: File_Handle): int
 
-extern func close(fd: file_handle): error
+extern func close(fd: File_Handle): error
 
 type Whence = enum {
-    SeekSet
-    SeekCurrent
-    SeekEnd
+    SEEK_SET
+    SEEK_CURRENT
+    SEEK_END
 }
 
-extern func seek(fd: file_handle, offset: int64, w: Whence)
+extern func seek(fd: File_Handle, offset: int64, w: Whence)
 
 type Stat = struct {
     size: usize
@@ -62,7 +62,7 @@ type Stat = struct {
 
 extern func stat(filename: []pure uint8, buf: &Stat): error
 
-extern func stat(fd: file_handle, buf: &Stat): error
+extern func stat(fd: File_Handle, buf: &Stat): error
 
 extern func unlink(path: []pure uint8): error
 
@@ -162,7 +162,7 @@ func intToString(value: int, base: int, dest: []uint8) {
     return offs
 }
 
-func write_int(fd: file_handle, value: int) {
+func write_int(fd: File_Handle, value: int) {
     let buf : [32]uint8
     let dest = []uint8{&buf[0], sizeof(buf)}
     dest.len = intToString(value, 10, dest)

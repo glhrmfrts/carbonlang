@@ -1,6 +1,6 @@
-import std::system
-import std::mem as mem
-import std::linux::syscall
+import system
+import mem as mem
+import linux::syscall
 
 func testAlloc() {
     let m, err = mem::alloc(16)

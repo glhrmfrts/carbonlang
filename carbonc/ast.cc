@@ -297,6 +297,10 @@ arena_ptr<ast_node> make_func_decl_node(memory_arena& arena, const position& pos
     ptr->type = ast_type::func_decl;
     ptr->pos = pos;
     ptr->func.linkage = linkage;
+    if (id) id->parent = ptr.get();
+    if (arg_list) arg_list->parent = ptr.get();
+    if (ret_type) ret_type->parent = ptr.get();
+    if (body) body->parent = ptr.get();
     ptr->children.push_back(std::move(id));
     ptr->children.push_back(std::move(arg_list));
     ptr->children.push_back(std::move(ret_type));

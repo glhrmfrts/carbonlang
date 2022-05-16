@@ -21,8 +21,8 @@ if that allocation counter reaches 0, the entire block is released.
 
 */
 
-import std::system as sys
-import std::io
+import system as sys
+import io
 
 // TODO: block access to private members
 
@@ -47,7 +47,7 @@ func alloc_in_block(pblock: &memory_block, size: usize): &opaque {
     pblock.num_allocs += 1
 
 /*
-    sys::write(sys::stdout(), "std::mem - Growing block fill to ")
+    sys::write(sys::stdout(), "mem - Growing block fill to ")
     sys::write_int(sys::stdout(), cast(int)pblock.filled)
     sys::write(sys::stdout(), " bytes\n")
 */
@@ -104,7 +104,7 @@ func alloc(usersize: usize): {&opaque, error} {
     newblock.next = last_block
 
 /*
-    sys::write(sys::stdout(), "std::mem - Allocating block of ")
+    sys::write(sys::stdout(), "mem - Allocating block of ")
     sys::write_int(sys::stdout(), cast(int)newblock.cap)
     sys::write(sys::stdout(), " bytes\n")
 */
@@ -143,7 +143,7 @@ func free(ptr: &opaque) {
         }
 
 /*
-        sys::write(sys::stdout(), "std::mem - Freeing block of ")
+        sys::write(sys::stdout(), "mem - Freeing block of ")
         sys::write_int(sys::stdout(), cast(int)pblock.cap)
         sys::write(sys::stdout(), " bytes\n")
 */

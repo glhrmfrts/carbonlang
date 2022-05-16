@@ -317,4 +317,14 @@ bool getworkingdir(size_t sz, char* buf)
     return true;
 }
 
+bool setworkingdir(const char* buf)
+{
+#ifdef _WIN32
+    SetCurrentDirectoryA(buf);
+#else
+    chdir(buf);
+#endif
+    return true;
+}
+
 }

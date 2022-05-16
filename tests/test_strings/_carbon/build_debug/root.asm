@@ -46,8 +46,8 @@ cb__Nroot__Nmain:
 # ir_load_addr L5; (push)
 
  mov %rax,%rdi
- call cb__Nstd__Nio__Nprintln__Aptr__Tslice__Tpure__Tuint8
-# ir_call cb__Nstd__Nio__Nprintln__Aptr__Tslice__Tpure__Tuint8 POP();
+ call cb__Nio__Nprintln__Aptr__Tslice__Tpure__Tuint8
+# ir_call cb__Nio__Nprintln__Aptr__Tslice__Tpure__Tuint8 POP();
 
  lea .cbstr0(%rip),%rax
 # ir_load_addr STR0; (push)
@@ -75,8 +75,8 @@ cb__Nroot__Nmain:
 # ir_cmp_eq [L0 . 0] [L12 . 0]; (push)
 
  mov %al,%dil
- call cb__Nstd__Nio__Nprintln__Abool
-# ir_call cb__Nstd__Nio__Nprintln__Abool POP();
+ call cb__Nio__Nprintln__Abool
+# ir_call cb__Nio__Nprintln__Abool POP();
 
  lea .cbstr0(%rip),%rax
 # ir_load_addr STR0; (push)
@@ -89,8 +89,8 @@ cb__Nroot__Nmain:
 # ir_load [L13 . 1] 8;
 
  mov -216(%rbp),%rdi
- call cb__Nstd__Nio__Nprintln__Ausize
-# ir_call cb__Nstd__Nio__Nprintln__Ausize [L13 . 1];
+ call cb__Nio__Nprintln__Ausize
+# ir_call cb__Nio__Nprintln__Ausize [L13 . 1];
 
  mov -16(%rbp),%rax
 # ir_deref [L0 . 0]; (push)
@@ -105,8 +105,8 @@ cb__Nroot__Nmain:
 # ir_cmp_eq POP() #97; (push)
 
  mov %al,%dil
- call cb__Nstd__Nio__Nprintln__Abool
-# ir_call cb__Nstd__Nio__Nprintln__Abool POP();
+ call cb__Nio__Nprintln__Abool
+# ir_call cb__Nio__Nprintln__Abool POP();
 
  mov -16(%rbp),%r10
  mov %r10,-24(%rbp)
@@ -128,8 +128,8 @@ cb__Nroot__Nmain:
 # ir_cmp_eq POP() 0; (push)
 
  mov %al,%dil
- call cb__Nstd__Nio__Nprintln__Abool
-# ir_call cb__Nstd__Nio__Nprintln__Abool POP();
+ call cb__Nio__Nprintln__Abool
+# ir_call cb__Nio__Nprintln__Abool POP();
 
  mov -16(%rbp),%rax
 # ir_deref [L0 . 0]; (push)
@@ -167,8 +167,8 @@ cb__Nroot__Nmain:
 # ir_load_addr L6; (push)
 
  mov %rax,%rdi
- call cb__Nstd__Nio__Nprint__Aptr__Tslice__Tpure__Tuint8
-# ir_call cb__Nstd__Nio__Nprint__Aptr__Tslice__Tpure__Tuint8 POP();
+ call cb__Nio__Nprint__Aptr__Tslice__Tpure__Tuint8
+# ir_call cb__Nio__Nprint__Aptr__Tslice__Tpure__Tuint8 POP();
 
  lea .cbstr1(%rip),%rax
 # ir_load_addr STR1; (push)
@@ -184,12 +184,12 @@ cb__Nroot__Nmain:
 # ir_load_addr L7; (push)
 
  mov %rax,%rdi
- call cb__Nstd__Nio__Nprint__Aptr__Tslice__Tpure__Tuint8
-# ir_call cb__Nstd__Nio__Nprint__Aptr__Tslice__Tpure__Tuint8 POP();
+ call cb__Nio__Nprint__Aptr__Tslice__Tpure__Tuint8
+# ir_call cb__Nio__Nprint__Aptr__Tslice__Tpure__Tuint8 POP();
 
  mov -40(%rbp),%rdi
- call cb__Nstd__Nio__Nprintln__Ausize
-# ir_call cb__Nstd__Nio__Nprintln__Ausize [L2 . 1];
+ call cb__Nio__Nprintln__Ausize
+# ir_call cb__Nio__Nprintln__Ausize [L2 . 1];
 
  mov -16(%rbp),%rax
 # ir_deref [L0 . 0]; (push)
@@ -227,8 +227,8 @@ cb__Nroot__Nmain:
 # ir_load_addr L8; (push)
 
  mov %rax,%rdi
- call cb__Nstd__Nio__Nprint__Aptr__Tslice__Tpure__Tuint8
-# ir_call cb__Nstd__Nio__Nprint__Aptr__Tslice__Tpure__Tuint8 POP();
+ call cb__Nio__Nprint__Aptr__Tslice__Tpure__Tuint8
+# ir_call cb__Nio__Nprint__Aptr__Tslice__Tpure__Tuint8 POP();
 
  lea .cbstr1(%rip),%rax
 # ir_load_addr STR1; (push)
@@ -244,12 +244,12 @@ cb__Nroot__Nmain:
 # ir_load_addr L9; (push)
 
  mov %rax,%rdi
- call cb__Nstd__Nio__Nprint__Aptr__Tslice__Tpure__Tuint8
-# ir_call cb__Nstd__Nio__Nprint__Aptr__Tslice__Tpure__Tuint8 POP();
+ call cb__Nio__Nprint__Aptr__Tslice__Tpure__Tuint8
+# ir_call cb__Nio__Nprint__Aptr__Tslice__Tpure__Tuint8 POP();
 
  mov -56(%rbp),%rdi
- call cb__Nstd__Nio__Nprintln__Ausize
-# ir_call cb__Nstd__Nio__Nprintln__Ausize [L3 . 1];
+ call cb__Nio__Nprintln__Ausize
+# ir_call cb__Nio__Nprintln__Ausize [L3 . 1];
 
  mov -16(%rbp),%rax
 # ir_deref [L0 . 0]; (push)
@@ -286,8 +286,8 @@ cb__Nroot__Nmain:
 # ir_load_addr L10; (push)
 
  mov %rax,%rdi
- call cb__Nstd__Nio__Nprint__Aptr__Tslice__Tpure__Tuint8
-# ir_call cb__Nstd__Nio__Nprint__Aptr__Tslice__Tpure__Tuint8 POP();
+ call cb__Nio__Nprint__Aptr__Tslice__Tpure__Tuint8
+# ir_call cb__Nio__Nprint__Aptr__Tslice__Tpure__Tuint8 POP();
 
  lea .cbstr1(%rip),%rax
 # ir_load_addr STR1; (push)
@@ -303,12 +303,12 @@ cb__Nroot__Nmain:
 # ir_load_addr L11; (push)
 
  mov %rax,%rdi
- call cb__Nstd__Nio__Nprint__Aptr__Tslice__Tpure__Tuint8
-# ir_call cb__Nstd__Nio__Nprint__Aptr__Tslice__Tpure__Tuint8 POP();
+ call cb__Nio__Nprint__Aptr__Tslice__Tpure__Tuint8
+# ir_call cb__Nio__Nprint__Aptr__Tslice__Tpure__Tuint8 POP();
 
  mov -72(%rbp),%rdi
- call cb__Nstd__Nio__Nprintln__Ausize
-# ir_call cb__Nstd__Nio__Nprintln__Ausize [L4 . 1];
+ call cb__Nio__Nprintln__Ausize
+# ir_call cb__Nio__Nprintln__Ausize [L4 . 1];
 
 .cb__Nroot__Nmain$end:
  add $240,%rsp

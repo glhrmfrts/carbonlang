@@ -38,8 +38,8 @@ cb__Nroot__Nmain:
 # ir_load L0 POP();
 
  mov -4(%rbp),%edi
- call cb__Nstd__Nio__Nprintln__Aint
-# ir_call cb__Nstd__Nio__Nprintln__Aint L0;
+ call cb__Nio__Nprintln__Aint
+# ir_call cb__Nio__Nprintln__Aint L0;
 
 .cb__Nroot__Nmain$end:
  add $32,%rsp

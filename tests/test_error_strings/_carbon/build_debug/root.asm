@@ -29,24 +29,24 @@ cb__Nroot__Nmain:
 # prolog end
 
  xor %edi,%edi
- call cb__Nstd__Nio__Nprintln__Aerror
-# ir_call cb__Nstd__Nio__Nprintln__Aerror 0;
+ call cb__Nio__Nprintln__Aerror
+# ir_call cb__Nio__Nprintln__Aerror 0;
 
  mov $1304468645,%edi
- call cb__Nstd__Nio__Nprintln__Aerror
-# ir_call cb__Nstd__Nio__Nprintln__Aerror 1304468645;
+ call cb__Nio__Nprintln__Aerror
+# ir_call cb__Nio__Nprintln__Aerror 1304468645;
 
  mov $3550758667,%edi
- call cb__Nstd__Nio__Nprintln__Aerror
-# ir_call cb__Nstd__Nio__Nprintln__Aerror 3550758667;
+ call cb__Nio__Nprintln__Aerror
+# ir_call cb__Nio__Nprintln__Aerror 3550758667;
 
  mov $1541895403,%edi
- call cb__Nstd__Nio__Nprintln__Aerror
-# ir_call cb__Nstd__Nio__Nprintln__Aerror 1541895403;
+ call cb__Nio__Nprintln__Aerror
+# ir_call cb__Nio__Nprintln__Aerror 1541895403;
 
  mov $2669138376,%edi
- call cb__Nstd__Nio__Nprintln__Aerror
-# ir_call cb__Nstd__Nio__Nprintln__Aerror 2669138376;
+ call cb__Nio__Nprintln__Aerror
+# ir_call cb__Nio__Nprintln__Aerror 2669138376;
 
 .cb__Nroot__Nmain$end:
  add $16,%rsp

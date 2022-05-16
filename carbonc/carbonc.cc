@@ -345,6 +345,9 @@ void parse_options(project_info& p, int argc, const char* argv[]) {
 
     if (find_arg("--build-dir", "-B", argc, argv))
         p.build_dir = find_arg("--build-dir", "-B", argc, argv);
+
+    if (find_arg("--dir", "-d", argc, argv))
+        p.working_dir = find_arg("--dir", "-d", argc, argv);
 }
 
 #ifndef CARBON_VERSION
@@ -357,13 +360,15 @@ void print_usage() {
         "   carbonc {options}\n"
         "\n"
         "options:\n"
-        "   -B, --build-dir - Path to generate build intermediate files\n"
+        "   -B, --build-dir - Path to generate build intermediate files, defaults to './_carbon'\n"
+        "   -d, --dir - The project directory, defaults to the current directory\n"
         "   -e, --entrypoint - Entrypoint function to the executable when in freestanding mode\n"
         "   -f, --file - Work in single file mode, instead of 'project' mode\n"
         "   -F, --freestanding - Freestanding mode, assume no OS layer and no particular entrypoint\n"
         "   -h, --help - This help\n"
         "   -I, --include - Include source files from another project path\n"
         "   -o, --output - Final output file path\n"
+        "   -p, --carbon-path - Path to the Carbon directory, where libraries live\n"
         "   -t, --type - Type of target: executable, shared, static\n"
         "   -V, --verbose - Verbose compiler output\n",
         CARBON_VERSION
@@ -380,7 +385,13 @@ bool run_project_mode(int argc, const char* argv[]) {
 
     std::cout << "carbonc - compiling target: " << dirname << "\n\n";
 
-    const char* cbpath = getenv("CARBON_PATH");
+    const char* cbpath = NULL;
+#if defined(CARBON_PATH)
+    cbpath = CARBON_PATH;
+#endif
+    if (!cbpath) {
+        cbpath = getenv("CARBON_PATH");
+    }
     if (!cbpath) {
         cbpath = find_arg("--carbon-path", "-p", argc, argv);
     }
@@ -400,6 +411,8 @@ bool run_project_mode(int argc, const char* argv[]) {
     auto std_library_path = join(join(std::string{ cbpath }, "std"), "src");
 
     parse_options(proj, argc, argv);
+
+    setworkingdir(proj.working_dir.c_str());
 
     ensure_directory_exists("_carbon/build_debug/.");
     ensure_directory_exists("_carbon/out_debug/.");

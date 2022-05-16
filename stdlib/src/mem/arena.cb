@@ -1,4 +1,4 @@
-import std::system
+import system
 
 type ArenaBlock = struct {
     mem: &opaque

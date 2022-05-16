@@ -1,4 +1,13 @@
-import std::system as sys
+import system as sys
+
+func print(c: uint8) {
+    let buf : [2]uint8
+    buf[0] = '.'
+    buf[1] = 0
+
+    let s = []pure uint8{ &buf, 1 }
+    sys::write(sys::stdout(), s)
+}
 
 func print(s: []pure uint8) {
     sys::write(sys::stdout(), s)
@@ -44,7 +53,7 @@ func println(i: usize) {
 }
 
 func println(p: &opaque) {
-    println(cast(int)(cast(uintptr)p))
+    println(cast(int) cast(uintptr) p)
 }
 
 func println(b: bool) {
@@ -59,5 +68,35 @@ func println(v: nil) {
 
 func println(e: error) {
     print(e)
+    println("")
+}
+
+func print_tuple_helper(t) {
+    let a, rest... = t
+    //let cpy = t
+    //print(cpy.first)
+    print(a)
+    print(",")
+    if (rest.len > 1) {
+        print_tuple_helper(rest)
+    }
+    else {
+        print(rest.first)
+    }
+}
+
+func print_tuple(t) {
+    print("{")
+    if (t.len > 1) {
+        print_tuple_helper(t)
+    }
+    else {
+        print(t.first)
+    }
+    print("}")
+}
+
+func println_tuple(t) {
+    print_tuple(t)
     println("")
 }
