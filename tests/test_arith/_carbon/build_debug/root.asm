@@ -25,21 +25,47 @@
 cb__Nroot__Nmain:
 # func main(): {}
  push %rbp
- mov %rsp,%rbp
+ movq %rsp,%rbp
  sub $32,%rsp
 # prolog end
 
- mov $5,%esi
- mov $10,%edi
+ movl $5,%esi
+ movl $10,%edi
  call cb__Nroot__Ntest_div__Aint__Aint
 # ir_call cb__Nroot__Ntest_div__Aint__Aint 10 5; (push)
 
- mov %eax,-4(%rbp)
+ movl %eax,-4(%rbp)
 # ir_load L0 POP();
 
- mov -4(%rbp),%edi
+ movl -4(%rbp),%edi
  call cb__Nio__Nprintln__Aint
 # ir_call cb__Nio__Nprintln__Aint L0;
+
+ movl $42,%eax
+ neg %eax
+# ir_neg 42; (push)
+
+ movl %eax,%edi
+ call cb__Nio__Nprintln__Aint
+# ir_call cb__Nio__Nprintln__Aint POP();
+
+ movl $255,%r10d
+ sar $4,%r10d
+ movl %r10d,%eax
+# ir_shr 255 4; (push)
+
+ movl %eax,%edi
+ call cb__Nio__Nprintln__Aint
+# ir_call cb__Nio__Nprintln__Aint POP();
+
+ movl $15,%r10d
+ sal $4,%r10d
+ movl %r10d,%eax
+# ir_shl 15 4; (push)
+
+ movl %eax,%edi
+ call cb__Nio__Nprintln__Aint
+# ir_call cb__Nio__Nprintln__Aint POP();
 
 .cb__Nroot__Nmain$end:
  add $32,%rsp
@@ -49,13 +75,13 @@ cb__Nroot__Nmain:
 
 cb__Nroot__Ntest_div__Aint__Aint:
 # func test_div(int, int): int
- mov %esi,16(%rsp)
- mov %edi,8(%rsp)
+ movl %esi,16(%rsp)
+ movl %edi,8(%rsp)
  push %rbp
- mov %rsp,%rbp
+ movq %rsp,%rbp
 # prolog end
 
- mov 16(%rbp),%eax
+ movl 16(%rbp),%eax
  cdq
  idivl 24(%rbp)
 # ir_div A0 A1; (push)

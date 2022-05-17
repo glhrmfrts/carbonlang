@@ -24,7 +24,7 @@
 cb__Nroot__Nmain:
 # func main(): {}
  push %rbp
- mov %rsp,%rbp
+ movq %rsp,%rbp
  sub $16,%rsp
 # prolog end
 
@@ -32,19 +32,19 @@ cb__Nroot__Nmain:
  call cb__Nio__Nprintln__Aerror
 # ir_call cb__Nio__Nprintln__Aerror 0;
 
- mov $1304468645,%edi
+ movl $1304468645,%edi
  call cb__Nio__Nprintln__Aerror
 # ir_call cb__Nio__Nprintln__Aerror 1304468645;
 
- mov $3550758667,%edi
+ movl $3550758667,%edi
  call cb__Nio__Nprintln__Aerror
 # ir_call cb__Nio__Nprintln__Aerror 3550758667;
 
- mov $1541895403,%edi
+ movl $1541895403,%edi
  call cb__Nio__Nprintln__Aerror
 # ir_call cb__Nio__Nprintln__Aerror 1541895403;
 
- mov $2669138376,%edi
+ movl $2669138376,%edi
  call cb__Nio__Nprintln__Aerror
 # ir_call cb__Nio__Nprintln__Aerror 2669138376;
 

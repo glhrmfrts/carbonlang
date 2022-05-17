@@ -7,4 +7,7 @@ func test_div(a, b) {
 func main() {
     let a = test_div(10, 5)
     println(a)
+    println(-42)
+    println(0xFF >> 4)
+    println(0x0F << 4)
 }

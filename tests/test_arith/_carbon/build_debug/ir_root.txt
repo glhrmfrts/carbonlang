@@ -3,6 +3,12 @@ func cb__Nroot__Nmain -> void
     ir_call cb__Nroot__Ntest_div__Aint__Aint 10 5; (push)
     ir_load L0 POP();
     ir_call cb__Nio__Nprintln__Aint L0;
+    ir_neg 42; (push)
+    ir_call cb__Nio__Nprintln__Aint POP();
+    ir_shr 255 4; (push)
+    ir_call cb__Nio__Nprintln__Aint POP();
+    ir_shl 15 4; (push)
+    ir_call cb__Nio__Nprintln__Aint POP();
 endf
 
 func cb__Nroot__Ntest_div__Aint__Aint -> int

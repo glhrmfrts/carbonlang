@@ -59,6 +59,11 @@ test:
 		carbonc -p ../.. -I stdlib -V -o a.out > compile.txt && \
 		./a.out > out.txt && diff out.txt expected.txt && echo "\033[1;32mtest_generic_funcs: OK\033[0m"
 
+	@echo "test_rule110: ..." && \
+		cd tests/test_rule110 && \
+		carbonc -p ../.. -I stdlib -V -o a.out > compile.txt && \
+		./a.out > out.txt && diff out.txt expected.txt && echo "\033[1;32mtest_rule110: OK\033[0m"
+
 	@echo "test_aoc01: ..." && \
 		cd tests/test_aoc01 && \
 		carbonc -p ../.. -I stdlib -V -o a.out > compile.txt && \

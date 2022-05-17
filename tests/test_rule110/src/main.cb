@@ -1,16 +1,18 @@
 import io
 
-const BOARD_CAP = 100
-
 func main() {
     let board : [BOARD_CAP]int
 
-    board[BOARD_CAP - 2] = 0
-
     for (i in 0, BOARD_CAP - 2) {
         for (j in 0, BOARD_CAP) {
-            print(".*"[board[j]])
+            print(" *"[board[j]])
         }
         print("\n")
+
+        let pattern = (board[0] << 1) | board[1]
+        for (j in 0, BOARD_CAP - 1) {
+            pattern = ((pattern << 1) & 7) | board[j + 1]
+            board[j] = (110 >> pattern) & 1
+        }
     }
 }

@@ -73,7 +73,7 @@ func main() {
         sys::exit(1)
     }
 
-    let fd, err = sys::open("aoc01.txt", sys::Read, 0)
+    let fd, err = sys::open("aoc01.txt", sys::READ, 0)
     if (err != noerr) {
         println("OPEN ERROR")
         sys::exit(1)

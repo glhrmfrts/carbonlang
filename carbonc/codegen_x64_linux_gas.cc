@@ -316,9 +316,9 @@ struct codegen_x64_linux_gas_emitter : public codegen_x64_emitter {
     }
 
     virtual void mov(gen_destination reg, gen_operand src) {
-#if 0
         std::size_t sza = get_size(reg);
         std::size_t szb = get_size(src);
+#if 0
         if (sza != szb) {
             printf(" mov %s,%s\n", tostr_sized(reg).c_str(), tostr_sized(src).c_str());
             if (is_reg(src)) {
@@ -334,7 +334,11 @@ struct codegen_x64_linux_gas_emitter : public codegen_x64_emitter {
                 return;
             }
         }
-        emitln(" mov %s,%s", tostr_sized(src).c_str(), tostr_sized(reg).c_str());
+        static const char* mov_table[] = {
+            0, "movb", "movw", 0, "movl", 0, 0, 0, "movq"
+        };
+        if (sza > 8) sza = 8;
+        emitln(" %s %s,%s", mov_table[sza], tostr_sized(src).c_str(), tostr_sized(reg).c_str());
     }
 
     virtual void movsx(gen_destination reg, gen_operand src) {

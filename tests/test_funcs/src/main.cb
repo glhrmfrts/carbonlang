@@ -1,0 +1,10 @@
+import io
+import fs
+
+func sum(a: int, b: int, c: int, d: int, e: int, f: int, g: int, h: int, j: int) {
+    return a + b + c + d + e + f + g + h + j
+}
+
+func main() {
+    println(sum(1,1,1,1,1,1,1,1,1))
+}

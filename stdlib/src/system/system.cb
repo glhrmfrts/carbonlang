@@ -132,7 +132,7 @@ func intToString(value: int, base: int, dest: []uint8) {
         value /= base
         nvalue = value
 
-        result.ptr[offs] = tpl_str[35 + (tmp_value - value * base)]
+        result[offs] = tpl_str[35 + (tmp_value - value * base)]
         offs += 1
     }
 
@@ -143,6 +143,7 @@ func intToString(value: int, base: int, dest: []uint8) {
     if (tmp_value < 0) {
         @ptr = '-'
         ptr += 1
+        offs += 1
     }
 
     @ptr = '\0'

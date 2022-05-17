@@ -28,7 +28,7 @@
 cb__Nroot__Nmain:
 # func main(): {}
  push %rbp
- mov %rsp,%rbp
+ movq %rsp,%rbp
  sub $64,%rsp
 # prolog end
 
@@ -37,48 +37,48 @@ cb__Nroot__Nmain:
 # ir_call cb__Nio__Nprintln__Anil 0;
 
  xor %r10,%r10
- mov %r10,-8(%rbp)
+ movq %r10,-8(%rbp)
 # ir_store L0 0 0 8;
 
- mov -8(%rbp),%edi
+ movl -8(%rbp),%edi
  call cb__Nio__Nprint__Aint
 # ir_call cb__Nio__Nprint__Aint [L0 . 0];
 
  lea .cbstr0(%rip),%rax
 # ir_load_addr STR0; (push)
 
- mov %rax,-32(%rbp)
+ movq %rax,-32(%rbp)
 # ir_load [L1 . 0] POP();
 
- mov $1,%r10d
- mov %r10,-24(%rbp)
+ movl $1,%r10d
+ movq %r10,-24(%rbp)
 # ir_load [L1 . 1] 1;
 
  lea -32(%rbp),%rax
 # ir_load_addr L1; (push)
 
- mov %rax,%rdi
+ movq %rax,%rdi
  call cb__Nio__Nprint__Aptr__Tslice__Tpure__Tuint8
 # ir_call cb__Nio__Nprint__Aptr__Tslice__Tpure__Tuint8 POP();
 
- mov -4(%rbp),%edi
+ movl -4(%rbp),%edi
  call cb__Nio__Nprint__Aint
 # ir_call cb__Nio__Nprint__Aint [L0 . 1];
 
  lea .cbstr1(%rip),%rax
 # ir_load_addr STR1; (push)
 
- mov %rax,-48(%rbp)
+ movq %rax,-48(%rbp)
 # ir_load [L2 . 0] POP();
 
  xor %r10d,%r10d
- mov %r10,-40(%rbp)
+ movq %r10,-40(%rbp)
 # ir_load [L2 . 1] 0;
 
  lea -48(%rbp),%rax
 # ir_load_addr L2; (push)
 
- mov %rax,%rdi
+ movq %rax,%rdi
  call cb__Nio__Nprintln__Aptr__Tslice__Tpure__Tuint8
 # ir_call cb__Nio__Nprintln__Aptr__Tslice__Tpure__Tuint8 POP();
 

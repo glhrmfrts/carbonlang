@@ -1007,12 +1007,12 @@ struct generator {
             auto [a, atype] = transform_ir_operand(instr.operands[0]);
             auto dest = adjust_for_type(instr_dest_to_gen_dest(idata.dest), instr.result_type);
 
-            gen_destination op = todest(a);
+            gen_operand op = a;
 
             if (!is_reg(a) || is_const_reg(a)) {
                 auto reg = adjust_for_type(reg_intermediate, atype);
                 move(reg, atype, a, atype);
-                op = reg;
+                op = toop(reg);
             }
 
             if (!is_lit(b)) {
@@ -1022,13 +1022,15 @@ struct generator {
             }
 
             if (instr.op == ir_shl) {
-                em->sal(op, b);
+                em->sal(todest(op), b);
             }
             else if (instr.op == ir_shr) {
-                em->sar(op, b);
+                em->sar(todest(op), b);
             }
 
-            move(dest, instr.result_type, toop(op), atype);
+            move(dest, instr.result_type, op, atype);
+
+            push(toop(dest));
             break;
         }
         case ir_neg: {
