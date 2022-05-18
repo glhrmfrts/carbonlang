@@ -148,7 +148,7 @@ std::size_t get_size(const gen_operand& v) {
         [](gen_addr r) -> std::size_t {
             return r.op_size;
         },
-        [](int_type v) -> std::size_t {
+        [](comp_int_type v) -> std::size_t {
             return 4;
         },
         [](char v) -> std::size_t {
@@ -216,7 +216,7 @@ template <typename T> bool is_reg(const T& op) {
 }
 
 template <typename T> bool is_lit(const T& op) {
-    return std::holds_alternative<int_type>(op) || std::holds_alternative<char>(op);
+    return std::holds_alternative<comp_int_type>(op) || std::holds_alternative<char>(op);
 }
 
 struct tup {
@@ -369,7 +369,7 @@ struct generator {
     gen_destination local_var_destination(std::int32_t frame_offset) {
         gen_addr expr{ };
         expr.base = rbp;
-        expr.offset = int_type(frame_offset);
+        expr.offset = comp_int_type(frame_offset);
         return expr;
     }
 
@@ -510,7 +510,7 @@ struct generator {
         }
 
         if (gd.type.get().kind == type_kind::integral) {
-            int_type value = 0;
+            comp_int_type value = 0;
             if (gd.value && std::holds_alternative<ir_int>(*gd.value)) {
                 auto& integer = std::get<ir_int>(*gd.value);
                 value = integer.val;
@@ -592,7 +592,7 @@ struct generator {
                     auto frame_offset = fdata.arg_data[i - 1].frame_offset;
 
                     auto src = adjust_for_type(gen_register{ register_args[i - 1] }, arg.type);
-                    auto dest = adjust_for_type(gen_addr{ 0, rsp, int_type(frame_offset) }, arg.type);
+                    auto dest = adjust_for_type(gen_addr{ 0, rsp, comp_int_type(frame_offset) }, arg.type);
                     em->mov(dest, toop(src));
                 }
             }
@@ -620,10 +620,10 @@ struct generator {
         }
 
         // instead of adding +8 to the stack_size, subtract from %rsp so we can have %rbp aligned
-        if (num_pushes % 2 == 0) { em->sub(rsp, int_type(8)); }
+        if (num_pushes % 2 == 0) { em->sub(rsp, comp_int_type(8)); }
 
         if (needs_rbp)           { em->mov(rbp, rsp); }
-        if (stack_size > 0)      { em->sub(rsp, (int_type)(stack_size)); }
+        if (stack_size > 0)      { em->sub(rsp, (comp_int_type)(stack_size)); }
 
         // now we add +8 to the stack_size so the epilogue is correct
         if (num_pushes % 2 == 0) { stack_size += 8; }
@@ -636,7 +636,7 @@ struct generator {
 
         em->label(fdata.end_label.c_str());
 
-        if (stack_size > 0) { em->add(rsp, (int_type)(stack_size)); }
+        if (stack_size > 0) { em->add(rsp, (comp_int_type)(stack_size)); }
         for (std::size_t i = temp_regs.size(); i > 0; i--) {
             em->pop(temp_regs[i - 1]);
         }
@@ -716,7 +716,7 @@ struct generator {
             std::size_t num_args = instr.operands.size() - 1;
             if (num_args > register_args.size()) {
                 for (std::size_t i = num_args; i > register_args.size(); i--) {
-                    int_type offs = (i - 1) * 8;
+                    comp_int_type offs = (i - 1) * 8;
                     auto [op, optype] = transform_ir_operand(instr.operands[i]);
                     auto dest = gen_addr{ optype.get().size, rsp, offs };
                     move(dest, optype, op, optype);
@@ -744,7 +744,7 @@ struct generator {
                 em->calldest(todest(f));
             }
 
-            if (instr.result_type != ts->void_type) {
+            if (instr.result_type != ts->opaque_type) {
                 auto dest = adjust_for_type(instr_dest_to_gen_dest(idata.dest), instr.result_type);
                 auto arax = adjust_for_type(reg_result, instr.result_type);
                 if (!(dest == arax)) {
@@ -757,7 +757,7 @@ struct generator {
         case ir_return: {
             auto [a, atype] = transform_ir_operand(instr.operands[0]);
 
-            if (instr.result_type != ts->void_type) {
+            if (instr.result_type != ts->opaque_type) {
                 auto regres = adjust_for_type(reg_result, instr.result_type);
 
                 if (std::holds_alternative<gen_register>(a)) {
@@ -780,7 +780,7 @@ struct generator {
             auto [a, atype] = transform_ir_operand(instr.operands[0]);
             auto dest = instr_dest_to_gen_dest(idata.dest);
 
-            move(reg_intermediate, ts->uintptr_type, b, btype);
+            move(reg_intermediate, ts->int_type, b, btype);
 
             std::size_t elem_size = instr.result_type.get().size;
             std::size_t esize_offs = elem_size > 8 ? 1 : elem_size;
@@ -790,7 +790,7 @@ struct generator {
             }
 
             if (elem_size > 8) {
-                em->imul(reg_intermediate, int_type(elem_size));
+                em->imul(reg_intermediate, comp_int_type(elem_size));
             }
 
             if (is_reg(a)) {
@@ -798,7 +798,7 @@ struct generator {
                 expr.op_size = elem_size;
                 expr.base = std::get<gen_register>(a);
                 expr.index = reg_intermediate;
-                expr.mult = int_type(esize_offs);
+                expr.mult = comp_int_type(esize_offs);
                 load_address(dest, expr, ts->opaque_ptr_type);
             }
             else if (is_mem(a)) {
@@ -809,7 +809,7 @@ struct generator {
                 expr.base = org_expr.base;
                 expr.offset = org_expr.offset;
                 expr.index = reg_intermediate;
-                expr.mult = int_type(esize_offs);
+                expr.mult = comp_int_type(esize_offs);
                 load_address(dest, expr, ts->opaque_ptr_type);
             }
 
@@ -830,22 +830,22 @@ struct generator {
         }
         case ir_deref: {
             auto [a, atype] = transform_ir_operand(instr.operands[0]);
-            auto dest = adjust_for_type(instr_dest_to_gen_dest(idata.dest), ts->uintptr_type);
+            auto dest = adjust_for_type(instr_dest_to_gen_dest(idata.dest), ts->int_type);
 
             gen_destination op;
             bool needs_move = true;
             bool rax_check = false;
             if (is_reg(dest)) {
-                move(dest, ts->uintptr_type, a, ts->uintptr_type);
+                move(dest, ts->int_type, a, ts->int_type);
                 auto offs = gen_addr{};
                 offs.op_size = instr.result_type.get().size;
                 offs.base = std::get<gen_register>(dest);
-                offs.offset = int_type(0);
+                offs.offset = comp_int_type(0);
                 op = offs;
             }
             else if (is_mem(dest)) {
-                move(reg_intermediate, ts->uintptr_type, a, ts->uintptr_type);
-                move(dest, ts->uintptr_type, reg_intermediate, ts->uintptr_type);
+                move(reg_intermediate, ts->int_type, a, ts->int_type);
+                move(dest, ts->int_type, reg_intermediate, ts->int_type);
                 op = dest;
             }
             push(toop(op));
@@ -887,14 +887,14 @@ struct generator {
             auto [b, btype] = transform_ir_operand(instr.operands[1]);
             auto [a, atype] = transform_ir_operand(instr.operands[0]);
 
-            int_type offs = std::get<int_type>(c);
-            int_type sz = std::get<int_type>(d);
+            comp_int_type offs = std::get<comp_int_type>(c);
+            comp_int_type sz = std::get<comp_int_type>(d);
 
             assert(is_mem(a) || !"ir_store requires a memory destination");
 
             gen_addr addr = std::get<gen_addr>(a);
-            if (std::holds_alternative<int_type>(addr.offset)) {
-                addr.offset = std::get<int_type>(addr.offset) + offs;
+            if (std::holds_alternative<comp_int_type>(addr.offset)) {
+                addr.offset = std::get<comp_int_type>(addr.offset) + offs;
             }
 
             if (sz <= 128 && sz % 8 == 0) {
@@ -905,8 +905,8 @@ struct generator {
 
                 while (sz > 0) {
                     move(addr, atype, toop(adjust_for_type(reg_intermediate, atype)), atype);
-                    if (std::holds_alternative<int_type>(addr.offset)) {
-                        addr.offset = std::get<int_type>(addr.offset) + 8;
+                    if (std::holds_alternative<comp_int_type>(addr.offset)) {
+                        addr.offset = std::get<comp_int_type>(addr.offset) + 8;
                     }
                     sz -= 8;
                 }
@@ -914,7 +914,7 @@ struct generator {
             else {
                 em->push(rdi);
                 move(adjust_for_type(rax, btype), btype, b, btype);
-                em->mov(rcx, int_type(sz / btype.get().size));
+                em->mov(rcx, comp_int_type(sz / btype.get().size));
                 load_address(rdi, todest(a), atype);
                 switch (btype.get().size) {
                 case 1:
@@ -956,7 +956,7 @@ struct generator {
                 move(rsi, ts->opaque_ptr_type, b, btype);
             }
 
-            move(rcx, ts->uintptr_type, c, ctype);
+            move(rcx, ts->int_type, c, ctype);
 
             em->emitln(" rep movsb");
 
@@ -1110,14 +1110,14 @@ struct generator {
             em->pshufb(reg_intermediate_xmm, xmm0); // Shuffle the bytes to get the 2 words together
             em->movq(reg_intermediate, reg_intermediate_xmm); // Store the difference in the intermediate register
             auto cmpa = toop(adjust_for_type(reg_intermediate, ts->int32_type)); // The result is a 32-bit value
-            auto cmpb = int_type(0); // Compare it to zero
+            auto cmpb = comp_int_type(0); // Compare it to zero
             em->cmp(cmpa, cmpb);
             if (sz > 16) {
                 em->emitln(" %s %s", jmpop, label.c_str());
             }
 
-            opa.offset = std::get<int_type>(opa.offset) + 16;
-            opb.offset = std::get<int_type>(opb.offset) + 16;
+            opa.offset = std::get<comp_int_type>(opa.offset) + 16;
+            opb.offset = std::get<comp_int_type>(opb.offset) + 16;
             sz -= 16;
         }
 
@@ -1202,7 +1202,7 @@ struct generator {
             auto dest = get_local_destination(li, field.type);
             auto& offs = std::get<gen_addr>(dest);
             offs.op_size = field.type.get().size;
-            offs.offset = std::get<int_type>(offs.offset) + int_type(field.offset);
+            offs.offset = std::get<comp_int_type>(offs.offset) + comp_int_type(field.offset);
             return std::make_pair(toop(dest), field.type);
         }
         else if (std::holds_alternative<ir_arg>(arg->ref)) {
@@ -1215,7 +1215,7 @@ struct generator {
             auto dest = get_arg_destination(ai, field.type);
             auto& offs = std::get<gen_addr>(dest);
             offs.op_size = field.type.get().size;
-            offs.offset = std::get<int_type>(offs.offset) + int_type(field.offset);
+            offs.offset = std::get<comp_int_type>(offs.offset) + comp_int_type(field.offset);
             return std::make_pair(toop(dest), field.type);
         }
         else if (std::holds_alternative<ir_stackpop>(arg->ref)) {
@@ -1227,17 +1227,17 @@ struct generator {
                 auto dest = gen_addr{};
                 dest.op_size = field.type.get().size;
                 dest.base = std::get<gen_register>(op);
-                dest.offset = int_type(field.offset);
+                dest.offset = comp_int_type(field.offset);
                 return std::make_pair(toop(dest), field.type);
             }
             else if (std::holds_alternative<gen_addr>(op)) {
                 auto& offs = std::get<gen_addr>(op);
                 offs.op_size = field.type.get().size;
-                if (std::holds_alternative<int_type>(offs.offset)) {
-                    offs.offset = std::get<int_type>(offs.offset) + int_type(field.offset);
+                if (std::holds_alternative<comp_int_type>(offs.offset)) {
+                    offs.offset = std::get<comp_int_type>(offs.offset) + comp_int_type(field.offset);
                 }
                 else {
-                    offs.offset = int_type(field.offset);
+                    offs.offset = comp_int_type(field.offset);
                 }
                 return std::make_pair(op, field.type);
             }
@@ -1247,7 +1247,7 @@ struct generator {
             auto& field = type.get().structure.fields[arg->field_index];
             auto& offs = std::get<gen_addr>(op);
             offs.op_size = field.type.get().size;
-            offs.offset = std::get<int_type>(offs.offset) + int_type(field.offset);
+            offs.offset = std::get<comp_int_type>(offs.offset) + comp_int_type(field.offset);
             return std::make_pair(op, field.type);
         }
         assert(!"transform_ir_field_ref unhandled");

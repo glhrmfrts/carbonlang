@@ -17,6 +17,7 @@ static std::unordered_map<token_type, token_properties> token_props = {
     {token_from_char('!'), { UNARY_OP, 0 }},
     {token_from_char('@'), { UNARY_OP, 0 }},
 
+#if 0
     {token_type::plus_assign, { BINARY_OP | ASSIGN_SUGAR, 400 }},
     {token_type::minus_assign, { BINARY_OP | ASSIGN_SUGAR, 400 }},
     {token_type::mul_assign, { BINARY_OP | ASSIGN_SUGAR, 400 }},
@@ -25,9 +26,10 @@ static std::unordered_map<token_type, token_properties> token_props = {
     {token_type::or_assign, { BINARY_OP | ASSIGN_SUGAR, 400 }},
     {token_type::shl_assign, { BINARY_OP | ASSIGN_SUGAR, 400 }},
     {token_type::shr_assign, { BINARY_OP | ASSIGN_SUGAR, 400 }},
+#endif
 
-    {token_type::oror, { BINARY_OP, 490 }},
-    {token_type::andand, { BINARY_OP, 500 }},
+    {token_type::or_, { BINARY_OP, 490 }},
+    {token_type::and_, { BINARY_OP, 500 }},
 
     {token_type::dotdot, { BINARY_OP, 550 }},
 
@@ -35,7 +37,7 @@ static std::unordered_map<token_type, token_properties> token_props = {
     {token_from_char('^'), { BINARY_OP, 590 }},
     {token_from_char('&'), { BINARY_OP | UNARY_OP, 600 }},
 
-    {token_type::eqeq, { BINARY_OP, 700 }},
+    {token_from_char('='), {BINARY_OP, 700}},
     {token_type::neq, { BINARY_OP, 700 }},
 
     {token_from_char('>'), { BINARY_OP, 800 }},

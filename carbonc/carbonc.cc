@@ -96,7 +96,7 @@ void process_directory(type_system& ts, const std::string& dir, const std::strin
     for (const auto& file : list(dir)) {
         auto fullpath = join(dir, file);
 
-        if (file.find(".cb") != std::string::npos) {
+        if (file.find(".g") != std::string::npos) {
             filecount++;
         }
 
@@ -133,7 +133,7 @@ void process_directory(type_system& ts, const std::string& dir, const std::strin
             auto fullpath = join(dir, file);
 
             if (!is_directory(fullpath)) {
-                if (file.find(".cb") != std::string::npos) {
+                if (file.find(".g") != std::string::npos) {
                     auto mname = fullpath.substr(srcdir.size() + 1);
                     compile_file(ts, fullpath, mname);
                 }

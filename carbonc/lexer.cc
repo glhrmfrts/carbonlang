@@ -16,6 +16,7 @@ static std::unordered_map<int, token_type> stb_to_token = {
     {CLEX_charlit, token_type::char_literal},
     {CLEX_dqstring, token_type::string_literal},
     {CLEX_coloncolon, token_type::coloncolon},
+    {CLEX_coloneq, token_type::coloneq},
     {CLEX_dotdot, token_type::dotdot},
     {CLEX_dotdotdot, token_type::dotdotdot},
     {CLEX_eq, token_type::eqeq},
@@ -157,6 +158,15 @@ struct lexer_impl {
             if (!std::strcmp("in", l.string)) {
                 return token_type::in_;
             }
+            if (!std::strcmp("of", l.string)) {
+                return token_type::of_;
+            }
+            if (!std::strcmp("do", l.string)) {
+                return token_type::do_;
+            }
+            if (!std::strcmp("or", l.string)) {
+                return token_type::or_;
+            }
             break;
         case 3:
             if (!std::strcmp("let", l.string)) {
@@ -171,14 +181,20 @@ struct lexer_impl {
             if (!std::strcmp("nil", l.string)) {
                 return token_type::nil;
             }
+            if (!std::strcmp("out", l.string)) {
+                return token_type::out;
+            }
+            if (!std::strcmp("fun", l.string)) {
+                return token_type::fun;
+            }
+            if (!std::strcmp("end", l.string)) {
+                return token_type::end;
+            }
+            if (!std::strcmp("and", l.string)) {
+                return token_type::and_;
+            }
             break;
         case 4:
-            if (!std::strcmp("pure", l.string)) {
-                return token_type::pure;
-            }
-            if (!std::strcmp("func", l.string)) {
-                return token_type::func;
-            }
             if (!std::strcmp("true", l.string)) {
                 return token_type::bool_literal_true;
             }
@@ -197,13 +213,13 @@ struct lexer_impl {
             if (!std::strcmp("enum", l.string)) {
                 return token_type::enum_;
             }
+            if (!std::strcmp("pure", l.string)) {
+                return token_type::pure;
+            }
             break;
         case 5:
             if (!std::strcmp("false", l.string)) {
                 return token_type::bool_literal_false;
-            }
-            if (!std::strcmp("while", l.string)) {
-                return token_type::while_;
             }
             if (!std::strcmp("defer", l.string)) {
                 return token_type::defer;
@@ -220,6 +236,12 @@ struct lexer_impl {
             if (!std::strcmp("noerr", l.string)) {
                 return token_type::noerror;
             }
+            if (!std::strcmp("local", l.string)) {
+                return token_type::local;
+            }
+            if (!std::strcmp("catch", l.string)) {
+                return token_type::catch_;
+            }
             break;
         case 6:
             if (!std::strcmp("return", l.string)) {
@@ -231,17 +253,20 @@ struct lexer_impl {
             if (!std::strcmp("public", l.string)) {
                 return token_type::public_;
             }
-            if (!std::strcmp("import", l.string)) {
-                return token_type::import_;
-            }
-            if (!std::strcmp("export", l.string)) {
-                return token_type::export_;
-            }
             if (!std::strcmp("struct", l.string)) {
                 return token_type::struct_;
             }
             if (!std::strcmp("noinit", l.string)) {
                 return token_type::noinit;
+            }
+            if (!std::strcmp("assert", l.string)) {
+                return token_type::assert_;
+            }
+            if (!std::strcmp("import", l.string)) {
+                return token_type::import_;
+            }
+            if (!std::strcmp("export", l.string)) {
+                return token_type::export_;
             }
             break;
         case 7:
@@ -279,11 +304,11 @@ struct lexer_impl {
         return long_string;
     }
 
-    float_type float_value() {
+    comp_float_type float_value() {
         return l.real_number;
     }
 
-    int_type int_value() {
+    comp_int_type int_value() {
         return l.int_number;
     }
 
@@ -317,9 +342,9 @@ std::string lexer::string_value() { return _impl->string_value(); }
 
 std::string lexer::long_string_value() { return _impl->long_string_value(); }
 
-float_type lexer::float_value() { return _impl->float_value(); }
+comp_float_type lexer::float_value() { return _impl->float_value(); }
 
-int_type lexer::int_value() { return _impl->int_value(); }
+comp_int_type lexer::int_value() { return _impl->int_value(); }
 
 position lexer::pos() { return _impl->pos(); }
 

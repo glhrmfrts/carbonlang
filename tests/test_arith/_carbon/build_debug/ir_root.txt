@@ -1,20 +1,10 @@
-func cb__Nroot__Nmain -> void
-    local #0 a: int;
-    ir_call cb__Nroot__Ntest_div__Aint__Aint 10 5; (push)
-    ir_load L0 POP();
-    ir_call cb__Nio__Nprintln__Aint L0;
-    ir_neg 42; (push)
-    ir_call cb__Nio__Nprintln__Aint POP();
-    ir_shr 255 4; (push)
-    ir_call cb__Nio__Nprintln__Aint POP();
-    ir_shl 15 4; (push)
-    ir_call cb__Nio__Nprintln__Aint POP();
-endf
-
-func cb__Nroot__Ntest_div__Aint__Aint -> int
-    arg #0 a: int;
-    arg #1 b: int;
-    ir_div A0 A1; (push)
-    ir_return POP();
+string #0: "Hello World asd qwewq e
+";
+func cb__Nroot__Nmain -> opaque
+    local #0 s: arrayview__Tpure__Tbyte;
+    ir_load_addr STR0; (push)
+    ir_load [L0 . 0] POP();
+    ir_load [L0 . 1] 24;
+    ir_call cb__Nrt__Nx86_64__Nwrite__Aint__Aptr__Tpure__Tbyte__Aint 1 [L0 . 0] [L0 . 1];
 endf
 

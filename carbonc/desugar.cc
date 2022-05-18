@@ -183,7 +183,7 @@ void check_var_decl_aggregate_call(type_system& ts, ast_node& node) {
         auto call = transform_aggregate_call_into_pointer_argument(ts, *node.var_id(), std::move(node.children[ast_node::child_var_decl_value]));
 
         node.children[ast_node::child_var_decl_value] = make_init_tag_node(*ts.ast_arena, node.pos, token_type::noinit);
-        node.children[ast_node::child_var_decl_value]->tid = ts.void_type;
+        node.children[ast_node::child_var_decl_value]->tid = ts.opaque_type;
 
         node.pre_nodes.push_back(std::move(call));
     }
@@ -238,8 +238,6 @@ void desugar(type_system& ts, ast_node* nodeptr) {
         break;
     }
     case ast_type::func_decl: {
-        if (node.func.is_generic) { break; }
-
         if (node.scope.body_node) { enter_scope_local(ts, node); }
 
         for (int i = 0; i < node.func_args().size(); i++) {
@@ -279,32 +277,28 @@ void desugar(type_system& ts, ast_node* nodeptr) {
         visit_pre_children(ts, node);
         break;
     }
+    case ast_type::assign_stmt: {
+        if (ts.subpass < 1) { break; }
+        check_assignment_logic_op(ts, node);
+        check_assignment_ternary_expr(ts, node);
+        check_assignment_aggregate_call(ts, node);
+        break;
+    }
     case ast_type::binary_expr: {
         if (ts.subpass < 1) { break; }
 
-        if (token_to_char(node.op) == '=') {
-            check_assignment_logic_op(ts, node);
-            check_assignment_ternary_expr(ts, node);
-        }
-        else {
-            for (int i = 0; i < 2; i++) {
-                check_temp_ternary_expr(ts, *node.children[i]);
-                if (!is_bool_op(node)) {
-                    check_temp_logic_op(ts, *node.children[i]);
-                }
+        for (int i = 0; i < 2; i++) {
+            check_temp_ternary_expr(ts, *node.children[i]);
+            if (!is_bool_op(node)) {
+                check_temp_logic_op(ts, *node.children[i]);
             }
         }
 
         visit_pre_children(ts, node);
         visit_children(ts, node);
 
-        if (token_to_char(node.op) == '=') {
-            check_assignment_aggregate_call(ts, node);
-        }
-        else {
-            for (int i = 0; i < 2; i++) {
-                check_temp_aggregate_call(ts, *node.children[i]);
-            }
+        for (int i = 0; i < 2; i++) {
+            check_temp_aggregate_call(ts, *node.children[i]);
         }
         break;
     }

@@ -23,7 +23,7 @@ arena_ptr<ast_node> make_bool_literal_node(memory_arena& arena, const position& 
     return std::move(ptr);
 }
 
-arena_ptr<ast_node> make_float_literal_node(memory_arena& arena, const position& pos, float_type value) {
+arena_ptr<ast_node> make_float_literal_node(memory_arena& arena, const position& pos, comp_float_type value) {
     auto ptr = make_in_arena<ast_node>(arena);
     ptr->node_id = node_id_gen++;
     ptr->type = ast_type::float_literal;
@@ -32,7 +32,7 @@ arena_ptr<ast_node> make_float_literal_node(memory_arena& arena, const position&
     return std::move(ptr);
 }
 
-arena_ptr<ast_node> make_int_literal_node(memory_arena& arena, const position& pos, int_type value) {
+arena_ptr<ast_node> make_int_literal_node(memory_arena& arena, const position& pos, comp_int_type value) {
     auto ptr = make_in_arena<ast_node>(arena);
     ptr->node_id = node_id_gen++;
     ptr->type = ast_type::int_literal;
@@ -41,7 +41,7 @@ arena_ptr<ast_node> make_int_literal_node(memory_arena& arena, const position& p
     return std::move(ptr);
 }
 
-arena_ptr<ast_node> make_char_literal_node(memory_arena& arena, const position& pos, int_type value) {
+arena_ptr<ast_node> make_char_literal_node(memory_arena& arena, const position& pos, comp_int_type value) {
     auto ptr = make_in_arena<ast_node>(arena);
     ptr->node_id = node_id_gen++;
     ptr->type = ast_type::char_literal;
@@ -218,7 +218,7 @@ arena_ptr<ast_node> make_const_expr_node(memory_arena& arena, const position& po
 arena_ptr<ast_node> make_import_decl_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& mod, arena_ptr<ast_node>&& alias) {
     auto ptr = make_in_arena<ast_node>(arena);
     ptr->node_id = node_id_gen++;
-    ptr->type = ast_type::import_decl;
+    ptr->type = ast_type::imports_decl;
     ptr->pos = pos;
     ptr->children.push_back(std::move(mod));
     ptr->children.push_back(std::move(alias));
@@ -290,12 +290,13 @@ arena_ptr<ast_node> make_var_decl_node_single(memory_arena& arena, const positio
 }
 
 arena_ptr<ast_node> make_func_decl_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& id, arena_ptr<ast_node>&& arg_list,
-    arena_ptr<ast_node>&& ret_type, arena_ptr<ast_node>&& body, func_linkage linkage) {
+    arena_ptr<ast_node>&& ret_type, arena_ptr<ast_node>&& body, bool raises, func_linkage linkage) {
 
     auto ptr = make_in_arena<ast_node>(arena);
     ptr->node_id = node_id_gen++;
     ptr->type = ast_type::func_decl;
     ptr->pos = pos;
+    ptr->func.raises = raises;
     ptr->func.linkage = linkage;
     if (id) id->parent = ptr.get();
     if (arg_list) arg_list->parent = ptr.get();
@@ -360,6 +361,16 @@ arena_ptr<ast_node> make_compound_stmt_node(memory_arena& arena, const position&
     ptr->type = ast_type::compound_stmt;
     ptr->pos = pos;
     ptr->children = std::move(list);
+    return ptr;
+}
+
+arena_ptr<ast_node> make_assign_stmt_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& lhs, arena_ptr<ast_node>&& rhs) {
+    auto ptr = make_in_arena<ast_node>(arena);
+    ptr->node_id = node_id_gen++;
+    ptr->type = ast_type::assign_stmt;
+    ptr->pos = pos;
+    ptr->children.push_back(std::move(lhs));
+    ptr->children.push_back(std::move(rhs));
     return ptr;
 }
 
@@ -474,12 +485,13 @@ arena_ptr<ast_node> make_enum_type_node(memory_arena& arena, const position& pos
     return ptr;    
 }
 
-arena_ptr<ast_node> make_tuple_type_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& field_list) {
+arena_ptr<ast_node> make_static_array_type_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& size_expr, arena_ptr<ast_node>&& item_type) {
     auto ptr = make_in_arena<ast_node>(arena);
     ptr->node_id = node_id_gen++;
-    ptr->type = ast_type::tuple_type;
+    ptr->type = ast_type::static_array_type;
     ptr->pos = pos;
-    ptr->children.push_back(std::move(field_list));
+    ptr->children.push_back(std::move(size_expr));
+    ptr->children.push_back(std::move(item_type));
     return ptr;
 }
 
@@ -488,15 +500,14 @@ arena_ptr<ast_node> make_array_type_node(memory_arena& arena, const position& po
     ptr->node_id = node_id_gen++;
     ptr->type = ast_type::array_type;
     ptr->pos = pos;
-    ptr->children.push_back(std::move(size_expr));
     ptr->children.push_back(std::move(item_type));
     return ptr;
 }
 
-arena_ptr<ast_node> make_slice_type_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& item_type) {
+arena_ptr<ast_node> make_array_view_type_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& item_type) {
     auto ptr = make_in_arena<ast_node>(arena);
     ptr->node_id = node_id_gen++;
-    ptr->type = ast_type::slice_type;
+    ptr->type = ast_type::array_view_type;
     ptr->pos = pos;
     ptr->children.push_back(std::move(item_type));
     return ptr;

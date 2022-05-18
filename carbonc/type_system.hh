@@ -14,6 +14,10 @@
 
 namespace carbon {
 
+constexpr auto ARRAY_VIEW_PTR_MEMBER = "ptr";
+constexpr auto ARRAY_VIEW_LEN_MEMBER = "len";
+constexpr auto ARRAY_CAPACITY_MEMBER = "cap";
+
 enum class func_linkage {
     local_carbon,
     external_carbon,
@@ -28,6 +32,8 @@ enum class decl_visibility {
 
 enum class type_qualifier {
     ptr,
+    in,
+    out,
     pure,
 };
 
@@ -35,16 +41,19 @@ enum class type_kind {
     void_,
     nil,
     ptr,
+    input,
+    output,
     integral,
     enum_,
     enumflags,
     error,
     real,
     static_array,
-    slice,
+    array,
+    array_view,
+    tuple,
     structure,
     c_structure,
-    tuple,
     func,
     func_pointer,
     type,
@@ -56,8 +65,9 @@ struct type_flags {
 
     static constexpr type none = 0;
     static constexpr type is_alias = 1;
-    static constexpr type is_pure = 2;
-    static constexpr type is_auto = 4;
+    static constexpr type is_in = 2;
+    static constexpr type is_out = 4;
+    static constexpr type is_pure = 8;
 };
 
 struct struct_field {
@@ -267,12 +277,10 @@ struct scope_def {
 
 struct func_def {
     ast_node* self;
-    //ast_node* ret_type_node;
-    //std::vector<ast_node*> arguments;
     std::vector<ast_node*> return_statements;
     func_linkage linkage;
     bool args_unresolved = false;
-    bool is_generic = false;
+    bool raises = false;
     scope_def* decl_scope;
     string_hash base_symbol;
     std::vector<const_value> const_args{};
@@ -339,14 +347,17 @@ struct type_system {
     bool inside_defer = false;
 
     type_id type_type{};
-    type_id void_type{};
     type_id nil_type{};
     type_id opaque_type{};
     type_id opaque_ptr_type{};
-    type_id pure_opaque_ptr_type{};
-    type_id uintptr_type{};
-    type_id ptrdiff_type{};
+    type_id intptr_type{};
+    type_id byte_type{};
     type_id bool_type{};
+    type_id int_type{};
+    type_id error_type{};
+    type_id typeid_type{};
+
+    type_id raw_string_type{}; // only used internally
     type_id usize_type{};
     type_id isize_type{};
     type_id int8_type{};
@@ -357,15 +368,15 @@ struct type_system {
     type_id uint16_type{};
     type_id uint32_type{};
     type_id uint64_type{};
-    type_id error_type{};
-    type_id noflags_type{};
-    type_id raw_string_type{}; // only used internally
 
-    type_constructor* ptr_type_constructor;
+    type_constructor* in_type_constructor;
+    type_constructor* out_type_constructor;
+    type_constructor* inout_type_constructor;
     type_constructor* pure_type_constructor;
-    type_constructor* tuple_type_constructor;
-    type_constructor* arr_type_constructor;
-    type_constructor* slice_type_constructor;
+    type_constructor* ptr_type_constructor;
+    type_constructor* static_array_type_constructor;
+    type_constructor* array_type_constructor;
+    type_constructor* array_view_type_constructor;
     type_constructor* func_pointer_type_constructor;
 
     explicit type_system(memory_arena&);
@@ -403,13 +414,13 @@ type_id execute_type_constructor(type_system& ts, scope_def& scope, type_constru
 
 type_id execute_builtin_type_constructor(type_system& ts, type_constructor& tpl, const std::vector<const_value>& args);
 
-string_hash build_tuple_name(const std::vector<const_value>& args);
-
 string_hash build_type_constructor_name(const std::string& name, const std::vector<const_value>& args);
 
 string_hash build_type_constructor_mangled_name(const std::string& mangled_name, const std::vector<const_value>& args);
 
 type_id get_ptr_type_to(type_system& ts, type_id elem_type);
+
+type_id get_pure_type_to(type_system& ts, type_id elem_type);
 
 
 void resolve_func_args_type(type_system& ts, ast_node& node);

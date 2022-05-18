@@ -35,9 +35,9 @@ struct lexer {
 
     std::string long_string_value();
 
-    float_type float_value();
+    comp_float_type float_value();
 
-    int_type int_value();
+    comp_int_type int_value();
 
     position pos();
 };

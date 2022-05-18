@@ -30,7 +30,7 @@ static void append_offset(std::string& result, const gen_offset_expr& expr) {
         result.append("+");
         result.append(std::string{ register_names[*reg] });
     }
-    else if (auto off = std::get_if<int_type>(&expr); off) {
+    else if (auto off = std::get_if<comp_int_type>(&expr); off) {
         if (*off < 0) {
             result.append(std::to_string(*off));
         }
@@ -99,7 +99,7 @@ static std::string tostr(const gen_operand& d) {
         [](gen_addr r) -> std::string {
             return offset_tostr(r);
         },
-        [](int_type v) -> std::string {
+        [](comp_int_type v) -> std::string {
             return std::to_string(v);
         },
         [](char c) -> std::string {
@@ -145,7 +145,7 @@ static std::string tostr_sized(const gen_operand& d) {
             std::string result = std::string{ ptrsizes[sz] };
             return result + offset_tostr(r);
         },
-        [](int_type  v) -> std::string {
+        [](comp_int_type  v) -> std::string {
             return std::to_string(v);
         },
         [](char c) -> std::string {
@@ -303,8 +303,8 @@ struct codegen_x64_windows_nasm_emitter : public codegen_x64_emitter {
             printf("DIFFSIZE: %zu %zu\n", sza, szb);
         }
 #endif
-        if (std::holds_alternative<int_type>(src)) {
-            if (std::get<int_type>(src) == 0 && std::holds_alternative<gen_register>(reg)) {
+        if (std::holds_alternative<comp_int_type>(src)) {
+            if (std::get<comp_int_type>(src) == 0 && std::holds_alternative<gen_register>(reg)) {
                 auto regstr = tostr_sized(reg);
                 emitln(" xor %s,%s", regstr.c_str(), regstr.c_str());
                 return;

@@ -95,14 +95,14 @@ struct ir_string {
 };
 
 struct ir_int {
-    int_type val;
+    comp_int_type val;
     type_id type;
 
     inline bool operator ==(const ir_int& other) const { return val == other.val && type == other.type; }
 };
 
 struct ir_float {
-    float_type val;
+    comp_float_type val;
     type_id type;
 
     inline bool operator ==(const ir_float& other) const { return val == other.val && type == other.type; }

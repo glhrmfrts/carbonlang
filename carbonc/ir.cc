@@ -144,7 +144,7 @@ void discard_opstack(std::size_t tosize) {
         for (std::size_t i = tosize; i < operand_stack.size(); i++) {
             args.push_back(pop());
         }
-        emitops(ir_noop, ts->void_type, args);
+        emitops(ir_noop, ts->opaque_type, args);
     }
 }
 
@@ -436,7 +436,7 @@ void generate_store_zero(type_id agg_type, ir_operand dest) {
         dest,
         value,
         ir_int{ 0, ts->usize_type },
-        ir_int{ int_type(agg_type.get().size), ts->usize_type }
+        ir_int{ comp_int_type(agg_type.get().size), ts->usize_type }
     );
 }
 
@@ -559,7 +559,7 @@ void generate_for_stmt(ast_node& node) {
     {
         if (!node.forinfo.iterstep) {
             // step = 1
-            emit(ir_load, fromref(stepvar), ir_int{ int_type(1), ts->int32_type });
+            emit(ir_load, fromref(stepvar), ir_int{ comp_int_type(1), ts->int32_type });
         }
         generate_ir_node(*node.forinfo.elemref);
         generate_ir_node(*node.forinfo.iterend);
@@ -574,7 +574,7 @@ void generate_for_stmt(ast_node& node) {
         emit(ir_make_label, ir_label{ node.ir.for_negative_label });
         if (!node.forinfo.iterstep) {
             // step = -1
-            emit(ir_load, fromref(stepvar), ir_int{ int_type(-1), ts->int32_type });
+            emit(ir_load, fromref(stepvar), ir_int{ comp_int_type(-1), ts->int32_type });
         }
         generate_ir_node(*node.forinfo.elemref);
         generate_ir_node(*node.forinfo.iterend);
@@ -757,7 +757,7 @@ void generate_ir_call_expr(ast_node& node) {
         args.push_back(pop());
     }
 
-    bool pushes = node.tid != ts->void_type;
+    bool pushes = node.tid != ts->opaque_type;
     if (node.call.flags & call_flag::is_aggregate_return) {
         pushes = false;
     }
@@ -767,7 +767,7 @@ void generate_ir_call_expr(ast_node& node) {
         push(ir_stackpop{ node.tid });
     }
     else {
-        emitops(ir_call, ts->void_type, args);
+        emitops(ir_call, ts->opaque_type, args);
     }
 }
 
@@ -799,7 +799,7 @@ void generate_ir_assignment(ast_node& node) {
             generate_ir_node(*node.children[1]);
             auto src = pop();
 
-            emit(ir_copy, dest, src, ir_int{ int_type(node.tid.get().size), ts->uintptr_type });
+            emit(ir_copy, dest, src, ir_int{ comp_int_type(node.tid.get().size), ts->int_type });
         }
         else {
             generate_ir_node(*node.children[0]);
@@ -1037,7 +1037,7 @@ void generate_ir_var(ast_node& node) {
         }
 
         if (is_aggregate_type(node.tid) && node.tid.get().size > 8) {
-            emit(ir_copy, ir_local{ node.local.ir_index, node.tid }, pop(), ir_int{ int_type(node.tid.get().size), ts->uintptr_type });
+            emit(ir_copy, ir_local{ node.local.ir_index, node.tid }, pop(), ir_int{ comp_int_type(node.tid.get().size), ts->int_type });
         }
         else {
             emit(ir_load, ir_local{ node.local.ir_index, node.tid }, pop());
@@ -1132,29 +1132,12 @@ void generate_ir_cast_expr(ast_node& node) {
     }
 }
 
-void generate_ir_nullcast_expr(ast_node& node) {
-    generate_ir_node(*node.children[1]->children[0]);
-
-#if 0
-    auto a = pop();
-
-    push(ir_int{ 0, ts->uintptr_type });
-    auto b = pop();
-
-    emit(ir_jmp_neq, a, b, ir_label{ node.ir.if_body_label });
-
-    // TODO: here goes panic code
-
-    emit(ir_make_label, ir_label{ node.ir.if_body_label });
-#endif
-}
-
 void generate_ir_identifier(ast_node& node) {
     if (node.lvalue.symbol->kind == symbol_kind::const_value) {
         auto value = node.lvalue.symbol->ctvalue;
         auto type = node.lvalue.symbol->cttype;
-        if (std::holds_alternative<int_type>(value)) {
-            push(ir_int{ std::get<int_type>(value), type });
+        if (std::holds_alternative<comp_int_type>(value)) {
+            push(ir_int{ std::get<comp_int_type>(value), type });
         }
         return;
     }
@@ -1197,7 +1180,7 @@ void generate_ir_node(ast_node& node) {
     }
 
     switch (node.type) {
-    case ast_type::import_decl:
+    case ast_type::imports_decl:
     case ast_type::type_decl:
     case ast_type::type_expr:
     case ast_type::type_constructor_decl:
@@ -1209,7 +1192,7 @@ void generate_ir_node(ast_node& node) {
         for (auto& idnode : node.children) {
             const_value value = idnode->lvalue.symbol->ctvalue;
             prog->errors.push_back(ir_error_data{
-                (std::int32_t)std::get<int_type>(value),
+                (std::int32_t)std::get<comp_int_type>(value),
                 idnode->id_parts.front()
             });
         }
@@ -1220,9 +1203,7 @@ void generate_ir_node(ast_node& node) {
         ts->leave_scope();
         break;
     case ast_type::func_decl:
-        if (!node.func.is_generic) {
-            generate_ir_func(node);
-        }
+        generate_ir_func(node);
         break;
     case ast_type::var_decl:
         generate_ir_var(node);
@@ -1292,9 +1273,6 @@ void generate_ir_node(ast_node& node) {
         break;
     case ast_type::cast_expr:
         generate_ir_cast_expr(node);
-        break;
-    case ast_type::nullcast_expr:
-        generate_ir_nullcast_expr(node);
         break;
     case ast_type::int_literal:
     case ast_type::bool_literal:
@@ -1482,7 +1460,7 @@ bool instr_pushes_to_stack(const ir_instr& instr) {
     case ir_cmp_neq:
         return true;
     case ir_call:
-        return instr.result_type != ts->void_type;
+        return instr.result_type != ts->opaque_type;
     default:
         return false;
     }

@@ -8,9 +8,9 @@ enum class target_type {
     dynamic_library,
 };
 
-using float_type = double;
+using comp_float_type = double;
 
-using int_type = long long;
+using comp_int_type = long long;
 
 int main(int argc, const char* argv[]);
 

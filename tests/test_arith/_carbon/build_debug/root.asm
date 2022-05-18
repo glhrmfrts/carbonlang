@@ -1,5 +1,4 @@
 .global cb__Nroot__Nmain
-.global cb__Nroot__Ntest_div__Aint__Aint
 .data
     .balign 16
     .size .cmp16selector, 16
@@ -21,74 +20,34 @@
     .byte 0x80
     .byte 0x80
 .section .rodata
+.cbstr0:
+    .asciz "Hello World asd qwewq e\n"
 .text
 cb__Nroot__Nmain:
-# func main(): {}
+# fun main() => opaque
  push %rbp
  movq %rsp,%rbp
- sub $32,%rsp
+ sub $48,%rsp
 # prolog end
 
- movl $5,%esi
- movl $10,%edi
- call cb__Nroot__Ntest_div__Aint__Aint
-# ir_call cb__Nroot__Ntest_div__Aint__Aint 10 5; (push)
+ lea .cbstr0(%rip),%rax
+# ir_load_addr STR0; (push)
 
- movl %eax,-4(%rbp)
-# ir_load L0 POP();
+ movq %rax,-16(%rbp)
+# ir_load [L0 . 0] POP();
 
- movl -4(%rbp),%edi
- call cb__Nio__Nprintln__Aint
-# ir_call cb__Nio__Nprintln__Aint L0;
+ movq $24,%r10
+ movq %r10,-8(%rbp)
+# ir_load [L0 . 1] 24;
 
- movl $42,%eax
- neg %eax
-# ir_neg 42; (push)
-
- movl %eax,%edi
- call cb__Nio__Nprintln__Aint
-# ir_call cb__Nio__Nprintln__Aint POP();
-
- movl $255,%r10d
- sar $4,%r10d
- movl %r10d,%eax
-# ir_shr 255 4; (push)
-
- movl %eax,%edi
- call cb__Nio__Nprintln__Aint
-# ir_call cb__Nio__Nprintln__Aint POP();
-
- movl $15,%r10d
- sal $4,%r10d
- movl %r10d,%eax
-# ir_shl 15 4; (push)
-
- movl %eax,%edi
- call cb__Nio__Nprintln__Aint
-# ir_call cb__Nio__Nprintln__Aint POP();
+ movq -8(%rbp),%rdx
+ movq -16(%rbp),%rsi
+ movq $1,%rdi
+ call cb__Nrt__Nx86_64__Nwrite__Aint__Aptr__Tpure__Tbyte__Aint
+# ir_call cb__Nrt__Nx86_64__Nwrite__Aint__Aptr__Tpure__Tbyte__Aint 1 [L0 . 0] [L0 . 1];
 
 .cb__Nroot__Nmain$end:
- add $32,%rsp
- pop %rbp
- ret
-
-
-cb__Nroot__Ntest_div__Aint__Aint:
-# func test_div(int, int): int
- movl %esi,16(%rsp)
- movl %edi,8(%rsp)
- push %rbp
- movq %rsp,%rbp
-# prolog end
-
- movl 16(%rbp),%eax
- cdq
- idivl 24(%rbp)
-# ir_div A0 A1; (push)
-
-# ir_return POP();
-
-.cb__Nroot__Ntest_div__Aint__Aint$end:
+ add $48,%rsp
  pop %rbp
  ret
 

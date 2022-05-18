@@ -94,7 +94,7 @@ struct gen_data_offset {
     }
 };
 
-using gen_offset_expr = std::variant<gen_register, gen_data_offset, int_type>;
+using gen_offset_expr = std::variant<gen_register, gen_data_offset, comp_int_type>;
 
 struct gen_addr {
     std::size_t op_size;
@@ -110,7 +110,7 @@ struct gen_addr {
 
 using gen_destination = std::variant<gen_register, gen_data_offset, gen_addr>;
 
-using gen_operand = std::variant<gen_register, gen_addr, gen_data_offset, int_type, char>;
+using gen_operand = std::variant<gen_register, gen_addr, gen_data_offset, comp_int_type, char>;
 
 struct gen_register_sizes {
     gen_register r64;

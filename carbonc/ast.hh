@@ -26,7 +26,6 @@ enum class ast_type {
     index_expr,
     init_expr,
     cast_expr,
-    nullcast_expr,
     field_expr,
     ternary_expr,
     func_expr,
@@ -38,7 +37,7 @@ enum class ast_type {
     type_constructor_decl,
     var_decl,
     func_decl,
-    import_decl,
+    imports_decl,
     error_decl,
 
     c_struct_decl,
@@ -57,13 +56,15 @@ enum class ast_type {
     defer_stmt,
     continue_stmt,
     break_stmt,
+    assign_stmt,
+    catch_stmt,
 
     type_expr,
     struct_type,
     enum_type,
-    tuple_type,
+    static_array_type,
     array_type,
-    slice_type,
+    array_view_type,
     func_pointer_type,
     type_constructor_instance,
     type_qualifier,
@@ -134,8 +135,8 @@ struct ast_node {
     type_id tid{};
     std::string_view string_value{};
     //std::size_t id_hash{};
-    float_type float_value{};
-    int_type int_value{};
+    comp_float_type float_value{};
+    comp_int_type int_value{};
     std::vector<std::string> id_parts{};
     std::vector<arena_ptr<ast_node>> pre_nodes{};
     std::vector<arena_ptr<ast_node>> children{};
@@ -214,11 +215,11 @@ arena_ptr<ast_node> make_nil_node(memory_arena& arena, const position& pos);
 
 arena_ptr<ast_node> make_bool_literal_node(memory_arena& arena, const position& pos, bool value);
 
-arena_ptr<ast_node> make_float_literal_node(memory_arena& arena, const position& pos, float_type value);
+arena_ptr<ast_node> make_float_literal_node(memory_arena& arena, const position& pos, comp_float_type value);
 
-arena_ptr<ast_node> make_int_literal_node(memory_arena& arena, const position& pos, int_type value);
+arena_ptr<ast_node> make_int_literal_node(memory_arena& arena, const position& pos, comp_int_type value);
 
-arena_ptr<ast_node> make_char_literal_node(memory_arena& arena, const position& pos, int_type value);
+arena_ptr<ast_node> make_char_literal_node(memory_arena& arena, const position& pos, comp_int_type value);
 
 arena_ptr<ast_node> make_string_literal_node(memory_arena& arena, const position& pos, std::string&& value);
 
@@ -262,7 +263,7 @@ arena_ptr<ast_node> make_var_decl_node(memory_arena& arena, const position& pos,
 
 arena_ptr<ast_node> make_var_decl_node_single(memory_arena& arena, const position& pos, token_type kind, arena_ptr<ast_node>&& id, arena_ptr<ast_node>&& decl_type, arena_ptr<ast_node>&& decl_val, const std::vector<token_type>& mods);
 
-arena_ptr<ast_node> make_func_decl_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& id, arena_ptr<ast_node>&& arg_list, arena_ptr<ast_node>&& ret_type, arena_ptr<ast_node>&& body, func_linkage linkage);
+arena_ptr<ast_node> make_func_decl_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& id, arena_ptr<ast_node>&& arg_list, arena_ptr<ast_node>&& ret_type, arena_ptr<ast_node>&& body, bool raises, func_linkage linkage);
 
 arena_ptr<ast_node> make_error_decl_node(memory_arena& arena, const position& pos, std::vector<arena_ptr<ast_node>>&& children);
 
@@ -272,9 +273,13 @@ arena_ptr<ast_node> make_arg_list_node(memory_arena& arena, const position& pos,
 
 arena_ptr<ast_node> make_decl_list_node(memory_arena& arena, const position& pos, std::vector<arena_ptr<ast_node>>&& children);
 
+arena_ptr<ast_node> make_let_decl_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& decl_list, arena_ptr<ast_node>&& body);
+
 arena_ptr<ast_node> make_stmt_list_node(memory_arena& arena, const position& pos, std::vector<arena_ptr<ast_node>>&& children);
 
 arena_ptr<ast_node> make_compound_stmt_node(memory_arena& arena, const position& pos, std::vector<arena_ptr<ast_node>>&& children);
+
+arena_ptr<ast_node> make_assign_stmt_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& lhs, arena_ptr<ast_node>&& rhs);
 
 arena_ptr<ast_node> make_return_stmt_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& expr);
 
@@ -298,11 +303,9 @@ arena_ptr<ast_node> make_struct_type_node(memory_arena& arena, const position& p
 
 arena_ptr<ast_node> make_enum_type_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& base_type, arena_ptr<ast_node>&& member_list, bool is_flags);
 
-arena_ptr<ast_node> make_tuple_type_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& field_list);
-
 arena_ptr<ast_node> make_array_type_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& size_expr, arena_ptr<ast_node>&& item_type);
 
-arena_ptr<ast_node> make_slice_type_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& item_type);
+arena_ptr<ast_node> make_array_view_type_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& item_type);
 
 arena_ptr<ast_node> make_func_pointer_type_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& arg_types, arena_ptr<ast_node>&& ret_type);
 

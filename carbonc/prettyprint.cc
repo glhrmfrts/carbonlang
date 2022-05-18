@@ -227,12 +227,8 @@ void prettyprint(const ast_node& node, std::ostream& stream, int indent, bool do
             prettyprint(*node.children.front().get(), stream, indent + 1);
         }
         break;
-    case ast_type::tuple_type:
-        stream << "tuple_type\n";
-        if (node.children.front()) { prettyprint(*node.children.front().get(), stream, indent + 1); }
-        break;
-    case ast_type::slice_type:
-        stream << "slice_type ";
+    case ast_type::array_view_type:
+        stream << "array_view_type ";
         stream << "[" << token_to_char(node.op) << "] ";
         stream << "\n";
         if (node.children.front()) { prettyprint(*node.children.front().get(), stream, indent + 1); }
@@ -256,8 +252,8 @@ void prettyprint(const ast_node& node, std::ostream& stream, int indent, bool do
         case type_qualifier::ptr:
             stream << "ptr";
             break;
-        case type_qualifier::pure:
-            stream << "pure";
+        case type_qualifier::in:
+            stream << "in";
             break;
         }
         stream << "\n";
@@ -293,7 +289,7 @@ void prettyprint(const ast_node& node, std::ostream& stream, int indent, bool do
         stream << "visibility_specifier end";
         break;
     }
-    case ast_type::import_decl: {
+    case ast_type::imports_decl: {
         stream << "import_decl\n";
         prettyprint(*node.children.front().get(), stream, indent + 1);
         auto& alias = node.children.back();
