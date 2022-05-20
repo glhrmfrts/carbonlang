@@ -465,6 +465,10 @@ std::pair<std::vector<const_value>, bool> nodes_to_const_values(type_system& ts,
     return std::make_pair(args, all_resolved);
 }
 
+type_id get_inout_type_to(type_system& ts, type_id elem_type) {
+    return execute_type_constructor(ts, ts.builtin_scope->scope, *ts.inout_type_constructor, { elem_type });
+}
+
 type_id get_in_type_to(type_system& ts, type_id elem_type) {
     return execute_type_constructor(ts, ts.builtin_scope->scope, *ts.in_type_constructor, { elem_type });
 }
@@ -685,7 +689,7 @@ arena_ptr<ast_node> get_zero_value_node_for_type(type_system& ts, type_id id) {
 bool is_pointer(type_id id) {
     if (!id.valid()) return false;
 
-    return (id.get().kind == type_kind::ptr) || (id.get().kind == type_kind::input) || (id.get().kind == type_kind::output);
+    return (id.get().kind == type_kind::ptr) || (id.get().kind == type_kind::input) || (id.get().kind == type_kind::output) || (id.get().kind == type_kind::inout);
 }
 
 bool is_aggregate(type_id id) {
@@ -1252,13 +1256,23 @@ type_id get_type_expr_node_type(type_system& ts, ast_node& node) {
         else if (node.type_qual == type_qualifier::in) {
             auto elem_type = get_type_expr_node_type(ts, *node.children[0]);
             if (elem_type.valid()) {
-                node.tid = get_in_type_to(ts, elem_type);
+                if (elem_type.get().kind == type_kind::output) {
+                    node.tid = get_inout_type_to(ts, elem_type.get().elem_type);
+                }
+                else {
+                    node.tid = get_in_type_to(ts, elem_type);
+                }
             }
         }
         else if (node.type_qual == type_qualifier::out) {
             auto elem_type = get_type_expr_node_type(ts, *node.children[0]);
             if (elem_type.valid()) {
-                node.tid = get_out_type_to(ts, elem_type);
+                if (elem_type.get().kind == type_kind::input) {
+                    node.tid = get_inout_type_to(ts, elem_type.get().elem_type);
+                }
+                else {
+                    node.tid = get_out_type_to(ts, elem_type);
+                }
             }
         }
         else if (node.type_qual == type_qualifier::pure) {
@@ -1517,17 +1531,22 @@ void propagate_type_coercion(type_system& ts, ast_node& node, const type_id& id)
     }
 }
 
+type_id generate_deref_for_input(type_system& ts, ast_node& l, type_id val_type, int val_index) {
+    if (val_type.valid() && (val_type.get().flags & type_flags::is_in)) {
+        auto deref_expr = make_deref_expr(ts, std::move(l.children[val_index]));
+        deref_expr->parent = &l;
+        l.children[val_index] = std::move(deref_expr);
+        resolve_node_type(ts, l.children[val_index].get());
+        val_type = l.children[val_index]->tid;
+    }
+    return val_type;
+}
+
 bool resolve_local_variable_type(type_system& ts, ast_node& l, bool is_arg = false) {
     auto decl_type = l.var_type() ? resolve_node_type(ts, l.var_type()) : type_id{};
     auto val_type = l.var_value() ? resolve_node_type(ts, l.var_value()) : type_id{};
 
-    if (val_type.valid() && val_type.get().kind == type_kind::input) {
-        auto deref_expr = make_deref_expr(ts, std::move(l.children[2]));
-        deref_expr->parent = &l;
-        l.children[2] = std::move(deref_expr);
-        resolve_node_type(ts, l.children[2].get());
-        val_type = l.children[2]->tid;
-    }
+    val_type = generate_deref_for_input(ts, l, val_type, 2);
 
     if (l.var_type() && decl_type.valid()) {
         l.tid = decl_type;
@@ -2141,13 +2160,7 @@ void resolve_assignment_type(type_system& ts, ast_node& node) {
     }
 
     auto val_type = node.children[1]->tid;
-    if (val_type.valid() && val_type.get().kind == type_kind::input) {
-        auto deref_expr = make_deref_expr(ts, std::move(node.children[1]));
-        deref_expr->parent = &node;
-        node.children[1] = std::move(deref_expr);
-        resolve_node_type(ts, node.children[1].get());
-        val_type = node.children[1]->tid;
-    }
+    val_type = generate_deref_for_input(ts, node, val_type, 1);
 
     if (!is_assignable_to(ts, val_type, left_type)) {
         try_coerce_to(ts, *node.children[1], left_type);
@@ -3480,7 +3493,7 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
             sli = (node.children[0]->tid.get().kind == type_kind::array_view || node.children[0]->tid.get().kind == type_kind::array);
             ptr = node.children[0]->tid.get().kind == type_kind::ptr;
             tup = node.children[0]->tid.get().kind == type_kind::tuple;
-            inout = (node.children[0]->tid.get().kind == type_kind::input || node.children[0]->tid.get().kind == type_kind::output);
+            inout = (node.children[0]->tid.get().flags & (type_flags::is_in | type_flags::is_out));
         }
 
         bool error = false;
@@ -4249,14 +4262,13 @@ type_system::type_system(memory_arena& arena) {
             auto node = make_in_arena<ast_node>(*ast_arena);
             type_def& tf = node->tdef;
 
-            tf.kind = type_arg.get().kind;
+            tf.kind = type_kind::inout;
             tf.name = string_hash{ "inout " + type_arg.get().name.str };
             tf.mangled_name = string_hash{ "inout__T" + type_arg.get().mangled_name.str };
-            tf.size = type_arg.get().size;
-            tf.alignment = type_arg.get().alignment;
+            tf.size = sizeof(void*);
+            tf.alignment = sizeof(void*);
             tf.elem_type = type_arg;
-            tf.flags |= type_flags::is_out;
-            tf.structure = type_arg.get().structure;
+            tf.flags |= type_flags::is_in | type_flags::is_out;
             return node;
         };
 

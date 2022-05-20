@@ -13,8 +13,8 @@ fun writeln(s : arrayview of pure byte) := do
     write(stdout(), "\n")
 end
 
-private fun int_to_string(value: int, base: int, result: out arrayview of byte) := do
-    // check that the base if valid
+local fun int_to_string(value: int, base: int, result: in out arrayview of byte) := do
+    -- check that the base if valid
     if base < 2 or base > 36 then return 0 end
 
     let tpl_str := "zyxwvutsrqponmlkjihgfedcba9876543210123456789abcdefghijklmnopqrstuvwxyz"
@@ -40,7 +40,7 @@ private fun int_to_string(value: int, base: int, result: out arrayview of byte) 
     let ptr:  &byte := &result[offs]
     let ptr1: &byte := &result[0]
 
-    // Apply negative sign
+    -- Apply negative sign
     if tmp_value < 0 then
         @ptr := '-'
         ptr := ptr + 1

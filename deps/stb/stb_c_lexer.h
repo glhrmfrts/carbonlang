@@ -565,6 +565,14 @@ int stb_c_lexer_get_token(stb_lexer *lexer)
       }
       #endif
 
+      // ada-like comments
+      if (p != lexer->eof && p[0] == '-' && p[1] == '-') {
+          while (p != lexer->eof && *p != '\r' && *p != '\n')
+              ++p;
+          continue;
+      }
+
+#if 0
       STB_C_LEX_CPP_COMMENTS(
          if (p != lexer->eof && p[0] == '/' && p[1] == '/') {
             while (p != lexer->eof && *p != '\r' && *p != '\n')
@@ -587,6 +595,7 @@ int stb_c_lexer_get_token(stb_lexer *lexer)
             continue;
          }
       )
+#endif
 
       #ifdef STB__clex_discard_preprocessor_NOT
          // @TODO this discards everything after a '#', regardless

@@ -26,8 +26,7 @@ enum class func_linkage {
 
 enum class decl_visibility {
     public_,
-    internal_,
-    private_,
+    local_,
 };
 
 enum class type_qualifier {
@@ -43,6 +42,7 @@ enum class type_kind {
     ptr,
     input,
     output,
+    inout,
     integral,
     enum_,
     enumflags,

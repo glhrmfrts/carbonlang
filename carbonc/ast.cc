@@ -661,10 +661,8 @@ std::string visibility_name(decl_visibility op) {
     switch (op) {
     case decl_visibility::public_:
         return "public";
-    case decl_visibility::private_:
-        return "private";
-    case decl_visibility::internal_:
-        return "internal";
+    case decl_visibility::local_:
+        return "local";
     }
     return "(unknown visibility)";
 }

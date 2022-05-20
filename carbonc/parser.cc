@@ -281,8 +281,7 @@ struct parser_impl {
         case token_type::import_:
             return parse_import_decl();
         case token_type::public_:
-        case token_type::private_:
-        case token_type::internal_:
+        case token_type::local:
             return parse_visibility_specifier_decl();
         default:
             return arena_ptr<ast_node>{nullptr, nullptr};
@@ -566,8 +565,7 @@ struct parser_impl {
         case token_type::export_:
             return parse_export_decl();
         case token_type::public_:
-        case token_type::private_:
-        case token_type::internal_:
+        case token_type::local:        
             return parse_visibility_specifier_decl();
         case token_type::struct_:
             if (current_linkage == func_linkage::external_c) {
@@ -679,8 +677,8 @@ struct parser_impl {
         auto pos = lex->pos();
         lex->next();
 
-        if (TOK_CHAR != '{') {
-            throw parse_error(filename, lex->pos(), "expecting '{' in error declaration");
+        if (TOK_CHAR != '(') {
+            throw parse_error(filename, lex->pos(), "expecting '(' in error declaration");
         }
         lex->next();
 
@@ -690,8 +688,8 @@ struct parser_impl {
             lex->next();
         }
 
-        if (TOK_CHAR != '}') {
-            throw parse_error(filename, lex->pos(), "expecting closing '}' in error declaration");
+        if (TOK_CHAR != ')') {
+            throw parse_error(filename, lex->pos(), "expecting closing ')' in error declaration");
         }
         lex->next();
 
@@ -704,12 +702,12 @@ struct parser_impl {
         auto content = arena_ptr<ast_node>{ nullptr, nullptr };
         lex->next();
 
-        if (TOK_CHAR == '{') {
+        if (TOK_CHAR == '(') {
             lex->next();
 
             auto decls = parse_decl_list();
-            if (TOK_CHAR != '}') {
-                throw parse_error(filename, lex->pos(), "expecting closing '}' in function linkage declaration");
+            if (TOK_CHAR != ')') {
+                throw parse_error(filename, lex->pos(), "expecting closing ')' in visibility declaration");
             }
             lex->next();
             content = std::move(decls);
@@ -718,16 +716,13 @@ struct parser_impl {
             content = parse_decl();
         }
 
-        decl_visibility vis;
+        decl_visibility vis = decl_visibility::public_;
         switch (spec) {
         case token_type::public_:
             vis = decl_visibility::public_;
             break;
-        case token_type::private_:
-            vis = decl_visibility::private_;
-            break;
-        case token_type::internal_:
-            vis = decl_visibility::internal_;
+        case token_type::local:
+            vis = decl_visibility::local_;
             break;
         }
 
