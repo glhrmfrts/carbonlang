@@ -1,4 +1,4 @@
-fun read(fd: int, ptr: &byte, len: int) := do
+fun read(fd: int, ptr: &byte, len: int) => int := do
     asm%do
 
         mov $0, %rax            # system call 0 is read
@@ -10,7 +10,7 @@ fun read(fd: int, ptr: &byte, len: int) := do
     end%asm   
 end
 
-fun write(fd: int, ptr: &pure byte, len: int) := do
+fun write(fd: int, ptr: &pure byte, len: int) => int := do
     asm%do
 
         mov $1, %rax            # system call 1 is write

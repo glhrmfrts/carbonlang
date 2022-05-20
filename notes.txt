@@ -1,0 +1,11 @@
+// There are two classes of error handling in Gamma:
+
+//  - Errors => Considered a regular value (error or T),
+//  this is meant to be used as the general-purpose error handling mechanism
+//  for Gamma user-space programming (e.g. Applications, Libraries, etc...)
+
+//  - Exceptions => Reserved for the Gamma runtime to signal rare but possible runtime conditions,
+//  like out of bounds array access, bad variant access, out of memory and such.
+//  Unlike most other programming languages though, exceptions in Gamma are not meant to be used as
+//  a general control-flow mechanism, so exceptions are meant to be handled locally in the same function.
+//  If not handled in the current function, an exception will crash the program with a message written to stderr.

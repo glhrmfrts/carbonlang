@@ -44,6 +44,7 @@ enum ir_op {
     ir_jmp_lte,
     ir_stack_dup,
     ir_noop,
+    ir_comment,
 };
 
 struct ir_local_data {
@@ -203,7 +204,7 @@ struct ir_node_data {
 struct ir_program {
     std::vector<std::string> strings;
     std::vector<ir_global_data> globals;
-    std::vector<ir_func> funcs;
+    std::vector<std::unique_ptr<ir_func>> funcs;
     std::vector<ir_error_data> errors;
 };
 

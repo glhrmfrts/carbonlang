@@ -705,7 +705,7 @@ int stb_c_lexer_get_token(stb_lexer *lexer)
          STB_C_LEX_C_ARITHEQ(if (p+1 != lexer->eof && p[1] == '=') return stb__clex_token(lexer, CLEX_muleq, p,p+1));
          goto single_char;
       case '/':
-         STB_C_LEX_C_ARITHEQ(if (p+1 != lexer->eof && p[1] == '=') return stb__clex_token(lexer, CLEX_diveq, p,p+1));
+         STB_C_LEX_C_COMPARISONS(if (p+1 != lexer->eof && p[1] == '=') return stb__clex_token(lexer, CLEX_noteq, p,p+1));
          goto single_char;
       case '<':
          if (p+1 != lexer->eof) {

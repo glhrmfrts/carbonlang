@@ -17,6 +17,7 @@ void add_scope(type_system& ts, ast_node& node, scope_kind k) {
     }
 
     ts.current_scope = &node.scope;
+    auto parent = ts.current_scope->parent;
 
     if (k == scope_kind::module_) {
         auto fn = std::string{ node.modname };
@@ -36,6 +37,22 @@ void add_scope(type_system& ts, ast_node& node, scope_kind k) {
 
         ts.current_scope->self_module_key = base;
         ts.current_scope->self_module_parts = parts;
+    }
+    else if (k == scope_kind::type) {
+        auto base = string_hash{ parent->self_module_key.str + "::" + node.tdef.name.str };
+        ts.current_scope->self_module_key = base;
+
+        auto partstr = base.str;
+        while (replace(partstr, "::", "/"));
+        auto parts = split(partstr, '/');
+
+        ts.current_scope->self_module_parts = parts;
+
+        parent->imports_map[node.tdef.name] = parent->imports.size();
+        parent->imports_map[base] = parent->imports.size();
+        parent->imports.push_back(scope_import{ scope_import_type::type_, {}, base, node.tdef.name });
+
+        ts.module_scopes[base] = ts.current_scope;
     }
 }
 
@@ -216,6 +233,8 @@ symbol_info* find_symbol(type_system& ts, const std::pair<string_hash, string_ha
     auto scope = ts.current_scope;
     while (scope != nullptr) {
         if (pair.first.str.empty()) {
+            // Unqualified identifier
+
             auto it = scope->symbols.find(pair.second);
             if (it != scope->symbols.end()) {
                 return it->second.get();
@@ -234,9 +253,12 @@ symbol_info* find_symbol(type_system& ts, const std::pair<string_hash, string_ha
             }
         }
         else {
+            // Qualified identifier
+
             auto mod = scope->imports_map.find(pair.first);
             if (mod != scope->imports_map.end()) {
-                auto impscope = ts.module_scopes[scope->imports[mod->second].qual_name];
+                auto& imp = scope->imports[mod->second];
+                auto impscope = ts.module_scopes[imp.qual_name];
                 if (impscope) {
                     auto it = impscope->symbols.find(pair.second);
                     if (it != impscope->symbols.end()) {
@@ -278,6 +300,25 @@ static void update_pass_tokens(type_system& ts, scope_def& scope) {
 
 void update_symbols_pass_tokens(type_system& ts) {
     //update_pass_tokens(ts, ts.builtin_scope->scope);
+}
+
+std::pair<string_hash, string_hash> separate_module_identifier(const std::vector<std::string>& parts) {
+    if (parts.empty()) return {};
+
+    std::string mod, id;
+    for (std::size_t i = 0; i < parts.size(); i++) {
+        if (i == parts.size() - 1) {
+            id.append(parts[i]);
+        }
+        else {
+            if (i > 0) {
+                mod.append("::");
+            }
+            mod.append(parts[i]);
+        }
+    }
+
+    return std::make_pair(string_hash{ mod }, string_hash{ id });
 }
 
 }

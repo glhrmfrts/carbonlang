@@ -32,6 +32,7 @@ enum class ast_type {
     func_overload_selector_expr,
     const_expr,
     rest_expr,
+    range_expr,
 
     type_decl,
     type_constructor_decl,
@@ -161,6 +162,7 @@ struct ast_node {
     func_overload_info func_overload;
     for_info forinfo;
     slice_info slice;
+    range_info range;
     field_access field;
     init_list initlist;
     bool type_error = false;
@@ -235,6 +237,8 @@ arena_ptr<ast_node> make_unary_expr_node(memory_arena& arena, const position& po
 
 arena_ptr<ast_node> make_binary_expr_node(memory_arena& arena, const position& pos, token_type op, arena_ptr<ast_node>&& left, arena_ptr<ast_node>&& right);
 
+arena_ptr<ast_node> make_range_expr_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& items);
+
 arena_ptr<ast_node> make_init_expr_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& init_type, arena_ptr<ast_node>&& init_list);
 
 arena_ptr<ast_node> make_call_expr_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& callee, arena_ptr<ast_node>&& arg_list);
@@ -303,7 +307,9 @@ arena_ptr<ast_node> make_struct_type_node(memory_arena& arena, const position& p
 
 arena_ptr<ast_node> make_enum_type_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& base_type, arena_ptr<ast_node>&& member_list, bool is_flags);
 
-arena_ptr<ast_node> make_array_type_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& size_expr, arena_ptr<ast_node>&& item_type);
+arena_ptr<ast_node> make_static_array_type_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& size_expr, arena_ptr<ast_node>&& item_type);
+
+arena_ptr<ast_node> make_array_type_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& item_type);
 
 arena_ptr<ast_node> make_array_view_type_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& item_type);
 

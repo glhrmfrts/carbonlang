@@ -54,6 +54,7 @@ static const std::string opnames[] = {
     "ir_jmp_lte",
     "ir_stack_dup",
     "ir_noop",
+    "ir_comment",
 };
 
 static ir_program* prog;
@@ -449,19 +450,28 @@ void generate_ir_children(ast_node& node) {
 }
 
 void generate_ir_func(ast_node& node) {
+    bool is_new = false;
     ir_func* funcptr = nullptr;
+
     for (auto& f : prog->funcs) {
-        if (f.name == node.tdef.mangled_name.str) {
-            funcptr = &f;
+        if (f->name == node.tdef.mangled_name.str) {
+            funcptr = f.get();
         }
     }
 
-    ir_func& func = funcptr ? *funcptr : prog->funcs.emplace_back();
     if (!funcptr) {
-        func.index = prog->funcs.size() - 1;
+        auto newfunc = std::make_unique<ir_func>();
+        newfunc->index = prog->funcs.size();
+
+        funcptr = newfunc.get();
+        prog->funcs.push_back(std::move(newfunc));
+
+        is_new = true;
     }
 
-    currentfunc = &func;
+    currentfunc = funcptr;
+
+    ir_func& func = *funcptr;
 
     auto mangled_name = node.tdef.mangled_name.str;
     auto orig_name = node.tdef.name.str;
@@ -471,7 +481,7 @@ void generate_ir_func(ast_node& node) {
     func.ret_type = node.tdef.func.ret_type;
     func.name = mangled_name;
 
-    if (!funcptr && !node.scope.body_node) {
+    if (is_new && !node.scope.body_node) {
         // First declaration of function is extern
         func.is_extern = true;
         return;
@@ -535,8 +545,10 @@ ir_ref create_temp_local(type_id tid) {
 }
 
 void generate_for_stmt(ast_node& node) {
+    emit(ir_comment, ir_label{ " " });
+    emit(ir_comment, ir_label{ "begin for_stmt id=" + std::to_string(node.node_id) });
+
     // assign elem to starting value
-    generate_ir_node(*node.forinfo.declare_for_iter);
     generate_ir_node(*node.forinfo.declare_elem_to_range_start);
 
     auto stepvar = create_temp_local(node.forinfo.iterstart->tid);
@@ -606,6 +618,9 @@ void generate_for_stmt(ast_node& node) {
     emit(ir_make_label, ir_label{ node.ir.if_end_label });
 
     pop_control_labels();
+
+    emit(ir_comment, ir_label{ "end for_stmt id=" + std::to_string(node.node_id) });
+    emit(ir_comment, ir_label{ " " });
 }
 
 void generate_while_stmt(ast_node& node) {
@@ -769,6 +784,25 @@ void generate_ir_call_expr(ast_node& node) {
     else {
         emitops(ir_call, ts->opaque_type, args);
     }
+
+    // If this function is not from this program/module, add an extern declaration
+#ifdef _WIN32
+    ir_func* funcptr = nullptr;
+    for (auto& f : prog->funcs) {
+        if (f->name == node.call.mangled_name.str) {
+            funcptr = f.get();
+        }
+    }
+
+    if (!funcptr) {
+        auto newfunc = std::make_unique<ir_func>();
+        newfunc->index = prog->funcs.size();
+        newfunc->is_extern = true;
+        newfunc->name = node.call.mangled_name.str;
+        newfunc->ret_type = node.tid;
+        prog->funcs.push_back(std::move(newfunc));
+    }
+#endif
 }
 
 void generate_ir_func_overload_selector_expr(ast_node& node) {
@@ -814,11 +848,6 @@ void generate_ir_assignment(ast_node& node) {
 }
 
 void generate_ir_binary_expr(ast_node& node) {
-    if (token_to_char(node.op) == '=') {
-        generate_ir_assignment(node);
-        return;
-    }
-
     if (!node.ir.bin_self_label.empty()) {
         emit(ir_make_label, ir_label{ node.ir.bin_self_label });
     }
@@ -852,6 +881,15 @@ void generate_ir_binary_expr(ast_node& node) {
         temit(ir_div, node.tid, a, b);
         push(ir_stackpop{ node.tid });
         break;
+    case '=':
+        if (!node.ir.bin_target_label.empty()) {
+            emit((node.ir.bin_invert_jump) ? ir_jmp_neq : ir_jmp_eq, a, b, ir_label{ node.ir.bin_target_label });
+        }
+        else {
+            temit((node.ir.bin_invert_jump) ? ir_cmp_neq : ir_cmp_eq, node.tid, a, b);
+            push(ir_stackpop{ node.tid });
+        }
+        break;
     case '<':
         if (!node.ir.bin_target_label.empty()) {
             emit((node.ir.bin_invert_jump) ? ir_jmp_gte : ir_jmp_lt, a, b, ir_label{ node.ir.bin_target_label });
@@ -881,15 +919,6 @@ void generate_ir_binary_expr(ast_node& node) {
     }
 
     switch (node.op) {
-    case token_type::eqeq:
-        if (!node.ir.bin_target_label.empty()) {
-            emit((node.ir.bin_invert_jump) ? ir_jmp_neq : ir_jmp_eq, a, b, ir_label{ node.ir.bin_target_label });
-        }
-        else {
-            temit((node.ir.bin_invert_jump) ? ir_cmp_neq : ir_cmp_eq, node.tid, a, b);
-            push(ir_stackpop{ node.tid });
-        }
-        break;
     case token_type::neq:
         if (!node.ir.bin_target_label.empty()) {
             emit((node.ir.bin_invert_jump) ? ir_jmp_eq : ir_jmp_neq, a, b, ir_label{ node.ir.bin_target_label });
@@ -1187,6 +1216,7 @@ void generate_ir_node(ast_node& node) {
     case ast_type::ternary_expr:
     case ast_type::c_struct_decl:
     case ast_type::c_struct_field:
+    case ast_type::range_expr:
         break;
     case ast_type::error_decl:
         for (auto& idnode : node.children) {
@@ -1243,6 +1273,9 @@ void generate_ir_node(ast_node& node) {
         break;
     case ast_type::defer_stmt:
         ts->current_scope->self->ir.scope_defer_statements.push_back(&node);
+        break;
+    case ast_type::assign_stmt:
+        generate_ir_assignment(node);
         break;
     case ast_type::asm_stmt:
         generate_ir_asm_stmt(node);
@@ -1360,6 +1393,16 @@ void print_opr(std::ostream& f, const ir_operand& opr) {
 }
 
 void print_instr(std::ostream& f, const ir_instr& instr) {
+    if (instr.op == ir_comment) {
+        f << "#";
+        for (auto& opr : instr.operands) {
+            f << " ";
+            print_opr(f, opr);
+        }
+        f << "\n";
+        return;
+    }
+
     f << opnames[instr.op];
     for (auto& opr : instr.operands) {
         f << " ";
@@ -1383,7 +1426,7 @@ void print_ir(const std::string& modname) {
     }
 
     for (std::size_t i = 0; i < prog->funcs.size(); i++) {
-        auto& func = prog->funcs[i];
+        auto& func = *prog->funcs[i];
         f << "func " << func.name << " -> " << func.ret_type.get().mangled_name.str << "\n";
         for (std::size_t ai = 0; ai < func.args.size(); ai++) {
             auto& arg = func.args[ai];
@@ -1518,7 +1561,7 @@ static void optimize_func(ir_func& func) {
 static void optimize() {
     for (std::size_t i = 0; i < prog->funcs.size(); i++) {
         auto& func = prog->funcs[i];
-        optimize_func(func);
+        optimize_func(*func);
     }
 }
 

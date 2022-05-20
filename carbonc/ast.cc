@@ -206,6 +206,15 @@ arena_ptr<ast_node> make_func_overload_selector_expr_node(memory_arena& arena, c
     return ptr;
 }
 
+arena_ptr<ast_node> make_range_expr_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& items) {
+    auto ptr = make_in_arena<ast_node>(arena);
+    ptr->node_id = node_id_gen++;
+    ptr->type = ast_type::range_expr;
+    ptr->pos = pos;
+    ptr->children.push_back(std::move(items));
+    return ptr;
+}
+
 arena_ptr<ast_node> make_const_expr_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& expr) {
     auto ptr = make_in_arena<ast_node>(arena);
     ptr->node_id = node_id_gen++;

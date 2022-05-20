@@ -223,7 +223,6 @@ struct func_overload_info {
 
 struct for_info {
     ast_node* self = nullptr;
-    arena_ptr<ast_node> declare_for_iter{nullptr, nullptr};
     arena_ptr<ast_node> declare_elem_to_range_start{nullptr, nullptr};
     arena_ptr<ast_node> iterstart{nullptr, nullptr};
     arena_ptr<ast_node> iterstep{nullptr, nullptr};
@@ -243,7 +242,14 @@ struct init_list {
     bool deduce_to_tuple = false;
 };
 
+enum class scope_import_type {
+    module_,
+    type_,
+};
+
 struct scope_import {
+    scope_import_type type;
+    position pos;
     string_hash qual_name;
     std::optional<string_hash> alias;
 };
@@ -293,6 +299,13 @@ struct field_access {
     //ast_node* field_node;
     int field_index;
     bool is_optional;
+};
+
+struct range_info {
+    ast_node* self;
+    ast_node* start;
+    ast_node* end;
+    ast_node* step;
 };
 
 enum class type_system_pass {

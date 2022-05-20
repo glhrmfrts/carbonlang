@@ -1,10 +1,18 @@
-extern(C) fun write(fd : int, s : &byte) => int
+import rt
 
-fun scan_devices(timeout : int) := do
-
+type MyStruct := struct of
+    a : int
+    b : int
 end
 
-fun main := do
-    let s := "Hello World\n"
-    s[0] := "B"
+type state_kind := enum (
+    invalid
+    expr
+    stmt
+)
+
+fun foo(state : MyStruct, result: out arrayview of byte) := do
+    result[0] := 3
 end
+
+fun main := do end

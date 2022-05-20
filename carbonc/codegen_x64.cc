@@ -457,13 +457,13 @@ struct generator {
         funcdata.resize(prog.funcs.size());
 
         for (const auto& func : prog.funcs) {
-            if (func.is_extern) {
-                em->add_extern_func_decl(func.name.c_str());
+            if (func->is_extern) {
+                em->add_extern_func_decl(func->name.c_str());
             }
             else {
-                em->add_global_func_decl(func.name.c_str());
-                if (func.visibility == decl_visibility::public_) {
-                    em->add_export_func_decl(func.name.c_str());
+                em->add_global_func_decl(func->name.c_str());
+                if (func->visibility == decl_visibility::public_) {
+                    em->add_export_func_decl(func->name.c_str());
                 }
             }
         }
@@ -493,9 +493,9 @@ struct generator {
         em->begin_code_segment();
         
         for (auto& func : prog.funcs) {
-            if (func.is_extern) continue;
+            if (func->is_extern) continue;
 
-            generate_func_code(func);
+            generate_func_code(*func);
         }
 
         em->end();

@@ -7,6 +7,7 @@ constexpr int BINARY_OP = 1;
 constexpr int UNARY_OP = 2;
 constexpr int RIGHT_ASSOC = 4;
 constexpr int ASSIGN_SUGAR = 8;
+constexpr int LOGIC_OP = 16;
 
 struct token_properties {
     int flags = 0;
@@ -28,8 +29,8 @@ static std::unordered_map<token_type, token_properties> token_props = {
     {token_type::shr_assign, { BINARY_OP | ASSIGN_SUGAR, 400 }},
 #endif
 
-    {token_type::or_, { BINARY_OP, 490 }},
-    {token_type::and_, { BINARY_OP, 500 }},
+    {token_type::oror, { BINARY_OP | LOGIC_OP, 490 }},
+    {token_type::andand, { BINARY_OP | LOGIC_OP, 500 }},
 
     {token_type::dotdot, { BINARY_OP, 550 }},
 
@@ -67,7 +68,7 @@ bool is_binary_op(token_type t) {
 }
 
 bool is_logic_binary_op(token_type t) {
-    return (t == token_type::andand || t == token_type::oror);
+    return token_props[t].flags & LOGIC_OP;
 }
 
 bool is_arith_binary_op(token_type t) {
@@ -99,13 +100,13 @@ bool is_cmp_binary_op(token_type t) {
     switch (token_to_char(t)) {
     case '>':
     case '<':
+    case '=':
         return true;
     }
 
     switch (t) {
     case token_type::gteq:
     case token_type::lteq:
-    case token_type::eqeq:
     case token_type::neq:
         return true;
     }

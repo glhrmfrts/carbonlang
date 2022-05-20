@@ -46,4 +46,6 @@ local_def* get_symbol_local(const symbol_info& sym);
 
 void update_symbols_pass_tokens(type_system& ts);
 
+std::pair<string_hash, string_hash> separate_module_identifier(const std::vector<std::string>& parts);
+
 }

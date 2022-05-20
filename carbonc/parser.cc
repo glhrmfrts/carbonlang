@@ -76,6 +76,10 @@ struct parser_impl {
             }
         }
         else if (TOK == token_type::in_) {
+            if (ctx_stack.top() != parse_context::func_arg_decl) {
+                throw parse_error(filename, lex->pos(), "can only use in/out in function arguments");
+            }
+
             lex->next();
 
             auto to_type = parse_type_expr(false, true); // no wrap
@@ -84,6 +88,10 @@ struct parser_impl {
             }
         }
         else if (TOK == token_type::out) {
+            if (ctx_stack.top() != parse_context::func_arg_decl) {
+                throw parse_error(filename, lex->pos(), "can only use in/out in function arguments");
+            }
+
             lex->next();
 
             auto to_type = parse_type_expr(false, true); // no wrap
@@ -91,24 +99,44 @@ struct parser_impl {
                 result = make_type_qualifier_node(*ast_arena, pos, type_qualifier::out, std::move(to_type));
             }
         }
-#if 0
-        else if (TOK == token_type::array) {
+        else if (TOK == token_type::array_) {
             lex->next();
 
-            auto to_type = parse_type_expr(false, true); // no wrap
-            if (to_type) {
-                result = make_type_qualifier_node(*ast_arena, pos, type_qualifier::out, std::move(to_type));
+            if (TOK_CHAR != '(') {
+                throw parse_error(filename, lex->pos(), "invalid type expression");
             }
-        }
-        else if (TOK == token_type::arrayview) {
             lex->next();
 
-            auto to_type = parse_type_expr(false, true); // no wrap
+            auto size_expr = parse_expr();
+
+            if (TOK_CHAR != ')') {
+                throw parse_error(filename, lex->pos(), "invalid type expression");
+            }
+            lex->next();
+
+            if (TOK != token_type::of_) {
+                throw parse_error(filename, lex->pos(), "invalid type expression");
+            }
+            lex->next();
+
+            auto to_type = parse_type_expr();
             if (to_type) {
-                result = make_type_qualifier_node(*ast_arena, pos, type_qualifier::out, std::move(to_type));
+                result = make_static_array_type_node(*ast_arena, pos, std::move(size_expr), std::move(to_type));
             }
         }
-#endif
+        else if (TOK == token_type::arrayview_) {
+            lex->next();
+
+            if (TOK != token_type::of_) {
+                throw parse_error(filename, lex->pos(), "invalid type expression");
+            }
+            lex->next();
+
+            auto to_type = parse_type_expr();
+            if (to_type) {
+                result = make_array_view_type_node(*ast_arena, pos, std::move(to_type));
+            }
+        }
         else if (TOK == token_type::identifier) {
             result = parse_qualified_identifier();
 
@@ -156,7 +184,7 @@ struct parser_impl {
         }
 
         if (TOK_CHAR != '(') {
-            throw parse_error(filename, lex->pos(), "expecting '{' in enum type");
+            throw parse_error(filename, lex->pos(), "expecting '(' in enum type");
         }
         lex->next();
 
@@ -173,7 +201,7 @@ struct parser_impl {
         }
 
         if (TOK_CHAR != ')') {
-            throw parse_error(filename, lex->pos(), "expecting closing '}' in enum type");
+            throw parse_error(filename, lex->pos(), "expecting closing ')' in enum type");
         }
         lex->next();
 
@@ -261,40 +289,6 @@ struct parser_impl {
         }
     }
 
-    arena_ptr<ast_node> parse_array_type_expr() {
-        auto pos = lex->pos();
-        lex->next(); // eat the '['
-
-        auto size_expr = arena_ptr<ast_node>{ nullptr, nullptr };
-        if (TOK_CHAR == ']') {
-            lex->next();
-
-            auto item_type = parse_type_expr();
-            if (!item_type) {
-                throw parse_error(filename, lex->pos(), "error parsing array item type");
-            }
-
-            return make_array_view_type_node(*ast_arena, pos, std::move(item_type));
-        }
-
-        size_expr = parse_expr();
-        if (!size_expr) {
-            throw parse_error(filename, lex->pos(), "error parsing array size expression");
-        }
-
-        if (TOK_CHAR != ']') {
-            throw parse_error(filename, lex->pos(), "expected closing bracket in array type size");
-        }
-        lex->next();
-
-        auto item_type = parse_type_expr();
-        if (!item_type) {
-            throw parse_error(filename, lex->pos(), "error parsing array item type");
-        }
-
-        return make_array_type_node(*ast_arena, pos, std::move(size_expr), std::move(item_type));
-    }
-
     // Section: statements
 
     arena_ptr<ast_node> parse_stmt() {
@@ -346,7 +340,14 @@ struct parser_impl {
         return make_continue_stmt_node(*ast_arena, pos);
     }
 
-    arena_ptr<ast_node> parse_compound_stmt() {
+    bool has_token_type(std::vector<token_type> finalizers, token_type tt) {
+        for (const auto& f : finalizers) {
+            if (f == tt) { return true; }
+        }
+        return false;
+    }
+
+    arena_ptr<ast_node> parse_compound_stmt(std::vector<token_type> finalizers) {
         enum { LIMIT = 8 * 1024 };
 
         auto pos = lex->pos();
@@ -360,8 +361,13 @@ struct parser_impl {
             if (decl_list) children.push_back(std::move(decl_list));
             if (stmt_list) children.push_back(std::move(stmt_list));
 
-            if (!decl_list && !stmt_list && (TOK == token_type::end || TOK == token_type::eof)) break;
+            if (!decl_list && !stmt_list && (TOK == token_type::end || TOK == token_type::eof || has_token_type(finalizers, TOK))) break;
         }
+
+        if (has_token_type(finalizers, TOK)) {
+            return make_compound_stmt_node(*ast_arena, pos, std::move(children));
+        }
+
         if (TOK != token_type::end) {
             throw parse_error(filename, lex->pos(), "expected 'end' in compound statement");
         }
@@ -424,80 +430,68 @@ struct parser_impl {
         auto pos = lex->pos();
         lex->next(); // eat the 'for'
 
-        if (TOK_CHAR == '(') {
-            lex->next(); // eat the '('
+        auto ids = make_arg_list_node(*ast_arena, pos, {});
+        auto expr = parse_expr();
+        auto iter = arena_ptr<ast_node>{nullptr, nullptr};
 
-            auto ids = make_arg_list_node(*ast_arena, pos, {});
-            auto expr = parse_expr();
-            auto iter = arena_ptr<ast_node>{nullptr, nullptr};
+        if (expr->type == ast_type::identifier) {
+            if (TOK_CHAR == ',') {
+                lex->next();
+                ids->children.push_back(std::move(expr));
 
-            if (expr->type == ast_type::identifier) {
-                if (TOK_CHAR == ',') {
-                    lex->next();
-                    ids->children.push_back(std::move(expr));
-
-                    auto id2 = parse_primary_expr();
-                    if (id2->type != ast_type::identifier) {
-                        throw parse_error(filename, lex->pos(), "expecting another identifier after ',' in for statement");
-                    }
-
-                    ids->children.push_back(std::move(id2));
+                auto id2 = parse_primary_expr();
+                if (id2->type != ast_type::identifier) {
+                    throw parse_error(filename, lex->pos(), "expecting another identifier after ',' in for statement");
                 }
 
-                if (TOK == token_type::in_) {
-                    lex->next();
-                    ids->children.push_back(std::move(expr));
+                ids->children.push_back(std::move(id2));
+            }
 
-                    iter = parse_expr();
-                    if (!iter) {
-                        throw parse_error(filename, lex->pos(), "expecting an expression after 'in' in for statement");
-                    }
+            if (TOK == token_type::coloneq) {
+                lex->next();
+                ids->children.push_back(std::move(expr));
+
+                iter = parse_expr();
+                if (!iter) {
+                    throw parse_error(filename, lex->pos(), "expecting an expression after ':=' in for statement");
                 }
             }
-
-            if (TOK_CHAR != ')') {
-                throw parse_error(filename, lex->pos(), "expected closing ')' in for statement");
-            }
-            lex->next();
-
-            auto body = parse_stmt();
-
-            if (!iter) {
-                // iter = std::move(expr);
-                return make_for_cond_stmt_node(*ast_arena, pos, std::move(expr), std::move(body));
-            }
-
-            return make_for_numeric_stmt_node(*ast_arena, pos, std::move(ids), std::move(iter), std::move(body));
         }
 
-        throw parse_error(filename, lex->pos(), "expected opening '(' in for statement condition");
-        return arena_ptr<ast_node>{nullptr, nullptr};
+        auto body = parse_compound_stmt({});
+
+        if (!iter) {
+            return make_for_cond_stmt_node(*ast_arena, pos, std::move(expr), std::move(body));
+        }
+
+        return make_for_numeric_stmt_node(*ast_arena, pos, std::move(ids), std::move(iter), std::move(body));
     }
 
     arena_ptr<ast_node> parse_if_stmt() {
         auto pos = lex->pos();
         lex->next(); // eat the 'if'
 
-        if (TOK_CHAR == '(') {
-            lex->next();
-            auto cond = parse_expr();
-            if (TOK_CHAR != ')') {
-                throw parse_error(filename, lex->pos(), "expected closing ')' in if statement condition");
-            }
-            lex->next();
-
-            auto body = parse_stmt();
-            auto elsebody = arena_ptr<ast_node>{ nullptr, nullptr };
-            if (TOK == token_type::else_) {
-                lex->next();
-                elsebody = parse_stmt();
-            }
-
-            return make_if_stmt_node(*ast_arena, pos, std::move(cond), std::move(body), std::move(elsebody));
+        auto cond = parse_expr();
+        if (TOK != token_type::then) {
+            throw parse_error(filename, lex->pos(), "expected 'then' in if statement");
         }
 
-        throw parse_error(filename, lex->pos(), "expected opening '(' in if statement condition");
-        return arena_ptr<ast_node>{nullptr, nullptr};
+        auto body = parse_compound_stmt({ token_type::else_ });
+
+        auto elsebody = arena_ptr<ast_node>{ nullptr, nullptr };
+        if (TOK == token_type::else_) {
+            lex->save();
+            lex->next();
+            if (TOK == token_type::if_) {
+                elsebody = parse_stmt();
+            }
+            else {
+                lex->restore();
+                elsebody = parse_compound_stmt({ token_type::else_ });
+            }
+        }
+
+        return make_if_stmt_node(*ast_arena, pos, std::move(cond), std::move(body), std::move(elsebody));
     }
 
     arena_ptr<ast_node> parse_return_stmt() {
@@ -553,6 +547,8 @@ struct parser_impl {
         switch (t) {
         case token_type::let:
             return parse_var_decl(token_type::let);
+        case token_type::const_:
+            return parse_var_decl(token_type::const_);
         case token_type::fun:
             return parse_func_decl();
         case token_type::type:
@@ -895,12 +891,12 @@ struct parser_impl {
         }
 
         auto contents = arena_ptr<ast_node>{ nullptr, nullptr };
-        if (TOK_CHAR == '=') {
+        if (TOK == token_type::coloneq) {
             lex->next();
             contents = parse_type_expr();
         }
         else {
-            throw parse_error(filename, lex->pos(), "expected '=' in type declaration");
+            throw parse_error(filename, lex->pos(), "expected ':=' in type declaration");
         }
 
         if (arg_list.get()) {
@@ -976,7 +972,7 @@ struct parser_impl {
 
     arena_ptr<ast_node> parse_func_body() {
         if (TOK == token_type::do_) {
-            return parse_compound_stmt();
+            return parse_compound_stmt({});
         }
         else {
             return parse_expr();
@@ -1015,7 +1011,7 @@ struct parser_impl {
         auto modifiers = parse_var_modifiers();
         auto declkind = TOK;
 
-        if (TOK == token_type::let) {
+        if (TOK == kind) {
             lex->next();
         }
 
@@ -1044,6 +1040,10 @@ struct parser_impl {
         if (TOK == token_type::coloneq) {
             lex->next();
             value = parse_expr();
+        }
+
+        if (!var_type.get() && !value.get()) {
+            throw parse_error(filename, lex->pos(), "variable declaration without type and initializer not allowed");
         }
 
         return make_var_decl_node(*ast_arena, pos, kind, std::move(ids), std::move(var_type), std::move(value), modifiers);
@@ -1098,7 +1098,7 @@ struct parser_impl {
 
     arena_ptr<ast_node> parse_ternary_expr() {
         auto expr = parse_binary_expr(parse_unary_expr(), 0);
-        if (TOK == token_type::then) {
+        if (false && TOK == token_type::then) {
             lex->next();
 
             auto then_expr = parse_expr();
@@ -1294,6 +1294,9 @@ struct parser_impl {
         case token_type::fun: {
             return parse_func_decl(/*as_expr=*/true);
         }
+        case token_type::range: {
+            return parse_range_expr();
+        }
         case token_type::type: {
             auto pos = lex->pos();
             lex->next();
@@ -1337,6 +1340,30 @@ struct parser_impl {
         return arena_ptr<ast_node>{nullptr, nullptr};
     }
 
+    arena_ptr<ast_node> parse_range_expr() {
+        auto pos = lex->pos();
+
+        lex->next();
+
+        auto list = make_arg_list_node(*ast_arena, pos, {});
+        
+        auto expr = parse_expr();
+        list->children.push_back(std::move(expr));
+
+        while (TOK_CHAR == ',') {
+            lex->next();
+            auto curexpr = parse_expr();
+            if (curexpr) {
+                list->children.push_back(std::move(curexpr));
+            }
+            else {
+                break;
+            }
+        }
+
+        return make_range_expr_node(*ast_arena, pos, std::move(list));
+    }
+
     arena_ptr<ast_node> parse_init_list_expr(arena_ptr<ast_node>&& init_type) {
         auto pos = lex->pos();
         auto item_list = arena_ptr<ast_node>{ nullptr, nullptr };
@@ -1378,6 +1405,8 @@ struct parser_impl {
     // Section: helpers
 
     arena_ptr<ast_node> parse_qualified_identifier() {
+        auto pos = lex->pos();
+
         enum { LIMIT = 32 };
         int i = 0;
 
@@ -1392,7 +1421,7 @@ struct parser_impl {
             id_parts.push_back(lex->string_value());
             lex->next();
         }
-        return make_identifier_node(*ast_arena, lex->pos(), id_parts);
+        return make_identifier_node(*ast_arena, pos, id_parts);
     }
 
     arena_ptr<ast_node> parse_arg_list(char end, std::function<arena_ptr<ast_node>()> parse_arg) {

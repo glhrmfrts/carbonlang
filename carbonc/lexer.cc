@@ -165,7 +165,7 @@ struct lexer_impl {
                 return token_type::do_;
             }
             if (!std::strcmp("or", l.string)) {
-                return token_type::or_;
+                return token_type::oror;
             }
             break;
         case 3:
@@ -191,7 +191,7 @@ struct lexer_impl {
                 return token_type::end;
             }
             if (!std::strcmp("and", l.string)) {
-                return token_type::and_;
+                return token_type::andand;
             }
             break;
         case 4:
@@ -218,6 +218,12 @@ struct lexer_impl {
             }
             break;
         case 5:
+            if (!std::strcmp("range", l.string)) {
+                return token_type::range;
+            }
+            if (!std::strcmp("array", l.string)) {
+                return token_type::array_;
+            }
             if (!std::strcmp("false", l.string)) {
                 return token_type::bool_literal_false;
             }
@@ -290,6 +296,9 @@ struct lexer_impl {
             }
             if (!std::strcmp("enumflags", l.string)) {
                 return token_type::enumflags;
+            }
+            if (!std::strcmp("arrayview", l.string)) {
+                return token_type::arrayview_;
             }
             break;
         }
