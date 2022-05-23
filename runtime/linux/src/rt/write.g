@@ -8,9 +8,42 @@ fun write(s : arrayview of pure byte) := do
     write(stdout(), s)
 end
 
+fun write(n : nil) := do
+    write("nil")
+end
+
+fun write(b : bool) := do
+    if b then
+        write("true")
+    else
+        write("false")
+    end
+end
+
+fun write(i : int) := do
+    let buf : array(32) of byte
+    let v := arrayview of byte { &buf[0], sizeof(buf) }
+    int_to_string(i, 10, v)
+    write(v)
+end
+
 fun writeln(s : arrayview of pure byte) := do
     write(stdout(), s)
     write(stdout(), "\n")
+end
+
+fun writeln(n : nil) := do
+    writeln("nil")
+end
+
+fun writeln(b : bool) := do
+    write(b)
+    writeln("")
+end
+
+fun writeln(i : int) := do
+    write(i)
+    writeln("")
 end
 
 local fun int_to_string(value: int, base: int, result: in out arrayview of byte) := do
@@ -61,12 +94,6 @@ local fun int_to_string(value: int, base: int, result: in out arrayview of byte)
         ptr1 := ptr1 + 1
     end
 
+    result.len := offs
     return offs
-end
-
-fun writeln(i : int) := do
-    let buf : array(32) of byte
-    let v := arrayview of byte { &buf, sizeof(buf) }
-    int_to_string(i, 10, v)
-    writeln(v)
 end

@@ -156,6 +156,8 @@ struct codegen_x64_emitter {
 
     virtual void add_int32(std::int32_t value) = 0;
 
+    virtual void add_int64(std::int64_t value) = 0;
+
     virtual void add_stringz(std::string_view value) = 0;
 
     virtual void add_string_data(std::string_view label, std::string_view data) = 0;

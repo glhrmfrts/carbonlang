@@ -8,11 +8,12 @@ numeric_for_neg: 4
 numeric_for_neg: 3
 numeric_for_neg: 2
 numeric_for_neg: 1
-numeric_for_tuple: 0
-numeric_for_tuple: 1
-numeric_for_tuple: 2
-numeric_for_tuple: 3
-numeric_for_tuple: 4
+get_limit
+numeric_for_arg: 0
+numeric_for_arg: 1
+numeric_for_arg: 2
+numeric_for_arg: 3
+numeric_for_arg: 4
 numeric_for_step: 0
 numeric_for_step: 5
 numeric_for_step: 10
@@ -21,4 +22,4 @@ numeric_for_step_neg: 20
 numeric_for_step_neg: 15
 numeric_for_step_neg: 10
 numeric_for_step_neg: 5
-boolean_for: 20
+boolean_for: 0

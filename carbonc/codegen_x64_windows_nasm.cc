@@ -213,6 +213,10 @@ struct codegen_x64_windows_nasm_emitter : public codegen_x64_emitter {
         emitln("    dd 0x%x", value);
     }
 
+    virtual void add_int64(std::int64_t value) {
+        emitln("    dq 0x%llx", value);
+    }
+
     virtual void add_stringz(std::string_view value) {
         emit("    db ");
         for (char c : value) {

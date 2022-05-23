@@ -22,6 +22,22 @@ fun write(fd: int, ptr: &pure byte, len: int) => int := do
     end%asm
 end
 
+fun open(path: &pure byte, flags: int, mode: int) => int := do
+    asm%do
+
+        mov $2, %rax
+        syscall
+
+    end%asm
+end
+
+fun close(fd : int) => int := do
+    asm%do
+        mov $3, %rax
+        syscall
+    end%asm
+end
+
 fun exit(code : int) := do
     asm%do
         

@@ -18,7 +18,8 @@ arena_ptr<ast_node> make_var_decl_with_value(memory_arena& ast_arena, std::strin
 }
 
 arena_ptr<ast_node> make_assignment(memory_arena& ast_arena, arena_ptr<ast_node> dest, arena_ptr<ast_node> value) {
-    return make_binary_expr_node(ast_arena, {}, token_from_char('='), std::move(dest), std::move(value));
+    auto pos = dest->pos;
+    return make_assign_stmt_node(ast_arena, pos, std::move(dest), std::move(value));
 }
 
 arena_ptr<ast_node> make_struct_field_access(memory_arena& ast_arena, arena_ptr<ast_node> st, std::string field) {
@@ -87,11 +88,7 @@ arena_ptr<ast_node> copy_node_helper(type_system& ts, ast_node& node) {
     }
     else if (node.type == ast_type::init_expr) {
         auto initexpr = make_init_expr_node(*ts.ast_arena, node.pos, copy_node(ts, node.children[0].get()), copy_node(ts, node.children[1].get()));
-        for (auto& assign : node.initlist.assignments) {
-            initexpr->initlist.assignments.push_back(
-                copy_node(ts, assign.get())
-            );
-        }
+        initexpr->initlist = node.initlist;
         return initexpr;
     }
     else if (node.type == ast_type::type_resolver) {
@@ -233,8 +230,8 @@ std::string generate_temp_name() {
 arena_ptr<ast_node> transform_bool_op_into_if_statement(type_system& ts, arena_ptr<ast_node> bop, ast_node& destvar) {
     auto true_node = make_bool_literal_node(*ts.ast_arena, {}, true);
     auto false_node = make_bool_literal_node(*ts.ast_arena, {}, false);
-    auto assign_true = make_binary_expr_node(*ts.ast_arena, {}, token_from_char('='), copy_node(ts, &destvar), std::move(true_node));
-    auto assign_false = make_binary_expr_node(*ts.ast_arena, {}, token_from_char('='), copy_node(ts, &destvar), std::move(false_node));
+    auto assign_true = make_assign_stmt_node(*ts.ast_arena, bop->pos, copy_node(ts, &destvar), std::move(true_node));
+    auto assign_false = make_assign_stmt_node(*ts.ast_arena, bop->pos, copy_node(ts, &destvar), std::move(false_node));
     return make_if_stmt_node(*ts.ast_arena, bop->pos, std::move(bop), std::move(assign_true), std::move(assign_false));
 }
 

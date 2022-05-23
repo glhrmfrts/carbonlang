@@ -93,16 +93,8 @@ void prettyprint(const ast_node& node, std::ostream& stream, int indent, bool do
             stream << "\n";
             prettyprint(*init_type, stream, indent + 1);
         }
-        if (!node.initlist.assignments.empty()) {
-            for (const auto& a : node.initlist.assignments) {
-                stream << "\n";
-                prettyprint(*a, stream, indent + 1);
-            }
-        }
-        else {
-            stream << "\n";
-            prettyprint(*node.children.back().get(), stream, indent + 1);
-        }
+        stream << "\n";
+        prettyprint(*node.children.back().get(), stream, indent + 1);
         stream << "\n";
         do_indent(stream, indent);
         stream << "init_expr end";

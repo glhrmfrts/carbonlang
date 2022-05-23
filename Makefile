@@ -19,4 +19,39 @@ test:
 		carbonc -p ../.. -I runtime/linux -V -o a.out > compile.txt && \
 		./a.out > out.txt && diff out.txt expected.txt && echo "\033[1;32mtest-01-arith: OK\033[0m"
 
+	@echo "test-02-arrays: ..." && \
+		cd tests/test-02-arrays && \
+		carbonc -p ../.. -I runtime/linux -V -o a.out > compile.txt && \
+		./a.out > out.txt && diff out.txt expected.txt && echo "\033[1;32mtest-02-arrays: OK\033[0m"
+
+	@echo "test-03-for: ..." && \
+		cd tests/test-03-for && \
+		carbonc -p ../.. -I runtime/linux -V -o a.out > compile.txt && \
+		./a.out > out.txt && diff out.txt expected.txt && echo "\033[1;32mtest-03-for: OK\033[0m"
+
+	@echo "test-04-boolops: ..." && \
+		cd tests/test-04-boolops && \
+		carbonc -p ../.. -I runtime/linux -V -o a.out > compile.txt && \
+		./a.out > out.txt && diff out.txt expected.txt && echo "\033[1;32mtest-04-boolops: OK\033[0m"
+
+	@echo "test-05-nil: ..." && \
+		cd tests/test-05-nil && \
+		carbonc -p ../.. -I runtime/linux -V -o a.out > compile.txt && \
+		./a.out > out.txt && diff out.txt expected.txt && echo "\033[1;32mtest-05-nil: OK\033[0m"
+
+	@echo "test-06-strings: ..." && \
+		cd tests/test-06-strings && \
+		carbonc -p ../.. -I runtime/linux -V -o a.out > compile.txt && \
+		./a.out > out.txt && diff out.txt expected.txt && echo "\033[1;32mtest-06-strings: OK\033[0m"
+
+	@echo "test-07-pointers: ..." && \
+		cd tests/test-07-pointers && \
+		carbonc -p ../.. -I runtime/linux -V -o a.out > compile.txt && \
+		./a.out > out.txt && diff out.txt expected.txt && echo "\033[1;32mtest-07-pointers: OK\033[0m"
+
+	@echo "test-08-funcs: ..." && \
+		cd tests/test-08-funcs && \
+		carbonc -p ../.. -I runtime/linux -V -o a.out > compile.txt && \
+		./a.out > out.txt && diff out.txt expected.txt && echo "\033[1;32mtest-08-funcs: OK\033[0m"
+
 .PHONY: all

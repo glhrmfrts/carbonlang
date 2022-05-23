@@ -1,0 +1,59 @@
+carbonc - compiling target: test-05-nil
+
+carbonc - compiling module: root
+    process_code_unit: ./src/main.g
+carbonc - compiling module: rt
+    process_code_unit: ../../runtime/linux/src/rt/errno.g
+    process_code_unit: ../../runtime/linux/src/rt/errors.g
+    process_code_unit: ../../runtime/linux/src/rt/io.g
+    process_code_unit: ../../runtime/linux/src/rt/open.g
+cannot determine type of symbol 'path' - 0x561991f35140
+cannot determine type of symbol 'path_cstr' - 0x561991f4aed0
+cannot determine type of symbol 'path_cstr' - 0x561991f4aed0
+cannot determine type of symbol 'path_cstr' - 0x561991f4aed0
+cannot determine type of symbol 'fd' - 0x561991f55270
+cannot determine type of symbol 'fd' - 0x561991f55270
+cannot determine type of symbol 'fd' - 0x561991f55270
+cannot determine type of symbol 'fd' - 0x561991f55270
+cannot determine type of symbol 'path' - 0x561991f35140
+cannot determine type of symbol 'path_cstr' - 0x561991f4aed0
+cannot determine type of symbol 'path_cstr' - 0x561991f4aed0
+cannot determine type of symbol 'path_cstr' - 0x561991f4aed0
+cannot determine type of symbol 'fd' - 0x561991f55270
+cannot determine type of symbol 'fd' - 0x561991f55270
+cannot determine type of symbol 'fd' - 0x561991f55270
+cannot determine type of symbol 'fd' - 0x561991f55270
+    process_code_unit: ../../runtime/linux/src/rt/start.g
+    process_code_unit: ../../runtime/linux/src/rt/string.g
+    process_code_unit: ../../runtime/linux/src/rt/write.g
+cannot determine type of symbol 'tpl_str' - 0x56199204d410
+assembly file: rt_x86_64_start.s
+carbonc - running assembler: as _carbon/build_debug/rt_x86_64_start.s -o _carbon/build_debug/rt_x86_64_start.o
+carbonc - compiling module: rt/x86_64
+    process_code_unit: ../../runtime/linux/src/rt/x86_64/syscall.g
+carbonc - parsing time: 204ms
+
+carbonc - type checking 
+cannot determine type of symbol 'path_cstr' - 0x561991f4aed0
+cannot determine type of symbol 'path_cstr' - 0x561991f4aed0
+cannot determine type of symbol 'path_cstr' - 0x561991f4aed0
+cannot determine type of symbol 'fd' - 0x561991f55270
+cannot determine type of symbol 'fd' - 0x561991f55270
+cannot determine type of symbol 'fd' - 0x561991f55270
+cannot determine type of symbol 'fd' - 0x561991f55270
+carbonc - type checking time: 41ms
+
+carbonc - generating IR 
+carbonc - IR generation time: 15ms
+
+carbonc - generating assembly 
+carbonc - running assembler: as _carbon/build_debug/root.asm -o _carbon/build_debug/root.o
+carbonc - running assembler: as _carbon/build_debug/rt.asm -o _carbon/build_debug/rt.o
+carbonc - running assembler: as _carbon/build_debug/rt_x86_64.asm -o _carbon/build_debug/rt_x86_64.o
+carbonc - assembly generation time: 92ms
+
+carbonc - running linker command: ld  -e _start -o _carbon/build_debug/test-05-nil _carbon/build_debug/rt_x86_64_start.o _carbon/build_debug/root.o _carbon/build_debug/rt.o _carbon/build_debug/rt_x86_64.o -T ../../res/carbon.sc
+carbonc - output: a.out
+
+carbonc - total lines parsed: 647
+carbonc - total compilation time: 406ms

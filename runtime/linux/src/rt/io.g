@@ -1,13 +1,13 @@
 typealias FileHandle := int
 
-fun stdin() := do
+fun stdin() => FileHandle := do
     return 0
 end
 
-fun stdout() := do
+fun stdout() => FileHandle := do
     return 1
 end
 
-fun stderr() := do
+fun stderr() => FileHandle := do
     return 2
 end

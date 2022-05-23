@@ -1,546 +1,60 @@
-carbonc - compiling target: test_for_loop
+carbonc - compiling target: test-03-for
 
 carbonc - compiling module: root
-    process_code_unit: ./src/main.cb
-if_stmt - 
-if_stmt - 
-carbonc - compiling module: io
-    process_code_unit: ../../stdlib/src/io/print.cb
-if_stmt - b
-if_stmt - 
-carbonc - compiling module: linux
-    process_code_unit: ../../stdlib/src/linux/error.cb
-if_stmt - 
-if_stmt - 
-if_stmt - 
-cannot determine type of symbol 'str' - 0x5618c4eb07d0
-cannot determine type of symbol 'str' - 0x5618c4eb07d0
-invalid field_expr: len
-if_stmt - 
-if_stmt - 
-if_stmt - 
-cannot determine type of symbol 'str' - 0x5618c4eb07d0
-cannot determine type of symbol 'str' - 0x5618c4eb07d0
-invalid field_expr: len
-    process_code_unit: ../../stdlib/src/linux/io.cb
-cannot determine type of symbol 'fd' - 0x5618c500f960
-cannot determine type of symbol 'fd' - 0x5618c501eed0
-cannot determine type of symbol 'fd' - 0x5618c502ebb0
-cannot determine type of symbol 'fd' - 0x5618c500f960
-cannot determine type of symbol 'fd' - 0x5618c501eed0
-cannot determine type of symbol 'fd' - 0x5618c502ebb0
-    process_code_unit: ../../stdlib/src/linux/mem.cb
-if_stmt - 
-cannot determine type of symbol 'ptr' - 0x5618c5067e80
-cannot determine type of symbol 'ptr' - 0x5618c5067e80
-cannot determine type of symbol 'ptr' - 0x5618c5067e80
-cannot determine type of symbol 'ptr' - 0x5618c5067e80
-if_stmt - 
-cannot determine type of symbol 'ptr' - 0x5618c5067e80
-cannot determine type of symbol 'ptr' - 0x5618c5067e80
-cannot determine type of symbol 'ptr' - 0x5618c5067e80
-cannot determine type of symbol 'ptr' - 0x5618c5067e80
-    process_code_unit: ../../stdlib/src/linux/open.cb
-if_stmt - 
-cannot determine type of symbol 'flags' - 0x5618c50c2e40
-cannot determine type of symbol 'flags' - 0x5618c50c2e40
-if_stmt - 
-cannot determine type of symbol 'flags' - 0x5618c50c2e40
-cannot determine type of symbol 'flags' - 0x5618c50c2e40
-if_stmt - 
-cannot determine type of symbol 'flags' - 0x5618c50c2e40
-cannot determine type of symbol 'flags' - 0x5618c50c2e40
-if_stmt - 
-cannot determine type of symbol 'flags' - 0x5618c50c2e40
-cannot determine type of symbol 'flags' - 0x5618c50c2e40
-if_stmt - 
-cannot determine type of symbol 'flags' - 0x5618c50c2e40
-cannot determine type of symbol 'flags' - 0x5618c50c2e40
-if_stmt - 
-cannot determine type of symbol 'flags' - 0x5618c50c2e40
-cannot determine type of symbol 'flags' - 0x5618c50c2e40
-cannot determine type of symbol 'flags' - 0x5618c50ec430
-cannot determine type of symbol 'kflags' - 0x5618c50f6060
-cannot determine type of symbol 'fd' - 0x5618c50fc880
-cannot determine type of symbol 'fd' - 0x5618c50fc880
-if_stmt - 
-cannot determine type of symbol 'flags' - 0x5618c50c2e40
-cannot determine type of symbol 'flags' - 0x5618c50c2e40
-if_stmt - 
-cannot determine type of symbol 'flags' - 0x5618c50c2e40
-cannot determine type of symbol 'flags' - 0x5618c50c2e40
-if_stmt - 
-cannot determine type of symbol 'flags' - 0x5618c50c2e40
-cannot determine type of symbol 'flags' - 0x5618c50c2e40
-if_stmt - 
-cannot determine type of symbol 'flags' - 0x5618c50c2e40
-cannot determine type of symbol 'flags' - 0x5618c50c2e40
-if_stmt - 
-cannot determine type of symbol 'flags' - 0x5618c50c2e40
-cannot determine type of symbol 'flags' - 0x5618c50c2e40
-if_stmt - 
-cannot determine type of symbol 'flags' - 0x5618c50c2e40
-cannot determine type of symbol 'flags' - 0x5618c50c2e40
-cannot determine type of symbol 'flags' - 0x5618c50ec430
-cannot determine type of symbol 'kflags' - 0x5618c50f6060
-cannot determine type of symbol 'fd' - 0x5618c50fc880
-cannot determine type of symbol 'fd' - 0x5618c50fc880
-    process_code_unit: ../../stdlib/src/linux/process.cb
-if_stmt - 
-cannot determine type of symbol 'child' - 0x5618c5120ca0
-cannot determine type of symbol 'child' - 0x5618c5120ca0
-invalid field_expr: ptr
-if_stmt - 
-cannot determine type of symbol 'child' - 0x5618c5120ca0
-cannot determine type of symbol 'child' - 0x5618c5120ca0
-cannot determine type of symbol 'child' - 0x5618c5120ca0
-if_stmt - 
-if_stmt - 
-cannot determine type of symbol 'child' - 0x5618c5120ca0
-cannot determine type of symbol 'child' - 0x5618c5120ca0
-if_stmt - 
-cannot determine type of symbol 'child' - 0x5618c5120ca0
-cannot determine type of symbol 'child' - 0x5618c5120ca0
-invalid field_expr: ptr
-if_stmt - 
-cannot determine type of symbol 'child' - 0x5618c5120ca0
-cannot determine type of symbol 'child' - 0x5618c5120ca0
-cannot determine type of symbol 'child' - 0x5618c5120ca0
-if_stmt - 
-if_stmt - 
-cannot determine type of symbol 'child' - 0x5618c5120ca0
-cannot determine type of symbol 'child' - 0x5618c5120ca0
-    process_code_unit: ../../stdlib/src/linux/start.cb
-if_stmt - 
-if_stmt - 
-if_stmt - 
-if_stmt - 
-    process_code_unit: ../../stdlib/src/linux/stat.cb
-if_stmt - 
-cannot determine type of symbol 'buf' - 0x5618c5260f10
-invalid field_expr: size
-if_stmt - 
-cannot determine type of symbol 'fd' - 0x5618c5275650
-cannot determine type of symbol 'fd' - 0x5618c5275650
-cannot determine type of symbol 'buf' - 0x5618c52782f0
-invalid field_expr: size
-if_stmt - 
-cannot determine type of symbol 'buf' - 0x5618c5260f10
-invalid field_expr: size
-if_stmt - 
-cannot determine type of symbol 'fd' - 0x5618c5275650
-cannot determine type of symbol 'fd' - 0x5618c5275650
-cannot determine type of symbol 'buf' - 0x5618c52782f0
-invalid field_expr: size
-carbonc - compiling module: linux/syscall
-    process_code_unit: ../../stdlib/src/linux/syscall/syscall.cb
-assembly file: linux_x86_64_start.s
-carbonc - running assembler: as _carbon/build_debug/linux_x86_64_start.s -o _carbon/build_debug/linux_x86_64_start.o
-carbonc - compiling module: mem
-    process_code_unit: ../../stdlib/src/mem/arena.cb
-    process_code_unit: ../../stdlib/src/mem/mem.cb
-if_stmt - 
-if_stmt - 
-cannot determine type of symbol 'asize' - 0x5618c53cf740
-cannot determine type of symbol 'asize' - 0x5618c53cf740
-if_stmt - 
-cannot determine type of symbol 'asize' - 0x5618c53cf740
-cannot determine type of symbol 'asize' - 0x5618c53cf740
-cannot determine type of symbol 'asize' - 0x5618c53cf740
-cannot determine type of symbol 'memsize' - 0x5618c53ebcf0
-if_stmt - 
-cannot determine type of symbol 'memsize' - 0x5618c53ebcf0
-cannot determine type of symbol 'asize' - 0x5618c53cf740
-cannot determine type of symbol 'asize' - 0x5618c53cf740
-if_stmt - 
-if_stmt - 
-if_stmt - 
-if_stmt - 
-if_stmt - 
-if_stmt - 
-if_stmt - 
-cannot determine type of symbol 'asize' - 0x5618c53cf740
-cannot determine type of symbol 'asize' - 0x5618c53cf740
-if_stmt - 
-cannot determine type of symbol 'asize' - 0x5618c53cf740
-cannot determine type of symbol 'asize' - 0x5618c53cf740
-cannot determine type of symbol 'asize' - 0x5618c53cf740
-cannot determine type of symbol 'memsize' - 0x5618c53ebcf0
-if_stmt - 
-cannot determine type of symbol 'memsize' - 0x5618c53ebcf0
-cannot determine type of symbol 'asize' - 0x5618c53cf740
-cannot determine type of symbol 'asize' - 0x5618c53cf740
-if_stmt - 
-if_stmt - 
-if_stmt - 
-if_stmt - 
-if_stmt - 
-    process_code_unit: ../../stdlib/src/mem/slice.cb
-carbonc - compiling module: string
-    process_code_unit: ../../stdlib/src/string/cstring.cb
-if_stmt - 
-if_stmt - 
-    process_code_unit: ../../stdlib/src/string/equals.cb
-if_stmt - 
-cannot determine type of symbol 'a' - 0x5618c54a45a0
-invalid field_expr: len
-cannot determine type of symbol 'b' - 0x5618c54a6ad0
-invalid field_expr: len
-cannot determine type of symbol 'a' - 0x5618c54a45a0
-invalid field_expr: len
-cannot determine type of symbol 'b' - 0x5618c54a6ad0
-invalid field_expr: len
-cannot determine type of symbol 'a' - 0x5618c54a45a0
-invalid field_expr: len
-cannot determine type of symbol 'a' - 0x5618c54a45a0
-invalid field_expr: len
-if_stmt - 
-cannot determine type of symbol 'a' - 0x5618c54a45a0
-cannot determine type of symbol 'b' - 0x5618c54a6ad0
-cannot determine type of symbol 'a' - 0x5618c54a45a0
-cannot determine type of symbol 'b' - 0x5618c54a6ad0
-if_stmt - 
-cannot determine type of symbol 'a' - 0x5618c54a45a0
-invalid field_expr: len
-cannot determine type of symbol 'b' - 0x5618c54a6ad0
-invalid field_expr: len
-cannot determine type of symbol 'a' - 0x5618c54a45a0
-invalid field_expr: len
-cannot determine type of symbol 'b' - 0x5618c54a6ad0
-invalid field_expr: len
-cannot determine type of symbol 'a' - 0x5618c54a45a0
-invalid field_expr: len
-cannot determine type of symbol 'a' - 0x5618c54a45a0
-invalid field_expr: len
-if_stmt - 
-cannot determine type of symbol 'a' - 0x5618c54a45a0
-cannot determine type of symbol 'b' - 0x5618c54a6ad0
-cannot determine type of symbol 'a' - 0x5618c54a45a0
-cannot determine type of symbol 'b' - 0x5618c54a6ad0
-    process_code_unit: ../../stdlib/src/string/find.cb
-cannot determine type of symbol 'haystack' - 0x5618c54bfa70
-invalid field_expr: len
-cannot determine type of symbol 'haystack' - 0x5618c54bfa70
-invalid field_expr: len
-if_stmt - 
-cannot determine type of symbol 'haystack' - 0x5618c54bfa70
-cannot determine type of symbol 'haystack' - 0x5618c54bfa70
-cannot determine type of symbol 'haystack' - 0x5618c54da9d0
-invalid field_expr: len
-cannot determine type of symbol 'haystack' - 0x5618c54da9d0
-invalid field_expr: len
-if_stmt - 
-cannot determine type of symbol 'haystack' - 0x5618c54da9d0
-cannot determine type of symbol 'needle' - 0x5618c54dcf00
-cannot determine type of symbol 'needle' - 0x5618c54dcf00
-invalid field_expr: len
-cannot determine type of symbol 'haystack' - 0x5618c54da9d0
-invalid field_expr: len
-cannot determine type of symbol 'haystack' - 0x5618c54da9d0
-cannot determine type of symbol 'needle' - 0x5618c54dcf00
-invalid field_expr: len
-cannot determine type of symbol 'needle' - 0x5618c54dcf00
-invalid field_expr: len
-cannot determine type of symbol 'haystack' - 0x5618c54da9d0
-cannot determine type of symbol 'needle' - 0x5618c54dcf00
-cannot determine type of symbol 'needle' - 0x5618c54dcf00
-invalid field_expr: len
-cannot determine type of symbol 'haystack' - 0x5618c54da9d0
-invalid field_expr: len
-cannot determine type of symbol 'haystack' - 0x5618c54da9d0
-cannot determine type of symbol 'needle' - 0x5618c54dcf00
-invalid field_expr: len
-cannot determine type of symbol 'needle' - 0x5618c54dcf00
-invalid field_expr: len
-cannot determine type of symbol 'haystack' - 0x5618c54bfa70
-invalid field_expr: len
-cannot determine type of symbol 'haystack' - 0x5618c54bfa70
-invalid field_expr: len
-if_stmt - 
-cannot determine type of symbol 'haystack' - 0x5618c54bfa70
-cannot determine type of symbol 'haystack' - 0x5618c54bfa70
-cannot determine type of symbol 'haystack' - 0x5618c54da9d0
-invalid field_expr: len
-cannot determine type of symbol 'haystack' - 0x5618c54da9d0
-invalid field_expr: len
-if_stmt - 
-cannot determine type of symbol 'haystack' - 0x5618c54da9d0
-cannot determine type of symbol 'needle' - 0x5618c54dcf00
-cannot determine type of symbol 'needle' - 0x5618c54dcf00
-invalid field_expr: len
-cannot determine type of symbol 'haystack' - 0x5618c54da9d0
-invalid field_expr: len
-cannot determine type of symbol 'haystack' - 0x5618c54da9d0
-cannot determine type of symbol 'needle' - 0x5618c54dcf00
-invalid field_expr: len
-cannot determine type of symbol 'needle' - 0x5618c54dcf00
-invalid field_expr: len
-cannot determine type of symbol 'haystack' - 0x5618c54da9d0
-cannot determine type of symbol 'needle' - 0x5618c54dcf00
-cannot determine type of symbol 'needle' - 0x5618c54dcf00
-invalid field_expr: len
-cannot determine type of symbol 'haystack' - 0x5618c54da9d0
-invalid field_expr: len
-cannot determine type of symbol 'haystack' - 0x5618c54da9d0
-cannot determine type of symbol 'needle' - 0x5618c54dcf00
-invalid field_expr: len
-cannot determine type of symbol 'needle' - 0x5618c54dcf00
-invalid field_expr: len
-    process_code_unit: ../../stdlib/src/string/string.cb
-carbonc - compiling module: system
-    process_code_unit: ../../stdlib/src/system/system.cb
-if_stmt - 
-if_stmt - 
-if_stmt - 
-cannot determine type of symbol 'tpl_str' - 0x5618c5616950
-if_stmt - 
-if_stmt - 
-if_stmt - 
-if_stmt - 
-if_stmt - 
-if_stmt - 
-if_stmt - 
-carbonc - parsing time: 336ms
+    process_code_unit: ./src/main.g
+cannot determine type of symbol '$for_iter_end' - 0x7fac374edee8
+carbonc - compiling module: rt
+    process_code_unit: ../../runtime/linux/src/rt/errno.g
+    process_code_unit: ../../runtime/linux/src/rt/errors.g
+    process_code_unit: ../../runtime/linux/src/rt/io.g
+    process_code_unit: ../../runtime/linux/src/rt/open.g
+cannot determine type of symbol 'path' - 0x55bae62dec70
+cannot determine type of symbol 'path_cstr' - 0x55bae62f4a00
+cannot determine type of symbol 'path_cstr' - 0x55bae62f4a00
+cannot determine type of symbol 'path_cstr' - 0x55bae62f4a00
+cannot determine type of symbol 'fd' - 0x55bae62feda0
+cannot determine type of symbol 'fd' - 0x55bae62feda0
+cannot determine type of symbol 'fd' - 0x55bae62feda0
+cannot determine type of symbol 'fd' - 0x55bae62feda0
+cannot determine type of symbol 'path' - 0x55bae62dec70
+cannot determine type of symbol 'path_cstr' - 0x55bae62f4a00
+cannot determine type of symbol 'path_cstr' - 0x55bae62f4a00
+cannot determine type of symbol 'path_cstr' - 0x55bae62f4a00
+cannot determine type of symbol 'fd' - 0x55bae62feda0
+cannot determine type of symbol 'fd' - 0x55bae62feda0
+cannot determine type of symbol 'fd' - 0x55bae62feda0
+cannot determine type of symbol 'fd' - 0x55bae62feda0
+    process_code_unit: ../../runtime/linux/src/rt/start.g
+    process_code_unit: ../../runtime/linux/src/rt/string.g
+    process_code_unit: ../../runtime/linux/src/rt/write.g
+cannot determine type of symbol 'tpl_str' - 0x55bae63f6f40
+assembly file: rt_x86_64_start.s
+carbonc - running assembler: as _carbon/build_debug/rt_x86_64_start.s -o _carbon/build_debug/rt_x86_64_start.o
+carbonc - compiling module: rt/x86_64
+    process_code_unit: ../../runtime/linux/src/rt/x86_64/syscall.g
+carbonc - parsing time: 201ms
 
 carbonc - type checking 
-if_stmt - 
-if_stmt - 
-if_stmt - 
-if_stmt - 
-if_stmt - 
-cannot determine type of symbol 'str' - 0x5618c4eb07d0
-cannot determine type of symbol 'str' - 0x5618c4eb07d0
-invalid field_expr: len
-if_stmt - 
-cannot determine type of symbol 'ptr' - 0x5618c5067e80
-cannot determine type of symbol 'ptr' - 0x5618c5067e80
-cannot determine type of symbol 'ptr' - 0x5618c5067e80
-cannot determine type of symbol 'ptr' - 0x5618c5067e80
-if_stmt - 
-if_stmt - 
-if_stmt - 
-if_stmt - 
-if_stmt - 
-if_stmt - 
-cannot determine type of symbol 'fd' - 0x5618c50fc880
-cannot determine type of symbol 'fd' - 0x5618c50fc880
-if_stmt - 
-cannot determine type of symbol 'child' - 0x5618c5120ca0
-cannot determine type of symbol 'child' - 0x5618c5120ca0
-if_stmt - 
-generate_unpacking_operations: ../../stdlib/src/linux/process.cb
-	generating var_decl for argv
-	generating var_decl for err
-if_stmt - 
-cannot determine type of symbol 'child' - 0x5618c5120ca0
-cannot determine type of symbol 'child' - 0x5618c5120ca0
-cannot determine type of symbol 'child' - 0x5618c5120ca0
-if_stmt - 
-if_stmt - 
-cannot determine type of symbol 'child' - 0x5618c5120ca0
-cannot determine type of symbol 'child' - 0x5618c5120ca0
-if_stmt - 
-if_stmt - 
-if_stmt - 
-if_stmt - 
-if_stmt - 
-if_stmt - 
-if_stmt - 
-if_stmt - 
-if_stmt - 
-if_stmt - 
-if_stmt - 
-if_stmt - 
-if_stmt - 
-generate_unpacking_operations: ../../stdlib/src/mem/slice.cb
-	generating var_decl for buf
-	generating var_decl for err
-if_stmt - 
-if_stmt - 
-if_stmt - 
-if_stmt - 
-if_stmt - 
-if_stmt - 
-if_stmt - 
-if_stmt - 
-if_stmt - 
-if_stmt - 
-if_stmt - 
-if_stmt - 
-if_stmt - 
-if_stmt - 
-if_stmt - 
-if_stmt - 
-if_stmt - 
-if_stmt - 
-if_stmt - 
-if_stmt - 
-if_stmt - 
-if_stmt - 
-if_stmt - 
-if_stmt - 
-if_stmt - 
-if_stmt - 
-if_stmt - 
-generate_unpacking_operations: ../../stdlib/src/linux/start.cb
-	generating var_decl for m
-	generating var_decl for err
-if_stmt - 
-generate_unpacking_operations: ../../stdlib/src/linux/start.cb
-	generating var_decl for ptr
-	generating var_decl for err
-if_stmt - 
-if_stmt - 
-if_stmt - 
-if_stmt - 
-if_stmt - 
-if_stmt - 
-generate_unpacking_operations: ../../stdlib/src/mem/mem.cb
-	generating var_decl for newmem
-	generating var_decl for err
-if_stmt - 
-if_stmt - 
-if_stmt - 
-if_stmt - 
-if_stmt - 
-if_stmt - 
-if_stmt - 
-if_stmt - 
-if_stmt - 
-if_stmt - 
-if_stmt - 
-if_stmt - 
-if_stmt - 
-if_stmt - 
-if_stmt - 
-if_stmt - 
-if_stmt - 
-if_stmt - 
-if_stmt - 
-if_stmt - 
-if_stmt - 
-if_stmt - 
-if_stmt - 
-if_stmt - 
-if_stmt - 
-if_stmt - 
-if_stmt - 
-if_stmt - 
-if_stmt - 
-if_stmt - 
-if_stmt - 
-if_stmt - 
-if_stmt - 
-if_stmt - 
-if_stmt - 
-if_stmt - 
-if_stmt - 
-if_stmt - 
-if_stmt - 
-if_stmt - 
-if_stmt - 
-if_stmt - 
-if_stmt - 
-if_stmt - 
-if_stmt - 
-if_stmt - 
-if_stmt - 
-if_stmt - 
-if_stmt - 
-if_stmt - 
-if_stmt - 
-if_stmt - 
-if_stmt - 
-if_stmt - 
-if_stmt - 
-if_stmt - 
-if_stmt - 
-if_stmt - 
-if_stmt - 
-if_stmt - 
-if_stmt - 
-if_stmt - 
-if_stmt - 
-if_stmt - 
-if_stmt - 
-if_stmt - 
-if_stmt - 
-if_stmt - 
-if_stmt - 
-if_stmt - 
-if_stmt - 
-if_stmt - 
-if_stmt - 
-if_stmt - 
-if_stmt - 
-if_stmt - 
-if_stmt - 
-if_stmt - 
-if_stmt - 
-if_stmt - 
-if_stmt - 
-if_stmt - 
-if_stmt - 
-if_stmt - 
-if_stmt - 
-if_stmt - 
-if_stmt - 
-if_stmt - 
-if_stmt - 
-if_stmt - 
-if_stmt - 
-if_stmt - 
-if_stmt - 
-if_stmt - 
-if_stmt - 
-if_stmt - 
-if_stmt - 
-check_func_arg_aggregate_type: func print([]pure uint8): {} (0) 
-check_func_arg_aggregate_type: func println([]pure uint8): {} (0) 
-check_func_arg_aggregate_type: func read(File_Handle, []uint8): {} (1) 
-check_func_arg_aggregate_type: func write(File_Handle, []pure uint8): {} (1) 
-check_func_arg_aggregate_type: func chdir([]pure uint8): error (0) 
-check_func_arg_aggregate_type: func open([]pure uint8, Open_Flags, int): {File_Handle, error} (0) 
-check_func_arg_aggregate_type: func process([]pure uint8, [][]pure uint8): {int, error} (0) 
-check_func_arg_aggregate_type: func process([]pure uint8, [][]pure uint8): {int, error} (1) 
-check_func_arg_aggregate_type: func stat([]pure uint8, &Stat): error (0) 
-check_func_arg_aggregate_type: func equals(string, string): bool (0) 
-check_func_arg_aggregate_type: func equals(string, string): bool (1) 
-check_func_arg_aggregate_type: func find(string, uint8): {usize, bool} (0) 
-check_func_arg_aggregate_type: func find(string, string): {usize, bool} (0) 
-check_func_arg_aggregate_type: func find(string, string): {usize, bool} (1) 
-check_func_arg_aggregate_type: func write(File_Handle, []pure uint8): isize (1) 
-check_func_arg_aggregate_type: func read(File_Handle, []uint8): isize (1) 
-check_func_arg_aggregate_type: func open([]pure uint8, Open_Flags, int): {File_Handle, error} (0) 
-check_func_arg_aggregate_type: func stat([]pure uint8, &Stat): error (0) 
-check_func_arg_aggregate_type: func unlink([]pure uint8): error (0) 
-check_func_arg_aggregate_type: func remove([]pure uint8): error (0) 
-check_func_arg_aggregate_type: func rename([]pure uint8, []pure uint8): error (0) 
-check_func_arg_aggregate_type: func rename([]pure uint8, []pure uint8): error (1) 
-check_func_arg_aggregate_type: func copy([]pure uint8, []pure uint8): error (0) 
-check_func_arg_aggregate_type: func copy([]pure uint8, []pure uint8): error (1) 
-check_func_arg_aggregate_type: func mkdir([]pure uint8): error (0) 
-check_func_arg_aggregate_type: func chdir([]pure uint8): error (0) 
-check_func_arg_aggregate_type: func process([]pure uint8, [][]pure uint8): {int, error} (0) 
-check_func_arg_aggregate_type: func process([]pure uint8, [][]pure uint8): {int, error} (1) 
-check_func_arg_aggregate_type: func intToString(int, int, []uint8): int (2) 
-carbonc - type checking time: 106ms
+cannot determine type of symbol 'path_cstr' - 0x55bae62f4a00
+cannot determine type of symbol 'path_cstr' - 0x55bae62f4a00
+cannot determine type of symbol 'path_cstr' - 0x55bae62f4a00
+cannot determine type of symbol 'fd' - 0x55bae62feda0
+cannot determine type of symbol 'fd' - 0x55bae62feda0
+cannot determine type of symbol 'fd' - 0x55bae62feda0
+cannot determine type of symbol 'fd' - 0x55bae62feda0
+carbonc - type checking time: 291ms
 
 carbonc - generating IR 
-carbonc - IR generation time: 38ms
+carbonc - IR generation time: 15ms
 
 carbonc - generating assembly 
 carbonc - running assembler: as _carbon/build_debug/root.asm -o _carbon/build_debug/root.o
-carbonc - running assembler: as _carbon/build_debug/io.asm -o _carbon/build_debug/io.o
-carbonc - running assembler: as _carbon/build_debug/linux.asm -o _carbon/build_debug/linux.o
-carbonc - running assembler: as _carbon/build_debug/linux_syscall.asm -o _carbon/build_debug/linux_syscall.o
-carbonc - running assembler: as _carbon/build_debug/mem.asm -o _carbon/build_debug/mem.o
-carbonc - running assembler: as _carbon/build_debug/string.asm -o _carbon/build_debug/string.o
-carbonc - running assembler: as _carbon/build_debug/system.asm -o _carbon/build_debug/system.o
-carbonc - assembly generation time: 241ms
+carbonc - running assembler: as _carbon/build_debug/rt.asm -o _carbon/build_debug/rt.o
+carbonc - running assembler: as _carbon/build_debug/rt_x86_64.asm -o _carbon/build_debug/rt_x86_64.o
+carbonc - assembly generation time: 99ms
 
-carbonc - running linker command: ld  -e _start -o _carbon/build_debug/test_for_loop _carbon/build_debug/linux_x86_64_start.o _carbon/build_debug/root.o _carbon/build_debug/io.o _carbon/build_debug/linux.o _carbon/build_debug/linux_syscall.o _carbon/build_debug/mem.o _carbon/build_debug/string.o _carbon/build_debug/system.o -T ../../res/carbon.sc
+carbonc - running linker command: ld  -e _start -o _carbon/build_debug/test-03-for _carbon/build_debug/rt_x86_64_start.o _carbon/build_debug/root.o _carbon/build_debug/rt.o _carbon/build_debug/rt_x86_64.o -T ../../res/carbon.sc
 carbonc - output: a.out
 
-carbonc - total lines parsed: 1067
-carbonc - total compilation time: 833ms
+carbonc - total lines parsed: 698
+carbonc - total compilation time: 662ms

@@ -609,6 +609,7 @@ bool is_primary_expr(ast_node& node) {
     case ast_type::char_literal:
     case ast_type::string_literal:
     case ast_type::identifier:
+    case ast_type::nil_literal:
         return true;
     default:
         return false;

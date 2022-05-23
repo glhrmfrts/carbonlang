@@ -6,6 +6,12 @@ fun main := do
     writeln(i)
 
     let a := 2 + 5 * 10
-    writeln(a)
-    writeln(a / 2)
+    writeln(a) -- 52
+    writeln(a / 2) -- 26
+
+    writeln(-a) -- -52
+
+    writeln(-a = -52) -- true
+
+    writeln(-(-a)) -- 52
 end

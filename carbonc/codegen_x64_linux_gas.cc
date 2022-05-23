@@ -31,6 +31,9 @@ static void append_offset(std::string& result, const gen_offset_expr& expr, bool
         }
         result.append(std::to_string(*off));
     }
+    else if (auto doff = std::get_if<gen_data_offset>(&expr); doff) {
+        result.append(doff->label);
+    }
 }
 
 static std::string offset_tostr(const gen_addr& r) {
@@ -224,6 +227,10 @@ struct codegen_x64_linux_gas_emitter : public codegen_x64_emitter {
 
     virtual void add_int32(std::int32_t value) {
         emitln("    .long %d", value);
+    }
+
+    virtual void add_int64(std::int64_t value) {
+        emitln("    .quad %lld", value);
     }
 
     virtual void add_stringz(std::string_view value) {

@@ -535,6 +535,16 @@ struct generator {
             }
             // TODO: handle globals pointing to other globals
         }
+        else if (is_aggregate_type(gd.type)) {
+            em->align(gd.type.get().alignment);
+            em->label(gd.name.c_str());
+            for (const auto& val : gd.aggregate_values) {
+                if (val.first.get().size == 8) {
+                    ir_int ival = std::get<ir_int>(val.second);
+                    em->add_int64(ival.val);
+                }
+            }
+        }
         else {
             assert(!"generate_global_var: type not handled");
         }
@@ -802,12 +812,19 @@ struct generator {
                 load_address(dest, expr, ts->opaque_ptr_type);
             }
             else if (is_mem(a)) {
-                auto org_expr = std::get<gen_addr>(a);
-
                 auto expr = gen_addr{};
+                if (std::holds_alternative<gen_addr>(a)) {
+                    auto org_expr = std::get<gen_addr>(a);
+                    expr.base = org_expr.base;
+                    expr.offset = org_expr.offset;
+                }
+                else {
+                    auto org_expr = std::get<gen_data_offset>(a);
+                    load_address(rax, org_expr, ts->opaque_ptr_type);
+                    expr.base = rax;
+                    expr.offset = 0;
+                }
                 expr.op_size = elem_size;
-                expr.base = org_expr.base;
-                expr.offset = org_expr.offset;
                 expr.index = reg_intermediate;
                 expr.mult = comp_int_type(esize_offs);
                 load_address(dest, expr, ts->opaque_ptr_type);

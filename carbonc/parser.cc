@@ -1271,8 +1271,7 @@ struct parser_impl {
             return make_nil_node(*ast_arena, lex->pos());
         }
         case token_type::noinit:
-        case token_type::noflags:
-        case token_type::noerror: {
+        case token_type::noflags: {
             scope_guard _{ [this]() { lex->next(); } };
             return make_init_tag_node(*ast_arena, lex->pos(), TOK);
         }
@@ -1301,6 +1300,11 @@ struct parser_impl {
                 throw parse_error(filename, lex->pos(), "expected type expression after 'type'");
             }
             return make_const_expr_node(*ast_arena, pos, std::move(expr));
+        }
+        case token_type::dotdotdot: {
+            auto pos = lex->pos();
+            lex->next();
+            return make_rest_expr_node(*ast_arena, pos, { nullptr, nullptr });
         }
         default: {
             char c = TOK_CHAR;
@@ -1420,7 +1424,7 @@ struct parser_impl {
     }
 
     arena_ptr<ast_node> parse_arg_list(char end, std::function<arena_ptr<ast_node>()> parse_arg) {
-        enum { LIMIT = 32 };
+        enum { LIMIT = 32*1000 };
         std::vector<arena_ptr<ast_node>> args;
 
         auto pos = lex->pos();

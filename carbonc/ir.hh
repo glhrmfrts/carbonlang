@@ -165,6 +165,7 @@ struct ir_global_data {
     std::optional<ir_operand> value;
     func_linkage linkage;
     decl_visibility visibility;
+    std::vector<std::pair<type_id, ir_operand>> aggregate_values;
 };
 
 struct ir_func {

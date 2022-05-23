@@ -3,50 +3,48 @@ carbonc - compiling target: test-01-arith
 carbonc - compiling module: root
     process_code_unit: ./src/main.g
 carbonc - compiling module: rt
+    process_code_unit: ../../runtime/linux/src/rt/errno.g
+    process_code_unit: ../../runtime/linux/src/rt/errors.g
     process_code_unit: ../../runtime/linux/src/rt/io.g
+    process_code_unit: ../../runtime/linux/src/rt/open.g
+cannot determine type of symbol 'path' - 0x5644c6202d80
+cannot determine type of symbol 'path_cstr' - 0x5644c6218b10
+cannot determine type of symbol 'path_cstr' - 0x5644c6218b10
+cannot determine type of symbol 'path_cstr' - 0x5644c6218b10
+cannot determine type of symbol 'fd' - 0x5644c6222eb0
+cannot determine type of symbol 'fd' - 0x5644c6222eb0
+cannot determine type of symbol 'fd' - 0x5644c6222eb0
+cannot determine type of symbol 'fd' - 0x5644c6222eb0
+cannot determine type of symbol 'path' - 0x5644c6202d80
+cannot determine type of symbol 'path_cstr' - 0x5644c6218b10
+cannot determine type of symbol 'path_cstr' - 0x5644c6218b10
+cannot determine type of symbol 'path_cstr' - 0x5644c6218b10
+cannot determine type of symbol 'fd' - 0x5644c6222eb0
+cannot determine type of symbol 'fd' - 0x5644c6222eb0
+cannot determine type of symbol 'fd' - 0x5644c6222eb0
+cannot determine type of symbol 'fd' - 0x5644c6222eb0
     process_code_unit: ../../runtime/linux/src/rt/start.g
+    process_code_unit: ../../runtime/linux/src/rt/string.g
     process_code_unit: ../../runtime/linux/src/rt/write.g
-if_stmt - 
-if_stmt - 
-if_stmt - 
-cannot determine type of symbol 'tpl_str' - 0x7f58b4dd8d60
-if_stmt - 
-if_stmt - 
-if_stmt - 
-if_stmt - 
-if_stmt - 
-if_stmt - 
-if_stmt - 
+cannot determine type of symbol 'tpl_str' - 0x5644c631b050
 assembly file: rt_x86_64_start.s
 carbonc - running assembler: as _carbon/build_debug/rt_x86_64_start.s -o _carbon/build_debug/rt_x86_64_start.o
 carbonc - compiling module: rt/x86_64
     process_code_unit: ../../runtime/linux/src/rt/x86_64/syscall.g
-carbonc - parsing time: 148ms
+carbonc - parsing time: 202ms
 
 carbonc - type checking 
-if_stmt - 
-if_stmt - 
-if_stmt - 
-if_stmt - 
-if_stmt - 
-if_stmt - 
-if_stmt - 
-if_stmt - 
-if_stmt - 
-if_stmt - 
-if_stmt - 
-if_stmt - 
-if_stmt - 
-if_stmt - 
-if_stmt - 
-check_func_arg_aggregate_type: fun write(file_handle, arrayview of pure byte) => int (1) 
-check_func_arg_aggregate_type: fun write(arrayview of pure byte) => opaque (0) 
-check_func_arg_aggregate_type: fun writeln(arrayview of pure byte) => opaque (0) 
-check_func_arg_aggregate_type: fun int_to_string(int, int, arrayview of byte) => int (2) 
-carbonc - type checking time: 26ms
+cannot determine type of symbol 'path_cstr' - 0x5644c6218b10
+cannot determine type of symbol 'path_cstr' - 0x5644c6218b10
+cannot determine type of symbol 'path_cstr' - 0x5644c6218b10
+cannot determine type of symbol 'fd' - 0x5644c6222eb0
+cannot determine type of symbol 'fd' - 0x5644c6222eb0
+cannot determine type of symbol 'fd' - 0x5644c6222eb0
+cannot determine type of symbol 'fd' - 0x5644c6222eb0
+carbonc - type checking time: 42ms
 
 carbonc - generating IR 
-carbonc - IR generation time: 11ms
+carbonc - IR generation time: 16ms
 
 carbonc - generating assembly 
 carbonc - running assembler: as _carbon/build_debug/root.asm -o _carbon/build_debug/root.o
@@ -57,5 +55,5 @@ carbonc - assembly generation time: 90ms
 carbonc - running linker command: ld  -e _start -o _carbon/build_debug/test-01-arith _carbon/build_debug/rt_x86_64_start.o _carbon/build_debug/root.o _carbon/build_debug/rt.o _carbon/build_debug/rt_x86_64.o -T ../../res/carbon.sc
 carbonc - output: a.out
 
-carbonc - total lines parsed: 111
-carbonc - total compilation time: 338ms
+carbonc - total lines parsed: 650
+carbonc - total compilation time: 405ms

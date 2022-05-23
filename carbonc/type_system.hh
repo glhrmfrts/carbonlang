@@ -5,6 +5,7 @@
 #include <string>
 #include <unordered_map>
 #include <variant>
+#include <stack>
 #include "memory.hh"
 #include "common.hh"
 #include "token.hh"
@@ -96,6 +97,7 @@ struct type_def {
 
     struct array_type {
         std::size_t length;
+        bool deduce_size;
     };
 
     struct func_type {
@@ -238,7 +240,6 @@ struct slice_info {
 
 struct init_list {
     ast_node* receiver;
-    std::vector<arena_ptr<ast_node>> assignments{};
     bool deduce_to_tuple = false;
 };
 
@@ -356,6 +357,8 @@ struct type_system {
     std::unordered_map<string_hash, scope_def*> module_scopes;
     std::vector<type_error> errors;
     type_error current_error{};
+
+    std::stack<type_id> receiver_type_stack;
 
     bool inside_defer = false;
 

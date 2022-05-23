@@ -270,9 +270,6 @@ void desugar(type_system& ts, ast_node* nodeptr) {
     case ast_type::init_expr: {
         if (ts.subpass < 1) { break; }
 
-        for (auto& as : node.initlist.assignments) {
-            visit_tree(ts, *as);
-        }
         visit_pre_children(ts, node);
         break;
     }

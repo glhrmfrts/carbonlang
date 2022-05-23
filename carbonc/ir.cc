@@ -1003,6 +1003,18 @@ void generate_ir_unary_expr(ast_node& node) {
     }
 }
 
+void generate_ir_identifier(ast_node& node);
+
+static void generate_ir_init_expr_global(ast_node& node, ir_global_data& glob) {
+    for (auto& item : node.children[1]->children) {
+        if (is_primary_expr(*item)) {
+            generate_ir_node(*item);
+            auto value = pop();
+            glob.aggregate_values.push_back({ item->tid, value });
+        }
+    }
+}
+
 void generate_ir_global(ast_node& node) {
     if (node.func.linkage != func_linkage::local_carbon) {
         prog->globals.push_back(ir_global_data{
@@ -1012,21 +1024,36 @@ void generate_ir_global(ast_node& node) {
     }
 
     if (node.var_value() && !node.local.mangled_name.str.empty()) {
-        generate_ir_node(*node.var_value());
-
         if (is_primary_expr(*node.var_value()) && node.var_value()->type != ast_type::identifier) {
+            generate_ir_node(*node.var_value());
+
             // TODO: what if it's an identifier ?
             prog->globals.push_back(ir_global_data{
                 node.local.mangled_name.str, node.tid, pop(), func_linkage::local_carbon, node.visibility
-                });
+            });
             return;
         }
         else if (node.tid.get().kind == type_kind::ptr) {
+            generate_ir_node(*node.var_value());
+
             prog->globals.push_back(ir_global_data{
                 node.local.mangled_name.str, node.tid, pop(), func_linkage::local_carbon, node.visibility
-                });
+            });
             return;
         }
+        else if (is_aggregate_type(node.tid)) {
+            ir_global_data glob{};
+            glob.name = node.local.mangled_name.str;
+            glob.type = node.tid;
+            glob.linkage = node.visibility == decl_visibility::local_ ? func_linkage::local_carbon : func_linkage::external_carbon;
+            glob.visibility = node.visibility;
+            if (node.var_value()->type == ast_type::init_expr) {
+                generate_ir_init_expr_global(*node.var_value(), glob);
+            }
+            prog->globals.push_back(glob);
+            return;
+        }
+        
         assert(!"generate_ir_var: non primary global");
     }
 }
@@ -1343,6 +1370,9 @@ void print_ref(std::ostream& f, const ir_ref& opr) {
     if (auto arg = std::get_if<ir_local>(&opr); arg) {
         f << "L" << arg->index;
     }
+    if (auto arg = std::get_if<ir_global>(&opr); arg) {
+        f << arg->name;
+    }
     if (auto arg = std::get_if<ir_stackpop>(&opr); arg) {
         f << "POP()";
     }
@@ -1386,6 +1416,9 @@ void print_opr(std::ostream& f, const ir_operand& opr) {
     }
     if (auto arg = std::get_if<ir_float>(&opr); arg) {
         f << arg->val;
+    }
+    if (auto arg = std::get_if<ir_global>(&opr); arg) {
+        f << arg->name;
     }
     if (auto arg = std::get_if<char>(&opr); arg) {
         f << "#" << (int)*arg;

@@ -55,7 +55,7 @@ end
 
 fun open(file : out FileHandle, path : StringView, flags : OpenFlags, mode : int) => error := do
     let buf : array(4096) of byte
-    let bufview : arrayview of byte { &buf, sizeof(buf) }
+    let bufview := arrayview of byte { &buf[0], sizeof(buf) }
 
     let path_cstr := to_cstr(path, bufview)
     if path_cstr = nil then
