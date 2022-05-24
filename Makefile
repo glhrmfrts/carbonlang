@@ -54,4 +54,29 @@ test:
 		carbonc -p ../.. -I runtime/linux -V -o a.out > compile.txt && \
 		./a.out > out.txt && diff out.txt expected.txt && echo "\033[1;32mtest-08-funcs: OK\033[0m"
 
+	@echo "test-09-enums: ..." && \
+		cd tests/test-09-enums && \
+		carbonc -p ../.. -I runtime/linux -V -o a.out > compile.txt && \
+		./a.out > out.txt && diff out.txt expected.txt && echo "\033[1;32mtest-09-enums: OK\033[0m"
+
+	@echo "test-10-bitwise: ..." && \
+		cd tests/test-10-bitwise && \
+		carbonc -p ../.. -I runtime/linux -V -o a.out > compile.txt && \
+		./a.out > out.txt && diff out.txt expected.txt && echo "\033[1;32mtest-10-bitwise: OK\033[0m"
+
+	@echo "test-11-rule110: ..." && \
+		cd tests/test-11-rule110 && \
+		carbonc -p ../.. -I runtime/linux -V -o a.out > compile.txt && \
+		./a.out > out.txt && diff out.txt expected.txt && echo "\033[1;32mtest-11-rule110: OK\033[0m"
+
+	@echo "test-12-field: ..." && \
+		cd tests/test-12-field && \
+		carbonc -p ../.. -I runtime/linux -V -o a.out > compile.txt && \
+		./a.out > out.txt && diff out.txt expected.txt && echo "\033[1;32mtest-12-field: OK\033[0m"
+
+	@echo "test-13-index: ..." && \
+		cd tests/test-13-index && \
+		carbonc -p ../.. -I runtime/linux -V -o a.out > compile.txt && \
+		./a.out > out.txt && diff out.txt expected.txt && echo "\033[1;32mtest-13-index: OK\033[0m"
+
 .PHONY: all

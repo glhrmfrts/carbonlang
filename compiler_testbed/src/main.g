@@ -1,10 +1,15 @@
 import rt
 
-type State := struct of value : int; value2 : int end
+fun writeln(b : int) := do end
 
-fun foo(state : out State, a : int) := do
-    a := 3
+type Data := struct of
+    a: int
+    b: int
+    c: int
 end
 
+fun get_array := array(3) of int {40,50,60}
+
 fun main := do
+    let a := (Data{1,2,3}).a
 end

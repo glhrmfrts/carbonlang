@@ -1,0 +1,69 @@
+carbonc - compiling target: test-10-bitwise
+
+carbonc - compiling module: root
+    process_code_unit: ./src/main.g
+carbonc - compiling module: rt
+    process_code_unit: ../../runtime/linux/src/rt/errno.g
+    process_code_unit: ../../runtime/linux/src/rt/errors.g
+    process_code_unit: ../../runtime/linux/src/rt/io.g
+    process_code_unit: ../../runtime/linux/src/rt/open.g
+cannot determine type of symbol 'path' - 0x55ea47785b40
+cannot determine type of symbol 'path_cstr' - 0x55ea4779b8d0
+cannot determine type of symbol 'path_cstr' - 0x55ea4779b8d0
+cannot determine type of symbol 'path_cstr' - 0x55ea4779b8d0
+cannot determine type of symbol 'fd' - 0x55ea477a5c70
+cannot determine type of symbol 'fd' - 0x55ea477a5c70
+cannot determine type of symbol 'fd' - 0x55ea477a5c70
+cannot determine type of symbol 'fd' - 0x55ea477a5c70
+cannot determine type of symbol 'path' - 0x55ea47785b40
+cannot determine type of symbol 'path_cstr' - 0x55ea4779b8d0
+cannot determine type of symbol 'path_cstr' - 0x55ea4779b8d0
+cannot determine type of symbol 'path_cstr' - 0x55ea4779b8d0
+cannot determine type of symbol 'fd' - 0x55ea477a5c70
+cannot determine type of symbol 'fd' - 0x55ea477a5c70
+cannot determine type of symbol 'fd' - 0x55ea477a5c70
+cannot determine type of symbol 'fd' - 0x55ea477a5c70
+    process_code_unit: ../../runtime/linux/src/rt/start.g
+    process_code_unit: ../../runtime/linux/src/rt/string.g
+    process_code_unit: ../../runtime/linux/src/rt/write.g
+cannot determine type of symbol 'res' - 0x55ea47881860
+cannot determine type of symbol 'res' - 0x55ea47881860
+cannot determine type of symbol 'res' - 0x55ea47881860
+cannot determine type of symbol 'res' - 0x55ea478993b0
+cannot determine type of symbol 'res' - 0x55ea478a5c80
+cannot determine type of symbol 'tpl_str' - 0x55ea478bdd40
+cannot determine type of symbol 'res' - 0x55ea47881860
+cannot determine type of symbol 'res' - 0x55ea47881860
+cannot determine type of symbol 'res' - 0x55ea47881860
+cannot determine type of symbol 'res' - 0x55ea478993b0
+cannot determine type of symbol 'res' - 0x55ea478a5c80
+assembly file: rt_x86_64_start.s
+carbonc - running assembler: as _carbon/build_debug/rt_x86_64_start.s -o _carbon/build_debug/rt_x86_64_start.o
+carbonc - compiling module: rt/x86_64
+    process_code_unit: ../../runtime/linux/src/rt/x86_64/syscall.g
+carbonc - parsing time: 202ms
+
+carbonc - type checking 
+cannot determine type of symbol 'path_cstr' - 0x55ea4779b8d0
+cannot determine type of symbol 'path_cstr' - 0x55ea4779b8d0
+cannot determine type of symbol 'path_cstr' - 0x55ea4779b8d0
+cannot determine type of symbol 'fd' - 0x55ea477a5c70
+cannot determine type of symbol 'fd' - 0x55ea477a5c70
+cannot determine type of symbol 'fd' - 0x55ea477a5c70
+cannot determine type of symbol 'fd' - 0x55ea477a5c70
+carbonc - type checking time: 47ms
+
+carbonc - generating IR 
+carbonc - IR generation time: 15ms
+
+carbonc - generating assembly 
+carbonc - running assembler: as _carbon/build_debug/root.asm -o _carbon/build_debug/root.o
+carbonc - running assembler: as _carbon/build_debug/rt.asm -o _carbon/build_debug/rt.o
+carbonc - running assembler: as _carbon/build_debug/rt_x86_64.asm -o _carbon/build_debug/rt_x86_64.o
+carbonc - assembly generation time: 97ms
+
+carbonc - running linker command: ld  -e _start -o _carbon/build_debug/test-10-bitwise _carbon/build_debug/rt_x86_64_start.o _carbon/build_debug/root.o _carbon/build_debug/rt.o _carbon/build_debug/rt_x86_64.o -T ../../res/carbon.sc
+carbonc - output: a.out
+
+carbonc - total lines parsed: 666
+carbonc - total compilation time: 413ms

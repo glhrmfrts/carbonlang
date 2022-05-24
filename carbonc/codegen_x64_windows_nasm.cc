@@ -388,6 +388,10 @@ struct codegen_x64_windows_nasm_emitter : public codegen_x64_emitter {
         emitln(" neg %s", tostr_sized(a).c_str());
     }
 
+    virtual void not_(gen_destination a) {
+        emitln(" not %s", tostr_sized(a).c_str());
+    }
+
     virtual void sal(gen_destination a, gen_operand b) {
         emitln(" sal %s,%s", tostr_sized(a).c_str(), tostr_sized(b).c_str());
     }

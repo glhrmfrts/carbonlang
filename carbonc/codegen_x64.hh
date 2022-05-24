@@ -220,6 +220,8 @@ struct codegen_x64_emitter {
 
     virtual void neg(gen_destination a) = 0;
 
+    virtual void not_(gen_destination a) = 0;
+
     virtual void sal(gen_destination a, gen_operand b) = 0;
 
     virtual void sar(gen_destination a, gen_operand b) = 0;

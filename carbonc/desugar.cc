@@ -226,12 +226,12 @@ void desugar(type_system& ts, ast_node* nodeptr) {
     case ast_type::compound_stmt: {
         if (node.scope.self) {
             enter_scope_local(ts, node);
-            visit_pre_children(ts, node);
+            visit_pre_nodes(ts, node);
             visit_children(ts, node);
             leave_scope_local(ts);
         }
         else {
-            visit_pre_children(ts, node);
+            visit_pre_nodes(ts, node);
             visit_children(ts, node);
         }
         break;
@@ -259,7 +259,7 @@ void desugar(type_system& ts, ast_node* nodeptr) {
             check_temp_ternary_expr(ts, *(node.call_args()[i]));
         }
 
-        visit_pre_children(ts, node);
+        visit_pre_nodes(ts, node);
         visit_children(ts, node);
 
         if (ts.subpass == 2) {
@@ -270,7 +270,7 @@ void desugar(type_system& ts, ast_node* nodeptr) {
     case ast_type::init_expr: {
         if (ts.subpass < 1) { break; }
 
-        visit_pre_children(ts, node);
+        visit_pre_nodes(ts, node);
         break;
     }
     case ast_type::assign_stmt: {
@@ -278,6 +278,7 @@ void desugar(type_system& ts, ast_node* nodeptr) {
         check_assignment_logic_op(ts, node);
         check_assignment_ternary_expr(ts, node);
         check_assignment_aggregate_call(ts, node);
+        visit_children(ts, node);
         break;
     }
     case ast_type::binary_expr: {
@@ -290,7 +291,7 @@ void desugar(type_system& ts, ast_node* nodeptr) {
             }
         }
 
-        visit_pre_children(ts, node);
+        visit_pre_nodes(ts, node);
         visit_children(ts, node);
 
         for (int i = 0; i < 2; i++) {
@@ -304,7 +305,7 @@ void desugar(type_system& ts, ast_node* nodeptr) {
         check_temp_logic_op(ts, *node.children[1]);
         check_temp_ternary_expr(ts, *node.children[2]);
         check_temp_logic_op(ts, *node.children[2]);
-        visit_pre_children(ts, node);
+        visit_pre_nodes(ts, node);
         visit_children(ts, node);
         break;
     }
@@ -312,7 +313,7 @@ void desugar(type_system& ts, ast_node* nodeptr) {
         if (ts.subpass < 1) { break; }
         check_var_decl_logic_op(ts, node);
         check_var_decl_ternary_expr(ts, node);
-        visit_pre_children(ts, node);
+        visit_pre_nodes(ts, node);
         visit_children(ts, node);
         check_var_decl_aggregate_call(ts, node);
         break;
@@ -323,12 +324,12 @@ void desugar(type_system& ts, ast_node* nodeptr) {
             check_temp_logic_op(ts, *node.children[0]);
             check_temp_ternary_expr(ts, *node.children[0]);
         }
-        visit_pre_children(ts, node);
+        visit_pre_nodes(ts, node);
         visit_children(ts, node);
         break;
     }
     default: {
-        visit_pre_children(ts, node);
+        visit_pre_nodes(ts, node);
         visit_children(ts, node);
         break;
     }

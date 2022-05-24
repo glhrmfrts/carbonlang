@@ -1,0 +1,69 @@
+carbonc - compiling target: test-13-index
+
+carbonc - compiling module: root
+    process_code_unit: ./src/main.g
+carbonc - compiling module: rt
+    process_code_unit: ../../runtime/linux/src/rt/errno.g
+    process_code_unit: ../../runtime/linux/src/rt/errors.g
+    process_code_unit: ../../runtime/linux/src/rt/io.g
+    process_code_unit: ../../runtime/linux/src/rt/open.g
+cannot determine type of symbol 'path' - 0x5580c92d6730
+cannot determine type of symbol 'path_cstr' - 0x5580c92ec4c0
+cannot determine type of symbol 'path_cstr' - 0x5580c92ec4c0
+cannot determine type of symbol 'path_cstr' - 0x5580c92ec4c0
+cannot determine type of symbol 'fd' - 0x5580c92f6860
+cannot determine type of symbol 'fd' - 0x5580c92f6860
+cannot determine type of symbol 'fd' - 0x5580c92f6860
+cannot determine type of symbol 'fd' - 0x5580c92f6860
+cannot determine type of symbol 'path' - 0x5580c92d6730
+cannot determine type of symbol 'path_cstr' - 0x5580c92ec4c0
+cannot determine type of symbol 'path_cstr' - 0x5580c92ec4c0
+cannot determine type of symbol 'path_cstr' - 0x5580c92ec4c0
+cannot determine type of symbol 'fd' - 0x5580c92f6860
+cannot determine type of symbol 'fd' - 0x5580c92f6860
+cannot determine type of symbol 'fd' - 0x5580c92f6860
+cannot determine type of symbol 'fd' - 0x5580c92f6860
+    process_code_unit: ../../runtime/linux/src/rt/start.g
+    process_code_unit: ../../runtime/linux/src/rt/string.g
+    process_code_unit: ../../runtime/linux/src/rt/write.g
+cannot determine type of symbol 'res' - 0x5580c93d2450
+cannot determine type of symbol 'res' - 0x5580c93d2450
+cannot determine type of symbol 'res' - 0x5580c93d2450
+cannot determine type of symbol 'res' - 0x5580c93e9fa0
+cannot determine type of symbol 'res' - 0x5580c93f6870
+cannot determine type of symbol 'tpl_str' - 0x5580c940e3c0
+cannot determine type of symbol 'res' - 0x5580c93d2450
+cannot determine type of symbol 'res' - 0x5580c93d2450
+cannot determine type of symbol 'res' - 0x5580c93d2450
+cannot determine type of symbol 'res' - 0x5580c93e9fa0
+cannot determine type of symbol 'res' - 0x5580c93f6870
+assembly file: rt_x86_64_start.s
+carbonc - running assembler: as _carbon/build_debug/rt_x86_64_start.s -o _carbon/build_debug/rt_x86_64_start.o
+carbonc - compiling module: rt/x86_64
+    process_code_unit: ../../runtime/linux/src/rt/x86_64/syscall.g
+carbonc - parsing time: 208ms
+
+carbonc - type checking 
+cannot determine type of symbol 'path_cstr' - 0x5580c92ec4c0
+cannot determine type of symbol 'path_cstr' - 0x5580c92ec4c0
+cannot determine type of symbol 'path_cstr' - 0x5580c92ec4c0
+cannot determine type of symbol 'fd' - 0x5580c92f6860
+cannot determine type of symbol 'fd' - 0x5580c92f6860
+cannot determine type of symbol 'fd' - 0x5580c92f6860
+cannot determine type of symbol 'fd' - 0x5580c92f6860
+carbonc - type checking time: 50ms
+
+carbonc - generating IR 
+carbonc - IR generation time: 17ms
+
+carbonc - generating assembly 
+carbonc - running assembler: as _carbon/build_debug/root.asm -o _carbon/build_debug/root.o
+carbonc - running assembler: as _carbon/build_debug/rt.asm -o _carbon/build_debug/rt.o
+carbonc - running assembler: as _carbon/build_debug/rt_x86_64.asm -o _carbon/build_debug/rt_x86_64.o
+carbonc - assembly generation time: 102ms
+
+carbonc - running linker command: ld  -e _start -o _carbon/build_debug/test-13-index _carbon/build_debug/rt_x86_64_start.o _carbon/build_debug/root.o _carbon/build_debug/rt.o _carbon/build_debug/rt_x86_64.o -T ../../res/carbon.sc
+carbonc - output: a.out
+
+carbonc - total lines parsed: 683
+carbonc - total compilation time: 432ms

@@ -5,9 +5,9 @@ fun sum(a: int, b: int, c: int, d: int, e: int, f: int, g: int, h: int, j: int) 
 end
 
 type State := struct of
-    value : int
-    value2 : int
-    value3 : int
+    value   : int
+    value2  : int
+    value3  : int
 end
 
 fun modify(state: in out State, a: int) := do
@@ -24,6 +24,10 @@ end
 
 fun return_aggregate2 => State := do
     return return_aggregate()
+end
+
+fun return_aggregate3 => State := do
+    return return_aggregate2()
 end
 
 fun main := do
@@ -48,5 +52,11 @@ fun main := do
     write(newstate2.value)  write(",")
     write(newstate2.value2) write(",")
     writeln(newstate2.value3)
+    -- 1,2,3
+
+    let newstate3 := return_aggregate3()
+    write(newstate3.value)  write(",")
+    write(newstate3.value2) write(",")
+    writeln(newstate3.value3)
     -- 1,2,3
 end

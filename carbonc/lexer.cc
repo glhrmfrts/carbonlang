@@ -193,6 +193,9 @@ struct lexer_impl {
             if (!std::strcmp("and", l.string)) {
                 return token_type::andand;
             }
+            if (!std::strcmp("not", l.string)) {
+                return token_type::not_;
+            }
             break;
         case 4:
             if (!std::strcmp("true", l.string)) {

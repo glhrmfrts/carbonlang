@@ -2,59 +2,69 @@ carbonc - compiling target: test-03-for
 
 carbonc - compiling module: root
     process_code_unit: ./src/main.g
-cannot determine type of symbol '$for_iter_end' - 0x7fac374edee8
+cannot determine type of symbol '$for_iter_end' - 0x7f6101eecee8
 carbonc - compiling module: rt
     process_code_unit: ../../runtime/linux/src/rt/errno.g
     process_code_unit: ../../runtime/linux/src/rt/errors.g
     process_code_unit: ../../runtime/linux/src/rt/io.g
     process_code_unit: ../../runtime/linux/src/rt/open.g
-cannot determine type of symbol 'path' - 0x55bae62dec70
-cannot determine type of symbol 'path_cstr' - 0x55bae62f4a00
-cannot determine type of symbol 'path_cstr' - 0x55bae62f4a00
-cannot determine type of symbol 'path_cstr' - 0x55bae62f4a00
-cannot determine type of symbol 'fd' - 0x55bae62feda0
-cannot determine type of symbol 'fd' - 0x55bae62feda0
-cannot determine type of symbol 'fd' - 0x55bae62feda0
-cannot determine type of symbol 'fd' - 0x55bae62feda0
-cannot determine type of symbol 'path' - 0x55bae62dec70
-cannot determine type of symbol 'path_cstr' - 0x55bae62f4a00
-cannot determine type of symbol 'path_cstr' - 0x55bae62f4a00
-cannot determine type of symbol 'path_cstr' - 0x55bae62f4a00
-cannot determine type of symbol 'fd' - 0x55bae62feda0
-cannot determine type of symbol 'fd' - 0x55bae62feda0
-cannot determine type of symbol 'fd' - 0x55bae62feda0
-cannot determine type of symbol 'fd' - 0x55bae62feda0
+cannot determine type of symbol 'path' - 0x556adaa0ac90
+cannot determine type of symbol 'path_cstr' - 0x556adaa20a20
+cannot determine type of symbol 'path_cstr' - 0x556adaa20a20
+cannot determine type of symbol 'path_cstr' - 0x556adaa20a20
+cannot determine type of symbol 'fd' - 0x556adaa2adc0
+cannot determine type of symbol 'fd' - 0x556adaa2adc0
+cannot determine type of symbol 'fd' - 0x556adaa2adc0
+cannot determine type of symbol 'fd' - 0x556adaa2adc0
+cannot determine type of symbol 'path' - 0x556adaa0ac90
+cannot determine type of symbol 'path_cstr' - 0x556adaa20a20
+cannot determine type of symbol 'path_cstr' - 0x556adaa20a20
+cannot determine type of symbol 'path_cstr' - 0x556adaa20a20
+cannot determine type of symbol 'fd' - 0x556adaa2adc0
+cannot determine type of symbol 'fd' - 0x556adaa2adc0
+cannot determine type of symbol 'fd' - 0x556adaa2adc0
+cannot determine type of symbol 'fd' - 0x556adaa2adc0
     process_code_unit: ../../runtime/linux/src/rt/start.g
     process_code_unit: ../../runtime/linux/src/rt/string.g
     process_code_unit: ../../runtime/linux/src/rt/write.g
-cannot determine type of symbol 'tpl_str' - 0x55bae63f6f40
+cannot determine type of symbol 'res' - 0x556adab069b0
+cannot determine type of symbol 'res' - 0x556adab069b0
+cannot determine type of symbol 'res' - 0x556adab069b0
+cannot determine type of symbol 'res' - 0x556adab1e500
+cannot determine type of symbol 'res' - 0x556adab2add0
+cannot determine type of symbol 'tpl_str' - 0x556adab42920
+cannot determine type of symbol 'res' - 0x556adab069b0
+cannot determine type of symbol 'res' - 0x556adab069b0
+cannot determine type of symbol 'res' - 0x556adab069b0
+cannot determine type of symbol 'res' - 0x556adab1e500
+cannot determine type of symbol 'res' - 0x556adab2add0
 assembly file: rt_x86_64_start.s
 carbonc - running assembler: as _carbon/build_debug/rt_x86_64_start.s -o _carbon/build_debug/rt_x86_64_start.o
 carbonc - compiling module: rt/x86_64
     process_code_unit: ../../runtime/linux/src/rt/x86_64/syscall.g
-carbonc - parsing time: 201ms
+carbonc - parsing time: 209ms
 
 carbonc - type checking 
-cannot determine type of symbol 'path_cstr' - 0x55bae62f4a00
-cannot determine type of symbol 'path_cstr' - 0x55bae62f4a00
-cannot determine type of symbol 'path_cstr' - 0x55bae62f4a00
-cannot determine type of symbol 'fd' - 0x55bae62feda0
-cannot determine type of symbol 'fd' - 0x55bae62feda0
-cannot determine type of symbol 'fd' - 0x55bae62feda0
-cannot determine type of symbol 'fd' - 0x55bae62feda0
-carbonc - type checking time: 291ms
+cannot determine type of symbol 'path_cstr' - 0x556adaa20a20
+cannot determine type of symbol 'path_cstr' - 0x556adaa20a20
+cannot determine type of symbol 'path_cstr' - 0x556adaa20a20
+cannot determine type of symbol 'fd' - 0x556adaa2adc0
+cannot determine type of symbol 'fd' - 0x556adaa2adc0
+cannot determine type of symbol 'fd' - 0x556adaa2adc0
+cannot determine type of symbol 'fd' - 0x556adaa2adc0
+carbonc - type checking time: 284ms
 
 carbonc - generating IR 
-carbonc - IR generation time: 15ms
+carbonc - IR generation time: 16ms
 
 carbonc - generating assembly 
 carbonc - running assembler: as _carbon/build_debug/root.asm -o _carbon/build_debug/root.o
 carbonc - running assembler: as _carbon/build_debug/rt.asm -o _carbon/build_debug/rt.o
 carbonc - running assembler: as _carbon/build_debug/rt_x86_64.asm -o _carbon/build_debug/rt_x86_64.o
-carbonc - assembly generation time: 99ms
+carbonc - assembly generation time: 98ms
 
 carbonc - running linker command: ld  -e _start -o _carbon/build_debug/test-03-for _carbon/build_debug/rt_x86_64_start.o _carbon/build_debug/root.o _carbon/build_debug/rt.o _carbon/build_debug/rt_x86_64.o -T ../../res/carbon.sc
 carbonc - output: a.out
 
-carbonc - total lines parsed: 698
-carbonc - total compilation time: 662ms
+carbonc - total lines parsed: 703
+carbonc - total compilation time: 661ms

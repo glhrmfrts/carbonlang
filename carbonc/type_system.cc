@@ -684,7 +684,7 @@ arena_ptr<ast_node> get_zero_value_node_for_type(type_system& ts, type_id id) {
     }
     else if (id.get().kind == type_kind::enum_) {
         symbol_info* sym = id.get().enumtype.symbols.front();
-        return make_identifier_node(*ts.ast_arena, {}, { sym->id.str });
+        return make_identifier_node(*ts.ast_arena, {}, { id.get().name.str, sym->id.str });
     }
     else if (id.get().kind == type_kind::error) {
         return make_nil_node(*ts.ast_arena, {});
@@ -1644,11 +1644,11 @@ bool check_convertible_and_cast_call_args(type_system& ts, ast_node& node, type_
     if (in_desugar) { return true; }
 
     bool needcast = false;
-    auto [convertible, ncast] = is_convertible_to(ts, node.tid, target);
+    bool convertible = is_assignable_to(ts, node.tid, target);
     if (!convertible) {
         try_coerce_to(ts, node, target);
 
-        auto [convertible, ncast] = is_convertible_to(ts, node.tid, target);
+        convertible = is_assignable_to(ts, node.tid, target);
         if (!convertible) {
             if (target.get().flags & (type_flags::is_in | type_flags::is_out)) {
                 if (is_assignable_to(ts, node.tid, target.get().elem_type)) {
@@ -1663,12 +1663,6 @@ bool check_convertible_and_cast_call_args(type_system& ts, ast_node& node, type_
             }
             return false;
         }
-        else if (ncast) {
-            info.cast_needed_idxs.push_back(std::make_tuple(simple_cast, target, idx));
-        }
-    }
-    else if (ncast) {
-        info.cast_needed_idxs.push_back(std::make_tuple(simple_cast, target, idx));
     }
     return true;
 }
@@ -2564,7 +2558,7 @@ void clear_type_errors(type_system& ts, ast_node& node) {
     }
 }
 
-void visit_pre_children(type_system& ts, ast_node& node) {
+void visit_pre_nodes(type_system& ts, ast_node& node) {
     for (auto& child : node.pre_nodes) {
         if (child) {
             child->parent = &node;
@@ -2721,16 +2715,14 @@ arena_ptr<ast_node> generate_temp_for_call_expr(type_system& ts, ast_node& node,
     auto temp = make_var_decl_node_single(*ts.ast_arena, node.pos, token_type::let,
         make_identifier_node(*ts.ast_arena, node.pos, { tempname }), // id
         make_type_expr_node(*ts.ast_arena, node.pos, make_type_resolver_node(*ts.ast_arena, node.tid)), // type
-        make_init_tag_node(*ts.ast_arena, {}, token_type::noinit), {}); // value
+        copy_node(ts, &node), {}); // value
 
     resolve_node_type(ts, temp.get());
 
     auto ref = make_identifier_node(*ts.ast_arena, temp->pos, { tempname });
     resolve_node_type(ts, ref.get());
 
-    transform_aggregate_call_into_pointer_argument_helper_ts(ts, *ref.get(), &node);
-
-    node.temps.push_back(std::move(temp));
+    ref->pre_nodes.push_back(std::move(temp));
 
     return ref;
 }
@@ -3431,7 +3423,6 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
             auto idx = find_child_index(node.parent, &node);
             if (idx) {
                 auto parent = node.parent;
-                ref->pre_nodes.push_back(std::move(parent->children[*idx]));
                 parent->children[*idx] = std::move(ref);
             }
         }
@@ -3649,7 +3640,9 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
     case ast_type::identifier: {
         //if (ts.pass != type_system_pass::perform_checks && node.tid != invalid_type) return node.tid;
 
-        visit_pre_children(ts, node);
+        if (ts.subpass != DESUGAR_SUBPASS) {
+            visit_pre_nodes(ts, node);
+        }
 
         if (node.lvalue.symbol && node.lvalue.symbol->kind == symbol_kind::overloaded_func_base) {
             check_for_unresolved = false;
@@ -3734,7 +3727,7 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
                 node.type_error = false;
             }
         }
-        else if (token_to_char(node.op) == '!') {
+        else if (node.op == token_type::not_) {
             if (!node.children[0]->tid.valid() || node.children[0]->type_error) {
                 node.type_error = true;
             }
@@ -3742,7 +3735,7 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
                 try_coerce_to(ts, *node.children[0], ts.bool_type);
 
                 if (!is_convertible_to(ts, node.children[0]->tid, ts.bool_type).first) {
-                    add_type_error(ts, node.pos, "right side of unary '!' (negation) has type '%s', it must be a bool",
+                    add_type_error(ts, node.pos, "right side of unary 'not' has type '%s', it must be a bool",
                         type_to_string(node.children[0]->tid).c_str());
                     node.type_error = true;
                 }
@@ -3754,6 +3747,16 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
             }
 
             ensure_bool_op_is_comparison_unary(ts, node);
+        }
+        else if (node.op == token_from_char('-') || node.op == token_from_char('~')) {
+            if (!node.children[0]->tid.valid() || !(node.children[0]->tid.get().kind == type_kind::integral)) {
+                add_type_error(ts, node.pos, "right side of unary '%c' has type '%s', it must be an integer",
+                    token_to_char(node.op), type_to_string(node.children[0]->tid).c_str());
+                break;
+            }
+
+            node.tid = node.children[0]->tid;
+            node.type_error = node.children[0]->type_error;
         }
         else {
             node.tid = node.children[0]->tid;
@@ -4014,7 +4017,7 @@ void remangle_names(type_system& ts, ast_node* nodeptr) {
         break;
     }
     case ast_type::call_expr: {
-        visit_pre_children(ts, node);
+        visit_pre_nodes(ts, node);
         visit_children(ts, node);
 
         // update the called function mangled name
@@ -4043,12 +4046,12 @@ void remangle_names(type_system& ts, ast_node* nodeptr) {
                 local->mangled_name = mangle_global_name(ts, node.scope.self_module_parts, local->name, local->self->func.linkage);
             }
         }
-        visit_pre_children(ts, node);
+        visit_pre_nodes(ts, node);
         visit_children(ts, node);
         break;
     }
     default: {
-        visit_pre_children(ts, node);
+        visit_pre_nodes(ts, node);
         visit_children(ts, node);
         break;
     }
@@ -4389,15 +4392,20 @@ type_system::type_system(memory_arena& arena) {
             }
 
             tf.elem_type = std::get<type_id>(args[1]);
+
+#if 0
             tf.size = tf.array.length * tf.elem_type.get().size;
             tf.alignment = tf.elem_type.get().alignment;
             if (tf.size > 8) {
                 tf.alignment = 16;
             }
+#endif
 
             for (comp_int_type i = 0; i < tf.array.length; i++) {
                 tf.structure.fields.push_back({ {""}, tf.elem_type, 0 });
             }
+
+            compute_struct_size_alignment_offsets(tf);
 
             return node;
         };

@@ -986,7 +986,8 @@ struct generator {
         case ir_mul:
         case ir_div: 
         case ir_and:
-        case ir_or: {
+        case ir_or: 
+        case ir_xor: {
             auto [b, btype] = transform_ir_operand(instr.operands[1]);
             auto [a, atype] = transform_ir_operand(instr.operands[0]);
             auto dest = adjust_for_type(instr_dest_to_gen_dest(idata.dest), instr.result_type);
@@ -1050,7 +1051,8 @@ struct generator {
             push(toop(dest));
             break;
         }
-        case ir_neg: {
+        case ir_neg:
+        case ir_not: {
             auto [a, atype] = transform_ir_operand(instr.operands[0]);
             auto dest = adjust_for_type(instr_dest_to_gen_dest(idata.dest), instr.result_type);
 
@@ -1058,7 +1060,12 @@ struct generator {
 
             move(op, atype, a, atype);
 
-            em->neg(op);
+            if (instr.op == ir_neg) {
+                em->neg(op);
+            }
+            else {
+                em->not_(op);
+            }
 
             move(dest, instr.result_type, toop(op), atype);
 
@@ -1202,6 +1209,9 @@ struct generator {
             break;
         case ir_or:
             em->or_(a, b);
+            break;
+        case ir_xor:
+            em->xor_(a, b);
             break;
         }
     }

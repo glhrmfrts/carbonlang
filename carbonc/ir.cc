@@ -28,8 +28,10 @@ static const std::string opnames[] = {
     "ir_mul",
     "ir_div",
     "ir_neg",
+    "ir_not",
     "ir_and",
     "ir_or",
+    "ir_xor",
     "ir_shr",
     "ir_shl",
     "ir_call",
@@ -236,7 +238,7 @@ void distribute_bool_op_targets(ast_node& node, const std::string& true_label, c
         }
         distribute_bool_op_targets(*node.children[1], true_label, false_label);
     }
-    else if (node.type == ast_type::unary_expr && token_to_char(node.op) == '!') {
+    else if (node.type == ast_type::unary_expr && node.op == token_type::not_) {
         if (is_logic_binary_op(*node.children[0])) {
             // invert the labels
             distribute_bool_op_targets(*node.children[0], false_label, true_label);
@@ -816,9 +818,9 @@ void generate_ir_assignment(ast_node& node) {
             generate_ir_node(*node.children[0]);
 
             auto dest = pop();
-            set_init_receiver(toref(dest));
+            if (node.children[1]->type == ast_type::init_expr) set_init_receiver(toref(dest));
             generate_ir_node(*node.children[1]);
-            clear_init_receiver();
+            if (node.children[1]->type == ast_type::init_expr) clear_init_receiver();
         }
         else if (is_aggregate_type(node.tid) && node.children[1]->tid.get().kind == type_kind::nil) {
             generate_ir_node(*node.children[0]);
@@ -916,6 +918,10 @@ void generate_ir_binary_expr(ast_node& node) {
         temit(ir_or, node.tid, a, b);
         push(ir_stackpop{ node.tid });
         break;
+    case '^':
+        temit(ir_xor, node.tid, a, b);
+        push(ir_stackpop{ node.tid });
+        break;
     }
 
     switch (node.op) {
@@ -990,11 +996,16 @@ void generate_ir_unary_expr(ast_node& node) {
     else if (token_to_char(node.op) == ADDR_OP) {
         generate_ir_addr_expr(node);
     }
-    else if (token_to_char(node.op) == '!') {
+    else if (node.op == token_type::not_) {
         if (is_cmp_binary_op(*node.children[0]) && node.children[0]->ir.bin_target_label.empty()) {
             node.children[0]->ir.bin_invert_jump = true;
         }
         generate_ir_node(*node.children[0]);
+    }
+    else if (token_to_char(node.op) == '~') {
+        generate_ir_node(*node.children[0]);
+        temit(ir_not, node.tid, pop());
+        push(ir_stackpop{ node.tid });
     }
     else if (token_to_char(node.op) == '-') {
         generate_ir_node(*node.children[0]);
@@ -1078,9 +1089,9 @@ void generate_ir_var(ast_node& node) {
             return;
         }
 
-        set_init_receiver(ir_local{ node.local.ir_index, node.tid });
+        if (node.var_value()->type == ast_type::init_expr) set_init_receiver(ir_local{ node.local.ir_index, node.tid });
         generate_ir_node(*node.var_value());
-        clear_init_receiver();
+        if (node.var_value()->type == ast_type::init_expr) clear_init_receiver();
 
         // Check noop conditions.
         if (node.var_value()->type == ast_type::init_expr) {
@@ -1520,6 +1531,7 @@ bool instr_pushes_to_stack(const ir_instr& instr) {
     case ir_div:
     case ir_and:
     case ir_or:
+    case ir_xor:
     case ir_shr:
     case ir_shl:
     case ir_deref:
@@ -1528,6 +1540,7 @@ bool instr_pushes_to_stack(const ir_instr& instr) {
     case ir_cast:
     case ir_stack_dup:
     case ir_neg:
+    case ir_not:
     case ir_cmp_gt:
     case ir_cmp_lt:
     case ir_cmp_lteq:

@@ -15,6 +15,8 @@
 
 namespace carbon {
 
+constexpr int DESUGAR_SUBPASS = 2048;
+
 constexpr auto ARRAY_VIEW_PTR_MEMBER = "ptr";
 constexpr auto ARRAY_VIEW_LEN_MEMBER = "len";
 constexpr auto ARRAY_CAPACITY_MEMBER = "cap";
@@ -457,7 +459,7 @@ void update_local_aggregate_argument(type_system& ts, ast_node& l);
 
 void visit_tree(type_system& ts, ast_node& node);
 
-void visit_pre_children(type_system& ts, ast_node& node);
+void visit_pre_nodes(type_system& ts, ast_node& node);
 
 void visit_children(type_system& ts, ast_node& node);
 

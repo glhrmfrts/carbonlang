@@ -1,52 +1,59 @@
+-- TODO: buffered output
+
 import rt::x86_64 as syscall
 
 fun write(fh : FileHandle, s : arrayview of pure byte) => int := do
     return syscall::write(cast(int) fh, s.ptr, s.len)
 end
 
-fun write(s : arrayview of pure byte) := do
-    write(stdout(), s)
+fun write(s : arrayview of pure byte) => int := do
+    return write(stdout(), s)
 end
 
-fun write(n : nil) := do
-    write("nil")
+fun write(n : nil) => int := do
+    return write("nil")
 end
 
-fun write(b : bool) := do
+fun write(b : bool) => int := do
     if b then
-        write("true")
+        return write("true")
     else
-        write("false")
+        return write("false")
     end
 end
 
-fun write(i : int) := do
+fun write(b : byte) => int := do
+    return syscall::write(stdout(), &b, 1)
+end
+
+fun write(i : int) => int := do
     let buf : array(32) of byte
     let v := arrayview of byte { &buf[0], sizeof(buf) }
     int_to_string(i, 10, v)
-    write(v)
+    return write(v)
 end
 
-fun writeln(s : arrayview of pure byte) := do
-    write(stdout(), s)
-    write(stdout(), "\n")
+fun writeln(s : arrayview of pure byte) => int := do
+    let res := write(stdout(), s)
+    res := res + write(stdout(), "\n")
+    return res
 end
 
-fun writeln(n : nil) := do
-    writeln("nil")
+fun writeln(n : nil) => int := do
+    return writeln("nil")
 end
 
-fun writeln(b : bool) := do
-    write(b)
-    writeln("")
+fun writeln(b : bool) => int := do
+    let res := write(b)
+    return res + writeln("")
 end
 
-fun writeln(i : int) := do
-    write(i)
-    writeln("")
+fun writeln(i : int) => int := do
+    let res := write(i)
+    return res + writeln("")
 end
 
-local fun int_to_string(value: int, base: int, result: in out arrayview of byte) := do
+local fun int_to_string(value: int, base: int, result: in out arrayview of byte) => int := do
     -- check that the base if valid
     if base < 2 or base > 36 then return 0 end
 
