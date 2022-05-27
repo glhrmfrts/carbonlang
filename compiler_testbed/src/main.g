@@ -1,15 +1,27 @@
 import rt
 
-fun writeln(b : int) := do end
+type SomeFlags := enumflags (
+    OptionA
+    OptionB
+)
 
-type Data := struct of
-    a: int
-    b: int
-    c: int
+fun writeln(a : arrayview of byte) := do
+    
 end
 
-fun get_array := array(3) of int {40,50,60}
-
 fun main := do
-    let a := (Data{1,2,3}).a
+    let bval : bool := false
+    if not bval then
+        writeln("false(bool) is false")
+    end
+
+    let err : error := nil
+    if not err then
+        writeln("nil(error) is false")
+    end
+
+    let flags : SomeFlags := nil
+    if not flags then
+        writeln("nil(enumflags) is false")
+    end
 end

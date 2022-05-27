@@ -10,6 +10,10 @@ type State := struct of
     value3  : int
 end
 
+fun read(state: in State) => int := do
+    return state.value
+end
+
 fun modify(state: in out State, a: int) := do
     state.value := state.value + a
 end
@@ -59,4 +63,10 @@ fun main := do
     write(newstate3.value2) write(",")
     writeln(newstate3.value3)
     -- 1,2,3
+
+    writeln(read(return_aggregate()))
+
+    -- TODO: this should not be allowed
+    --modify(return_aggregate(), 3)
+    --init(return_aggregate(), 3)
 end

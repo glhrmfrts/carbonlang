@@ -1270,8 +1270,7 @@ struct parser_impl {
             scope_guard _{ [this]() { lex->next(); } };
             return make_nil_node(*ast_arena, lex->pos());
         }
-        case token_type::noinit:
-        case token_type::noflags: {
+        case token_type::noinit: {
             scope_guard _{ [this]() { lex->next(); } };
             return make_init_tag_node(*ast_arena, lex->pos(), TOK);
         }

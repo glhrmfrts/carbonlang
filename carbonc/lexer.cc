@@ -242,9 +242,6 @@ struct lexer_impl {
             if (!std::strcmp("error", l.string)) {
                 return token_type::error;
             }
-            if (!std::strcmp("noerr", l.string)) {
-                return token_type::noerror;
-            }
             if (!std::strcmp("local", l.string)) {
                 return token_type::local;
             }
@@ -281,9 +278,6 @@ struct lexer_impl {
         case 7:
             if (!std::strcmp("private", l.string)) {
                 return token_type::private_;
-            }
-            if (!std::strcmp("noflags", l.string)) {
-                return token_type::noflags;
             }
             break;
         case 8:

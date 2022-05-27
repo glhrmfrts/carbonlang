@@ -2,66 +2,66 @@ carbonc - compiling target: test-06-strings
 
 carbonc - compiling module: root
     process_code_unit: ./src/main.g
-cannot determine type of symbol 'str' - 0x7f095195eee0
-cannot determine type of symbol 'str' - 0x7f095195eee0
-cannot determine type of symbol 'str' - 0x7f095195eee0
-cannot determine type of symbol 'str' - 0x7f095195eee0
-cannot determine type of symbol 'str' - 0x7f095195eee0
-cannot determine type of symbol 'sub' - 0x7f09519762e0
-cannot determine type of symbol 'sub' - 0x7f09519762e0
-cannot determine type of symbol 'sub' - 0x7f09519762e0
-cannot determine type of symbol 'str' - 0x7f095195eee0
-cannot determine type of symbol 'sub' - 0x7f09519762e0
-cannot determine type of symbol 'sub' - 0x7f09519762e0
+cannot determine type of symbol 'str' - 0x7fc815678ee0
+cannot determine type of symbol 'str' - 0x7fc815678ee0
+cannot determine type of symbol 'str' - 0x7fc815678ee0
+cannot determine type of symbol 'str' - 0x7fc815678ee0
+cannot determine type of symbol 'str' - 0x7fc815678ee0
+cannot determine type of symbol 'sub' - 0x7fc8156902e0
+cannot determine type of symbol 'sub' - 0x7fc8156902e0
+cannot determine type of symbol 'sub' - 0x7fc8156902e0
+cannot determine type of symbol 'str' - 0x7fc815678ee0
+cannot determine type of symbol 'sub' - 0x7fc8156902e0
+cannot determine type of symbol 'sub' - 0x7fc8156902e0
 carbonc - compiling module: rt
     process_code_unit: ../../runtime/linux/src/rt/errno.g
     process_code_unit: ../../runtime/linux/src/rt/errors.g
     process_code_unit: ../../runtime/linux/src/rt/io.g
     process_code_unit: ../../runtime/linux/src/rt/open.g
-cannot determine type of symbol 'path' - 0x555b3e1f5730
-cannot determine type of symbol 'path_cstr' - 0x555b3e316600
-cannot determine type of symbol 'path_cstr' - 0x555b3e316600
-cannot determine type of symbol 'path_cstr' - 0x555b3e316600
-cannot determine type of symbol 'fd' - 0x555b3e3209a0
-cannot determine type of symbol 'fd' - 0x555b3e3209a0
-cannot determine type of symbol 'fd' - 0x555b3e3209a0
-cannot determine type of symbol 'fd' - 0x555b3e3209a0
-cannot determine type of symbol 'path' - 0x555b3e1f5730
-cannot determine type of symbol 'path_cstr' - 0x555b3e316600
-cannot determine type of symbol 'path_cstr' - 0x555b3e316600
-cannot determine type of symbol 'path_cstr' - 0x555b3e316600
-cannot determine type of symbol 'fd' - 0x555b3e3209a0
-cannot determine type of symbol 'fd' - 0x555b3e3209a0
-cannot determine type of symbol 'fd' - 0x555b3e3209a0
-cannot determine type of symbol 'fd' - 0x555b3e3209a0
+cannot determine type of symbol 'path' - 0x5589440cc730
+cannot determine type of symbol 'path_cstr' - 0x5589441ed600
+cannot determine type of symbol 'path_cstr' - 0x5589441ed600
+cannot determine type of symbol 'path_cstr' - 0x5589441ed600
+cannot determine type of symbol 'fd' - 0x5589441f79a0
+cannot determine type of symbol 'fd' - 0x5589441f79a0
+cannot determine type of symbol 'fd' - 0x5589441f79a0
+cannot determine type of symbol 'fd' - 0x5589441f79a0
+cannot determine type of symbol 'path' - 0x5589440cc730
+cannot determine type of symbol 'path_cstr' - 0x5589441ed600
+cannot determine type of symbol 'path_cstr' - 0x5589441ed600
+cannot determine type of symbol 'path_cstr' - 0x5589441ed600
+cannot determine type of symbol 'fd' - 0x5589441f79a0
+cannot determine type of symbol 'fd' - 0x5589441f79a0
+cannot determine type of symbol 'fd' - 0x5589441f79a0
+cannot determine type of symbol 'fd' - 0x5589441f79a0
     process_code_unit: ../../runtime/linux/src/rt/start.g
     process_code_unit: ../../runtime/linux/src/rt/string.g
     process_code_unit: ../../runtime/linux/src/rt/write.g
-cannot determine type of symbol 'res' - 0x555b3e3fc020
-cannot determine type of symbol 'res' - 0x555b3e3fc020
-cannot determine type of symbol 'res' - 0x555b3e3fc020
-cannot determine type of symbol 'res' - 0x555b3e4140e0
-cannot determine type of symbol 'res' - 0x555b3e4209b0
-cannot determine type of symbol 'tpl_str' - 0x555b3e438500
-cannot determine type of symbol 'res' - 0x555b3e3fc020
-cannot determine type of symbol 'res' - 0x555b3e3fc020
-cannot determine type of symbol 'res' - 0x555b3e3fc020
-cannot determine type of symbol 'res' - 0x555b3e4140e0
-cannot determine type of symbol 'res' - 0x555b3e4209b0
+cannot determine type of symbol 'res' - 0x5589442cd6e0
+cannot determine type of symbol 'res' - 0x5589442cd6e0
+cannot determine type of symbol 'res' - 0x5589442cd6e0
+cannot determine type of symbol 'res' - 0x5589442e57a0
+cannot determine type of symbol 'res' - 0x5589442f2070
+cannot determine type of symbol 'tpl_str' - 0x558944309bc0
+cannot determine type of symbol 'res' - 0x5589442cd6e0
+cannot determine type of symbol 'res' - 0x5589442cd6e0
+cannot determine type of symbol 'res' - 0x5589442cd6e0
+cannot determine type of symbol 'res' - 0x5589442e57a0
+cannot determine type of symbol 'res' - 0x5589442f2070
 assembly file: rt_x86_64_start.s
 carbonc - running assembler: as _carbon/build_debug/rt_x86_64_start.s -o _carbon/build_debug/rt_x86_64_start.o
 carbonc - compiling module: rt/x86_64
     process_code_unit: ../../runtime/linux/src/rt/x86_64/syscall.g
-carbonc - parsing time: 204ms
+carbonc - parsing time: 210ms
 
 carbonc - type checking 
-cannot determine type of symbol 'path_cstr' - 0x555b3e316600
-cannot determine type of symbol 'path_cstr' - 0x555b3e316600
-cannot determine type of symbol 'path_cstr' - 0x555b3e316600
-cannot determine type of symbol 'fd' - 0x555b3e3209a0
-cannot determine type of symbol 'fd' - 0x555b3e3209a0
-cannot determine type of symbol 'fd' - 0x555b3e3209a0
-cannot determine type of symbol 'fd' - 0x555b3e3209a0
+cannot determine type of symbol 'path_cstr' - 0x5589441ed600
+cannot determine type of symbol 'path_cstr' - 0x5589441ed600
+cannot determine type of symbol 'path_cstr' - 0x5589441ed600
+cannot determine type of symbol 'fd' - 0x5589441f79a0
+cannot determine type of symbol 'fd' - 0x5589441f79a0
+cannot determine type of symbol 'fd' - 0x5589441f79a0
+cannot determine type of symbol 'fd' - 0x5589441f79a0
 carbonc - type checking time: 44ms
 
 carbonc - generating IR 
@@ -77,4 +77,4 @@ carbonc - running linker command: ld  -e _start -o _carbon/build_debug/test-06-s
 carbonc - output: a.out
 
 carbonc - total lines parsed: 662
-carbonc - total compilation time: 425ms
+carbonc - total compilation time: 422ms

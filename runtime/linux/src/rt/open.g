@@ -53,7 +53,7 @@ fun to_kernel_flags(flags : OpenFlags) => int := do
     return lflags
 end
 
-fun open(file : out FileHandle, path : StringView, flags : OpenFlags, mode : int) => error := do
+fun open(file : out FileHandle, path : String, flags : OpenFlags, mode : int) => error := do
     let buf : array(4096) of byte
     let bufview := arrayview of byte { &buf[0], sizeof(buf) }
 

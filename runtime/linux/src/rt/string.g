@@ -1,4 +1,4 @@
-typealias StringView := arrayview of pure byte
+typealias String := arrayview of pure byte
 
 fun memcpy(dest: &opaque, src: &opaque, n: int) := do
     asm%do
@@ -24,7 +24,7 @@ fun cstr_equals(p1 : &pure byte, p2 : &pure byte) => bool := do
     return true
 end
 
-fun to_cstr(str : StringView, buffer : in out arrayview of byte) => &pure byte := do
+fun to_cstr(str : String, buffer : in out arrayview of byte) => &pure byte := do
     if str.len > buffer.len then return nil end
 
     memcpy(buffer.ptr, str.ptr, str.len)

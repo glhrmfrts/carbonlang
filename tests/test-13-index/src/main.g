@@ -1,8 +1,8 @@
 import rt
 
 type Data := struct of
-    x : int
-    y : int
+    x       : int
+    y       : int
     numbers : array(3) of int
 end
 

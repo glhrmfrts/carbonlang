@@ -546,6 +546,10 @@ bool is_assignable_to(type_system& ts, type_id a, type_id b) {
         return true;
     }
 
+    if (tsrc.kind == type_kind::nil && ttarget.kind == type_kind::enumflags) {
+        return true;
+    }
+
     if (tsrc.kind == type_kind::nil && is_aggregate(ttarget.id)) {
         return true;
     }
@@ -1490,7 +1494,7 @@ type_id resolve_identifier(type_system& ts, ast_node& node) {
         }
 
         if (!node.tid.valid()) {
-            printf("cannot determine type of symbol '%s' - %p\n", node_to_string(node).c_str(), local->self);
+            //printf("cannot determine type of symbol '%s' - %p\n", node_to_string(node).c_str(), local->self);
             unk_type_error(ts, node.tid, node.pos, "cannot determine type of symbol '%s'", node_to_string(node).c_str());
         }
     }
@@ -1651,6 +1655,10 @@ bool check_convertible_and_cast_call_args(type_system& ts, ast_node& node, type_
         convertible = is_assignable_to(ts, node.tid, target);
         if (!convertible) {
             if (target.get().flags & (type_flags::is_in | type_flags::is_out)) {
+                if ((target.get().flags & type_flags::is_out) && (node.tid.get().flags & type_flags::is_pure)) {
+                    return false;
+                }
+
                 if (is_assignable_to(ts, node.tid, target.get().elem_type)) {
                     info.cast_needed_idxs.push_back(std::make_tuple(toptr_cast, target, idx));
                     return true;
@@ -2344,18 +2352,36 @@ arena_ptr<ast_node> make_neq_false_node(type_system& ts, arena_ptr<ast_node>&& v
             val->pos,
             token_type::neq,
             std::move(val),
-            make_init_tag_node(*ts.ast_arena, pos, token_type::noflags)
+            make_nil_node(*ts.ast_arena, pos)
+        );
+        resolve_node_type(ts, val.get());
+        return node;
+    }
+    else if (val->tid.valid() && val->tid.get().kind == type_kind::error) {
+        auto node = make_binary_expr_node(
+            *ts.ast_arena,
+            val->pos,
+            token_type::neq,
+            std::move(val),
+            make_nil_node(*ts.ast_arena, pos)
         );
         resolve_node_type(ts, val.get());
         return node;
     }
     else if (val->tid.valid()) {
-        assert(!"make_neq_false_node unhandled");
+        assert(false);
         return { nullptr, nullptr };
     }
     else {
         return std::move(val);
     }
+}
+
+bool is_boolish_type(type_system&ts, type_id tid) {
+    if (!tid.valid()) {
+        return false;
+    }
+    return is_assignable_to(ts, tid, ts.bool_type) || is_assignable_to(ts, tid, ts.error_type) || (tid.get().kind == type_kind::enumflags);
 }
 
 void ensure_bool_op_is_comparison(type_system& ts, ast_node& node) {
@@ -2712,9 +2738,10 @@ void transform_aggregate_call_into_pointer_argument_helper_ts(type_system& ts, a
 // Generates a temp variable for a call with aggregate return type, returns a ref to the temp variable
 arena_ptr<ast_node> generate_temp_for_call_expr(type_system& ts, ast_node& node, type_id ltype) {
     auto tempname = generate_temp_name();
+    auto temp_type = get_pure_type_to(ts, node.tid);
     auto temp = make_var_decl_node_single(*ts.ast_arena, node.pos, token_type::let,
         make_identifier_node(*ts.ast_arena, node.pos, { tempname }), // id
-        make_type_expr_node(*ts.ast_arena, node.pos, make_type_resolver_node(*ts.ast_arena, node.tid)), // type
+        make_type_expr_node(*ts.ast_arena, node.pos, make_type_resolver_node(*ts.ast_arena, temp_type)), // type
         copy_node(ts, &node), {}); // value
 
     resolve_node_type(ts, temp.get());
@@ -3183,8 +3210,14 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
                 //complement_error(ts, node.pos, "in %s statement condition", stmt);
                 node.type_error = true;
             }
-            else if (!is_assignable_to(ts, node.children[0]->tid, ts.bool_type) && (node.children[0]->tid.get().kind != type_kind::enumflags)) {
-                add_type_error(ts, node.pos, "%s statement condition must have 'bool' or 'enumflags' type", stmt);
+            else if (!is_boolish_type(ts, node.children[0]->tid)) {
+                add_type_error(
+                    ts,
+                    node.pos,
+                    "%s statement condition has type '%s'. It must have bool, enumflags or error type",
+                    stmt,
+                    type_to_string(node.children[0]->tid).c_str()
+                );
                 node.type_error = true;
             }
 
@@ -3731,16 +3764,10 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
             if (!node.children[0]->tid.valid() || node.children[0]->type_error) {
                 node.type_error = true;
             }
-            else if (!is_convertible_to(ts, node.children[0]->tid, ts.bool_type).first) {
-                try_coerce_to(ts, *node.children[0], ts.bool_type);
-
-                if (!is_convertible_to(ts, node.children[0]->tid, ts.bool_type).first) {
-                    add_type_error(ts, node.pos, "right side of unary 'not' has type '%s', it must be a bool",
-                        type_to_string(node.children[0]->tid).c_str());
-                    node.type_error = true;
-                }
-
-                node.tid = ts.bool_type;
+            else if (!is_boolish_type(ts, node.children[0]->tid)) {
+                add_type_error(ts, node.pos, "right side of unary 'not' has type '%s', it must be a bool, enumflags or error",
+                    type_to_string(node.children[0]->tid).c_str());
+                node.type_error = true;
             }
             else {
                 node.tid = ts.bool_type;
@@ -3940,12 +3967,7 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
         }
         break;
     case ast_type::init_tag: {
-        if (node.op == token_type::noflags) {
-            node.tid = ts.opaque_type;
-            node.int_value = 0;
-            node.type = ast_type::int_literal;
-        }
-        else if (node.op == token_type::noinit) {
+        if (node.op == token_type::noinit) {
             node.tid = ts.opaque_type;
         }
         break;
@@ -4337,7 +4359,7 @@ type_system::type_system(memory_arena& arena) {
 
     {
         auto node = make_in_arena<ast_node>(*ast_arena);
-        node->tdef.name = string_hash{ "inout" };
+        node->tdef.name = string_hash{ "in out" };
         node->tdef.mangled_name = string_hash{ "inout" };
         node->tdef.kind = type_kind::constructor;
 
@@ -4349,7 +4371,7 @@ type_system::type_system(memory_arena& arena) {
             type_def& tf = node->tdef;
 
             tf.kind = type_kind::inout;
-            tf.name = string_hash{ "inout " + type_arg.get().name.str };
+            tf.name = string_hash{ "in out " + type_arg.get().name.str };
             tf.mangled_name = string_hash{ "inout__T" + type_arg.get().mangled_name.str };
             tf.size = sizeof(void*);
             tf.alignment = sizeof(void*);

@@ -79,4 +79,14 @@ test:
 		carbonc -p ../.. -I runtime/linux -V -o a.out > compile.txt && \
 		./a.out > out.txt && diff out.txt expected.txt && echo "\033[1;32mtest-13-index: OK\033[0m"
 
+	@echo "test-14-init: ..." && \
+		cd tests/test-14-init && \
+		carbonc -p ../.. -I runtime/linux -V -o a.out > compile.txt && \
+		./a.out > out.txt && diff out.txt expected.txt && echo "\033[1;32mtest-14-init: OK\033[0m"
+
+	@echo "test-15-falsevalues: ..." && \
+		cd tests/test-15-falsevalues && \
+		carbonc -p ../.. -I runtime/linux -V -o a.out > compile.txt && \
+		./a.out > out.txt && diff out.txt expected.txt && echo "\033[1;32mtest-15-falsevalues: OK\033[0m"
+
 .PHONY: all
