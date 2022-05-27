@@ -6,64 +6,31 @@ carbonc - compiling module: rt
     process_code_unit: ../../runtime/linux/src/rt/errno.g
     process_code_unit: ../../runtime/linux/src/rt/errors.g
     process_code_unit: ../../runtime/linux/src/rt/io.g
+    process_code_unit: ../../runtime/linux/src/rt/mmap.g
     process_code_unit: ../../runtime/linux/src/rt/open.g
-cannot determine type of symbol 'path' - 0x55b04d3cf730
-cannot determine type of symbol 'path_cstr' - 0x55b04d3e54c0
-cannot determine type of symbol 'path_cstr' - 0x55b04d3e54c0
-cannot determine type of symbol 'path_cstr' - 0x55b04d3e54c0
-cannot determine type of symbol 'fd' - 0x55b04d3ef860
-cannot determine type of symbol 'fd' - 0x55b04d3ef860
-cannot determine type of symbol 'fd' - 0x55b04d3ef860
-cannot determine type of symbol 'fd' - 0x55b04d3ef860
-cannot determine type of symbol 'path' - 0x55b04d3cf730
-cannot determine type of symbol 'path_cstr' - 0x55b04d3e54c0
-cannot determine type of symbol 'path_cstr' - 0x55b04d3e54c0
-cannot determine type of symbol 'path_cstr' - 0x55b04d3e54c0
-cannot determine type of symbol 'fd' - 0x55b04d3ef860
-cannot determine type of symbol 'fd' - 0x55b04d3ef860
-cannot determine type of symbol 'fd' - 0x55b04d3ef860
-cannot determine type of symbol 'fd' - 0x55b04d3ef860
     process_code_unit: ../../runtime/linux/src/rt/start.g
     process_code_unit: ../../runtime/linux/src/rt/string.g
     process_code_unit: ../../runtime/linux/src/rt/write.g
-cannot determine type of symbol 'res' - 0x55b04d4c5b10
-cannot determine type of symbol 'res' - 0x55b04d4c5b10
-cannot determine type of symbol 'res' - 0x55b04d4c5b10
-cannot determine type of symbol 'res' - 0x55b04d4dd660
-cannot determine type of symbol 'res' - 0x55b04d4e9f30
-cannot determine type of symbol 'tpl_str' - 0x55b04d501ff0
-cannot determine type of symbol 'res' - 0x55b04d4c5b10
-cannot determine type of symbol 'res' - 0x55b04d4c5b10
-cannot determine type of symbol 'res' - 0x55b04d4c5b10
-cannot determine type of symbol 'res' - 0x55b04d4dd660
-cannot determine type of symbol 'res' - 0x55b04d4e9f30
+carbonc - compiling module: rt/syscall
+    process_code_unit: ../../runtime/linux/src/rt/syscall/syscall.g
 assembly file: rt_x86_64_start.s
 carbonc - running assembler: as _carbon/build_debug/rt_x86_64_start.s -o _carbon/build_debug/rt_x86_64_start.o
-carbonc - compiling module: rt/x86_64
-    process_code_unit: ../../runtime/linux/src/rt/x86_64/syscall.g
-carbonc - parsing time: 207ms
+carbonc - parsing time: 231ms
 
 carbonc - type checking 
-cannot determine type of symbol 'path_cstr' - 0x55b04d3e54c0
-cannot determine type of symbol 'path_cstr' - 0x55b04d3e54c0
-cannot determine type of symbol 'path_cstr' - 0x55b04d3e54c0
-cannot determine type of symbol 'fd' - 0x55b04d3ef860
-cannot determine type of symbol 'fd' - 0x55b04d3ef860
-cannot determine type of symbol 'fd' - 0x55b04d3ef860
-cannot determine type of symbol 'fd' - 0x55b04d3ef860
-carbonc - type checking time: 44ms
+carbonc - type checking time: 49ms
 
 carbonc - generating IR 
-carbonc - IR generation time: 16ms
+carbonc - IR generation time: 15ms
 
 carbonc - generating assembly 
 carbonc - running assembler: as _carbon/build_debug/root.asm -o _carbon/build_debug/root.o
 carbonc - running assembler: as _carbon/build_debug/rt.asm -o _carbon/build_debug/rt.o
-carbonc - running assembler: as _carbon/build_debug/rt_x86_64.asm -o _carbon/build_debug/rt_x86_64.o
-carbonc - assembly generation time: 95ms
+carbonc - running assembler: as _carbon/build_debug/rt_syscall.asm -o _carbon/build_debug/rt_syscall.o
+carbonc - assembly generation time: 92ms
 
-carbonc - running linker command: ld  -e _start -o _carbon/build_debug/test-07-pointers _carbon/build_debug/rt_x86_64_start.o _carbon/build_debug/root.o _carbon/build_debug/rt.o _carbon/build_debug/rt_x86_64.o -T ../../res/carbon.sc
+carbonc - running linker command: ld  -e _start -o _carbon/build_debug/test-07-pointers _carbon/build_debug/rt_x86_64_start.o _carbon/build_debug/root.o _carbon/build_debug/rt.o _carbon/build_debug/rt_syscall.o -T ../../res/carbon.sc
 carbonc - output: a.out
 
-carbonc - total lines parsed: 654
-carbonc - total compilation time: 415ms
+carbonc - total lines parsed: 703
+carbonc - total compilation time: 444ms

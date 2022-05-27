@@ -1,6 +1,6 @@
 -- TODO: buffered output
 
-import rt::x86_64 as syscall
+import rt::syscall as syscall
 
 fun write(fh : FileHandle, s : arrayview of pure byte) => int := do
     return syscall::write(cast(int) fh, s.ptr, s.len)

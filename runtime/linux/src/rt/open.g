@@ -1,4 +1,4 @@
-import rt::x86_64 as syscall
+import rt::syscall as syscall
 
 #define O_ACCMODE       00000003                                                                                                                                                                                                              
 #define O_RDONLY        00000000                                                                                                                                                                                                              
@@ -68,5 +68,13 @@ fun open(file : out FileHandle, path : String, flags : OpenFlags, mode : int) =>
     end
 
     file := fd
+    return nil
+end
+
+fun close(fd : FileHandle) => error := do
+    let res := syscall::close(fd)
+    if res < 0 then
+        return errno_to_error(-fd)
+    end
     return nil
 end

@@ -783,12 +783,12 @@ struct parser_impl {
         else if (TOK == token_type::let) {
             content = parse_var_decl(token_type::let);
         }
-        else if (TOK_CHAR == '{') {
+        else if (TOK_CHAR == '(') {
             lex->next();
 
             auto decls = parse_decl_list();
-            if (TOK_CHAR != '}') {
-                throw parse_error(filename, lex->pos(), "expecting closing '}' in function linkage declaration");
+            if (TOK_CHAR != ')') {
+                throw parse_error(filename, lex->pos(), "expecting closing ')' in function linkage declaration");
             }
             lex->next();
             content = std::move(decls);

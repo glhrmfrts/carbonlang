@@ -2,6 +2,57 @@ fun errno_to_error(c : int) => error := do
     return errors[c]
 end
 
+local const ALIGNMENT := 16
+
+local extern(C) let __error_array_start : uint8
+local extern(C) let __error_array_end : uint8
+
+local fun printbytes(ptr: &pure byte, sz: int) := do
+    for i := range 0,sz do
+        let b : byte = ptr[i]
+        print(cast(int) b)
+        print(",")
+    end
+    println("")
+end
+
+fun error_string(err: error) => String := do
+    if not err then
+        return "(error)nil"
+    end
+
+    -- Find the error name by traversing the ELF .error_array section
+    -- TODO(maybe): cache this to a dict on initialization?
+
+    let addr_begin := cast(uintptr) cast(&opaque) &__error_array_start
+    let addr_end := cast(uintptr) cast(&opaque) &__error_array_end
+    let addr := addr_begin
+
+    let errcode := cast(int) err
+
+    for addr < addr_end do
+        -- imaginary error struct:
+        -- ...16-byte alignment 
+        -- {
+        --     code : int32
+        --     name : null-terminated-string
+        -- }
+        let codeptr := cast(&int32) cast(&opaque) addr
+        addr := addr + sizeof(int32)
+
+        let str := from_cstr(cast(&uint8) cast(&opaque) addr)
+
+        if errcode = @codeptr then
+            return str
+        end
+
+        addr := addr + str.len
+        addr := align(addr, ALIGNMENT)
+    end
+
+    return "(Unknown error)"
+end
+
 error (
     UNIX_EPERM
     UNIX_ENOENT
