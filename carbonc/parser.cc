@@ -353,6 +353,22 @@ struct parser_impl {
         lex->next(); // eat the 'do'
 
         std::vector<arena_ptr<ast_node>> children;
+
+        // block parameters
+        if (TOK_CHAR == '|') {
+            lex->next();
+
+            auto ids = parse_identifier_list();
+
+            if (TOK_CHAR != '|') {
+                throw parse_error(filename, lex->pos(), "expected closing '|' in block parameter list");
+            }
+            lex->next();
+
+            ids->type = ast_type::block_parameter_list;
+            children.push_back(std::move(ids));
+        }
+
         for (int i = 0; i < LIMIT; i++) {
             auto decl_list = parse_decl_list();
             auto stmt_list = parse_stmt_list();

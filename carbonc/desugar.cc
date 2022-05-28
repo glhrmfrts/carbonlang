@@ -328,6 +328,9 @@ void desugar(type_system& ts, ast_node* nodeptr) {
         visit_children(ts, node);
         break;
     }
+    case ast_type::block_parameter_list: {
+        break;
+    }
     default: {
         visit_pre_nodes(ts, node);
         visit_children(ts, node);

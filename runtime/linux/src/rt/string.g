@@ -16,7 +16,7 @@ fun memset(dest: &opaque, value: byte, count: int) := do
 end
 
 fun cstr_equals(p1 : &pure byte, p2 : &pure byte) => bool := do
-    for @p1 /= 0 do
+    for @p1 /= '\0' do
         if @p1 /= @p2 then return false end
         p1 := p1 + 1
         p2 := p2 + 1
@@ -28,8 +28,9 @@ fun cstrlen(ptr: &pure byte) => int := do
     if ptr = nil then return 0 end
 
     let count : int
-    for @ptr /= 0 do
+    for @ptr /= '\0' do
         count := count + 1
+        ptr := ptr + 1
     end
     return count
 end

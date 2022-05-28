@@ -1255,12 +1255,13 @@ void generate_ir_node(ast_node& node) {
     case ast_type::c_struct_decl:
     case ast_type::c_struct_field:
     case ast_type::range_expr:
+    case ast_type::block_parameter_list:
         break;
     case ast_type::error_decl:
         for (auto& idnode : node.children) {
             const_value value = idnode->lvalue.symbol->ctvalue;
             prog->errors.push_back(ir_error_data{
-                (std::int32_t)std::get<comp_int_type>(value),
+                (std::intptr_t)std::get<comp_int_type>(value),
                 idnode->id_parts.front()
             });
         }

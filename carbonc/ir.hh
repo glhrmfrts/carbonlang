@@ -184,7 +184,7 @@ struct ir_func {
 };
 
 struct ir_error_data {
-    std::int32_t code;
+    std::intptr_t code;
     std::string name;
 };
 

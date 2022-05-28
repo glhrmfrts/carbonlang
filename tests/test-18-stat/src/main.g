@@ -1,10 +1,15 @@
 import rt
 
-fun main := do
+fun show_file_size(path : String) := do
     let statbuf : Stat
-    if stat("no_file.txt", statbuf) then
-        writeln("error")
+    if stat(path, statbuf) then |err|
+        write("error: ") writeln(err)
         return
     end
     writeln(statbuf.size)
+end
+
+fun main := do
+    show_file_size("file.txt")
+    show_file_size("nofile.txt")
 end

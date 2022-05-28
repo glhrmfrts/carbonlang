@@ -585,46 +585,22 @@ bool is_assignable_to(type_system& ts, type_id a, type_id b) {
         return true;
     }
 
+    if ((ttarget.flags & (type_flags::is_in | type_flags::is_out)) && (tsrc.flags & (type_flags::is_in | type_flags::is_out))) {
+        if (tsrc.flags & type_flags::is_out) {
+            // Src is output
+
+            return is_assignable_to(ts, tsrc.elem_type, ttarget.elem_type);
+        }
+        else if (tsrc.flags & type_flags::is_in) {
+            // Src is only input, assign to Target only if Target is only input
+
+            if (ttarget.kind == type_kind::input) {
+                return is_assignable_to(ts, tsrc.elem_type, ttarget.elem_type);
+            }
+        }
+    }
+
     return false;
-}
-
-// is A implicitly convertible to B? and does it need to cast?
-std::pair<bool, bool> is_convertible_to(type_system& ts, type_id a, type_id b) {
-    if (a == invalid_type || b == invalid_type) return std::make_pair(false, false);
-    if (is_assignable_to(ts, a, b)) return std::make_pair(true, false);
-
-    auto& ta = get_type(ts, get_alias_root(ts, a));
-    auto& tb = get_type(ts, get_alias_root(ts, b));
-
-    if (ta.kind == type_kind::enumflags && tb.id == ts.bool_type) {
-        return std::make_pair(true, true);
-    }
-
-    if (a == ts.bool_type || b == ts.bool_type) {
-        return std::make_pair(false, false);
-    }
-
-    if (ta.kind == tb.kind && (tb.kind == type_kind::integral)) {
-        return std::make_pair(tb.size >= ta.size, true);
-    }
-    if (ta.kind == type_kind::integral && (tb.kind == type_kind::ptr)) {
-        return std::make_pair(tb.size == ta.size, false);
-    }
-
-    if (get_alias_root(ts, a) == ts.opaque_type && tb.kind == type_kind::enumflags) {
-        return std::make_pair(tb.size >= ta.size, true);
-    }
-
-    return std::make_pair(false, false);
-}
-
-std::tuple<bool, bool, int> is_comparable(type_system& ts, type_id a, type_id b) {
-    auto leftres = is_convertible_to(ts, a, b);
-    if (!leftres.first) {
-        auto rightres = is_convertible_to(ts, b, a);
-        return std::make_tuple(rightres.first, rightres.second, 1);
-    }
-    return std::make_tuple(leftres.first, leftres.second, 0);
 }
 
 std::optional<std::string> get_conversion_error_detail(type_system& ts, type_id a, type_id b) {
@@ -650,22 +626,34 @@ void try_coerce_to(type_system& ts, ast_node& from, type_id to) {
     auto& ta = get_type(ts, from.tid);
     auto& tb = get_type(ts, to);
 
+    bool can_coerce = false;
+
     if (ta.kind == tb.kind && tb.kind == type_kind::integral) {
         if (tb.size < ta.size) {
             if (from.type == ast_type::int_literal && from.int_value < tb.numeric.max) {
-                from.tid = to;
+                can_coerce = true;
             }
         }
         else {
             if (from.type == ast_type::int_literal) {
-                from.tid = to;
+                can_coerce = true;
             }
         }
     }
     else if (ta.kind == type_kind::integral && tb.kind == type_kind::ptr) {
         if (from.type == ast_type::int_literal) {
-            from.tid = to;
+            can_coerce = true;
         }
+    }
+    else if (ta.kind == type_kind::error && tb.kind == type_kind::nil) {
+        can_coerce = true;
+    }
+    else if (ta.kind == type_kind::enumflags && tb.kind == type_kind::nil) {
+        can_coerce = true;
+    }
+
+    if (can_coerce) {
+        from.tid = to;
     }
 }
 
@@ -806,59 +794,6 @@ int aggregate_find_field(type_id tid, const std::string& name) {
     return -1;
 }
 
-bool check_aggregate_types_match(type_system& ts, const position& pos, type_id src_type, type_id receiver_type) {
-    auto& a = src_type;
-    auto& b = receiver_type;
-    if (a == b) { return true; }
-
-    if (a.get().kind == type_kind::structure && b.get().kind == type_kind::structure) {
-        add_type_error(ts, pos, "types '%s' and '%s' do not match", type_to_string(a).c_str(), type_to_string(b).c_str());
-        return false;
-    }
-
-    if (a.get().kind == type_kind::c_structure && b.get().kind == type_kind::c_structure) {
-        add_type_error(ts, pos, "types '%s' and '%s' do not match", type_to_string(a).c_str(), type_to_string(b).c_str());
-        return false;
-    }
-
-    auto& ffa = a.get().structure.fields;
-    auto& ffb = b.get().structure.fields;
-    if (ffa.size() != ffb.size()) {
-        add_type_error(ts, pos, "types '%s' and '%s' do not match", type_to_string(a).c_str(), type_to_string(b).c_str());
-        return false;
-    }
-
-    bool msg_already = false;
-    for (std::size_t i = 0; i < ffa.size(); i++) {
-        auto& fa = ffa[i];
-        auto& fb = ffb[i];
-        if (fa.type != fb.type) {
-            if (!is_convertible_to(ts, fa.type, fb.type).first) {
-                if (!msg_already) {
-                    add_type_error(ts, pos, "types '%s' and '%s' do not match", type_to_string(a).c_str(), type_to_string(b).c_str());
-                    msg_already = true;
-                }
-
-                if (is_type_kind(a, type_kind::structure) || is_type_kind(a, type_kind::c_structure) || is_type_kind(a, type_kind::array_view)) {
-                    complement_error(ts, pos, "struct member '%s: %s' is not convertible to the type of receiver struct member '%s: %s'",
-                        fa.names[0].c_str(),
-                        type_to_string(fa.type).c_str(),
-                        fb.names[0].c_str(),
-                        type_to_string(fb.type).c_str());
-                }
-                else {
-                    complement_error(ts, pos, "tuple member #%d of type '%s' is not convertible to the type of receiver tuple member of type '%s'",
-                        i + 1,
-                        type_to_string(fa.type).c_str(),
-                        type_to_string(fb.type).c_str());
-                }
-            }
-        }
-    }
-
-    return !msg_already;
-}
-
 arena_ptr<ast_node> make_assignment_for_init_list_item(type_system& ts, ast_node& node, ast_node& receiver, arena_ptr<ast_node>&& value, const struct_field& field, int idx) {
     if (is_type_kind(node.tid, type_kind::structure) || is_type_kind(node.tid, type_kind::c_structure) || is_type_kind(node.tid, type_kind::array_view)) {
         auto fieldexpr = make_struct_field_access(*ts.ast_arena, copy_node(ts, &receiver), field.names[0]);
@@ -927,7 +862,7 @@ bool can_pointer_be_cast_from(type_system& ts, type_def& self, type_def& from) {
         if (from.kind == type_kind::ptr) {
             return true;
         }
-        if (from.kind == type_kind::integral) {
+        if (from.kind == type_kind::integral && (get_alias_root(ts, from.id) == ts.uintptr_type)) {
             return true;
         }
     }
@@ -943,9 +878,12 @@ bool can_pointer_be_cast_from(type_system& ts, type_def& self, type_def& from) {
 }
 
 bool can_integral_be_cast_from(type_system& ts, type_def& self, type_def& from) {
-    if (self.id == ts.int_type) {
+    if (get_alias_root(ts, self.id) == ts.uintptr_type) {
         if (from.kind == type_kind::ptr) {
             return get_alias_root(ts, from.id) == ts.opaque_ptr_type;
+        }
+        if (from.kind == type_kind::integral) {
+            return true;
         }
         return false;
     }
@@ -962,9 +900,11 @@ bool can_integral_be_cast_from(type_system& ts, type_def& self, type_def& from) 
 }
 
 bool can_enum_be_cast_from(type_system& ts, type_def& self, type_def& from) {
+#if 0
     if (from.kind == type_kind::integral || from.kind == type_kind::enum_ || from.kind == type_kind::enumflags) {
         return true;
     }
+#endif
 
     return false;
 }
@@ -979,7 +919,7 @@ static std::unordered_map<type_kind, cast_check_func> cast_check_funcs = {
 // is A explicitly castable to B?
 bool is_castable_to(type_system& ts, type_id a, type_id b) {
     if (a == invalid_type || b == invalid_type) return false;
-    if (is_convertible_to(ts, a, b).first) return true;
+    if (is_assignable_to(ts, a, b)) return true;
 
     auto& ta = get_type(ts, a);
     auto& tb = get_type(ts, b);
@@ -1144,13 +1084,11 @@ type_id get_value_node_type(type_system& ts, ast_node& node) {
             }
 
             bool needcast = false;
-            auto [comp, ncast, castidx] = is_comparable(ts, node.children[0]->tid, node.children[1]->tid);
-            if (!comp) {
+            if (!is_assignable_to(ts, node.children[0]->tid, node.children[1]->tid)) {
                 try_coerce_to(ts, *node.children[1], node.children[0]->tid);
                 try_coerce_to(ts, *node.children[0], node.children[1]->tid);
-
-                auto [comp, ncast, castidx] = is_comparable(ts, node.children[0]->tid, node.children[1]->tid);
-                if (!comp) {
+                
+                if (!is_assignable_to(ts, node.children[0]->tid, node.children[1]->tid)) {
                     node.type_error = true;
                     if (is_arith_binary_op(node.op)) {
                         add_type_error(ts, node.pos, "cannot perform operation on types '%s' and '%s'",
@@ -1163,21 +1101,6 @@ type_id get_value_node_type(type_system& ts, ast_node& node) {
                         );
                     }
                     return invalid_type;
-                }
-                else if (ncast) {
-                    needcast = true;
-                }
-            }
-            else if (ncast) {
-                needcast = true;
-            }
-
-            if (needcast) {
-                if (castidx == 0) {
-                    node.children[0] = make_cast_to(ts, std::move(node.children[0]), node.children[1]->tid);
-                }
-                else {
-                    node.children[1] = make_cast_to(ts, std::move(node.children[1]), node.children[0]->tid);
                 }
             }
 
@@ -1668,6 +1591,11 @@ bool check_convertible_and_cast_call_args(type_system& ts, ast_node& node, type_
                     info.cast_needed_idxs.push_back(std::make_tuple(toptr_cast, target, idx));
                     return true;
                 }
+                else if ((node.tid.get().flags & type_flags::is_pure) &&
+                    (get_alias_root(ts, target.get().elem_type) == get_alias_root(ts, node.tid.get().elem_type))) {
+                    info.cast_needed_idxs.push_back(std::make_tuple(toptr_cast, target, idx));
+                    return true;
+                }
             }
             return false;
         }
@@ -1676,13 +1604,10 @@ bool check_convertible_and_cast_call_args(type_system& ts, ast_node& node, type_
 }
 
 bool check_convertible_and_cast_call_args_constructor(type_system& ts, ast_node& node, type_id target, int idx, call_match_info& info) {
-    bool needcast = false;
-    auto [convertible, ncast] = is_convertible_to(ts, node.tid, target);
-    if (!convertible) {
+    if (!is_assignable_to(ts, node.tid, target)) {
         try_coerce_to(ts, node, target);
 
-        auto [convertible, ncast] = is_convertible_to(ts, node.tid, target);
-        if (!convertible) {
+        if (!is_assignable_to(ts, node.tid, target)) {
             if (target.get().kind == type_kind::ptr && target.get().elem_type == node.tid.get().constructor_type) {
                 info.cast_needed_idxs.push_back(std::make_tuple(toptr_cast, get_ptr_type_to(ts, node.tid), idx));
                 return true;
@@ -1690,13 +1615,8 @@ bool check_convertible_and_cast_call_args_constructor(type_system& ts, ast_node&
 
             return false;
         }
-        else if (ncast) {
-            info.cast_needed_idxs.push_back(std::make_tuple(simple_cast, target, idx));
-        }
     }
-    else if (ncast) {
-        info.cast_needed_idxs.push_back(std::make_tuple(simple_cast, target, idx));
-    }
+
     return true;
 }
 
@@ -1918,7 +1838,7 @@ type_id resolve_func_type(type_system& ts, ast_node& f) {
             }
             for (auto retst : f.func.return_statements) {
                 // TODO: check for needed casts
-                if (!is_convertible_to(ts, retst->tid, ret_type).first) {
+                if (!is_assignable_to(ts, retst->tid, ret_type)) {
                     add_type_error(ts, retst->pos,
                         "cannot return type '%s' from function '%s' declared returning type '%s'",
                         type_to_string(retst->tid).c_str(),
@@ -2069,7 +1989,7 @@ void resolve_and_declare_local_variables(type_system& ts, ast_node& node) {
         }
 
         auto prev = find_symbol_in_current_scope_thispass(ts, id);
-        if (prev && num_new == 0) {
+        if (prev && num_new == 0 && !(node.local.flags & local_flag::dont_check_for_duplicates)) {
             //node.tid = invalid_type;
             add_type_error(ts, idnode->pos, "cannot re-declare name '%s'", id.str.c_str());
             diderror = true;
@@ -2680,6 +2600,32 @@ void process_thread_first_expr(type_system& ts, ast_node& node) {
     node.call.flags |= call_flag::is_method_sugar_call;
 }
 
+std::vector<arena_ptr<ast_node>>* get_compound_block_params(ast_node& compound) {
+    if (compound.children[0]->type == ast_type::block_parameter_list) {
+        return &compound.children[0]->children;
+    }
+    return nullptr;
+}
+
+arena_ptr<ast_node> make_condition_decl_for_block_param(type_system& ts, ast_node& idnode, arena_ptr<ast_node> cond_node) {
+    auto tempname = idnode.id_parts.front();
+    auto temp_type = cond_node->tid;
+    auto temp = make_var_decl_node_single(*ts.ast_arena, idnode.pos, token_type::let,
+        make_identifier_node(*ts.ast_arena, idnode.pos, { tempname }), // id
+        make_type_expr_node(*ts.ast_arena, idnode.pos, make_type_resolver_node(*ts.ast_arena, temp_type)), // type
+        std::move(cond_node), {}); // value
+    temp->local.flags |= local_flag::dont_check_for_duplicates;
+
+    resolve_node_type(ts, temp.get());
+
+    auto ref = make_identifier_node(*ts.ast_arena, temp->pos, { tempname });
+    resolve_node_type(ts, ref.get());
+
+    ref->pre_nodes.push_back(std::move(temp));
+
+    return ref;
+}
+
 void generate_temp_for_field_expr(type_system& ts, ast_node& node, type_id ltype) {
     auto tempname = generate_temp_name();
     auto temp = make_var_decl_node_single(*ts.ast_arena, node.pos, token_type::let,
@@ -2810,7 +2756,7 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
 
         for (auto& idnode : node.children) {
             auto id = string_hash{ build_identifier_value(idnode->id_parts) };
-            uint32_t mmhash = murmur_hash2_32bit(MMHASH_SEED, id.str.c_str(), id.str.size());
+            uint32_t mmhash = hash(id.str.c_str(), id.str.size());
             const_value value = mmhash;
             declare_const_symbol(ts, id, value, node.tid);
             idnode->lvalue.symbol = find_symbol_in_current_scope(ts, id);
@@ -3092,6 +3038,10 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
         }
         break;
     }
+    case ast_type::block_parameter_list: {
+        check_for_unresolved = false;
+        break;
+    }
     case ast_type::return_stmt: {
         if (ts.inside_defer) {
             add_type_error(ts, node.pos, "illegal use of return statement while inside defer statement");
@@ -3219,6 +3169,21 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
                     type_to_string(node.children[0]->tid).c_str()
                 );
                 node.type_error = true;
+            }
+
+            // At this point, the type of the condition is resolved if (node.type_error == false)
+
+            constexpr int CONDITION_PARAM_FLAG = 0x20;
+            if (node.children[0]->tid.valid() && !(node.desugar_flags & CONDITION_PARAM_FLAG)) {
+                auto params = get_compound_block_params(*node.children[1]);
+                if (params && params->size() != 1) {
+                    add_type_error(ts, node.pos, "%s statement supports only 1 block parameter", stmt);
+                    node.type_error = true;
+                }
+                else if (params) {
+                    node.children[0] = make_condition_decl_for_block_param(ts, *params->front(), std::move(node.children[0]));
+                }
+                node.desugar_flags |= CONDITION_PARAM_FLAG;
             }
 
             if (!node.type_error && !is_bool_op(*node.children[0])) {
@@ -3909,13 +3874,10 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
 
         try_coerce_to(ts, *node.if_else(), node.if_body()->tid);
         try_coerce_to(ts, *node.if_body(), node.if_else()->tid);
-        auto [conv, ncast] = is_convertible_to(ts, node.if_else()->tid, node.if_body()->tid);
-        if (!conv) {
+
+        if (!is_assignable_to(ts, node.if_else()->tid, node.if_body()->tid)) {
             add_type_error(ts, node.pos, "non-compatible types in ternary expression branches: '%s' else '%s'",
                 type_to_string(node.if_body()->tid).c_str(), type_to_string(node.if_else()->tid).c_str());
-        }
-        if (ncast) {
-            node.children[2] = make_cast_to(ts, std::move(node.children[2]), node.if_body()->tid);
         }
 
         node.tid = node.if_body()->tid;
@@ -4072,6 +4034,9 @@ void remangle_names(type_system& ts, ast_node* nodeptr) {
         visit_children(ts, node);
         break;
     }
+    case ast_type::block_parameter_list: {
+        break;
+    }
     default: {
         visit_pre_nodes(ts, node);
         visit_children(ts, node);
@@ -4224,26 +4189,27 @@ type_system::type_system(memory_arena& arena) {
     }
 
     // register built-in types
-    int_type = register_integral_type<std::int64_t>(*this, "int");
+    int_type = register_integral_type<std::intptr_t>(*this, "int");
     byte_type = register_integral_type<std::int8_t>(*this, "byte");
     bool_type = register_integral_type<std::int8_t>(*this, "bool");
 
-    uint8_type = register_integral_type<std::uint8_t>(*this, "uint8_t");
-    uint16_type = register_integral_type<std::uint16_t>(*this, "uint16_t");
-    uint32_type = register_integral_type<std::uint32_t>(*this, "uint32_t");
-    uint64_type = register_integral_type<std::uint64_t>(*this, "uint64_t");
-    usize_type = register_integral_type<std::size_t>(*this, "usize_t");
-    isize_type = register_integral_type<std::int64_t>(*this, "isize_t");
+    uint8_type = register_integral_type<std::uint8_t>(*this, "uint8");
+    uint16_type = register_integral_type<std::uint16_t>(*this, "uint16");
+    uint32_type = register_integral_type<std::uint32_t>(*this, "uint32");
+    uint64_type = register_integral_type<std::uint64_t>(*this, "uint64");
+    usize_type = register_integral_type<std::size_t>(*this, "usize");
+    isize_type = register_integral_type<std::int64_t>(*this, "isize");
+    uintptr_type = register_integral_type<std::uintptr_t>(*this, "uintptr");
 
-    int8_type = register_integral_type<std::int8_t>(*this, "int8_t");
-    int16_type = register_integral_type<std::int16_t>(*this, "int16_t");
-    int32_type = register_integral_type<std::int32_t>(*this, "int32_t");
-    int64_type = register_integral_type<std::int64_t>(*this, "int64_t");
+    int8_type = register_integral_type<std::int8_t>(*this, "int8");
+    int16_type = register_integral_type<std::int16_t>(*this, "int16");
+    int32_type = register_integral_type<std::int32_t>(*this, "int32");
+    int64_type = register_integral_type<std::int64_t>(*this, "int64");
 
     register_real_type<float>(*this, "float");
     register_real_type<double>(*this, "double");
 
-    error_type = register_integral_like_type<std::int64_t>(*this, "error", type_kind::error);
+    error_type = register_integral_like_type<std::intptr_t>(*this, "error", type_kind::error);
 
     {
         auto node = make_in_arena<ast_node>(*ast_arena);

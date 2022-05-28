@@ -1,27 +1,17 @@
 import rt
 
-type SomeFlags := enumflags (
-    OptionA
-    OptionB
-)
-
-fun writeln(a : arrayview of byte) := do
-    
-end
+fun do_something := do end
 
 fun main := do
-    let bval : bool := false
-    if not bval then
-        writeln("false(bool) is false")
+    if something() then |err|
+        do_something()
     end
+end
 
-    let err : error := nil
-    if not err then
-        writeln("nil(error) is false")
-    end
+error (
+    SOME_ERROR
+)
 
-    let flags : SomeFlags := nil
-    if not flags then
-        writeln("nil(enumflags) is false")
-    end
+fun something => error := do
+    return SOME_ERROR
 end

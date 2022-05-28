@@ -47,6 +47,7 @@ enum class ast_type {
     arg_list,
     decl_list,
     stmt_list,
+    block_parameter_list,
 
     compound_stmt,
     return_stmt,

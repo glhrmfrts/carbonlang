@@ -149,6 +149,7 @@ struct local_flag {
     static constexpr type is_argument = 1;
     static constexpr type is_temp = 2;
     static constexpr type is_aggregate_argument = 4;
+    static constexpr type dont_check_for_duplicates = 8;
 };
 
 struct local_def {
@@ -386,6 +387,7 @@ struct type_system {
     type_id uint16_type{};
     type_id uint32_type{};
     type_id uint64_type{};
+    type_id uintptr_type{};
 
     type_constructor* in_type_constructor;
     type_constructor* out_type_constructor;

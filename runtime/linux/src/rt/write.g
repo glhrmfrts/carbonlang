@@ -33,6 +33,10 @@ fun write(i : int) => int := do
     return write(v)
 end
 
+fun write(e : error) => int := do
+    return write(error_string(e))
+end
+
 fun writeln(s : arrayview of pure byte) => int := do
     let res := write(stdout(), s)
     res := res + write(stdout(), "\n")
@@ -51,6 +55,10 @@ end
 fun writeln(i : int) => int := do
     let res := write(i)
     return res + writeln("")
+end
+
+fun writeln(e : error) => int := do
+    return write(e) + writeln("")
 end
 
 local fun int_to_string(value: int, base: int, result: in out arrayview of byte) => int := do

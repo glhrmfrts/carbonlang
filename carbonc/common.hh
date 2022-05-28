@@ -54,9 +54,13 @@ template <typename T> T align(T number, T alignment) {
     return number;
 }
 
-#define MMHASH_SEED (2837461)
-
 uint32_t murmur_hash2_32bit(uint32_t seed, const char* const key, uint32_t len);
+
+uint64_t murmur_hash_64(const void* key, int len, uint64_t seed);
+
+using mm_hash_type = std::size_t;
+
+mm_hash_type hash(const char* key, int len);
 
 }
 

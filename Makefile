@@ -89,4 +89,9 @@ test:
 		carbonc -p ../.. -I runtime/linux -V -o a.out > compile.txt && \
 		./a.out > out.txt && diff out.txt expected.txt && echo "\033[1;32mtest-15-falsevalues: OK\033[0m"
 
+	@echo "test-18-stat: ..." && \
+		cd tests/test-18-stat && \
+		carbonc -p ../.. -I runtime/linux -V -o a.out > compile.txt && \
+		./a.out > out.txt && diff out.txt expected.txt && echo "\033[1;32mtest-18-stat: OK\033[0m"
+
 .PHONY: all

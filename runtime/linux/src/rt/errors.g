@@ -1,19 +1,23 @@
+local const ALIGNMENT := 16
+
+local extern(C) let __error_array_start : int
+local extern(C) let __error_array_end : int
+
 fun errno_to_error(c : int) => error := do
     return errors[c]
 end
 
-local const ALIGNMENT := 16
-
-local extern(C) let __error_array_start : uint8
-local extern(C) let __error_array_end : uint8
-
-local fun printbytes(ptr: &pure byte, sz: int) := do
+local fun writebytes(ptr: &pure byte, sz: int) := do
     for i := range 0,sz do
-        let b : byte = ptr[i]
-        print(cast(int) b)
-        print(",")
+        let b : byte := ptr[i]
+        write(cast(int) b)
+        write(",")
     end
-    println("")
+    writeln("")
+end
+
+fun align(size: int, alignment: int) := do
+    return size + (-size & (alignment - 1))
 end
 
 fun error_string(err: error) => String := do
@@ -34,20 +38,20 @@ fun error_string(err: error) => String := do
         -- imaginary error struct:
         -- ...16-byte alignment 
         -- {
-        --     code : int32
+        --     code : int
         --     name : null-terminated-string
         -- }
-        let codeptr := cast(&int32) cast(&opaque) addr
-        addr := addr + sizeof(int32)
+        let codeptr := cast(&int) cast(&opaque) addr
+        addr := addr + sizeof(int)
 
-        let str := from_cstr(cast(&uint8) cast(&opaque) addr)
+        let str := from_cstr(cast(&byte) cast(&opaque) addr)
 
         if errcode = @codeptr then
             return str
         end
 
-        addr := addr + str.len
-        addr := align(addr, ALIGNMENT)
+        addr := addr + cast(uintptr)str.len
+        addr := cast(uintptr) align(cast(int) addr, ALIGNMENT)
     end
 
     return "(Unknown error)"

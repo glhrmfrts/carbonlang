@@ -552,7 +552,12 @@ struct generator {
 
     void generate_error(const ir_error_data& err) {
         em->align(16);
-        em->add_int32(err.code);
+        if constexpr (sizeof(std::intptr_t) == 8) {
+            em->add_int64(err.code);
+        }
+        else {
+            em->add_int32(err.code);
+        }
         em->add_stringz(err.name);
     }
 
