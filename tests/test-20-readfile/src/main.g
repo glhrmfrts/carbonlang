@@ -2,14 +2,15 @@
 
 import rt
 
-macro allocate_array(arr, len, cap) := do
+macro allocateArray(arr, len, cap) := do
+    -- To ensure arguments are evaluated only once
     let larr := &arr
     let llen := len
     let lcap := cap
 
-    let ptr := mmap(llen * sizeof(@larr.ptr))
+    let ptr := mmap(lcap * sizeof(@larr.ptr))
     if ptr = nil then
-        writeln("no memory")
+        putln("no memory")
         exit(1)
     end
 
@@ -18,38 +19,40 @@ macro allocate_array(arr, len, cap) := do
     larr.cap := lcap
 end
 
-macro allocate_array(arr, len) := do
-    allocate_array(arr, len, len)
+macro allocateArray(arr, len) := do
+    allocateArray(arr, len, len)
 end
 
-macro free_array(arr) := do
+macro freeArray(arr) := do
     let larr := &arr
     munmap(larr.ptr, larr.len)
+    --putln("freeArray")
 end
 
 fun main := do
     let file : FileHandle
     defer close(file)
 
-    if open(file, "file.txt", OpenFlags::Read, 0) then |err|
-        putln("open error: ", err)
-        return
-    end
+    open(file, "file.txt", nil, 0)
 
     let statbuf : Stat
-    if stat(file, statbuf) then |err|
+    if stat("file.txt", statbuf) then |err|
         putln("stat error: ", err)
         return
     end
 
     let data : array of byte
-    allocate_array(data, statbuf.size)
-    defer free_array(data)
+    allocateArray(data, statbuf.size, 4096)
+    defer freeArray(data)
+
+    putln(statbuf.size, " ", data.len, " ", data.cap)
 
     if read(file, data) then |err|
         putln("read error: ", err)
         return
     end
 
-    writeln(data)
+    putln(data)
+
+    return
 end

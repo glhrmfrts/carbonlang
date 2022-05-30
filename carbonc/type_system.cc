@@ -1496,6 +1496,9 @@ bool resolve_local_variable_type(type_system& ts, ast_node& l, bool is_arg = fal
     auto val_type = l.var_value() ? resolve_node_type(ts, l.var_value()) : type_id{};
     if (l.var_type()) pop_receiver_type(ts);
 
+    decl_type = l.var_type() ? l.var_type()->tid : type_id{};
+    val_type = l.var_value() ? l.var_value()->tid : type_id{};
+
     val_type = generate_deref_for_input(ts, l, val_type, 2);
 
     if (l.var_type() && decl_type.valid()) {
@@ -4022,8 +4025,8 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
             auto pointer_type = get_ptr_type_to(ts, pure_rstype);
 
             auto slicetype = get_array_type_to(ts, pure_rstype);
-            auto pureslicetype = get_pure_type_to(ts, slicetype);
-            auto slicetypenode = make_type_expr_node(*ts.ast_arena, node.pos, make_type_resolver_node(*ts.ast_arena, pureslicetype));
+            //auto pureslicetype = get_pure_type_to(ts, slicetype);
+            auto slicetypenode = make_type_expr_node(*ts.ast_arena, node.pos, make_type_resolver_node(*ts.ast_arena, slicetype));
 
             std::vector<arena_ptr<ast_node>> nodes;
             nodes.push_back(make_string_literal_node(*ts.ast_arena, node.pos, std::string{ node.string_value }));

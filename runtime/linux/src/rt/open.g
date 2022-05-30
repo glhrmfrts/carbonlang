@@ -54,13 +54,16 @@ fun to_kernel_flags(flags : OpenFlags) => int := do
 end
 
 fun open(file : out FileHandle, path : String, flags : OpenFlags, mode : int) => error := do
-    let buf : array(4096) of byte
-    let bufview := array of byte { &buf[0], sizeof(buf), sizeof(buf) }
+    const PATH_MAX := 4096
+    let buf : array(PATH_MAX) of byte
 
-    let path_cstr := to_cstr(path, bufview)
+    let path_cstr := to_cstr(path, buf)
     if path_cstr = nil then
         return UNIX_ENAMETOOLONG
     end
+
+    -- TODO: why this fix some bug?
+    syscall::write(stdout(), path_cstr, cstrlen(path_cstr))
 
     let fd := syscall::open(path_cstr, to_kernel_flags(flags), mode)
     if fd < 0 then
@@ -76,5 +79,6 @@ fun close(fd : FileHandle) => error := do
     if res < 0 then
         return errno_to_error(-fd)
     end
+    putln("close ", fd)
     return nil
 end

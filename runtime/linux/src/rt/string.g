@@ -1,4 +1,4 @@
-typealias String := pure array of byte
+typealias String := array of pure byte
 
 fun memcpy(dest: &opaque, src: &opaque, n: int) := do
     asm%do
@@ -35,7 +35,7 @@ fun cstrlen(ptr: &pure byte) => int := do
     return count
 end
 
-fun to_cstr(str : String, buffer : in out array of byte) => pure &byte := do
+fun to_cstr(str : String, buffer : in out array of byte) => &pure byte := do
     if str.len > buffer.len then return nil end
 
     memcpy(buffer.ptr, str.ptr, str.len)

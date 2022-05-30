@@ -184,6 +184,9 @@ arena_ptr<ast_node> copy_node_helper(type_system& ts, ast_node& node) {
         }
         return make_compound_stmt_node(*ts.ast_arena, node.pos, std::move(args));
     }
+    else if (node.type == ast_type::assign_stmt) {
+        return make_assign_stmt_node(*ts.ast_arena, node.pos, copy_node(ts, node.children[0].get()), copy_node(ts, node.children[1].get()));
+    }
     else if (node.type == ast_type::return_stmt) {
         return make_return_stmt_node(*ts.ast_arena, node.pos, copy_node(ts, node.children[0].get()));
     }

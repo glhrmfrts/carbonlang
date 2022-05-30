@@ -1,3 +1,5 @@
+import rt::syscall as syscall
+
 typealias FileHandle := int
 
 fun stdin() => FileHandle := do
@@ -10,4 +12,8 @@ end
 
 fun stderr() => FileHandle := do
     return 2
+end
+
+fun exit(code : int) := do
+    syscall::exit(code)
 end

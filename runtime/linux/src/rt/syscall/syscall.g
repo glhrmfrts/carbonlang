@@ -10,7 +10,7 @@ fun read(fd: int, ptr: &byte, len: int) => int := do
     end%asm   
 end
 
-fun write(fd: int, ptr: pure &byte, len: int) => int := do
+fun write(fd: int, ptr: &pure byte, len: int) => int := do
     asm%do
 
         mov $1, %rax            # system call 1 is write
@@ -22,7 +22,7 @@ fun write(fd: int, ptr: pure &byte, len: int) => int := do
     end%asm
 end
 
-fun open(path: pure &byte, flags: int, mode: int) => int := do
+fun open(path: &pure byte, flags: int, mode: int) => int := do
     asm%do
 
         mov $2, %rax
@@ -38,7 +38,7 @@ fun close(fd : int) => int := do
     end%asm
 end
 
-fun stat(filename: pure &byte, buf: &opaque) => int := do
+fun stat(filename: &pure byte, buf: &opaque) => int := do
 asm%do
     mov $4, %rax
     syscall
