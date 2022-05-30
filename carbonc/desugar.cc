@@ -114,6 +114,7 @@ void check_func_return_aggregate_type(type_system& ts, ast_node& func) {
         func.children[ast_node::child_func_decl_ret_type] = make_type_resolver_node(*ts.ast_arena, new_ret_type);
 
         auto arg_decl = make_var_decl_of_type(ts, token_type::let, "$cb_agg_ret", new_ret_type);
+        arg_decl->local.flags |= local_flag::is_aggregate_return;
 
         args.insert(args.begin(), std::move(arg_decl));
         declare_func_arguments(ts, func);

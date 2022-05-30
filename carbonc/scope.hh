@@ -25,6 +25,8 @@ bool declare_local_symbol(type_system& ts, const string_hash& hash, ast_node& ld
 
 bool declare_top_level_func_symbol(type_system& ts, const string_hash& hash, ast_node& ld);
 
+bool declare_macro_symbol(type_system& ts, const string_hash& hash, ast_node& node);
+
 bool declare_type_symbol(type_system& ts, const string_hash& hash, ast_node& node);
 
 bool declare_type_symbol(type_system& ts, scope_def& scope, const string_hash& hash, ast_node& node);

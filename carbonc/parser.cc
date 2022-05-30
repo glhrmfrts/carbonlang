@@ -102,40 +102,37 @@ struct parser_impl {
         else if (TOK == token_type::array_) {
             lex->next();
 
-            if (TOK_CHAR != '(') {
-                throw parse_error(filename, lex->pos(), "invalid type expression");
+            arena_ptr<ast_node> size_expr{ nullptr, nullptr };
+
+            if (TOK_CHAR == '(') {
+                lex->next();
+                size_expr = parse_expr();
+                if (!size_expr) {
+                    throw parse_error(filename, lex->pos(), "invalid array type expression, missing size expression");
+                }
+                if (TOK_CHAR != ')') {
+                    throw parse_error(filename, lex->pos(), "invalid array type expression, missing ')'");
+                }
+                lex->next();
             }
-            lex->next();
-
-            auto size_expr = parse_expr();
-
-            if (TOK_CHAR != ')') {
-                throw parse_error(filename, lex->pos(), "invalid type expression");
-            }
-            lex->next();
-
+            
             if (TOK != token_type::of_) {
-                throw parse_error(filename, lex->pos(), "invalid type expression");
+                throw parse_error(filename, lex->pos(), "invalid array type expression, missing 'of'");
             }
             lex->next();
 
             auto to_type = parse_type_expr();
             if (to_type) {
-                result = make_static_array_type_node(*ast_arena, pos, std::move(size_expr), std::move(to_type));
+                if (size_expr) {
+                    result = make_static_array_type_node(*ast_arena, pos, std::move(size_expr), std::move(to_type));
+                }
+                else {
+                    result = make_array_type_node(*ast_arena, pos, std::move(to_type));
+                }
             }
         }
         else if (TOK == token_type::arrayview_) {
-            lex->next();
-
-            if (TOK != token_type::of_) {
-                throw parse_error(filename, lex->pos(), "invalid type expression");
-            }
-            lex->next();
-
-            auto to_type = parse_type_expr();
-            if (to_type) {
-                result = make_array_view_type_node(*ast_arena, pos, std::move(to_type));
-            }
+            throw parse_error(filename, lex->pos(), "invalid type expression (arrayview)");
         }
         else if (TOK == token_type::identifier) {
             result = parse_qualified_identifier();
@@ -566,6 +563,8 @@ struct parser_impl {
             return parse_var_decl(token_type::const_);
         case token_type::fun:
             return parse_func_decl();
+        case token_type::macro:
+            return parse_macro_decl();
         case token_type::type:
             return parse_type_decl();
         case token_type::typealias:
@@ -916,6 +915,43 @@ struct parser_impl {
         else {
             return make_type_decl_node(*ast_arena, pos, std::move(id), std::move(contents), is_alias);
         }
+    }
+
+    arena_ptr<ast_node> parse_macro_decl() {
+        auto pos = lex->pos();
+        lex->next(); // eat the 'func'
+
+        arena_ptr<ast_node> id{ nullptr, nullptr };
+        if (TOK != token_type::identifier) {
+            throw parse_error(filename, lex->pos(), "expected identifier in macro declaration");
+        }
+        id = make_identifier_node(*ast_arena, lex->pos(), { lex->string_value() });
+        lex->next();
+
+        // parse the argument list
+        auto arg_list = arena_ptr<ast_node>{ nullptr, nullptr };
+        if (TOK_CHAR == '(') {
+            ctx_stack.push(parse_context::func_arg_decl);
+            scope_guard _{ [this]() { ctx_stack.pop(); } };
+
+            arg_list = parse_arg_list(')', [this]() {
+                return parse_func_arg_decl();
+            });
+        }
+        else {
+            arg_list = make_arg_list_node(*ast_arena, pos, {});
+        }
+
+        func_body_level++;
+        scope_guard _{ [this]() { func_body_level--; } };
+
+        auto body = arena_ptr<ast_node>{ nullptr, nullptr };
+        if (TOK == token_type::coloneq) {
+            lex->next();
+            body = parse_func_body();
+        }
+
+        return make_macro_decl_node(*ast_arena, pos, std::move(id), std::move(arg_list), std::move(body));
     }
 
     arena_ptr<ast_node> parse_func_arg_decl() {

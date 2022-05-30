@@ -61,6 +61,7 @@ enum class type_kind {
     func_pointer,
     type,
     constructor,
+    quote,
 };
 
 struct type_flags {
@@ -149,7 +150,8 @@ struct local_flag {
     static constexpr type is_argument = 1;
     static constexpr type is_temp = 2;
     static constexpr type is_aggregate_argument = 4;
-    static constexpr type dont_check_for_duplicates = 8;
+    static constexpr type is_aggregate_return = 8;
+    static constexpr type dont_check_for_duplicates = 16;
 };
 
 struct local_def {
@@ -170,6 +172,7 @@ struct local_def {
 enum class symbol_kind {
     global,
     local,
+    macro,
     top_level_func,
     overloaded_func_base,
     type,
@@ -190,9 +193,9 @@ struct symbol_info {
     
     // if kind == overloaded_func_base
     std::vector<func_def*> overload_funcs;
-    std::vector<func_def*> generic_funcs;
+    std::vector<func_def*> overload_macros;
 
-    // if kind == comptime
+    // if kind == const_value
     const_value ctvalue;
     type_id cttype;
 };
@@ -295,6 +298,7 @@ struct func_def {
     string_hash base_symbol;
     std::vector<const_value> const_args{};
     std::vector<std::string> extern_alias;
+    int num_args;
 };
 
 struct field_access {
@@ -375,6 +379,7 @@ struct type_system {
     type_id int_type{};
     type_id error_type{};
     type_id typeid_type{};
+    type_id quote_type{};
 
     type_id raw_string_type{}; // only used internally
     type_id usize_type{};
@@ -396,7 +401,7 @@ struct type_system {
     type_constructor* ptr_type_constructor;
     type_constructor* static_array_type_constructor;
     type_constructor* array_type_constructor;
-    type_constructor* array_view_type_constructor;
+    //type_constructor* array_view_type_constructor;
     type_constructor* func_pointer_type_constructor;
 
     explicit type_system(memory_arena&);

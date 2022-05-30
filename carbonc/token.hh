@@ -32,6 +32,7 @@ enum class token_type : unsigned int {
     extern_,
     const_,
     catch_,
+    macro,
     local,
     error,
     range,

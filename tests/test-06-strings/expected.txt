@@ -1,7 +1,6 @@
 a string
 true
 8
+9
 true
 true
-str,3
-a,1

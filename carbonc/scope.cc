@@ -150,6 +150,24 @@ bool declare_top_level_func_symbol(type_system& ts, const string_hash& hash, ast
     return true;
 }
 
+bool declare_macro_symbol(type_system& ts, const string_hash& hash, ast_node& ld) {
+    auto it = ts.current_scope->symbols.find(hash);
+    if (it != ts.current_scope->symbols.end()) {
+        return false;
+    }
+
+    symbol_info info;
+    info.kind = symbol_kind::macro;
+    info.scope = ts.current_scope;
+    info.local_index = ts.current_scope->local_defs.size();
+    info.id = hash;
+    info.pass_token = ((int)ts.pass * 1000) + ts.subpass;
+
+    ts.current_scope->local_defs.push_back(&ld.local);
+    ts.current_scope->symbols[hash] = std::make_unique<symbol_info>(info);
+    return true;
+}
+
 bool declare_type_symbol(type_system& ts, const string_hash& hash, ast_node& node) {
     return declare_type_symbol(ts, *ts.current_scope, hash, node);
 }

@@ -2,11 +2,11 @@
 
 import rt::syscall as syscall
 
-fun write(fh : FileHandle, s : arrayview of pure byte) => int := do
+fun write(fh : FileHandle, s : pure array of byte) => int := do
     return syscall::write(cast(int) fh, s.ptr, s.len)
 end
 
-fun write(s : arrayview of pure byte) => int := do
+fun write(s : pure array of byte) => int := do
     return write(stdout(), s)
 end
 
@@ -28,7 +28,7 @@ end
 
 fun write(i : int) => int := do
     let buf : array(32) of byte
-    let v := arrayview of byte { &buf[0], sizeof(buf) }
+    let v := array of byte { &buf[0], sizeof(buf), sizeof(buf) }
     int_to_string(i, 10, v)
     return write(v)
 end
@@ -37,7 +37,7 @@ fun write(e : error) => int := do
     return write(error_string(e))
 end
 
-fun writeln(s : arrayview of pure byte) => int := do
+fun writeln(s : pure array of byte) => int := do
     let res := write(stdout(), s)
     res := res + write(stdout(), "\n")
     return res
@@ -61,7 +61,7 @@ fun writeln(e : error) => int := do
     return write(e) + writeln("")
 end
 
-local fun int_to_string(value: int, base: int, result: in out arrayview of byte) => int := do
+local fun int_to_string(value: int, base: int, result: in out array of byte) => int := do
     -- check that the base if valid
     if base < 2 or base > 36 then return 0 end
 

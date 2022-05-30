@@ -32,7 +32,7 @@ type Stat := struct of
     size : int
 end
 
-fun stat(filename: arrayview of pure byte, buf: out Stat) => error := do
+fun stat(filename: String, buf: out Stat) => error := do
     let cstat : C_Stat
 
     let res := syscall::stat(filename.ptr, &cstat)

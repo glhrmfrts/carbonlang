@@ -248,6 +248,9 @@ struct lexer_impl {
             if (!std::strcmp("catch", l.string)) {
                 return token_type::catch_;
             }
+            if (!std::strcmp("macro", l.string)) {
+                return token_type::macro;
+            }
             break;
         case 6:
             if (!std::strcmp("return", l.string)) {

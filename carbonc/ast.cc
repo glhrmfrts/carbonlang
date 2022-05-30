@@ -318,6 +318,20 @@ arena_ptr<ast_node> make_func_decl_node(memory_arena& arena, const position& pos
     return ptr;
 }
 
+arena_ptr<ast_node> make_macro_decl_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& id, arena_ptr<ast_node>&& arg_list, arena_ptr<ast_node>&& body) {
+    auto ptr = make_in_arena<ast_node>(arena);
+    ptr->node_id = node_id_gen++;
+    ptr->type = ast_type::macro_decl;
+    ptr->pos = pos;
+    if (id) id->parent = ptr.get();
+    if (arg_list) arg_list->parent = ptr.get();
+    if (body) body->parent = ptr.get();
+    ptr->children.push_back(std::move(id));
+    ptr->children.push_back(std::move(arg_list));
+    ptr->children.push_back(std::move(body));
+    return ptr;
+}
+
 arena_ptr<ast_node> make_error_decl_node(memory_arena& arena, const position& pos, std::vector<arena_ptr<ast_node>>&& children) {
     auto ptr = make_in_arena<ast_node>(arena);
     ptr->node_id = node_id_gen++;
@@ -504,7 +518,7 @@ arena_ptr<ast_node> make_static_array_type_node(memory_arena& arena, const posit
     return ptr;
 }
 
-arena_ptr<ast_node> make_array_type_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& size_expr, arena_ptr<ast_node>&& item_type) {
+arena_ptr<ast_node> make_array_type_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& item_type) {
     auto ptr = make_in_arena<ast_node>(arena);
     ptr->node_id = node_id_gen++;
     ptr->type = ast_type::array_type;
