@@ -43,7 +43,7 @@ fun main := do
     writeNested(narr[0])
     writeNested(narr[1])
 
-    -- TODO: this should be possible
+    -- TODO(bug): this should be possible
     --let narr := array(...) of Nested {
     --    {{80,90}, {40,50}},
     --    {{102,402}, {500, 900}},

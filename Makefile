@@ -94,9 +94,24 @@ test:
 		carbonc -p ../.. -I runtime/linux -V -o a.out > compile.txt && \
 		./a.out > out.txt && diff out.txt expected.txt && echo "\033[1;32mtest-16-macros: OK\033[0m"
 
+	@echo "test-17-placeholder: ..." && \
+		cd tests/test-17-placeholder && \
+		carbonc -p ../.. -I runtime/linux -V -o a.out > compile.txt && \
+		./a.out > out.txt && diff out.txt expected.txt && echo "\033[1;32mtest-17-placeholder: OK\033[0m"
+
 	@echo "test-18-stat: ..." && \
 		cd tests/test-18-stat && \
 		carbonc -p ../.. -I runtime/linux -V -o a.out > compile.txt && \
 		./a.out > out.txt && diff out.txt expected.txt && echo "\033[1;32mtest-18-stat: OK\033[0m"
+
+	@echo "test-19-errorstrings: ..." && \
+		cd tests/test-19-errorstrings && \
+		carbonc -p ../.. -I runtime/linux -V -o a.out > compile.txt && \
+		./a.out > out.txt && diff out.txt expected.txt && echo "\033[1;32mtest-19-errorstrings: OK\033[0m"
+
+	@echo "test-20-readfile: ..." && \
+		cd tests/test-20-readfile && \
+		carbonc -p ../.. -I runtime/linux -V -o a.out > compile.txt && \
+		./a.out > out.txt && diff out.txt expected.txt && echo "\033[1;32mtest-20-readfile: OK\033[0m"
 
 .PHONY: all

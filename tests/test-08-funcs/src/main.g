@@ -66,7 +66,6 @@ fun main := do
 
     writeln(read(return_aggregate()))
 
-    -- TODO: this should not be allowed
     --modify(return_aggregate(), 3)
     --init(return_aggregate(), 3)
 end

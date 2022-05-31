@@ -8,7 +8,7 @@ macro allocate_array(arr, len, cap) := do
     let llen := len
     let lcap := cap
 
-    let ptr := mmap(lcap * sizeof(@larr.ptr))
+    let ptr := alloc(lcap * sizeof(@larr.ptr))
     if ptr = nil then
         putln("no memory")
         exit(1)
@@ -25,7 +25,7 @@ end
 
 macro free_array(arr) := do
     let larr := &arr
-    munmap(larr.ptr, larr.len)
+    free(larr.ptr)
     --putln("freeArray")
 end
 
@@ -33,7 +33,10 @@ fun main := do
     let file : file_handle
     defer close(file)
 
-    open(file, "file.txt", nil, 0)
+    if open(file, "file.txt", nil, 0) then |err|
+        putln("open error: ", err)
+        return
+    end
 
     let statbuf : stat_type
     if stat("file.txt", statbuf) then |err|
@@ -45,8 +48,6 @@ fun main := do
     allocate_array(data, statbuf.size, 4096)
     defer free_array(data)
 
-    putln(statbuf.size, " ", data.len, " ", data.cap)
-
     if read(file, data) then |err|
         putln("read error: ", err)
         return
@@ -54,5 +55,6 @@ fun main := do
 
     putln(data)
 
+    -- TODO(bug): fix defer not executing at function end without 'return'
     return
 end

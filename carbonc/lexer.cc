@@ -148,6 +148,10 @@ struct lexer_impl {
 
     token_type transform_c_lexer_identifier() const {
         switch (l.string_len) {
+        case 1:
+            if (!std::strcmp("_", l.string)) {
+                return token_type::placeholder;
+            }
         case 2:
             if (!std::strcmp("as", l.string)) {
                 return token_type::as_;

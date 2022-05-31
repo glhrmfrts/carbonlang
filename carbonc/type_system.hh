@@ -366,6 +366,7 @@ struct type_system {
     type_error current_error{};
 
     std::stack<type_id> receiver_type_stack;
+    std::stack<ast_node*> assignee_stack;
 
     bool inside_defer = false;
 

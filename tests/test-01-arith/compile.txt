@@ -3,11 +3,14 @@ carbonc - compiling target: test-01-arith
 carbonc - compiling module: root
     process_code_unit: ./src/main.g
 carbonc - compiling module: rt
+    process_code_unit: ../../runtime/linux/src/rt/alloc.g
     process_code_unit: ../../runtime/linux/src/rt/errno.g
     process_code_unit: ../../runtime/linux/src/rt/errors.g
     process_code_unit: ../../runtime/linux/src/rt/io.g
     process_code_unit: ../../runtime/linux/src/rt/mmap.g
     process_code_unit: ../../runtime/linux/src/rt/open.g
+    process_code_unit: ../../runtime/linux/src/rt/putln.g
+    process_code_unit: ../../runtime/linux/src/rt/read.g
     process_code_unit: ../../runtime/linux/src/rt/start.g
     process_code_unit: ../../runtime/linux/src/rt/stat.g
     process_code_unit: ../../runtime/linux/src/rt/string.g
@@ -16,10 +19,10 @@ carbonc - compiling module: rt/syscall
     process_code_unit: ../../runtime/linux/src/rt/syscall/syscall.g
 assembly file: rt_x86_64_start.s
 carbonc - running assembler: as _carbon/build_debug/rt_x86_64_start.s -o _carbon/build_debug/rt_x86_64_start.o
-carbonc - parsing time: 266ms
+carbonc - parsing time: 294ms
 
 carbonc - type checking 
-carbonc - type checking time: 422ms
+carbonc - type checking time: 427ms
 
 carbonc - generating IR 
 carbonc - IR generation time: 17ms
@@ -28,10 +31,10 @@ carbonc - generating assembly
 carbonc - running assembler: as _carbon/build_debug/root.asm -o _carbon/build_debug/root.o
 carbonc - running assembler: as _carbon/build_debug/rt.asm -o _carbon/build_debug/rt.o
 carbonc - running assembler: as _carbon/build_debug/rt_syscall.asm -o _carbon/build_debug/rt_syscall.o
-carbonc - assembly generation time: 122ms
+carbonc - assembly generation time: 108ms
 
 carbonc - running linker command: ld  -e _start -o _carbon/build_debug/test-01-arith _carbon/build_debug/rt_x86_64_start.o _carbon/build_debug/root.o _carbon/build_debug/rt.o _carbon/build_debug/rt_syscall.o -T ../../res/carbon.sc
 carbonc - output: a.out
 
-carbonc - total lines parsed: 842
-carbonc - total compilation time: 916ms
+carbonc - total lines parsed: 1015
+carbonc - total compilation time: 913ms

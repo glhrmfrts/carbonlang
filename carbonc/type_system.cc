@@ -3735,7 +3735,12 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
         break;
     }
     case ast_type::assign_stmt: {
-        visit_children(ts, node);
+        visit_tree(ts, *node.children[0]);
+
+        ts.assignee_stack.push(node.children[0].get());
+        visit_tree(ts, *node.children[1]);
+        ts.assignee_stack.pop();
+
         resolve_assignment_type(ts, node);
         break;
     }
@@ -4048,6 +4053,11 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
     case ast_type::init_tag: {
         if (node.op == token_type::noinit) {
             node.tid = ts.opaque_type;
+        }
+        else if (node.op == token_type::placeholder) {
+            ast_node* assignee = ts.assignee_stack.top();
+            auto idx = find_child_index(node.parent, &node);
+            node.parent->children[*idx] = copy_node(ts, assignee);
         }
         break;
     }

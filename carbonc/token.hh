@@ -11,6 +11,7 @@ enum class token_type : unsigned int {
     char_literal,
     string_literal,
     identifier,
+    placeholder,
     not_,
     andand,
     oror,

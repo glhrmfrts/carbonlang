@@ -24,7 +24,7 @@ fun main := do
     write(get_data().b) write(",") -- 20
     write(get_data().c) write("\n") -- 30
 
-    -- TODO: test init expressions because of buggy array of structs
+    -- TODO(bug): test init expressions because of buggy array of structs
     let array_of_datas : array(3) of Data
 
     array_of_datas[0].a := 50
@@ -35,7 +35,7 @@ fun main := do
     write(array_of_datas[0].b) write(",") -- 60
     write(array_of_datas[0].c) write("\n") -- 70
 
-    -- TODO: parse Data{1,2,3}.a
+    -- TODO(bug): parse Data{1,2,3}.a
     let a := (Data{1,2,3}).a
     let b := (Data{4,5,6}).b
     let c := (Data{7,8,9}).c
