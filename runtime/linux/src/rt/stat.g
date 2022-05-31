@@ -2,7 +2,7 @@ import rt::syscall as syscall
 
 extern(C) (
 
-struct C_Stat {
+struct c_stat {
     unsigned long   st_dev;         --/* Device.  */
     unsigned long   st_ino;         --/* File serial number.  */
     unsigned int    st_mode;        --/* File mode.  */
@@ -28,12 +28,12 @@ struct C_Stat {
 
 )
 
-type Stat := struct of
+type stat_type := struct of
     size : int
 end
 
-fun stat(filename: String, buf: out Stat) => error := do
-    let cstat : C_Stat
+fun stat(filename: string, buf: out stat_type) => error := do
+    let cstat : c_stat
 
     let res := syscall::stat(filename.ptr, &cstat)
     if res < 0 then
@@ -47,8 +47,8 @@ fun stat(filename: String, buf: out Stat) => error := do
     return nil
 end
 
-fun stat(fd: FileHandle, buf: out Stat) => error := do
-    let cstat : C_Stat
+fun stat(fd: file_handle, buf: out stat_type) => error := do
+    let cstat : c_stat
 
     let res := syscall::fstat(fd, &cstat)
     if res < 0 then

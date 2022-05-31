@@ -19,51 +19,54 @@ import rt::syscall as syscall
 #define O_NOATIME       01000000                                                                                                                                                                                                              
 #define O_CLOEXEC       02000000        -- /* set close_on_exec */
 
-type OpenFlags := enumflags (
-    Read
-    Write
-    Create
-    Append
-    Truncate
+type open_flags := enumflags (
+    read
+    write
+    create
+    append
+    truncate
 )
 
-fun to_kernel_flags(flags : OpenFlags) => int := do
+fun to_kernel_flags(flags : open_flags) => int := do
     let lflags : int
 
-    if flags & (OpenFlags::Read | OpenFlags::Write) then
+    if flags & (open_flags::read | open_flags::write) then
         lflags := O_RDWR
-    else if flags & OpenFlags::Write then
+    else if flags & open_flags::write then
         lflags := O_WRONLY
-    else if flags & OpenFlags::Read then
+    else if flags & open_flags::read then
         lflags := O_RDONLY
     end
 
-    if flags & OpenFlags::Create then
+    if flags & open_flags::create then
         lflags := lflags | O_CREAT
     end
 
-    if flags & OpenFlags::Append then
+    if flags & open_flags::append then
         lflags := lflags | O_APPEND
     end
 
-    if flags & OpenFlags::Truncate then
+    if flags & open_flags::truncate then
         lflags := lflags | O_TRUNC
     end
 
     return lflags
 end
 
-fun open(file : out FileHandle, path : String, flags : OpenFlags, mode : int) => error := do
+fun open(
+    file    : out file_handle,
+    path    : string,
+    flags   : open_flags,
+    mode    : int
+) => error := do
     const PATH_MAX := 4096
     let buf : array(PATH_MAX) of byte
+    let bufview := array of byte{ &buf[0], sizeof(buf), sizeof(buf) }
 
-    let path_cstr := to_cstr(path, buf)
+    let path_cstr := to_cstr(path, bufview)
     if path_cstr = nil then
         return UNIX_ENAMETOOLONG
     end
-
-    -- TODO: why this fix some bug?
-    syscall::write(stdout(), path_cstr, cstrlen(path_cstr))
 
     let fd := syscall::open(path_cstr, to_kernel_flags(flags), mode)
     if fd < 0 then
@@ -74,7 +77,7 @@ fun open(file : out FileHandle, path : String, flags : OpenFlags, mode : int) =>
     return nil
 end
 
-fun close(fd : FileHandle) => error := do
+fun close(fd : file_handle) => error := do
     let res := syscall::close(fd)
     if res < 0 then
         return errno_to_error(-fd)

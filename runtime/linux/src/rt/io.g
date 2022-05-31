@@ -1,16 +1,16 @@
 import rt::syscall as syscall
 
-typealias FileHandle := int
+typealias file_handle := int
 
-fun stdin() => FileHandle := do
+fun stdin() => file_handle := do
     return 0
 end
 
-fun stdout() => FileHandle := do
+fun stdout() => file_handle := do
     return 1
 end
 
-fun stderr() => FileHandle := do
+fun stderr() => file_handle := do
     return 2
 end
 

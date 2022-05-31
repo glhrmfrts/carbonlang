@@ -2,7 +2,7 @@
 
 import rt
 
-macro allocateArray(arr, len, cap) := do
+macro allocate_array(arr, len, cap) := do
     -- To ensure arguments are evaluated only once
     let larr := &arr
     let llen := len
@@ -19,31 +19,31 @@ macro allocateArray(arr, len, cap) := do
     larr.cap := lcap
 end
 
-macro allocateArray(arr, len) := do
-    allocateArray(arr, len, len)
+macro allocate_array(arr, len) := do
+    allocate_array(arr, len, len)
 end
 
-macro freeArray(arr) := do
+macro free_array(arr) := do
     let larr := &arr
     munmap(larr.ptr, larr.len)
     --putln("freeArray")
 end
 
 fun main := do
-    let file : FileHandle
+    let file : file_handle
     defer close(file)
 
     open(file, "file.txt", nil, 0)
 
-    let statbuf : Stat
+    let statbuf : stat_type
     if stat("file.txt", statbuf) then |err|
         putln("stat error: ", err)
         return
     end
 
     let data : array of byte
-    allocateArray(data, statbuf.size, 4096)
-    defer freeArray(data)
+    allocate_array(data, statbuf.size, 4096)
+    defer free_array(data)
 
     putln(statbuf.size, " ", data.len, " ", data.cap)
 

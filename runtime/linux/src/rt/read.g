@@ -1,6 +1,6 @@
 import rt::syscall as syscall
 
-fun read(fh: FileHandle, data: in out array of byte) => error := do
+fun read(fh: file_handle, data: in out array of byte) => error := do
     let nread := syscall::read(fh, data.ptr, data.len)
     if nread < 0 then
         return errno_to_error(-nread)
@@ -8,10 +8,11 @@ fun read(fh: FileHandle, data: in out array of byte) => error := do
     return nil
 end
 
-fun read(fh: FileHandle, data: in out array of byte, nread : out int) => error := do
-    nread := syscall::read(fh, data.ptr, data.len)
+fun read(fh: file_handle, data: in out array of byte, bytes_read : out int) => error := do
+    let nread := syscall::read(fh, data.ptr, data.len)
     if nread < 0 then
         return errno_to_error(-nread)
     end
+    bytes_read := nread
     return nil
 end

@@ -2,11 +2,11 @@
 
 import rt::syscall as syscall
 
-fun write(fh : FileHandle, s : String) => int := do
+fun write(fh : file_handle, s : string) => int := do
     return syscall::write(cast(int) fh, s.ptr, s.len)
 end
 
-fun write(s : String) => int := do
+fun write(s : string) => int := do
     return write(stdout(), s)
 end
 
@@ -37,7 +37,7 @@ fun write(e : error) => int := do
     return write(error_string(e))
 end
 
-fun writeln(s : String) => int := do
+fun writeln(s : string) => int := do
     let res := write(stdout(), s)
     res := res + write(stdout(), "\n")
     return res

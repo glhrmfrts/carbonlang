@@ -20,7 +20,7 @@ fun align(size: int, alignment: int) := do
     return size + (-size & (alignment - 1))
 end
 
-fun error_string(err: error) => String := do
+fun error_string(err: error) => string := do
     if not err then
         return "(error)nil"
     end

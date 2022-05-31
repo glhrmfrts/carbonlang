@@ -1,20 +1,20 @@
 import rt::syscall as syscall
 
-const MAP_SHARED := 0x01
-const MAP_PRIVATE := 0x02
-const MAP_SHARED_VALIDATE := 0x03
-const MAP_TYPE := 0x0f
-const MAP_FIXED := 0x10
-const MAP_ANON := 0x20
+local const MAP_SHARED := 0x01
+local const MAP_PRIVATE := 0x02
+local const MAP_SHARED_VALIDATE := 0x03
+local const MAP_TYPE := 0x0f
+local const MAP_FIXED := 0x10
+local const MAP_ANON := 0x20
 
-const MAP_ANONYMOUS := MAP_ANON
+local const MAP_ANONYMOUS := MAP_ANON
 
-const PROT_NONE      := 0
-const PROT_READ      := 1
-const PROT_WRITE     := 2
-const PROT_EXEC      := 4
-const PROT_GROWSDOWN := 0x01000000
-const PROT_GROWSUP   := 0x02000000
+local const PROT_NONE      := 0
+local const PROT_READ      := 1
+local const PROT_WRITE     := 2
+local const PROT_EXEC      := 4
+local const PROT_GROWSDOWN := 0x01000000
+local const PROT_GROWSUP   := 0x02000000
 
 -- mmap with default parameters
 fun mmap(size: int) => &opaque := do
