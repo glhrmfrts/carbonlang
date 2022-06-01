@@ -6,7 +6,7 @@ type Data := struct of
     numbers : array(3) of int
 end
 
--- TODO: investigate init expressions taking a lot of time to compile
+-- TODO(bug): investigate init expressions taking a lot of time to compile
 
 fun get_array := array(3) of int {40,50,60}
 

@@ -16,8 +16,9 @@ local fun writebytes(ptr: &pure byte, sz: int) := do
     writeln("")
 end
 
-fun align(size: int, alignment: int) := do
-    return size + (-size & (alignment - 1))
+fun panic(msg: string) := do
+    putln("panic: ", msg)
+    exit(1)
 end
 
 fun error_string(err: error) => string := do
@@ -42,7 +43,7 @@ fun error_string(err: error) => string := do
         --     name : null-terminated-string
         -- }
         let codeptr := cast(&int) cast(&opaque) addr
-        addr := addr + sizeof(int)
+        addr := addr + #sizeof(int)
 
         let str := from_cstr(cast(&byte) cast(&opaque) addr)
 

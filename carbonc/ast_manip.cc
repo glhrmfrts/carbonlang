@@ -143,6 +143,14 @@ arena_ptr<ast_node> copy_node_helper(type_system& ts, ast_node& node) {
         call->call = node.call;
         return call;
     }
+    else if (node.type == ast_type::builtin_call_expr) {
+        auto call = make_call_expr_node(*ts.ast_arena, node.pos,
+            copy_node(ts, node.children[0].get()),
+            copy_node(ts, node.children[1].get()));
+
+        call->type = ast_type::builtin_call_expr;
+        return call;
+    }
     else if (node.type == ast_type::rest_expr) {
         auto rest = make_rest_expr_node(*ts.ast_arena, node.pos, copy_node(ts, node.children[0].get()));
         return rest;
@@ -204,6 +212,7 @@ arena_ptr<ast_node> copy_node_helper(type_system& ts, ast_node& node) {
                 { nullptr, nullptr });
         }
     }
+    fprintf(stderr, "copy_node: node type not handled: %d\n", (int)node.type);
     assert(!"copy_node: node type not handled!");
     return { nullptr, nullptr };
 }

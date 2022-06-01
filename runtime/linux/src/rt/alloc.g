@@ -20,6 +20,10 @@ local fun alloc_in_block(block : in out memory_block, size : int) => &opaque := 
     return cast(&opaque) ptr
 end
 
+fun align(size: int, alignment: int) := do
+    return size + (-size & (alignment - 1))
+end
+
 fun alloc(usersize : int) => &opaque := do
     const ALIGNMENT := 16
     const MIN_BLOCK_SIZE := 4096
@@ -34,13 +38,13 @@ fun alloc(usersize : int) => &opaque := do
         pblock := pblock.prev
     end
 
-    let block_size := align(asize + sizeof(memory_block), MIN_BLOCK_SIZE)
+    let block_size := align(asize + #sizeof(memory_block), MIN_BLOCK_SIZE)
 
     pblock := cast(&memory_block) mmap(block_size)
     if pblock /= nil then
         memset(pblock, 0, block_size)
-        pblock.ptr := cast(&opaque)pblock + sizeof(memory_block)
-        pblock.capacity := block_size - sizeof(memory_block)
+        pblock.ptr := cast(&opaque)pblock + #sizeof(memory_block)
+        pblock.capacity := block_size - #sizeof(memory_block)
         pblock.id := last_block_id + 1
         last_block_id := _ + 1
 
@@ -82,9 +86,9 @@ fun free(ptr : &opaque) := do
                 prevblock.prev := pblock.prev
             end
 
-            --putln("Freeing block: ", pblock.id," of: ", pblock.capacity + sizeof(memory_block))
+            --putln("Freeing block: ", pblock.id," of: ", pblock.capacity + #sizeof(memory_block))
 
-            munmap(pblock, sizeof(memory_block) + pblock.capacity)
+            munmap(pblock, #sizeof(memory_block) + pblock.capacity)
         end
     end
 end

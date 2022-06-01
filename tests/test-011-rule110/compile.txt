@@ -1,9 +1,10 @@
-carbonc - compiling target: test-11-rule110
+carbonc - compiling target: test-011-rule110
 
 carbonc - compiling module: root
     process_code_unit: ./src/main.g
 carbonc - compiling module: rt
     process_code_unit: ../../runtime/linux/src/rt/alloc.g
+    process_code_unit: ../../runtime/linux/src/rt/array.g
     process_code_unit: ../../runtime/linux/src/rt/errno.g
     process_code_unit: ../../runtime/linux/src/rt/errors.g
     process_code_unit: ../../runtime/linux/src/rt/io.g
@@ -19,22 +20,22 @@ carbonc - compiling module: rt/syscall
     process_code_unit: ../../runtime/linux/src/rt/syscall/syscall.g
 assembly file: rt_x86_64_start.s
 carbonc - running assembler: as _carbon/build_debug/rt_x86_64_start.s -o _carbon/build_debug/rt_x86_64_start.o
-carbonc - parsing time: 293ms
+carbonc - parsing time: 301ms
 
 carbonc - type checking 
-carbonc - type checking time: 432ms
+carbonc - type checking time: 487ms
 
 carbonc - generating IR 
-carbonc - IR generation time: 19ms
+carbonc - IR generation time: 20ms
 
 carbonc - generating assembly 
 carbonc - running assembler: as _carbon/build_debug/root.asm -o _carbon/build_debug/root.o
 carbonc - running assembler: as _carbon/build_debug/rt.asm -o _carbon/build_debug/rt.o
 carbonc - running assembler: as _carbon/build_debug/rt_syscall.asm -o _carbon/build_debug/rt_syscall.o
-carbonc - assembly generation time: 110ms
+carbonc - assembly generation time: 120ms
 
-carbonc - running linker command: ld  -e _start -o _carbon/build_debug/test-11-rule110 _carbon/build_debug/rt_x86_64_start.o _carbon/build_debug/root.o _carbon/build_debug/rt.o _carbon/build_debug/rt_syscall.o -T ../../res/carbon.sc
+carbonc - running linker command: ld  -e _start -o _carbon/build_debug/test-011-rule110 _carbon/build_debug/rt_x86_64_start.o _carbon/build_debug/root.o _carbon/build_debug/rt.o _carbon/build_debug/rt_syscall.o -T ../../res/carbon.sc
 carbonc - output: a.out
 
-carbonc - total lines parsed: 1020
-carbonc - total compilation time: 912ms
+carbonc - total lines parsed: 1055
+carbonc - total compilation time: 990ms

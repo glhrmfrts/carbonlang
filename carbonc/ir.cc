@@ -354,6 +354,12 @@ void analyse_node(ast_node& node) {
         ts->leave_scope();
         break;
     }
+    case ast_type::macro_instance: {
+        ts->enter_scope(node);
+        analyse_children(node);
+        ts->leave_scope();
+        break;
+    }
     case ast_type::call_expr: {
         analyse_children(node);
 
@@ -1297,6 +1303,11 @@ void generate_ir_node(ast_node& node) {
         break;
     case ast_type::break_stmt:
         generate_ir_break_stmt(node);
+        break;
+    case ast_type::macro_instance:
+        ts->enter_scope(node);
+        generate_ir_children(node);
+        ts->leave_scope();
         break;
     case ast_type::compound_stmt:
         ts->enter_scope(node);

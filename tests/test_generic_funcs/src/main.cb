@@ -1,11 +1,11 @@
 import io
 
 func print_size(i) {
-    println(sizeof(i))
+    println(#sizeof(i))
 }
 
 func print_size_type(type T) {
-    println(sizeof(T))
+    println(#sizeof(T))
 }
 
 type Data = struct {

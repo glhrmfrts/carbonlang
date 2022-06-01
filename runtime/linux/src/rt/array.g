@@ -29,8 +29,3 @@ macro free_array(arr) := do
     let larr := &arr
     free(larr.ptr)
 end
-
-fun main := do
-    let data : array of byte
-    make_array(data, 4)
-end

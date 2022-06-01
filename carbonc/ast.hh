@@ -23,6 +23,7 @@ enum class ast_type {
     unary_expr,
     binary_expr,
     call_expr,
+    builtin_call_expr,
     index_expr,
     init_expr,
     cast_expr,
@@ -74,6 +75,7 @@ enum class ast_type {
     linkage_specifier,
     visibility_specifier,
     type_resolver,
+    macro_instance,
 
     code_unit,
     module_,

@@ -28,7 +28,7 @@ end
 
 fun write(i : int) => int := do
     let buf : array(32) of byte
-    let v := array of byte { &buf[0], sizeof(buf), sizeof(buf) }
+    let v := array of byte { &buf[0], #sizeof(buf), #sizeof(buf) }
     int_to_string(i, 10, v)
     return write(v)
 end

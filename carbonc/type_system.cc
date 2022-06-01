@@ -1237,21 +1237,6 @@ type_id get_type_expr_node_type(type_system& ts, ast_node& node) {
         }
         break;
     }
-#if 0
-    case ast_type::array_view_type: {
-        visit_children(ts, node);
-        auto [args, all_resolved] = nodes_to_const_values(ts, node.children);
-        if (all_resolved) {
-            auto typecons = ts.array_view_type_constructor;
-            node.tid = execute_type_constructor(ts, ts.builtin_scope->scope, *typecons, args);
-            node.type_error = false;
-        }
-        else {
-            node.type_error = true;
-        }
-        break;
-    }
-#endif
     case ast_type::struct_type: {
         if (node.children[0]) {
             bool all_resolved = true;
@@ -1386,6 +1371,13 @@ type_id get_type_expr_node_type(type_system& ts, ast_node& node) {
                 node.type_error = true;
                 complement_error(ts, node.pos, "while instantiating type constructor '%s'", build_identifier_value(id->id_parts).c_str());
             }
+        }
+        break;
+    }
+    case ast_type::builtin_call_expr: {
+        resolve_node_type(ts, &node);
+        if (node.type != ast_type::builtin_call_expr) {
+            return get_type_expr_node_type(ts, node);
         }
         break;
     }
@@ -2409,7 +2401,7 @@ void resolve_range_expr(type_system& ts, ast_node& node) {
     assert(!"range not supported anymore");
 }
 
-bool check_reserved_call(type_system& ts, ast_node& node) {
+bool check_builtin_call(type_system& ts, ast_node& node) {
     if (node.children[0]->type == ast_type::identifier) {
         if (node.children[0]->id_parts.front() == "sizeof") {
             for (int i = 0; i < 2; i++) {
@@ -2437,6 +2429,21 @@ bool check_reserved_call(type_system& ts, ast_node& node) {
                 }
             }
             return true;
+        }
+        else if (node.children[0]->id_parts.front() == "typeof") {
+            resolve_node_type(ts, node.children[1]->children[0].get());
+            if (node.children[1]->children[0]->tid.valid()) {
+                node.type = ast_type::identifier;
+                node.tid = node.children[1]->children[0]->tid;
+
+                auto tempid = string_hash{ generate_temp_name() };
+                const_value value = node.tid;
+                declare_const_symbol(ts, tempid, value, ts.type_type);
+
+                node.id_parts = { tempid.str };
+                resolve_node_type(ts, &node);
+                return true;
+            }
         }
     }
     return false;
@@ -2486,6 +2493,36 @@ void separate_call_args(type_system& ts, ast_node& node) {
 
         node.children[1]->children = std::move(new_args);
     }
+}
+
+void macro_instantiate(type_system& ts, ast_node& node, func_def* func) {
+    auto macro_instance = make_in_arena<ast_node>(*ts.ast_arena);
+    macro_instance->type = ast_type::macro_instance;
+    macro_instance->pos = node.pos;
+    macro_instance->parent = node.parent;
+
+    auto macro_body = copy_node(ts, func->self->children[2].get());
+    macro_body->parent = macro_instance.get();
+
+    macro_instance->children.push_back(std::move(macro_body));
+
+    add_block_scope(ts, *macro_instance, *macro_instance);
+
+    int arg_index = 0;
+    for (auto& arg : node.call_args()) {
+        auto& name = func->self->func_args().at(arg_index);
+        auto id = string_hash{ name->var_decl_ids().front()->id_parts.front() };
+        auto value = const_value(arg.get());
+        declare_const_symbol(ts, id, value, ts.quote_type);
+        arg_index++;
+    }
+
+    resolve_node_type(ts, macro_instance->children[0].get());
+
+    leave_scope_local(ts);
+
+    auto idx = find_child_index(node.parent, &node);
+    node.parent->children[*idx] = std::move(macro_instance);
 }
 
 void resolve_call_funcdef(type_system& ts, ast_node& node) {
@@ -2538,28 +2575,7 @@ void resolve_call_funcdef(type_system& ts, ast_node& node) {
                 if (func->num_args == node.call_args().size()) {
                     resolved = true;
 
-                    auto macro_body = copy_node(ts, func->self->children[2].get());
-                    macro_body->parent = node.parent;
-
-                    add_block_scope(ts, node, node);
-
-                    int arg_index = 0;
-                    for (auto& arg : node.call_args()) {
-                        auto& name = func->self->func_args().at(arg_index);
-                        auto id = string_hash{ name->var_decl_ids().front()->id_parts.front() };
-                        auto value = const_value(arg.get());
-                        declare_const_symbol(ts, id, value, ts.quote_type);
-                        arg_index++;
-                    }
-
-                    resolve_node_type(ts, macro_body.get());
-
-                    leave_scope_local(ts);
-
-                    auto idx = find_child_index(node.parent, &node);
-                    node.parent->children[*idx] = std::move(macro_body);
-
-                    // run_macro_param_subst(ts, node.call_args(), macro_body);
+                    macro_instantiate(ts, node, func);
                     break;
                 }
             }
@@ -2818,6 +2834,102 @@ arena_ptr<ast_node> generate_temp_for_ternary_expr(type_system& ts, ast_node& no
 }
 
 static bool g_inside_loop;
+
+bool type_check_identifier(type_system& ts, ast_node& node) {
+    if (ts.subpass != DESUGAR_SUBPASS) {
+        visit_pre_nodes(ts, node);
+    }
+
+    if (node.lvalue.symbol && node.lvalue.symbol->kind == symbol_kind::overloaded_func_base) {
+        return false;
+    }
+
+    resolve_identifier(ts, node);
+
+    if (node.tid == ts.quote_type) {
+        ast_node* arg = std::get<ast_node*>(node.lvalue.symbol->ctvalue);
+        auto copy = copy_node(ts, arg);
+        copy->parent = node.parent;
+        auto idx = find_child_index(node.parent, &node);
+        node.parent->children[*idx] = std::move(copy);
+    }
+
+    return true;
+}
+
+void type_check_binary_expr(type_system& ts, ast_node& node) {
+    if (node.op == token_type::arrow_right) {
+        process_thread_first_expr(ts, node);
+        return;
+    }
+
+    if (is_assignment_sugar_op(node.op)) {
+        desugar_assignment(ts, node);
+    }
+
+    visit_children(ts, node);
+
+    if (is_logic_binary_op(node)) {
+        ensure_bool_op_is_comparison(ts, node);
+    }
+
+    // TODO: check operators make sense for types
+    node.type_error = (node.children[0]->type_error || node.children[1]->type_error);
+    node.tid = get_value_node_type(ts, node);
+}
+
+void type_check_call_expr(type_system& ts, ast_node& node) {
+    if (!node.call.self) {
+        node.call.self = &node;
+    }
+    auto funcname = node_to_string(*node.call_func());
+
+    bool args_resolved = true;
+    int argindex = 0;
+    node.call.arg_types.clear();
+    for (auto& arg : node.call_args()) {
+        resolve_node_type(ts, arg.get());
+        if (arg->tid == invalid_type || arg->type_error) {
+            node.type_error = true;
+            //complement_error(ts, arg->pos, "in the #%d argument for function call to '%s'", argindex+1, funcname.c_str());
+            if (arg->tid == invalid_type) {
+                args_resolved = false;
+                break;
+            }
+        }
+        else {
+            node.call.arg_types.push_back(arg->tid);
+        }
+        argindex++;
+    }
+
+    visit_tree(ts, *node.call_func());
+    if (node.call_func()->type == ast_type::identifier && !node.call_func()->tid.valid()) {
+        if (args_resolved) {
+            // both args and func resolved
+            resolve_call_funcdef(ts, node);
+        }
+
+        if (!node.call.funcdef) {
+            //printf("asda");
+        }
+    }
+    else if (node.call_func()->tid.valid() && node.call_func()->tid.get().kind == type_kind::func_pointer) {
+        node.tid = node.call_func()->tid.get().func.ret_type;
+        node.call.func_type_id = node.call_func()->tid;
+        node.type_error = false;
+    }
+
+    bool is_parent_var_decl = node.parent->type == ast_type::var_decl;
+    if (!is_parent_var_decl && !is_assignment(*node.parent) && is_aggregate(get_alias_root(ts, node.tid))) {
+        auto ref = generate_temp_for_call_expr(ts, node, node.tid);
+        auto idx = find_child_index(node.parent, &node);
+        if (idx) {
+            auto parent = node.parent;
+            parent->children[*idx] = std::move(ref);
+        }
+    }
+}
 
 type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
     if (!nodeptr) return invalid_type;
@@ -3118,6 +3230,12 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
         else {
             add_type_error(ts, node.pos, "invalid const expression");
         }
+        break;
+    }
+    case ast_type::macro_instance: {
+        enter_scope_local(ts, node);
+        visit_children(ts, node);
+        leave_scope_local(ts);
         break;
     }
     case ast_type::compound_stmt: {
@@ -3473,62 +3591,14 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
         }
         break;
     }
+    case ast_type::builtin_call_expr: {
+        if (!check_builtin_call(ts, node)) {
+            add_type_error(ts, node.pos, "unknown built-in function '%s'", node_to_string(*node.children[0]).c_str());
+        }
+        break;
+    }
     case ast_type::call_expr: {
-        if (check_reserved_call(ts, node)) {
-            break;
-        }
-
-        if (!node.call.self) {
-            node.call.self = &node;
-        }
-        auto funcname = node_to_string(*node.call_func());
-
-        bool args_resolved = true;
-        int argindex = 0;
-        node.call.arg_types.clear();
-        for (auto& arg : node.call_args()) {
-            resolve_node_type(ts, arg.get());
-            if (arg->tid == invalid_type || arg->type_error) {
-                node.type_error = true;
-                //complement_error(ts, arg->pos, "in the #%d argument for function call to '%s'", argindex+1, funcname.c_str());
-                if (arg->tid == invalid_type) {
-                    args_resolved = false;
-                    break;
-                }
-            }
-            else {
-                node.call.arg_types.push_back(arg->tid);
-            }
-            argindex++;
-        }
-
-        visit_tree(ts, *node.call_func());
-        if (node.call_func()->type == ast_type::identifier && !node.call_func()->tid.valid()) {
-            if (args_resolved) {
-                // both args and func resolved
-                resolve_call_funcdef(ts, node);
-            }
-
-            if (!node.call.funcdef) {
-                //printf("asda");
-            }
-        }
-        else if (node.call_func()->tid.valid() && node.call_func()->tid.get().kind == type_kind::func_pointer) {
-            node.tid = node.call_func()->tid.get().func.ret_type;
-            node.call.func_type_id = node.call_func()->tid;
-            node.type_error = false;
-        }
-
-        bool is_parent_var_decl = node.parent->type == ast_type::var_decl;
-        if (!is_parent_var_decl && !is_assignment(*node.parent) && is_aggregate(get_alias_root(ts, node.tid))) {
-            auto ref = generate_temp_for_call_expr(ts, node, node.tid);
-            auto idx = find_child_index(node.parent, &node);
-            if (idx) {
-                auto parent = node.parent;
-                parent->children[*idx] = std::move(ref);
-            }
-        }
-
+        type_check_call_expr(ts, node);
         //report_type_error(node.tid, node.pos, "cannot resolve type of function call %s", node_to_string(node));
         break;
     }
@@ -3735,6 +3805,9 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
         break;
     }
     case ast_type::assign_stmt: {
+        node.children[0]->parent = &node;
+        node.children[1]->parent = &node;
+
         visit_tree(ts, *node.children[0]);
 
         ts.assignee_stack.push(node.children[0].get());
@@ -3746,46 +3819,11 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
     }
     case ast_type::identifier: {
         //if (ts.pass != type_system_pass::perform_checks && node.tid != invalid_type) return node.tid;
-
-        if (ts.subpass != DESUGAR_SUBPASS) {
-            visit_pre_nodes(ts, node);
-        }
-
-        if (node.lvalue.symbol && node.lvalue.symbol->kind == symbol_kind::overloaded_func_base) {
-            check_for_unresolved = false;
-            break;
-        }
-
-        resolve_identifier(ts, node);
-
-        if (node.tid == ts.quote_type) {
-            ast_node* arg = std::get<ast_node*>(node.lvalue.symbol->ctvalue);
-            auto copy = copy_node(ts, arg);
-            copy->parent = node.parent;
-            auto idx = find_child_index(node.parent, &node);
-            node.parent->children[*idx] = std::move(copy);
-        }
+        check_for_unresolved = type_check_identifier(ts, node);
         break;
     }
     case ast_type::binary_expr: {
-        if (node.op == token_type::arrow_right) {
-            process_thread_first_expr(ts, node);
-            break;
-        }
-
-        if (is_assignment_sugar_op(node.op)) {
-            desugar_assignment(ts, node);
-        }
-
-        visit_children(ts, node);
-
-        if (is_logic_binary_op(node)) {
-            ensure_bool_op_is_comparison(ts, node);
-        }
-
-        // TODO: check operators make sense for types
-        node.type_error = (node.children[0]->type_error || node.children[1]->type_error);
-        node.tid = get_value_node_type(ts, node);
+        type_check_binary_expr(ts, node);
         break;
     }
     case ast_type::unary_expr: {

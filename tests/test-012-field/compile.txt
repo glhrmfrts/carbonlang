@@ -1,9 +1,10 @@
-carbonc - compiling target: test-12-field
+carbonc - compiling target: test-012-field
 
 carbonc - compiling module: root
     process_code_unit: ./src/main.g
 carbonc - compiling module: rt
     process_code_unit: ../../runtime/linux/src/rt/alloc.g
+    process_code_unit: ../../runtime/linux/src/rt/array.g
     process_code_unit: ../../runtime/linux/src/rt/errno.g
     process_code_unit: ../../runtime/linux/src/rt/errors.g
     process_code_unit: ../../runtime/linux/src/rt/io.g
@@ -19,10 +20,10 @@ carbonc - compiling module: rt/syscall
     process_code_unit: ../../runtime/linux/src/rt/syscall/syscall.g
 assembly file: rt_x86_64_start.s
 carbonc - running assembler: as _carbon/build_debug/rt_x86_64_start.s -o _carbon/build_debug/rt_x86_64_start.o
-carbonc - parsing time: 306ms
+carbonc - parsing time: 331ms
 
 carbonc - type checking 
-carbonc - type checking time: 467ms
+carbonc - type checking time: 503ms
 
 carbonc - generating IR 
 carbonc - IR generation time: 19ms
@@ -33,8 +34,8 @@ carbonc - running assembler: as _carbon/build_debug/rt.asm -o _carbon/build_debu
 carbonc - running assembler: as _carbon/build_debug/rt_syscall.asm -o _carbon/build_debug/rt_syscall.o
 carbonc - assembly generation time: 112ms
 
-carbonc - running linker command: ld  -e _start -o _carbon/build_debug/test-12-field _carbon/build_debug/rt_x86_64_start.o _carbon/build_debug/root.o _carbon/build_debug/rt.o _carbon/build_debug/rt_syscall.o -T ../../res/carbon.sc
+carbonc - running linker command: ld  -e _start -o _carbon/build_debug/test-012-field _carbon/build_debug/rt_x86_64_start.o _carbon/build_debug/root.o _carbon/build_debug/rt.o _carbon/build_debug/rt_syscall.o -T ../../res/carbon.sc
 carbonc - output: a.out
 
-carbonc - total lines parsed: 1042
-carbonc - total compilation time: 974ms
+carbonc - total lines parsed: 1077
+carbonc - total compilation time: 1032ms

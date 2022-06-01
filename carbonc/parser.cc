@@ -154,6 +154,10 @@ struct parser_impl {
             result = make_identifier_node(*ast_arena, lex->pos(), { "$nil" });
             lex->next();
         }
+        else if (TOK_CHAR == '#') {
+            // built-in function
+            result = parse_primary_expr();
+        }
 
         if (result) {
             if (!no_wrap) {
@@ -1373,6 +1377,15 @@ struct parser_impl {
             case '{': {
                 // init list
                 return parse_init_list_expr({nullptr, nullptr});
+            }
+            case '#': {
+                lex->next();
+                auto expr = parse_call_or_index_or_field_expr();
+                if (expr->type != ast_type::call_expr) {
+                    throw parse_error(filename, lex->pos(), "expected built-in function call after '#'");
+                }
+                expr->type = ast_type::builtin_call_expr;
+                return expr;
             }
             default: {
                 if (is_unary_op(TOK)) {

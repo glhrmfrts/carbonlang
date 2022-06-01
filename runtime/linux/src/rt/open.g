@@ -26,6 +26,7 @@ type open_flags := enumflags (
     append
     truncate
 )
+-- TODO(bug): cannot refer to enum component outside of declared module
 
 fun to_kernel_flags(flags : open_flags) => int := do
     let lflags : int
@@ -61,7 +62,7 @@ fun open(
 ) => error := do
     const PATH_MAX := 4096
     let buf : array(PATH_MAX) of byte
-    let bufview := array of byte{ &buf[0], sizeof(buf), sizeof(buf) }
+    let bufview := array of byte{ &buf[0], #sizeof(buf), #sizeof(buf) }
 
     -- TODO: convert from static array to dynamic array automatically
 
