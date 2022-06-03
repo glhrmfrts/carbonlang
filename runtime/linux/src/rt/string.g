@@ -18,8 +18,8 @@ end
 fun cstr_equals(p1 : &pure byte, p2 : &pure byte) => bool := do
     for @p1 /= '\0' do
         if @p1 /= @p2 then return false end
-        p1 := p1 + 1
-        p2 := p2 + 1
+        p1 := cast(&pure byte) cast(&opaque) (cast(uintptr) _ + 1)
+        p2 := cast(&pure byte) cast(&opaque) (cast(uintptr) _ + 1)
     end
     return true
 end
@@ -30,7 +30,7 @@ fun cstrlen(ptr: &pure byte) => int := do
     let count : int
     for @ptr /= '\0' do
         count := count + 1
-        ptr := ptr + 1
+        ptr := cast(&pure byte) cast(&opaque) (cast(uintptr) _ + 1)
     end
     return count
 end

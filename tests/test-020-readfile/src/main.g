@@ -1,5 +1,7 @@
--- Test a simple readfile routine using the most barebones language features
+-- Test a simple readfile routine using the most barebones language features.
 
+-- TODO: change import to accept a path-like string like "library/module".
+-- TODO: change the qualified identifier handling for modules and enums, use a dot-expression instead.
 import rt
 
 fun main := do

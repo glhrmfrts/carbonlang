@@ -8,6 +8,7 @@ local macro ensure_capacity(parr) := do
     end
 end
 
+-- TODO: overload guards with 'when condition'
 macro append(arr, elem) := do
     let parr := &arr
     parr.len := _ + 1
@@ -15,7 +16,7 @@ macro append(arr, elem) := do
     arr[arr.len] := elem
 end
 
-fun count_lines(s : string) => int := do
+fun count_lines(s: string) => int := do
     let count : int
     for i := range 0,s.len do
         if s[i] = '\n' then
@@ -25,20 +26,25 @@ fun count_lines(s : string) => int := do
     return count
 end
 
-fun is_numeric(c : byte) => bool := do
+fun is_numeric(c: byte) => bool := do
     return c >= '0' and c <= '9'
 end
 
-fun trim_non_numeric(s : string) => string := do
+fun trim_non_numeric(s: string) => string := do
     let count : int
     for i := range 0,s.len do
-        if isNumeric(s[i]) then break end
+        if is_numeric(s[i]) then break end
         count := _ + 1
     end
-    return string{s.ptr + count, s.len - count, s.cap - count}
+
+    let res := s
+    res.ptr := cast(&pure byte) cast(&opaque) (cast(uintptr) _ + cast(uintptr) count)
+    res.len := _ - count
+    res.cap := _ - count
+    return res
 end
 
-fun to_int(s : string, radix : int, num : out int, rest : out string) => bool := do
+fun to_int(s: string, radix: int, num: out int, rest: out string) => bool := do
     let value : int
     let count : int
 
@@ -52,9 +58,16 @@ fun to_int(s : string, radix : int, num : out int, rest : out string) => bool :=
     end
 
     num := value
-    rest := string{ s.ptr + count, s.len - count, s.cap - count }
+
+    rest := s
+    rest.ptr := cast(&pure byte) cast(&opaque) (cast(uintptr) _ + cast(uintptr) count)
+    rest.len := _ - count
+    rest.cap := _ - count
+
     return count > 0
 end
+
+let last_block_id : int
 
 fun main := do
     let file : file_handle
@@ -113,13 +126,11 @@ fun main := do
     let sums : array of int
     defer free_array(sums)
 
-    for range 0,numbers.len do |i|
-        if i < numbers.len - 2 then
-            append(sums, numbers[i] + numbers[i + 1] + numbers[i + 2])
-        end
+    for i := range 0,numbers.len - 2 do
+        append(sums, numbers[i] + numbers[i + 1] + numbers[i + 2])
     end
 
-    for range 1,numbers.len do |i|
+    for i := range 1,numbers.len - 2 do
         if sums[i] > sums[i - 1] then
             sum_inc_count := _ + 1
         end

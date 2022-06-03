@@ -91,22 +91,22 @@ local fun int_to_string(value: int, base: int, result: in out array of byte) => 
     -- Apply negative sign
     if tmp_value < 0 then
         @ptr := '-'
-        ptr := ptr + 1
+        ptr := cast(&byte) cast(&opaque) (cast(uintptr) _ + 1)
         offs := offs + 1
     end
 
     @ptr := '\0'
-    ptr := ptr - 1
+    ptr := cast(&byte) cast(&opaque) (cast(uintptr) _ - 1)
 
     let tmp_char : byte
     for ptr1 < ptr do
         tmp_char := @ptr
 
         @ptr := @ptr1
-        ptr := ptr - 1
+        ptr := cast(&byte) cast(&opaque) (cast(uintptr) _ - 1)
 
         @ptr1 := tmp_char
-        ptr1 := ptr1 + 1
+        ptr1 := cast(&byte) cast(&opaque) (cast(uintptr) _ + 1)
     end
 
     result.len := offs

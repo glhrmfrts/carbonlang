@@ -27,7 +27,7 @@ fun error_string(err: error) => string := do
     end
 
     -- Find the error name by traversing the ELF .error_array section
-    -- TODO(maybe): cache this to a dict on initialization?
+    -- maybe: cache this to a dict on initialization?
 
     let addr_begin := cast(uintptr) cast(&opaque) &__error_array_start
     let addr_end := cast(uintptr) cast(&opaque) &__error_array_end

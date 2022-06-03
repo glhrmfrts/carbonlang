@@ -16,7 +16,7 @@ local fun alloc_in_block(block : in out memory_block, size : int) => &opaque := 
     let ptr := cast(uintptr) block.ptr + cast(uintptr) block.filled
     block.filled := _ + size
     block.allocations := _ + 1
-    --putln("Allocating memory: ", cast(int)cast(uintptr)ptr, " of: ", size, " allocations: ", block.allocations)
+    --putln("---- Allocating memory: ", cast(int)cast(uintptr)ptr, " of: ", size, " allocations: ", block.allocations)
     return cast(&opaque) ptr
 end
 
@@ -43,7 +43,7 @@ fun alloc(usersize : int) => &opaque := do
     pblock := cast(&memory_block) mmap(block_size)
     if pblock /= nil then
         memset(pblock, 0, block_size)
-        pblock.ptr := cast(&opaque)pblock + #sizeof(memory_block)
+        pblock.ptr := cast(&opaque)(cast(uintptr)pblock + #sizeof(memory_block))
         pblock.capacity := block_size - #sizeof(memory_block)
         pblock.id := last_block_id + 1
         last_block_id := _ + 1

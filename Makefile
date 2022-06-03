@@ -123,4 +123,9 @@ test:
 		carbonc -p ../.. -I runtime/linux -V -o a.out > compile.txt && \
 		./a.out > out.txt && diff out.txt expected.txt && echo "\033[1;32mtest-020-readfile: OK\033[0m"
 
+	@echo "test-021-aoc2021-01: ..." && \
+		cd tests/test-021-aoc2021-01 && \
+		carbonc -p ../.. -I runtime/linux -V -o a.out > compile.txt && \
+		./a.out > out.txt && diff out.txt expected.txt && echo "\033[1;32mtest-021-aoc2021-01: OK\033[0m"
+
 .PHONY: all
