@@ -528,7 +528,7 @@ void generate_ir_func(ast_node& node) {
         }
     }
 
-    if (node.func.return_statements.empty()) {
+    if (!node.func.has_root_return_statements) {
         for (std::size_t i = node.ir.scope_defer_statements.size(); i > 0; i--) {
             auto dstmt = node.ir.scope_defer_statements[i - 1];
             generate_ir_defer_stmt(*dstmt->children[0]);

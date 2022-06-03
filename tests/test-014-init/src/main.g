@@ -37,15 +37,9 @@ fun main := do
     writeln("array of nested...")
 
     let narr := array(...) of Nested {
-        {MyStruct{80,90}, MyStruct{40,50}},
-        {MyStruct{102,402}, MyStruct{500, 900}},
+        {{80,90}, {40,50}},
+        {{102,402}, {500, 900}},
     }
     writeNested(narr[0])
     writeNested(narr[1])
-
-    -- TODO(bug): this should be possible
-    --let narr := array(...) of Nested {
-    --    {{80,90}, {40,50}},
-    --    {{102,402}, {500, 900}},
-    --}
 end

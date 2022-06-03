@@ -299,6 +299,7 @@ struct func_def {
     std::vector<const_value> const_args{};
     std::vector<std::string> extern_alias;
     int num_args;
+    bool has_root_return_statements;
 };
 
 struct field_access {

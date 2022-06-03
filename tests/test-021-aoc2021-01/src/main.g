@@ -137,6 +137,4 @@ fun main := do
     end
 
     putln("sum increase count: ", sum_inc_count)
-
-    return
 end

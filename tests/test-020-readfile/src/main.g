@@ -4,9 +4,15 @@
 -- TODO: change the qualified identifier handling for modules and enums, use a dot-expression instead.
 import rt
 
+fun test_defer() := do
+    putln("test_defer")
+end
+
 fun main := do
     let file : file_handle
     defer close(file)
+
+    defer test_defer()
 
     if open(file, "file.txt", nil, 0) then |err|
         putln("open error: ", err)
@@ -29,7 +35,4 @@ fun main := do
     end
 
     putln(data)
-
-    -- TODO(bug): fix defer not executing at function end without 'return'
-    return
 end

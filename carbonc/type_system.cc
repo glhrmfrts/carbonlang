@@ -3102,6 +3102,10 @@ void type_check_return_stmt(type_system& ts, ast_node& node) {
     if (!exists) {
         scope->self->func.return_statements.push_back(&node);
     }
+
+    if (ts.current_scope->kind == scope_kind::func_body) {
+        ts.current_scope->self->func.has_root_return_statements = true;
+    }
 }
 
 void type_check_if_or_cond_stmt(type_system& ts, ast_node& node) {
@@ -3378,11 +3382,10 @@ void type_check_index_expr(type_system& ts, ast_node& node) {
 }
 
 void type_check_init_expr(type_system& ts, ast_node& node) {
-    visit_children(ts, node);
-
     type_id receiver_type{};
 
     if (node.children[0]) {
+        visit_tree(ts, *node.children[0]);
         receiver_type = node.children[0]->tid;
     }
     else {
