@@ -13,6 +13,15 @@ build: gen
 install: build
 	install $(BUILD_DIR)/carbonc/carbonc -t /usr/bin/
 
+CURRENT_TEST=tests/test-021-aoc2021-01
+
+com:
+	cd $(CURRENT_TEST) && \
+		carbonc -p ../.. -I runtime/linux -V -o a.out
+
+run:
+	cd $(CURRENT_TEST) && ./a.out
+
 test:
 	@echo "test-001-arith: ..." && \
 		cd tests/test-001-arith && \

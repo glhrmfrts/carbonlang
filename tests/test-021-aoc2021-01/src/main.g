@@ -1,5 +1,3 @@
--- Test a simple readfile routine using the most barebones language features
-
 import rt
 
 local macro ensure_capacity(parr) := do
@@ -34,13 +32,13 @@ end
 fun trim_non_numeric(s : string) => string := do
     let count : int
     for i := range 0,s.len do
-        if is_numeric(s[i]) then break end
+        if isNumeric(s[i]) then break end
         count := _ + 1
     end
     return string{s.ptr + count, s.len - count, s.cap - count}
 end
 
-fun parse_int(s : string, radix : int, num : out int, rest : out string) => bool := do
+fun to_int(s : string, radix : int, num : out int, rest : out string) => bool := do
     let value : int
     let count : int
 
@@ -74,7 +72,7 @@ fun main := do
     end
 
     let data : array of byte
-    make_array(data, statbuf.size, 4096)
+    make_array(data, statbuf.size)
     defer free_array(data)
 
     if read(file, data) then |err|
@@ -90,7 +88,7 @@ fun main := do
         
         let num : int
         let rest : string
-        if parse_int(data, 10, num, rest) then
+        if to_int(data, 10, num, rest) then
             append(numbers, num)
             data := rest
             num := _ + 1
@@ -115,13 +113,13 @@ fun main := do
     let sums : array of int
     defer free_array(sums)
 
-    for i := range 0,numbers.len do 
+    for range 0,numbers.len do |i|
         if i < numbers.len - 2 then
             append(sums, numbers[i] + numbers[i + 1] + numbers[i + 2])
         end
     end
 
-    for i := range 1,numbers.len do
+    for range 1,numbers.len do |i|
         if sums[i] > sums[i - 1] then
             sum_inc_count := _ + 1
         end

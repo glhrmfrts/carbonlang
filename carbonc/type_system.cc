@@ -1625,10 +1625,21 @@ void perform_casts(type_system& ts, std::vector<arena_ptr<ast_node>>& call_args,
         case simple_cast:
             call_args[std::get<2>(c)] = make_cast_to(ts, std::move(call_args[std::get<2>(c)]), std::get<1>(c));
             break;
-        case toptr_cast:
+        case toptr_cast: {
+            auto target_type = std::get<1>(c);
+            auto& arg_node = call_args[std::get<2>(c)];
+
+            if ((target_type.get().flags & type_flags::is_out)) {
+                if (!arg_node->lvalue.self) {
+                    add_type_error(ts, arg_node->pos, "expected an lvalue for out parameter");
+                    break;
+                }
+            }
+
             call_args[std::get<2>(c)] = make_address_of_expr(ts, std::move(call_args[std::get<2>(c)]));
             call_args[std::get<2>(c)]->tid = get_ptr_type_to(ts, call_args[std::get<2>(c)]->children[0]->tid);
             break;
+        }
         }
     }
 }
@@ -2522,6 +2533,9 @@ void macro_instantiate(type_system& ts, ast_node& node, func_def* func) {
     leave_scope_local(ts);
 
     auto idx = find_child_index(node.parent, &node);
+
+    auto self = std::move(node.parent->children[*idx]);
+    macro_instance->temps.push_back(std::move(self));
     node.parent->children[*idx] = std::move(macro_instance);
 }
 
@@ -2878,6 +2892,97 @@ void type_check_binary_expr(type_system& ts, ast_node& node) {
     node.tid = get_value_node_type(ts, node);
 }
 
+bool is_deref_op(const ast_node& node) { return node.type == ast_type::unary_expr && token_to_char(node.op) == DEREF_OP; }
+
+void type_check_unary_expr(type_system& ts, ast_node& node) {
+    visit_children(ts, node);
+    node.type_error = node.children[0]->type_error;
+
+    if (token_to_char(node.op) == DEREF_OP) {
+        // deref expression
+
+        if (!(node.children[0]->tid.valid() && is_pointer(node.children[0]->tid))) {
+            add_type_error(ts, node.children[0]->pos,
+                "right-side of unary '%c' (deref operation) has type '%s', it must be a pointer",
+                DEREF_OP, type_to_string(node.children[0]->tid).c_str());
+            node.type_error = true;
+        }
+        else {
+            node.lvalue.self = &node;
+            if (node.children[0]->tid.get().kind == type_kind::input) {
+                node.tid = get_pure_type_to(ts, node.children[0]->tid.get().elem_type);
+            }
+            else if (node.children[0]->tid.get().flags & type_flags::is_pure) {
+                node.tid = get_pure_type_to(ts, node.children[0]->tid.get().elem_type);
+            }
+            else {
+                node.tid = node.children[0]->tid.get().elem_type;
+            }
+            node.type_error = false;
+        }
+    }
+    else if (token_to_char(node.op) == ADDR_OP) {
+        // addressof expression
+
+        if (!(node.children[0]->tid.valid())) {
+            node.type_error = true;
+            return;
+        }
+
+        if (node.children[0]->type != ast_type::identifier
+            && node.children[0]->type != ast_type::field_expr
+            && node.children[0]->type != ast_type::index_expr
+            && node.children[0]->type != ast_type::int_literal
+            && node.children[0]->type != ast_type::nil_literal
+            && node.children[0]->type != ast_type::char_literal
+            && node.children[0]->type != ast_type::bool_literal
+            && !is_deref_op(*node.children[0])
+        ) {
+            generate_temp_for_addr_expr(ts, node, node.children[0]->tid);
+        }
+
+        if (!node.children[0]->lvalue.self) {
+            add_type_error(ts, node.children[0]->pos,
+                "right-side of unary '%c' (addressof operation) must be an lvalue (identifier, index expression)",
+                ADDR_OP);
+            node.type_error = true;
+        }
+        else {
+            node.tid = get_ptr_type_to(ts, node.children[0]->tid);
+            node.type_error = false;
+        }
+    }
+    else if (node.op == token_type::not_) {
+        if (!node.children[0]->tid.valid() || node.children[0]->type_error) {
+            node.type_error = true;
+        }
+        else if (!is_boolish_type(ts, node.children[0]->tid)) {
+            add_type_error(ts, node.pos, "right side of unary 'not' has type '%s', it must be a bool, enumflags or error",
+                type_to_string(node.children[0]->tid).c_str());
+            node.type_error = true;
+        }
+        else {
+            node.tid = ts.bool_type;
+        }
+
+        ensure_bool_op_is_comparison_unary(ts, node);
+    }
+    else if (node.op == token_from_char('-') || node.op == token_from_char('~')) {
+        if (!node.children[0]->tid.valid() || !(node.children[0]->tid.get().kind == type_kind::integral)) {
+            add_type_error(ts, node.pos, "right side of unary '%c' has type '%s', it must be an integer",
+                token_to_char(node.op), type_to_string(node.children[0]->tid).c_str());
+            return;
+        }
+
+        node.tid = node.children[0]->tid;
+        node.type_error = node.children[0]->type_error;
+    }
+    else {
+        node.tid = node.children[0]->tid;
+        node.type_error = node.children[0]->type_error;
+    }
+}
+
 void type_check_call_expr(type_system& ts, ast_node& node) {
     if (!node.call.self) {
         node.call.self = &node;
@@ -2960,6 +3065,7 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
     }
     case ast_type::error_decl: {
         check_for_unresolved = false;
+
         if (node.tid.valid()) { break; }
 
         node.tid = ts.error_type;
@@ -3028,6 +3134,8 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
         break;
     }
     case ast_type::c_struct_field: {
+        check_for_unresolved = false;
+
         if (node.tid.valid()) {
             break;
         }
@@ -3233,6 +3341,7 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
         break;
     }
     case ast_type::macro_instance: {
+        check_for_unresolved = false;
         enter_scope_local(ts, node);
         visit_children(ts, node);
         leave_scope_local(ts);
@@ -3827,94 +3936,12 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
         break;
     }
     case ast_type::unary_expr: {
-        visit_children(ts, node);
-        node.type_error = node.children[0]->type_error;
-
-        if (token_to_char(node.op) == DEREF_OP) {
-            // deref expression
-
-            if (!(node.children[0]->tid.valid() && is_pointer(node.children[0]->tid))) {
-                add_type_error(ts, node.children[0]->pos,
-                    "right-side of unary '%c' (deref operation) has type '%s', it must be a pointer",
-                    DEREF_OP, type_to_string(node.children[0]->tid).c_str());
-                node.type_error = true;
-            }
-            else {
-                node.lvalue.self = &node;
-                if (node.children[0]->tid.get().kind == type_kind::input) {
-                    node.tid = get_pure_type_to(ts, node.children[0]->tid.get().elem_type);
-                }
-                else if (node.children[0]->tid.get().flags & type_flags::is_pure) {
-                    node.tid = get_pure_type_to(ts, node.children[0]->tid.get().elem_type);
-                }
-                else {
-                    node.tid = node.children[0]->tid.get().elem_type;
-                }
-                node.type_error = false;
-            }
-        }
-        else if (token_to_char(node.op) == ADDR_OP) {
-            // addressof expression
-
-            if (!(node.children[0]->tid.valid())) {
-                node.type_error = true;
-                break;
-            }
-
-            if (node.children[0]->type != ast_type::identifier
-                && node.children[0]->type != ast_type::field_expr
-                && node.children[0]->type != ast_type::index_expr
-                && node.children[0]->type != ast_type::int_literal
-                && node.children[0]->type != ast_type::nil_literal
-                && node.children[0]->type != ast_type::char_literal
-                && node.children[0]->type != ast_type::bool_literal
-            ) {
-                generate_temp_for_addr_expr(ts, node, node.children[0]->tid);
-            }
-
-            if (!node.children[0]->lvalue.self) {
-                add_type_error(ts, node.children[0]->pos,
-                    "right-side of unary '%c' (addressof operation) must be an lvalue (identifier, index expression)",
-                    ADDR_OP);
-                node.type_error = true;
-            }
-            else {
-                node.tid = get_ptr_type_to(ts, node.children[0]->tid);
-                node.type_error = false;
-            }
-        }
-        else if (node.op == token_type::not_) {
-            if (!node.children[0]->tid.valid() || node.children[0]->type_error) {
-                node.type_error = true;
-            }
-            else if (!is_boolish_type(ts, node.children[0]->tid)) {
-                add_type_error(ts, node.pos, "right side of unary 'not' has type '%s', it must be a bool, enumflags or error",
-                    type_to_string(node.children[0]->tid).c_str());
-                node.type_error = true;
-            }
-            else {
-                node.tid = ts.bool_type;
-            }
-
-            ensure_bool_op_is_comparison_unary(ts, node);
-        }
-        else if (node.op == token_from_char('-') || node.op == token_from_char('~')) {
-            if (!node.children[0]->tid.valid() || !(node.children[0]->tid.get().kind == type_kind::integral)) {
-                add_type_error(ts, node.pos, "right side of unary '%c' has type '%s', it must be an integer",
-                    token_to_char(node.op), type_to_string(node.children[0]->tid).c_str());
-                break;
-            }
-
-            node.tid = node.children[0]->tid;
-            node.type_error = node.children[0]->type_error;
-        }
-        else {
-            node.tid = node.children[0]->tid;
-            node.type_error = node.children[0]->type_error;
-        }
+        type_check_unary_expr(ts, node);
         break;
     }
     case ast_type::range_expr: {
+        check_for_unresolved = false;
+
         if (node.children[0]->children.size() == 2) {
             node.children[0]->children.push_back(make_int_literal_node(*ts.ast_arena, node.children[0]->pos, 1));
         }
@@ -4107,8 +4134,8 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
         node.tid = get_value_node_type(ts, node);
         break;
     default: {
-        visit_children(ts, node);
         check_for_unresolved = false;
+        visit_children(ts, node);
         break;
     }
     }
@@ -4777,7 +4804,7 @@ void type_system::resolve_and_check() {
     }
 
     this->pass = type_system_pass::resolve_all;
-    for (int i = 0; i < 100; i++) {
+    for (int i = 0; i < 30; i++) {
         this->subpass = i;
         //update_symbols_pass_tokens(*this);
         this->unresolved_types = false;
@@ -4788,7 +4815,7 @@ void type_system::resolve_and_check() {
             leave_scope();
         }
         if (this->unresolved_types) {
-            //printf("unresolved types\n");
+            printf("unresolved types\n");
         }
         else {
             break;

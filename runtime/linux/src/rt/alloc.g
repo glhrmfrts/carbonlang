@@ -16,7 +16,7 @@ local fun alloc_in_block(block : in out memory_block, size : int) => &opaque := 
     let ptr := cast(uintptr) block.ptr + cast(uintptr) block.filled
     block.filled := _ + size
     block.allocations := _ + 1
-    --putln("Allocating memory: ", cast(int)cast(uintptr)ptr, " of: ", size)
+    --putln("Allocating memory: ", cast(int)cast(uintptr)ptr, " of: ", size, " allocations: ", block.allocations)
     return cast(&opaque) ptr
 end
 
@@ -53,7 +53,13 @@ fun alloc(usersize : int) => &opaque := do
 
         --putln("Allocating block: ", pblock.id," of: ", block_size)
 
-        return alloc_in_block(@pblock, asize)
+        --putln("CALLER: ", pblock.allocations)
+
+        let result := alloc_in_block(@pblock, asize)
+
+        --putln("CALLER: ", pblock.allocations)
+
+        return result
     end
 
     return nil
