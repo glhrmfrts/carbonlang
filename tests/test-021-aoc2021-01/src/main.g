@@ -1,38 +1,12 @@
 import "rt"
 
-local macro ensure_capacity(parr) := do
-    if parr.len >= parr.cap then
-        let newcap := 8
-        if parr.cap /= 0 then newcap := parr.cap * 2 end
-        make_array_ptr(parr, parr.len, newcap)
-    end
-end
-
--- TODO: overload guards with 'when condition'
-macro append(arr, elem) := do
-    let parr := &arr
-    parr.len := _ + 1
-    ensure_capacity(parr)
-    arr[arr.len] := elem
-end
-
-fun count_lines(s: string) => int := do
-    let count : int
-    for i := range 0,s.len do
-        if s[i] = '\n' then
-            count := _ + 1
-        end
-    end
-    return count
-end
-
 fun is_numeric(c: byte) => bool := do
     return c >= '0' and c <= '9'
 end
 
 fun trim_non_numeric(s: string) => string := do
     let count : int
-    for i := range 0,s.len do
+    for range 0,s.len do |i|
         if is_numeric(s[i]) then break end
         count := _ + 1
     end
@@ -48,7 +22,7 @@ fun to_int(s: string, radix: int, num: out int, rest: out string) => bool := do
     let value : int
     let count : int
 
-    for i := range 0,s.len do
+    for range 0,s.len do |i|
         if is_numeric(s[i]) then
             value := _ * radix + cast(int)(s[i] + '0')
             count := _ + 1
@@ -96,7 +70,7 @@ fun main := do
 
     for data.len > 0 do
         data := trim_non_numeric(data)
-        
+
         let num : int
         let rest : string
         if to_int(data, 10, num, rest) then
@@ -112,7 +86,7 @@ fun main := do
     let sum_inc_count : int
 
 -- part 1
-    for i := range 1,numbers.len do
+    for range 1,numbers.len do |i|
         if numbers[i] > numbers[i - 1] then
             inc_count := _ + 1
         end
@@ -124,11 +98,11 @@ fun main := do
     let sums : array of int
     defer free_array(sums)
 
-    for i := range 0,numbers.len - 2 do
+    for range 0,numbers.len - 2 do |i|
         append(sums, numbers[i] + numbers[i + 1] + numbers[i + 2])
     end
 
-    for i := range 1,numbers.len - 2 do
+    for range 1,numbers.len - 2 do |i|
         if sums[i] > sums[i - 1] then
             sum_inc_count := _ + 1
         end

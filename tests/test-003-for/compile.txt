@@ -16,28 +16,31 @@ carbonc - compiling module: rt
     process_code_unit: ../../runtime/linux/src/rt/stat.g
     process_code_unit: ../../runtime/linux/src/rt/string.g
     process_code_unit: ../../runtime/linux/src/rt/write.g
+assembly file: rt_syscall_calls.s
+carbonc - running assembler: as _carbon/build_debug/rt_syscall_calls.s -o _carbon/build_debug/rt_syscall_calls.o
 carbonc - compiling module: rt/syscall
+    process_code_unit: ../../runtime/linux/src/rt/syscall/codes.g
     process_code_unit: ../../runtime/linux/src/rt/syscall/syscall.g
 assembly file: rt_x86_64_start.s
 carbonc - running assembler: as _carbon/build_debug/rt_x86_64_start.s -o _carbon/build_debug/rt_x86_64_start.o
-carbonc - parsing time: 297ms
+carbonc - parsing time: 397ms
 
 carbonc - type checking 
 unresolved types
 unresolved types
-carbonc - type checking time: 65ms
+carbonc - type checking time: 81ms
 
 carbonc - generating IR 
-carbonc - IR generation time: 19ms
+carbonc - IR generation time: 46ms
 
 carbonc - generating assembly 
 carbonc - running assembler: as _carbon/build_debug/root.asm -o _carbon/build_debug/root.o
 carbonc - running assembler: as _carbon/build_debug/rt.asm -o _carbon/build_debug/rt.o
 carbonc - running assembler: as _carbon/build_debug/rt_syscall.asm -o _carbon/build_debug/rt_syscall.o
-carbonc - assembly generation time: 115ms
+carbonc - assembly generation time: 175ms
 
-carbonc - running linker command: ld  -e _start -o _carbon/build_debug/test-003-for _carbon/build_debug/rt_x86_64_start.o _carbon/build_debug/root.o _carbon/build_debug/rt.o _carbon/build_debug/rt_syscall.o -T ../../res/carbon.sc
+carbonc - running linker command: ld  -e _start -o _carbon/build_debug/test-003-for _carbon/build_debug/rt_syscall_calls.o _carbon/build_debug/rt_x86_64_start.o _carbon/build_debug/root.o _carbon/build_debug/rt.o _carbon/build_debug/rt_syscall.o -T ../../res/carbon.sc
 carbonc - output: a.out
 
-carbonc - total lines parsed: 1105
-carbonc - total compilation time: 554ms
+carbonc - total lines parsed: 1447
+carbonc - total compilation time: 801ms

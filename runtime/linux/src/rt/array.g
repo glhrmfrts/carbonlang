@@ -29,3 +29,19 @@ macro free_array(arr) := do
     let larr := &arr
     free(larr.ptr)
 end
+
+local macro ensure_capacity(parr) := do
+    if parr.len >= parr.cap then
+        let newcap := 8
+        if parr.cap /= 0 then newcap := parr.cap * 2 end
+        make_array_ptr(parr, parr.len, newcap)
+    end
+end
+
+-- TODO: overload guards with 'when condition'
+macro append(arr, elem) := do
+    let parr := &arr
+    parr.len := _ + 1
+    ensure_capacity(parr)
+    arr[arr.len] := elem
+end

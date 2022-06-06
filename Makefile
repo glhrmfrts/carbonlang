@@ -13,7 +13,7 @@ build: gen
 install: build
 	install $(BUILD_DIR)/carbonc/carbonc -t /usr/bin/
 
-CURRENT_TEST=tests/test-001-arith
+CURRENT_TEST=tests/test-016-macros
 
 com:
 	cd $(CURRENT_TEST) && \

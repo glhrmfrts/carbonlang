@@ -557,7 +557,9 @@ void generate_for_stmt(ast_node& node) {
     emit(ir_comment, ir_label{ "begin for_stmt id=" + std::to_string(node.node_id) });
 
     // assign elem to starting value
-    generate_ir_node(*node.forinfo.declare_elem_to_range_start);
+    if (node.forinfo.declare_elem_to_range_start) {
+        generate_ir_node(*node.forinfo.declare_elem_to_range_start);
+    }
 
     auto stepvar = create_temp_local(node.forinfo.iterstart->tid);
 

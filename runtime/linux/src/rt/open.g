@@ -26,7 +26,6 @@ type open_flags := enumflags (
     append
     truncate
 )
--- TODO(bug): cannot refer to enum component outside of declared module
 
 fun to_kernel_flags(flags: open_flags) => int := do
     let lflags : int

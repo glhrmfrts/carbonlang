@@ -241,7 +241,7 @@ arena_ptr<ast_node> make_cast_to(type_system& ts, arena_ptr<ast_node> expr, type
 static int temp_count = 0;
 
 std::string generate_temp_name() {
-    return "$cbT" + std::to_string(temp_count++);
+    return "$ast_temp" + std::to_string(temp_count++);
 }
 
 arena_ptr<ast_node> transform_bool_op_into_if_statement(type_system& ts, arena_ptr<ast_node> bop, ast_node& destvar) {

@@ -8,7 +8,7 @@ end
 fun test_zero_init := do
     let arr : array(32) of int
     let sum := 0
-    for i := range 0, arr.len do
+    for range 0, arr.len do |i|
         sum := sum + arr[i]
     end
     write("test_zero_init: ") writeln(sum)

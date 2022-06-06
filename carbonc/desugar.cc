@@ -217,7 +217,9 @@ void desugar(type_system& ts, ast_node* nodeptr) {
     switch (node.type) {
     case ast_type::for_numeric_stmt: {
         enter_scope_local(ts, node);
-        visit_tree(ts, *node.forinfo.declare_elem_to_range_start);
+        if (node.forinfo.declare_elem_to_range_start) {
+            visit_tree(ts, *node.forinfo.declare_elem_to_range_start);
+        }
         visit_tree(ts, *node.children[ast_node::child_for_stmt_body]);
         leave_scope_local(ts);
         break;

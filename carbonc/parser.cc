@@ -455,39 +455,21 @@ struct parser_impl {
 
         auto ids = make_arg_list_node(*ast_arena, pos, {});
         auto expr = parse_expr();
-        auto iter = arena_ptr<ast_node>{nullptr, nullptr};
 
-        if (expr->type == ast_type::identifier) {
-            if (TOK_CHAR == ',') {
-                lex->next();
-                ids->children.push_back(std::move(expr));
-
-                auto id2 = parse_primary_expr();
-                if (id2->type != ast_type::identifier) {
-                    throw parse_error(filename, lex->pos(), "expecting another identifier after ',' in for statement");
-                }
-
-                ids->children.push_back(std::move(id2));
+        if (expr->type == ast_type::range_expr) {
+            if (TOK != token_type::do_) {
+                throw parse_error(filename, lex->pos(), "expecting 'do' in for statement body");
             }
-
-            if (TOK == token_type::coloneq) {
-                lex->next();
-                ids->children.push_back(std::move(expr));
-
-                iter = parse_expr();
-                if (!iter) {
-                    throw parse_error(filename, lex->pos(), "expecting an expression after ':=' in for statement");
-                }
-            }
+            auto body = parse_compound_stmt({});
+            return make_for_numeric_stmt_node(*ast_arena, pos, std::move(ids), std::move(expr), std::move(body));
         }
-
-        auto body = parse_compound_stmt({});
-
-        if (!iter) {
+        else {
+            if (TOK != token_type::do_) {
+                throw parse_error(filename, lex->pos(), "expecting 'do' in for statement body");
+            }
+            auto body = parse_compound_stmt({});
             return make_for_cond_stmt_node(*ast_arena, pos, std::move(expr), std::move(body));
         }
-
-        return make_for_numeric_stmt_node(*ast_arena, pos, std::move(ids), std::move(iter), std::move(body));
     }
 
     arena_ptr<ast_node> parse_if_stmt() {

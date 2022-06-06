@@ -30,6 +30,8 @@ bool is_aggregate(type_id id);
 
 void type_check_field_expr(type_system& ts, ast_node& node, bool change_to_identifier);
 
+std::vector<arena_ptr<ast_node>>* get_compound_block_params(ast_node& compound);
+
 // Section: errors
 
 template <typename... Args> void add_module_error(type_system& ts, const position& pos, const char* fmt, Args&&... args) {
@@ -2306,17 +2308,11 @@ void desugar_assignment(type_system& ts, ast_node& node) {
 }
 
 void register_for_declarations(type_system& ts, ast_node& node) {
-    ast_node* elem_node = nullptr;
-    if (node.children[0]->children.size() == 1) {
-        elem_node = node.children[0]->children[0].get();
-    }
-
     // TODO: handle array as well
 
-    if (!node.forinfo.self && elem_node) {
+    if (!node.forinfo.self) {
         if (node.children[1]->type == ast_type::range_expr) {
             int numfields = 3;
-
 
             auto iterstart = copy_node(ts, node.children[1]->range.start);
             iterstart->parent = &node;
@@ -2352,29 +2348,41 @@ void register_for_declarations(type_system& ts, ast_node& node) {
 
 
             // declare the variable to hold the element of the range
-            auto elem_decl_node = make_var_decl_with_value(*ts.ast_arena, elem_node->id_parts.front(), copy_node(ts, ref_iterstart.get()));
-            resolve_node_type(ts, elem_decl_node.get());
+            std::string elem_id = "";
 
-            auto elemref = make_identifier_node(*ts.ast_arena, {}, elem_node->id_parts);
-            resolve_node_type(ts, elemref.get());
+            auto params = get_compound_block_params(*node.children[2]);
+            if (params) {
+                elem_id = params->at(0)->id_parts.front();
+            }
+            else {
+                elem_id = generate_temp_name();
+            }
 
+            if (!elem_id.empty()) {
+                auto elem_decl_node = make_var_decl_with_value(*ts.ast_arena, elem_id, copy_node(ts, ref_iterstart.get()));
+                resolve_node_type(ts, elem_decl_node.get());
+
+                auto elemref = make_identifier_node(*ts.ast_arena, {}, { elem_id });
+                resolve_node_type(ts, elemref.get());
+
+                node.forinfo.declare_elem_to_range_start = std::move(elem_decl_node);
+                node.forinfo.elemref = copy_node(ts, elemref.get());
+
+                node.forinfo.declare_elem_to_range_start->parent = &node;
+                node.forinfo.elemref->parent = &node;
+            }
             
             node.pre_nodes.push_back(std::move(decl_iterstart));
             node.pre_nodes.push_back(std::move(decl_iterend));
             node.pre_nodes.push_back(std::move(decl_iterstep));
-
-
-            node.forinfo.declare_elem_to_range_start = std::move(elem_decl_node);
+            
             node.forinfo.iterstart = copy_node(ts, ref_iterstart.get());
             node.forinfo.iterend = copy_node(ts, ref_iterend.get());
             node.forinfo.iterstep = copy_node(ts, ref_iterstep.get());
-            node.forinfo.elemref = copy_node(ts, elemref.get());
 
-            node.forinfo.declare_elem_to_range_start->parent = &node;
             node.forinfo.iterstart->parent = &node;
             node.forinfo.iterend->parent = &node;
             node.forinfo.iterstep->parent = &node;
-            node.forinfo.elemref->parent = &node;
             node.forinfo.self = &node;
         }
         else {
@@ -2382,7 +2390,9 @@ void register_for_declarations(type_system& ts, ast_node& node) {
         }
     }
 
-    resolve_node_type(ts, node.forinfo.declare_elem_to_range_start.get());
+    if (node.forinfo.declare_elem_to_range_start) {
+        resolve_node_type(ts, node.forinfo.declare_elem_to_range_start.get());
+    }
 }
 
 arena_ptr<ast_node> make_neq_false_node(type_system& ts, arena_ptr<ast_node>&& val) {
@@ -2591,6 +2601,7 @@ void macro_instantiate(type_system& ts, ast_node& node, func_def* func) {
     }
 
     resolve_node_type(ts, macro_instance->children[0].get());
+    macro_instance->tid = macro_instance->children[0]->tid;
 
     leave_scope_local(ts);
 
@@ -2598,6 +2609,7 @@ void macro_instantiate(type_system& ts, ast_node& node, func_def* func) {
 
     auto self = std::move(node.parent->children[*idx]);
     macro_instance->temps.push_back(std::move(self));
+
     node.parent->children[*idx] = std::move(macro_instance);
 }
 
@@ -4303,11 +4315,15 @@ void remangle_names(type_system& ts, ast_node* nodeptr) {
         for (auto& pn : node.pre_nodes) {
             visit_tree(ts, *pn);
         }
-        visit_tree(ts, *node.forinfo.declare_elem_to_range_start);
+        if (node.forinfo.declare_elem_to_range_start) {
+            visit_tree(ts, *node.forinfo.declare_elem_to_range_start);
+        }
         visit_tree(ts, *node.forinfo.iterstart);
         visit_tree(ts, *node.forinfo.iterstep);
         visit_tree(ts, *node.forinfo.iterend);
-        visit_tree(ts, *node.forinfo.elemref);
+        if (node.forinfo.elemref) {
+            visit_tree(ts, *node.forinfo.elemref);
+        }
         visit_tree(ts, *node.for_body());
         break;
     }

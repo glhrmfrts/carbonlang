@@ -8,7 +8,7 @@ fun errno_to_error(c : int) => error := do
 end
 
 local fun writebytes(ptr: &pure byte, sz: int) := do
-    for i := range 0,sz do
+    for range 0,sz do |i|
         let b : byte := ptr[i]
         write(cast(int) b)
         write(",")
