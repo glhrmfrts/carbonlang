@@ -1,4 +1,4 @@
-import rt::syscall as syscall
+import "rt/syscall" as syscall
 
 extern(C) (
 
@@ -35,7 +35,7 @@ end
 fun stat(filename: string, buf: out stat_type) => error := do
     let cstat : c_stat
 
-    let res := syscall::stat(filename.ptr, &cstat)
+    let res := syscall.stat(filename.ptr, &cstat)
     if res < 0 then
         return errno_to_error(-res)
     end
@@ -50,7 +50,7 @@ end
 fun stat(fd: file_handle, buf: out stat_type) => error := do
     let cstat : c_stat
 
-    let res := syscall::fstat(fd, &cstat)
+    let res := syscall.fstat(fd, &cstat)
     if res < 0 then
         return errno_to_error(-res)
     end

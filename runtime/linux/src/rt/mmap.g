@@ -1,4 +1,4 @@
-import rt::syscall as syscall
+import "rt/syscall" as syscall
 
 local const MAP_SHARED := 0x01
 local const MAP_PRIVATE := 0x02
@@ -18,9 +18,9 @@ local const PROT_GROWSUP   := 0x02000000
 
 -- mmap with default parameters
 fun mmap(size: int) => &opaque := do
-    return syscall::mmap(nil, size, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, 0, 0)
+    return syscall.mmap(nil, size, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, 0, 0)
 end
 
 fun munmap(ptr: &opaque, size: int) := do
-    syscall::munmap(ptr, size)
+    syscall.munmap(ptr, size)
 end

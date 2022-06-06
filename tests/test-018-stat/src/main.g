@@ -1,4 +1,4 @@
-import rt
+import "rt"
 
 fun show_file_size(path : string) := do
     let statbuf : stat_type

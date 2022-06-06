@@ -1,4 +1,4 @@
-import rt
+import "rt"
 
 local macro ensure_capacity(parr) := do
     if parr.len >= parr.cap then
@@ -59,7 +59,7 @@ fun to_int(s: string, radix: int, num: out int, rest: out string) => bool := do
 
     num := value
 
-    rest := s
+    rest := s 
     rest.ptr := cast(&pure byte) cast(&opaque) (cast(uintptr) _ + cast(uintptr) count)
     rest.len := _ - count
     rest.cap := _ - count
@@ -67,13 +67,11 @@ fun to_int(s: string, radix: int, num: out int, rest: out string) => bool := do
     return count > 0
 end
 
-let last_block_id : int
-
 fun main := do
     let file : file_handle
     defer close(file)
 
-    if open(file, "aoc01.txt", nil, 0) then |err|
+    if open(file, "aoc01.txt", open_flags.read, 0) then |err|
         putln("open error: ", err)
         return
     end

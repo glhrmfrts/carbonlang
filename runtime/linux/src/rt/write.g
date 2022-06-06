@@ -1,9 +1,9 @@
 -- TODO: buffered output
 
-import rt::syscall as syscall
+import "rt/syscall" as syscall
 
 fun write(fh : file_handle, s : string) => int := do
-    return syscall::write(cast(int) fh, s.ptr, s.len)
+    return syscall.write(cast(int) fh, s.ptr, s.len)
 end
 
 fun write(s : string) => int := do
@@ -23,7 +23,7 @@ fun write(b : bool) => int := do
 end
 
 fun write(b : byte) => int := do
-    return syscall::write(stdout(), &b, 1)
+    return syscall.write(stdout(), &b, 1)
 end
 
 fun write(i : int) => int := do

@@ -145,6 +145,13 @@ struct parser_impl {
                 auto rpos = result->pos;
                 result = make_type_constructor_instance_node(*ast_arena, rpos, make_type_expr_node(*ast_arena, rpos, std::move(result)), std::move(arg_list));
             }
+            else if (TOK_CHAR == '.') {
+                lex->next();
+                auto id = parse_qualified_identifier();
+
+                auto rpos = result->pos;
+                result = make_field_expr_node(*ast_arena, rpos, std::move(result), std::move(id));
+            }
         }
         else if (TOK == token_type::error) {
             result = make_identifier_node(*ast_arena, lex->pos(), { "$error" });
@@ -871,7 +878,11 @@ struct parser_impl {
         auto pos = lex->pos();
         lex->next(); // eat the 'import'
 
-        auto id = parse_qualified_identifier();
+        auto id = parse_primary_expr();
+        if (id->type != ast_type::string_literal) {
+            throw parse_error(filename, pos, "expecting string for import module path");
+        }
+
         auto alias = arena_ptr<ast_node>{ nullptr, nullptr };
 
         if (TOK == token_type::as_) {
@@ -1477,14 +1488,6 @@ struct parser_impl {
         std::vector<std::string> id_parts = { lex->string_value() };
         lex->next();
         
-        while (TOK == token_type::coloncolon && i++ < LIMIT) {
-            lex->next();
-            if (TOK != token_type::identifier) {
-                throw parse_error(filename, lex->pos(), "expecting identifier");
-            }
-            id_parts.push_back(lex->string_value());
-            lex->next();
-        }
         return make_identifier_node(*ast_arena, pos, id_parts);
     }
 

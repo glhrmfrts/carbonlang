@@ -28,6 +28,8 @@ std::vector<struct_field>& get_type_fields(type_id id);
 
 bool is_aggregate(type_id id);
 
+void type_check_field_expr(type_system& ts, ast_node& node, bool change_to_identifier);
+
 // Section: errors
 
 template <typename... Args> void add_module_error(type_system& ts, const position& pos, const char* fmt, Args&&... args) {
@@ -1410,6 +1412,16 @@ type_id get_type_expr_node_type(type_system& ts, ast_node& node) {
         }
         break;
     }
+    case ast_type::field_expr: {
+        type_check_field_expr(ts, node, false);
+        if (node.tid == ts.type_type) {
+            node.tid = type_id{ node.lvalue.symbol->scope, node.lvalue.symbol->type_index };
+        }
+        else {
+            add_type_error(ts, node.pos, "unknown type '%s'", node_to_string(node).c_str());
+        }
+        break;
+    }
     case ast_type::builtin_call_expr: {
         resolve_node_type(ts, &node);
         if (node.type != ast_type::builtin_call_expr) {
@@ -1425,8 +1437,7 @@ type_id get_type_expr_node_type(type_system& ts, ast_node& node) {
     return node.tid;
 }
 
-type_id resolve_identifier(type_system& ts, ast_node& node) {
-    auto sym = find_symbol(ts, separate_module_identifier(node.id_parts));
+type_id resolve_identifier_with_symbol(type_system& ts, ast_node& node, symbol_info* sym) {
     if (sym && (sym->kind == symbol_kind::local || sym->kind == symbol_kind::global)) {
         auto local = get_symbol_local(*sym);
         bool was_unresolved = !node.tid.valid();
@@ -1453,7 +1464,7 @@ type_id resolve_identifier(type_system& ts, ast_node& node) {
             unk_type_error(ts, node.tid, node.pos, "cannot determine type of symbol '%s'", node_to_string(node).c_str());
         }
     }
-    else if (sym && sym->kind == symbol_kind::overloaded_func_base) {
+    else if (sym && (sym->kind == symbol_kind::overloaded_func_base || sym->kind == symbol_kind::top_level_func)) {
         node.lvalue.self = &node;
         node.lvalue.symbol = sym;
     }
@@ -1462,12 +1473,27 @@ type_id resolve_identifier(type_system& ts, ast_node& node) {
         node.lvalue.symbol = sym;
         node.tid = sym->cttype;
     }
+    else if (sym && sym->kind == symbol_kind::type) {
+        node.lvalue.self = &node;
+        node.lvalue.symbol = sym;
+        node.tid = ts.type_type;
+    }
+    else if (sym && sym->kind == symbol_kind::module_) {
+        node.lvalue.self = &node;
+        node.lvalue.symbol = sym;
+        node.tid = ts.module_type;
+    }
 
     if (!sym) {
         unk_type_error(ts, node.tid, node.pos, "undefined '%s'", node_to_string(node).c_str());
     }
 
     return node.tid;
+}
+
+type_id resolve_identifier(type_system& ts, ast_node& node) {
+    auto sym = find_symbol(ts, separate_module_identifier(node.id_parts));
+    return resolve_identifier_with_symbol(ts, node, sym);
 }
 
 void propagate_return_type(type_system& ts, const type_id& id) {
@@ -1737,19 +1763,19 @@ string_hash mangle_func_name(type_system& ts, const std::vector<std::string>& id
     //assert(f.tid != invalid_type);
 
     if (linkage == func_linkage::local_carbon || linkage == func_linkage::external_carbon) {
-        std::string name = "cb";
+        std::string name = "paruser";
         for (const auto& part : id_parts) {
-            name.append("__N");
+            name.append(".");
             name.append(part);
         }
         for (auto& arg : const_args) {
-            name.append("__C");
+            name.append("._C");
             name.append(const_value_to_string(arg));
         }
         for (auto& arg : args) {
             assert(arg->tid != invalid_type);
             auto tdef = arg->tid.get();
-            name.append("__A");
+            name.append("._A");
             name.append(tdef.mangled_name.str);
         }
         return string_hash{ name };
@@ -2576,35 +2602,45 @@ void macro_instantiate(type_system& ts, ast_node& node, func_def* func) {
 }
 
 void resolve_call_funcdef(type_system& ts, ast_node& node) {
-    auto pair = separate_module_identifier(node.call_func()->id_parts);
-
+    //auto pair = separate_module_identifier(node.call_func()->id_parts);
     separate_call_args(ts, node);
+#if 0
 
-    for (const auto& linkage : { func_linkage::local_carbon, func_linkage::external_c }) {
-        node.call.mangled_name = mangle_func_name(ts, { pair.second.str }, node.call.const_args, node.call_args(), linkage);
+#endif
+    if (node.call_func()->lvalue.symbol && node.call_func()->type == ast_type::identifier) {
+        std::string mod = "";
+        std::string id = "";
+        if (node.call_func()->id_parts.size() == 2) {
+            mod = node.call_func()->id_parts.front();
+            id = node.call_func()->id_parts.back();
+        }
+        else {
+            id = node.call_func()->id_parts.front();
+        }
+        for (const auto& linkage : { func_linkage::local_carbon, func_linkage::external_c }) {
+            node.call.mangled_name = mangle_func_name(ts, { id }, node.call.const_args, node.call_args(), linkage);
 
-        auto sym = find_symbol(ts, { pair.first, node.call.mangled_name });
-        if (sym && sym->kind == symbol_kind::top_level_func) {
-            auto local = sym->scope->local_defs[sym->local_index];
-            node.tid = local->self->tdef.func.ret_type;
-            node.call.func_type_id = local->self->tid;
-            node.call.funcdef = &local->self->func;
-            node.type_error = false;
-            //if (local->flags & local_flag::is_aggregate_argument) {
-              //  node.tid = node.tid.get().elem_type;
-            //}
-            break;
+            auto sym = find_symbol(ts, { mod, node.call.mangled_name });
+            if (sym && sym->kind == symbol_kind::top_level_func) {
+                auto local = sym->scope->local_defs[sym->local_index];
+                node.tid = local->self->tdef.func.ret_type;
+                node.call.func_type_id = local->self->tid;
+                node.call.funcdef = &local->self->func;
+                node.type_error = false;
+                //if (local->flags & local_flag::is_aggregate_argument) {
+                  //  node.tid = node.tid.get().elem_type;
+                //}
+                break;
+            }
         }
     }
 
-    if (!node.tid.valid()) {
+    if (!node.tid.valid() && node.call_func()->lvalue.symbol) {
         node.type_error = true;
 
         auto funcname = node_to_string(*node.call_func());
-        if (funcname == "allocn") {
-            //printf("asdqwe\n");
-        }
-        auto bsym = find_symbol(ts, pair);
+
+        auto bsym = node.call_func()->lvalue.symbol;
         if (bsym && bsym->kind == symbol_kind::overloaded_func_base) {
             // try to match the arguments performing implicit conversions using the function non-generic overloads
             bool resolved = false;
@@ -2908,6 +2944,48 @@ bool type_check_identifier(type_system& ts, ast_node& node) {
     return true;
 }
 
+void type_check_qualified_identifier(type_system& ts, ast_node& node, bool change_to_identifier) {
+    auto& modid = node.children[0];
+    auto& compid = node.children[1];
+    auto modalias = modid->id_parts.front();
+    auto modpath = modid->lvalue.symbol->module_path;
+    scope_def* modscope = ts.module_scopes[modpath];
+    if (modscope == nullptr) { return; } // module not traversed yet
+
+    auto it = modscope->symbols.find(string_hash{ compid->id_parts.front() });
+    if (it == modscope->symbols.end() || it->second->vis != decl_visibility::public_) {
+        add_type_error(ts, node.pos, "undefined '%s' from '%s' (module '%s')", compid->id_parts.front().c_str(), modalias.c_str(), modpath.str.c_str());
+        return;
+    }
+    resolve_identifier_with_symbol(ts, node, it->second.get());
+    if (node.lvalue.self && change_to_identifier) {
+        node.type = ast_type::identifier;
+        node.id_parts.push_back(node.children[0]->id_parts.front());
+        node.id_parts.push_back(node.children[1]->id_parts.front());
+    }
+}
+
+void type_check_type_identifier(type_system& ts, ast_node& node, bool change_to_identifier) {
+    auto& tynode = node.children[0];
+    auto& compid = node.children[1];
+    auto tid = type_id{ tynode->lvalue.symbol->scope, tynode->lvalue.symbol->type_index };
+
+    scope_def* modscope = &tid.get().self->scope;
+    if (modscope == nullptr) { return; } // module not traversed yet
+
+    auto it = modscope->symbols.find(string_hash{ compid->id_parts.front() });
+    if (it == modscope->symbols.end() || it->second->vis != decl_visibility::public_) {
+        add_type_error(ts, node.pos, "undefined '%s' from type '%s'", compid->id_parts.front().c_str(), type_to_string(tid).c_str());
+        return;
+    }
+    resolve_identifier_with_symbol(ts, node, it->second.get());
+    if (node.lvalue.self && change_to_identifier) {
+        node.type = ast_type::identifier;
+        node.id_parts.push_back(node.children[0]->id_parts.front());
+        node.id_parts.push_back(node.children[1]->id_parts.front());
+    }
+}
+
 void type_check_binary_expr(type_system& ts, ast_node& node) {
     if (node.op == token_type::arrow_right) {
         process_thread_first_expr(ts, node);
@@ -3188,7 +3266,7 @@ void type_check_if_or_cond_stmt(type_system& ts, ast_node& node) {
     leave_scope_local(ts);
 }
 
-void type_check_field_expr(type_system& ts, ast_node& node) {
+void type_check_field_expr(type_system& ts, ast_node& node, bool change_to_identifier) {
     auto fieldid = build_identifier_value(node.children[1]->id_parts);
 
     node.children[0]->parent = &node;
@@ -3197,6 +3275,16 @@ void type_check_field_expr(type_system& ts, ast_node& node) {
     if (!node.children[0]->tid.valid()) {
         //printf("invalid field_expr: %s\n", fieldid.c_str());
         //exit(1);
+    }
+
+    if (node.children[0]->tid.valid() && node.children[0]->tid.get().kind == type_kind::module_) {
+        type_check_qualified_identifier(ts, node, change_to_identifier);
+        return;
+    }
+
+    if (node.children[0]->tid.valid() && node.children[0]->tid.get().kind == type_kind::type) {
+        type_check_type_identifier(ts, node, change_to_identifier);
+        return;
     }
 
     if (node.children[0]->tid.valid()) {
@@ -3465,12 +3553,13 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
 
         if (ts.pass == type_system_pass::resolve_literals_and_register_declarations && ts.subpass == 0) {
             auto scope = ts.current_scope;
-            auto qual_name = string_hash{ build_identifier_value(node.children[0]->id_parts) };
+            auto qual_name = string_hash{ std::string{node.children[0]->string_value} };
 
             std::optional<string_hash> aliastr{};
             if (node.children[1]) {
                 aliastr = string_hash{ build_identifier_value(node.children[1]->id_parts) };
                 scope->imports_map[*aliastr] = scope->imports.size();
+                declare_module_symbol(ts, *aliastr, *node.children[1], qual_name);
             }
             else {
                 scope->imports_map[qual_name] = scope->imports.size();
@@ -4022,7 +4111,7 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
         break;
     }
     case ast_type::field_expr: {
-        type_check_field_expr(ts, node);
+        type_check_field_expr(ts, node, true);
         break;
     }
     case ast_type::index_expr: {
@@ -4448,7 +4537,7 @@ type_system::type_system(memory_arena& arena) {
     // register built-in types
     int_type = register_integral_type<std::intptr_t>(*this, "int");
     byte_type = register_integral_type<std::int8_t>(*this, "byte");
-    bool_type = register_integral_type<std::int8_t>(*this, "bool");
+    bool_type = register_integral_like_type<std::int8_t>(*this, "bool", type_kind::boolean);
 
     uint8_type = register_integral_type<std::uint8_t>(*this, "uint8");
     uint16_type = register_integral_type<std::uint16_t>(*this, "uint16");
@@ -4786,6 +4875,18 @@ type_system::type_system(memory_arena& arena) {
         tf.size = 0;
         tf.alignment = 0;
         opaque_type = register_builtin_type(*this, std::move(node));
+    }
+
+    {
+        auto node = make_in_arena<ast_node>(*ast_arena);
+
+        type_def& tf = node->tdef;
+        tf.kind = type_kind::module_;
+        tf.name = string_hash{ "module" };
+        tf.mangled_name = string_hash{ "module" };
+        tf.size = 0;
+        tf.alignment = 0;
+        module_type = register_builtin_type(*this, std::move(node));
     }
 
     // void*

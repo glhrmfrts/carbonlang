@@ -1,4 +1,4 @@
-import rt
+import "rt"
 
 type VehicleKind := enum (
     Invalid
@@ -12,8 +12,8 @@ type VehicleKind := enum (
 
 fun main := do
     let vk : VehicleKind
-    writeln(vk = VehicleKind::Invalid) -- true
+    writeln(vk = VehicleKind.Invalid) -- true
 
-    vk := VehicleKind::Bicycle
-    writeln(vk = VehicleKind::Bicycle) -- true
+    vk := VehicleKind.Bicycle
+    writeln(vk = VehicleKind.Bicycle) -- true
 end

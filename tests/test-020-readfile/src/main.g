@@ -1,20 +1,12 @@
 -- Test a simple readfile routine using the most barebones language features.
 
--- TODO: change import to accept a path-like string like "library/module".
--- TODO: change the qualified identifier handling for modules and enums, use a dot-expression instead.
-import rt
-
-fun test_defer() := do
-    putln("test_defer")
-end
+import "rt"
 
 fun main := do
     let file : file_handle
     defer close(file)
 
-    defer test_defer()
-
-    if open(file, "file.txt", nil, 0) then |err|
+    if open(file, "file.txt", open_flags.read, 0) then |err|
         putln("open error: ", err)
         return
     end

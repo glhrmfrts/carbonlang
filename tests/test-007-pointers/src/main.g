@@ -1,4 +1,4 @@
-import rt
+import "rt"
 
 fun main := do
     let a := 123

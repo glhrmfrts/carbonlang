@@ -1,5 +1,5 @@
-extern(C) fun __gamma_start := do
-    import root
+extern(C) fun __gamma_windows_main := do
+    import "root"
     main()
 
     return 42

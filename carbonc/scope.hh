@@ -27,6 +27,8 @@ bool declare_top_level_func_symbol(type_system& ts, const string_hash& hash, ast
 
 bool declare_macro_symbol(type_system& ts, const string_hash& hash, ast_node& node);
 
+bool declare_module_symbol(type_system& ts, const string_hash& hash, ast_node& node, const string_hash& module_path);
+
 bool declare_type_symbol(type_system& ts, const string_hash& hash, ast_node& node);
 
 bool declare_type_symbol(type_system& ts, scope_def& scope, const string_hash& hash, ast_node& node);

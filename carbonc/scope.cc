@@ -26,8 +26,7 @@ void add_scope(type_system& ts, ast_node& node, scope_kind k) {
         split_extension(fn, obase, ext);
 
         auto base = obase;
-        while (replace(base, "/", "::"));
-        while (replace(base, "\\", "::"));
+        while (replace(base, "\\", MODULE_SEP));
 
         ts.module_scopes[base] = ts.current_scope;
 
@@ -39,11 +38,11 @@ void add_scope(type_system& ts, ast_node& node, scope_kind k) {
         ts.current_scope->self_module_parts = parts;
     }
     else if (k == scope_kind::type) {
-        auto base = string_hash{ parent->self_module_key.str + "::" + node.tdef.name.str };
+        auto base = string_hash{ parent->self_module_key.str + MODULE_SEP + node.tdef.name.str };
         ts.current_scope->self_module_key = base;
 
         auto partstr = base.str;
-        while (replace(partstr, "::", "/"));
+        //while (replace(partstr, "::", "/"));
         auto parts = split(partstr, '/');
 
         ts.current_scope->self_module_parts = parts;
@@ -100,7 +99,7 @@ bool declare_global_symbol(type_system& ts, const string_hash& hash, ast_node& l
         return false;
     }
 
-    symbol_info info;
+    symbol_info info = {};
     info.kind = symbol_kind::global;
     info.scope = ts.current_scope;
     info.local_index = ts.current_scope->local_defs.size();
@@ -119,7 +118,7 @@ bool declare_local_symbol(type_system& ts, const string_hash& hash, ast_node& ld
         return false;
     }
 
-    symbol_info info;
+    symbol_info info = {};
     info.kind = symbol_kind::local;
     info.scope = ts.current_scope;
     info.local_index = ts.current_scope->local_defs.size();
@@ -138,7 +137,7 @@ bool declare_top_level_func_symbol(type_system& ts, const string_hash& hash, ast
         return false;
     }
 
-    symbol_info info;
+    symbol_info info = {};
     info.kind = symbol_kind::top_level_func;
     info.scope = ts.current_scope;
     info.local_index = ts.current_scope->local_defs.size();
@@ -156,7 +155,7 @@ bool declare_macro_symbol(type_system& ts, const string_hash& hash, ast_node& ld
         return false;
     }
 
-    symbol_info info;
+    symbol_info info = {};
     info.kind = symbol_kind::macro;
     info.scope = ts.current_scope;
     info.local_index = ts.current_scope->local_defs.size();
@@ -164,6 +163,23 @@ bool declare_macro_symbol(type_system& ts, const string_hash& hash, ast_node& ld
     info.pass_token = ((int)ts.pass * 1000) + ts.subpass;
 
     ts.current_scope->local_defs.push_back(&ld.local);
+    ts.current_scope->symbols[hash] = std::make_unique<symbol_info>(info);
+    return true;
+}
+
+bool declare_module_symbol(type_system& ts, const string_hash& hash, ast_node& node, const string_hash& module_path) {
+    auto it = ts.current_scope->symbols.find(hash);
+    if (it != ts.current_scope->symbols.end()) {
+        return false;
+    }
+
+    symbol_info info = {};
+    info.kind = symbol_kind::module_;
+    info.scope = ts.current_scope;
+    info.id = hash;
+    info.pass_token = ((int)ts.pass * 1000) + ts.subpass;
+    info.module_path = module_path;
+
     ts.current_scope->symbols[hash] = std::make_unique<symbol_info>(info);
     return true;
 }
@@ -178,7 +194,7 @@ bool declare_type_symbol(type_system& ts, scope_def& scope, const string_hash& h
         return false;
     }
 
-    symbol_info info;
+    symbol_info info = {};
     info.kind = symbol_kind::type;
     info.scope = &scope;
     info.type_index = scope.tdefs.size();
@@ -196,7 +212,7 @@ bool declare_const_symbol(type_system& ts, const string_hash& hash, const const_
         return false;
     }
 
-    symbol_info info;
+    symbol_info info = {};
     info.kind = symbol_kind::const_value;
     info.scope = ts.current_scope;
     info.ctvalue = value;
@@ -214,7 +230,7 @@ bool declare_overloaded_func_base_symbol(type_system& ts, const string_hash& has
         return false;
     }
 
-    symbol_info info;
+    symbol_info info = {};
     info.kind = symbol_kind::overloaded_func_base;
     info.scope = ts.current_scope;
     info.id = hash;

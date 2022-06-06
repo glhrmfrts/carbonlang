@@ -1,4 +1,4 @@
-import rt
+import "rt"
 
 let a : int
 

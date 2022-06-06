@@ -1,4 +1,4 @@
-import rt
+import "rt"
 
 fun test_numeric_for := do
     let counter := 0

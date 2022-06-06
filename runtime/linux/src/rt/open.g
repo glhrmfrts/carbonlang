@@ -1,4 +1,4 @@
-import rt::syscall as syscall
+import "rt/syscall" as syscall
 
 #define O_ACCMODE       00000003                                                                                                                                                                                                              
 #define O_RDONLY        00000000                                                                                                                                                                                                              
@@ -28,26 +28,26 @@ type open_flags := enumflags (
 )
 -- TODO(bug): cannot refer to enum component outside of declared module
 
-fun to_kernel_flags(flags : open_flags) => int := do
+fun to_kernel_flags(flags: open_flags) => int := do
     let lflags : int
 
-    if flags & (open_flags::read | open_flags::write) then
+    if flags & (open_flags.read | open_flags.write) then
         lflags := O_RDWR
-    else if flags & open_flags::write then
+    else if flags & open_flags.write then
         lflags := O_WRONLY
-    else if flags & open_flags::read then
+    else if flags & open_flags.read then
         lflags := O_RDONLY
     end
 
-    if flags & open_flags::create then
+    if flags & open_flags.create then
         lflags := lflags | O_CREAT
     end
 
-    if flags & open_flags::append then
+    if flags & open_flags.append then
         lflags := lflags | O_APPEND
     end
 
-    if flags & open_flags::truncate then
+    if flags & open_flags.truncate then
         lflags := lflags | O_TRUNC
     end
 
@@ -71,7 +71,7 @@ fun open(
         return UNIX_ENAMETOOLONG
     end
 
-    let fd := syscall::open(path_cstr, to_kernel_flags(flags), mode)
+    let fd := syscall.open(path_cstr, to_kernel_flags(flags), mode)
     if fd < 0 then
         return errno_to_error(-fd)
     end
@@ -81,7 +81,7 @@ fun open(
 end
 
 fun close(fd : file_handle) => error := do
-    let res := syscall::close(fd)
+    let res := syscall.close(fd)
     if res < 0 then
         return errno_to_error(-fd)
     end

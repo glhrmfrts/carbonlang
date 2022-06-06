@@ -1,4 +1,4 @@
-import rt
+import "rt"
 
 type MyStruct := struct of
     x : int

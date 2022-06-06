@@ -1,4 +1,4 @@
-import rt
+import "rt"
 
 const BOARD_CAP := 30
 

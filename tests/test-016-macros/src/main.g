@@ -1,4 +1,4 @@
-import rt
+import "rt"
 
 macro putln(a, b) := do
     write(a)

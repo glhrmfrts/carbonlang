@@ -1,4 +1,4 @@
-import rt::syscall as syscall
+import "rt/syscall" as syscall
 
 typealias file_handle := int
 
@@ -15,5 +15,5 @@ fun stderr() => file_handle := do
 end
 
 fun exit(code : int) := do
-    syscall::exit(code)
+    syscall.exit(code)
 end

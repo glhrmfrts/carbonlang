@@ -1,4 +1,4 @@
-import rt
+import "rt"
 
 fun test_len_size := do
     let arr : array(33) of int

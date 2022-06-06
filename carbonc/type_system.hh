@@ -15,6 +15,8 @@
 
 namespace carbon {
 
+constexpr auto MODULE_SEP = "/";
+
 constexpr int DESUGAR_SUBPASS = 2048;
 
 constexpr auto ARRAY_VIEW_PTR_MEMBER = "ptr";
@@ -41,12 +43,14 @@ enum class type_qualifier {
 
 enum class type_kind {
     void_,
+    module_,
     nil,
     ptr,
     input,
     output,
     inout,
     integral,
+    boolean,
     enum_,
     enumflags,
     error,
@@ -177,6 +181,7 @@ enum class symbol_kind {
     overloaded_func_base,
     type,
     const_value,
+    module_,
 };
 
 struct symbol_info {
@@ -184,6 +189,7 @@ struct symbol_info {
     scope_def* scope;
     string_hash id;
     int pass_token;
+    decl_visibility vis;
 
     // if kind == local
     int local_index = -1;
@@ -198,6 +204,9 @@ struct symbol_info {
     // if kind == const_value
     const_value ctvalue;
     type_id cttype;
+
+    // if kind == module
+    string_hash module_path;
 };
 
 struct lvalue_info {
@@ -382,6 +391,7 @@ struct type_system {
     type_id error_type{};
     type_id typeid_type{};
     type_id quote_type{};
+    type_id module_type{};
 
     type_id raw_string_type{}; // only used internally
     type_id usize_type{};

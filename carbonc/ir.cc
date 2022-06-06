@@ -1483,6 +1483,10 @@ void print_ir(const std::string& modname) {
 
     for (std::size_t i = 0; i < prog->funcs.size(); i++) {
         auto& func = *prog->funcs[i];
+        if (func.is_extern) {
+            f << "extern func " << func.name << " -> " << func.ret_type.get().mangled_name.str << "\n";
+            continue;
+        }
         f << "func " << func.name << " -> " << func.ret_type.get().mangled_name.str << "\n";
         for (std::size_t ai = 0; ai < func.args.size(); ai++) {
             auto& arg = func.args[ai];

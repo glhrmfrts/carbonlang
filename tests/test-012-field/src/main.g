@@ -1,6 +1,6 @@
 -- Test the ability to have any expression in the left-side of a field selector
 
-import rt
+import "rt"
 
 type Data := struct of
     a: int

@@ -1,0 +1,1 @@
+const NICE := 4
