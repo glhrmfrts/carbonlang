@@ -36,6 +36,7 @@ fun cstrlen(ptr: &pure byte) => int := do
 end
 
 fun to_cstr(str : string, buffer : in out array of byte) => &pure byte := do
+    --writeln(cast(int)cast(uintptr)buffer.ptr)
     if str.len > buffer.len - 1 then return nil end
 
     memcpy(buffer.ptr, str.ptr, str.len)

@@ -1,5 +1,7 @@
-macro adder(a, b) := a * b
+fun test(data : array of byte) := do
+end
 
 fun main := do
-    let val := adder(2, 5)
+    let buf := array(4) of byte{}
+    test(buf)
 end

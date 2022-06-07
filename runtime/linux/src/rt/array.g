@@ -1,4 +1,4 @@
-local macro make_array_ptr(parr, len, cap) := do
+local macro resize_ptr(parr, len, cap) := do
     let ptr := alloc(cap * #sizeof(@parr.ptr))
     if ptr = nil then
         panic("no memory")
@@ -14,15 +14,15 @@ local macro make_array_ptr(parr, len, cap) := do
     parr.cap := cap
 end
 
-macro make_array(arr, len, cap) := do
+macro resize(arr, len, cap) := do
     let parr := &arr
     let llen := len
     let lcap := cap
-    make_array_ptr(parr, llen, lcap)
+    resize_ptr(parr, llen, lcap)
 end
 
-macro make_array(arr, len) := do
-    make_array(arr, len, len)
+macro resize(arr, len) := do
+    resize(arr, len, len)
 end
 
 macro free_array(arr) := do
@@ -34,7 +34,7 @@ local macro ensure_capacity(parr) := do
     if parr.len >= parr.cap then
         let newcap := 8
         if parr.cap /= 0 then newcap := parr.cap * 2 end
-        make_array_ptr(parr, parr.len, newcap)
+        resize_ptr(parr, parr.len, newcap)
     end
 end
 
@@ -43,5 +43,5 @@ macro append(arr, elem) := do
     let parr := &arr
     parr.len := _ + 1
     ensure_capacity(parr)
-    arr[arr.len] := elem
+    arr[arr.len - 1] := elem
 end

@@ -1,5 +1,3 @@
--- TODO: generic syscall_N functions
-
 extern(C) fun syscall_1(code: int, arg1: int) => int
 
 extern(C) fun syscall_2(code: int, arg1: int, arg2: int) => int
@@ -11,6 +9,8 @@ extern(C) fun syscall_4(code: int, arg1: int, arg2: int, arg3: int, arg4: int) =
 extern(C) fun syscall_5(code: int, arg1: int, arg2: int, arg3: int, arg4: int, arg5: int) => int
 
 extern(C) fun syscall_6(code: int, arg1: int, arg2: int, arg3: int, arg4: int, arg5: int, arg6: int) => int
+
+-- Convenience wrappers
 
 fun read(fd: int, ptr: &byte, len: int) => int := do
     return syscall_3(SYS_read, fd, cast(int)cast(uintptr)ptr, len)
@@ -46,4 +46,21 @@ end
 
 fun exit(code : int) := do
     syscall_1(SYS_exit, code)
+end
+
+fun fork() => int := do
+    return syscall_1(SYS_fork, 0)
+end
+
+fun wait4(pid: int, status: &int, options: int, usage: &opaque) := do
+    syscall_4(SYS_wait4, pid, cast(int)cast(uintptr)status, options, cast(int)cast(uintptr)usage)
+end
+
+fun execve(cmdline: &pure byte, argv: & &pure byte, envp: & &pure byte) := do
+    syscall_3(
+        SYS_execve,
+        cast(int)cast(uintptr)cmdline,
+        cast(int)cast(uintptr)argv,
+        cast(int)cast(uintptr)envp
+    )
 end

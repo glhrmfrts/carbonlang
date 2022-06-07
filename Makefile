@@ -13,7 +13,7 @@ build: gen
 install: build
 	install $(BUILD_DIR)/carbonc/carbonc -t /usr/bin/
 
-CURRENT_TEST=tests/test-016-macros
+CURRENT_TEST=tests/test-024-exec
 
 com:
 	cd $(CURRENT_TEST) && \
@@ -73,10 +73,10 @@ test:
 		carbonc -p ../.. -I runtime/linux -V -o a.out > compile.txt && \
 		./a.out > out.txt && diff out.txt expected.txt && echo "\033[1;32mtest-010-bitwise: OK\033[0m"
 
-	@echo "test-011-rule110: ..." && \
-		cd tests/test-011-rule110 && \
+	@echo "test-011-defer: ..." && \
+		cd tests/test-011-defer && \
 		carbonc -p ../.. -I runtime/linux -V -o a.out > compile.txt && \
-		./a.out > out.txt && diff out.txt expected.txt && echo "\033[1;32mtest-011-rule110: OK\033[0m"
+		./a.out > out.txt && diff out.txt expected.txt && echo "\033[1;32mtest-011-defer: OK\033[0m"
 
 	@echo "test-012-field: ..." && \
 		cd tests/test-012-field && \
@@ -127,5 +127,20 @@ test:
 		cd tests/test-021-aoc2021-01 && \
 		carbonc -p ../.. -I runtime/linux -V -o a.out > compile.txt && \
 		./a.out > out.txt && diff out.txt expected.txt && echo "\033[1;32mtest-021-aoc2021-01: OK\033[0m"
+
+	@echo "test-022-arraydyncast: ..." && \
+		cd tests/test-022-arraydyncast && \
+		carbonc -p ../.. -I runtime/linux -V -o a.out > compile.txt && \
+		./a.out > out.txt && diff out.txt expected.txt && echo "\033[1;32mtest-022-arraydyncast: OK\033[0m"
+
+	@echo "test-023-rule110: ..." && \
+		cd tests/test-023-rule110 && \
+		carbonc -p ../.. -I runtime/linux -V -o a.out > compile.txt && \
+		./a.out > out.txt && diff out.txt expected.txt && echo "\033[1;32mtest-023-rule110: OK\033[0m"
+
+	@echo "test-024-exec: ..." && \
+		cd tests/test-024-exec && \
+		carbonc -p ../.. -I runtime/linux -V -o a.out > compile.txt && \
+		./a.out > out.txt && diff out.txt expected.txt && echo "\033[1;32mtest-024-exec: OK\033[0m"
 
 .PHONY: all

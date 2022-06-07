@@ -111,6 +111,12 @@ arena_ptr<ast_node> copy_node_helper(type_system& ts, ast_node& node) {
     else if (node.type == ast_type::struct_type) {
         return make_struct_type_node(*ts.ast_arena, node.pos, copy_node(ts, node.children[0].get()));
     }
+    else if (node.type == ast_type::static_array_type) {
+        return make_static_array_type_node(*ts.ast_arena, node.pos, copy_node(ts, node.children[0].get()), copy_node(ts, node.children[1].get()));
+    }
+    else if (node.type == ast_type::array_type) {
+        return make_array_type_node(*ts.ast_arena, node.pos, copy_node(ts, node.children[0].get()));
+    }
     else if (node.type == ast_type::array_view_type) {
         return make_array_view_type_node(*ts.ast_arena, node.pos, copy_node(ts, node.children[0].get()));
     }

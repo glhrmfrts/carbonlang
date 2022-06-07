@@ -1620,6 +1620,7 @@ enum cast_type
     invalid_cast,
     simple_cast,
     toptr_cast,
+    array_cast,
     unsafe_cast,
 };
 
@@ -1658,6 +1659,12 @@ bool check_convertible_and_cast_call_args(type_system& ts, ast_node& node, type_
                     (get_alias_root(ts, target.get().elem_type) == get_alias_root(ts, node.tid.get().elem_type))) {
                     info.cast_needed_idxs.push_back(std::make_tuple(toptr_cast, target, idx));
                     return true;
+                }
+                else if (node.tid.get().kind == type_kind::static_array && target.get().elem_type.get().kind == type_kind::array) {
+                    if (is_assignable_to(ts, node.tid.get().elem_type, get_pure_alias_root(ts, target.get().elem_type.get().elem_type))) {
+                        info.cast_needed_idxs.push_back(std::make_tuple(array_cast, target.get().elem_type, idx));
+                        return true;
+                    }
                 }
             }
             return false;
@@ -1702,6 +1709,30 @@ void perform_casts(type_system& ts, std::vector<arena_ptr<ast_node>>& call_args,
 
             call_args[std::get<2>(c)] = make_address_of_expr(ts, std::move(call_args[std::get<2>(c)]));
             call_args[std::get<2>(c)]->tid = get_ptr_type_to(ts, call_args[std::get<2>(c)]->children[0]->tid);
+            break;
+        }
+        case array_cast: {
+            auto target_type = std::get<1>(c);
+            auto& arg_node = call_args[std::get<2>(c)];
+
+            auto index_expr = make_index_expr_node(*ts.ast_arena, arg_node->pos, copy_node(ts, arg_node.get()), make_int_literal_node(*ts.ast_arena, arg_node->pos, 0));
+            auto address_of_first_expr = make_unary_expr_node(*ts.ast_arena, arg_node->pos, token_from_char('&'), std::move(index_expr));
+            auto asize = arg_node->tid.get().array.length;
+
+            std::vector<arena_ptr<ast_node>> init_args;
+            init_args.push_back(std::move(address_of_first_expr));
+            init_args.push_back(make_int_literal_node(*ts.ast_arena, arg_node->pos, asize));
+            init_args.push_back(make_int_literal_node(*ts.ast_arena, arg_node->pos, asize));
+            auto init_arg_list = make_arg_list_node(*ts.ast_arena, arg_node->pos, std::move(init_args));
+
+            auto init_type = make_type_expr_node(*ts.ast_arena, arg_node->pos, make_type_resolver_node(*ts.ast_arena, target_type));
+
+            auto init_expr = make_init_expr_node(*ts.ast_arena, arg_node->pos, std::move(init_type), std::move(init_arg_list));
+
+            auto new_arg = make_address_of_expr(ts, std::move(init_expr));
+            resolve_node_type(ts, new_arg.get());
+
+            call_args[std::get<2>(c)] = std::move(new_arg);
             break;
         }
         }

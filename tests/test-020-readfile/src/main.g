@@ -18,7 +18,7 @@ fun main := do
     end
 
     let data : array of byte
-    make_array(data, statbuf.size)
+    resize(data, statbuf.size)
     defer free_array(data)
 
     if read(file, data) then |err|

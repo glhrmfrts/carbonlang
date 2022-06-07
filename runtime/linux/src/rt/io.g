@@ -1,5 +1,7 @@
 import "rt/syscall" as syscall
 
+const PATH_MAX := 4096
+
 typealias file_handle := int
 
 fun stdin() => file_handle := do

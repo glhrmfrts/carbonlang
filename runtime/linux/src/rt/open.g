@@ -59,13 +59,7 @@ fun open(
     flags   : open_flags,
     mode    : int
 ) => error := do
-    const PATH_MAX := 4096
-    let buf : array(PATH_MAX) of byte
-    let bufview := array of byte{ &buf[0], #sizeof(buf), #sizeof(buf) }
-
-    -- TODO: convert from static array to dynamic array automatically
-
-    let path_cstr := to_cstr(path, bufview)
+    let path_cstr := to_cstr(path, array(PATH_MAX) of byte{})
     if path_cstr = nil then
         return UNIX_ENAMETOOLONG
     end
@@ -79,7 +73,7 @@ fun open(
     return nil
 end
 
-fun close(fd : file_handle) => error := do
+fun close(fd: file_handle) => error := do
     let res := syscall.close(fd)
     if res < 0 then
         return errno_to_error(-fd)

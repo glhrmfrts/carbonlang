@@ -12,7 +12,7 @@ end
 local let last_block : &memory_block
 local let last_block_id : int
 
-local fun alloc_in_block(block : in out memory_block, size : int) => &opaque := do
+local fun alloc_in_block(block: in out memory_block, size: int) => &opaque := do
     let ptr := cast(uintptr) block.ptr + cast(uintptr) block.filled
     block.filled := _ + size
     block.allocations := _ + 1
@@ -24,7 +24,7 @@ fun align(size: int, alignment: int) := do
     return size + (-size & (alignment - 1))
 end
 
-fun alloc(usersize : int) => &opaque := do
+fun alloc(usersize: int) => &opaque := do
     const ALIGNMENT := 16
     const MIN_BLOCK_SIZE := 4096
 
@@ -65,7 +65,7 @@ fun alloc(usersize : int) => &opaque := do
     return nil
 end
 
-fun free(ptr : &opaque) := do
+fun free(ptr: &opaque) := do
     let pblock := last_block
     let prevblock : &memory_block
 

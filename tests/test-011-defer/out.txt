@@ -1,0 +1,14 @@
+test_defer
+test_cond_defer_always
+test_cond_defer_always
+test_cond_defer_maybe
+test_loop_defer: 0
+test_loop_defer: 1
+test_loop_defer: 2
+test_loop_defer: 3
+test_loop_defer: 4
+test_loop_defer: 5
+test_loop_defer: 6
+test_loop_defer: 7
+test_loop_defer: 8
+test_loop_defer: 9

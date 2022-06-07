@@ -513,6 +513,8 @@ arena_ptr<ast_node> make_static_array_type_node(memory_arena& arena, const posit
     ptr->node_id = node_id_gen++;
     ptr->type = ast_type::static_array_type;
     ptr->pos = pos;
+    size_expr->parent = ptr.get();
+    item_type->parent = ptr.get();
     ptr->children.push_back(std::move(size_expr));
     ptr->children.push_back(std::move(item_type));
     return ptr;
@@ -523,6 +525,7 @@ arena_ptr<ast_node> make_array_type_node(memory_arena& arena, const position& po
     ptr->node_id = node_id_gen++;
     ptr->type = ast_type::array_type;
     ptr->pos = pos;
+    item_type->parent = ptr.get();
     ptr->children.push_back(std::move(item_type));
     return ptr;
 }
