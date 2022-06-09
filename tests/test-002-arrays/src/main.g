@@ -1,12 +1,12 @@
 import "rt"
 
 fun test_len_size = do
-    let arr : array(33) of int
+    let arr : array[33] of int
     write("test_len_size: #sizeof(arr): ") writeln(#sizeof(arr))
 end
 
 fun test_zero_init = do
-    let arr : array(32) of int
+    let arr : array[32] of int
     let sum = 0
     for range 0, arr.len do |i|
         sum = sum + arr[i]
@@ -15,7 +15,7 @@ fun test_zero_init = do
 end
 
 fun test_auto_size = do
-    let arr : array(...) of int = { 0,1,2,3 }
+    let arr : array[...] of int = { 0,1,2,3 }
     write("test_auto_size: #sizeof(arr): ") writeln(#sizeof(arr))
 end
 

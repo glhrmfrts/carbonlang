@@ -1,5 +1,5 @@
 /**
- * An IR that generates code for a imaginary Hybrid Stack-machine. Instruction results are
+ * An IR that generates code for a imaginary Hybrid Stack-machine and Triple Code. Instruction results are
  * not always pushed to the stack. Similarly, instruction operands are not always provided
  * by the stack. Only complex instructions push their results to the stack.
  */
@@ -267,9 +267,6 @@ void send_locals_to_func_scope(ast_node& node) {
 }
 
 void analyse_children(ast_node& node) {
-    for (auto& child : node.pre_nodes) {
-        if (child) { analyse_node(*child); }
-    }
     for (auto& child : node.children) {
         if (child) { analyse_node(*child); }
     }
@@ -277,6 +274,10 @@ void analyse_children(ast_node& node) {
 
 void analyse_node(ast_node& node) {
     if (node.disabled) return;
+
+    for (auto& child : node.pre_nodes) {
+        if (child) { analyse_node(*child); }
+    }
 
     switch (node.type) {
     case ast_type::module_: {
@@ -356,6 +357,7 @@ void analyse_node(ast_node& node) {
     }
     case ast_type::macro_instance: {
         ts->enter_scope(node);
+        send_locals_to_func_scope(node);
         analyse_children(node);
         ts->leave_scope();
         break;

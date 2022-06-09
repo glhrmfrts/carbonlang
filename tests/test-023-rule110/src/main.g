@@ -3,7 +3,7 @@ import "rt"
 const BOARD_CAP = 30
 
 fun main = do
-    let board : array(BOARD_CAP) of int
+    let board : array[BOARD_CAP] of int
 
     board[BOARD_CAP - 2] = 1
 

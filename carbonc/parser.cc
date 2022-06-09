@@ -104,14 +104,14 @@ struct parser_impl {
 
             arena_ptr<ast_node> size_expr{ nullptr, nullptr };
 
-            if (TOK_CHAR == '(') {
+            if (TOK_CHAR == '[') {
                 lex->next();
                 size_expr = parse_expr();
                 if (!size_expr) {
                     throw parse_error(filename, lex->pos(), "invalid array type expression, missing size expression");
                 }
-                if (TOK_CHAR != ')') {
-                    throw parse_error(filename, lex->pos(), "invalid array type expression, missing ')'");
+                if (TOK_CHAR != ']') {
+                    throw parse_error(filename, lex->pos(), "invalid array type expression, missing ']'");
                 }
                 lex->next();
             }

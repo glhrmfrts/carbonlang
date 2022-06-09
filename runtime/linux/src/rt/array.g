@@ -1,28 +1,28 @@
-local macro resize_ptr(parr, len, cap) = do
-    let ptr = alloc(cap * #sizeof(@parr.ptr))
+local macro resize_ptr(rp_parr, rp_len, rp_cap) = do
+    let ptr = alloc(rp_cap * #sizeof(@rp_parr.ptr))
     if ptr == nil then
         panic("no memory")
     end
 
-    if parr.ptr /= nil then
-        memcpy(ptr, parr.ptr, len * #sizeof(@parr.ptr))
-        free(parr.ptr)
+    if rp_parr.ptr /= nil then
+        memcpy(ptr, rp_parr.ptr, rp_len * #sizeof(@rp_parr.ptr))
+        free(rp_parr.ptr)
     end
 
-    parr.ptr = cast(#typeof(parr.ptr)) ptr
-    parr.len = len
-    parr.cap = cap
+    rp_parr.ptr = cast(#typeof(rp_parr.ptr)) ptr
+    rp_parr.len = rp_len
+    rp_parr.cap = rp_cap
 end
 
-macro resize(arr, len, cap) = do
-    let parr = &arr
-    let llen = len
-    let lcap = cap
+macro resize(rr_arr, rr_len, rr_cap) = do
+    let parr = &rr_arr
+    let llen = rr_len
+    let lcap = rr_cap
     resize_ptr(parr, llen, lcap)
 end
 
-macro resize(arr, len) = do
-    resize(arr, len, len)
+macro resize(r_arr, r_len) = do
+    resize(r_arr, r_len, r_len)
 end
 
 macro free_array(arr) = do
@@ -30,18 +30,20 @@ macro free_array(arr) = do
     free(larr.ptr)
 end
 
-local macro ensure_capacity(parr) = do
-    if parr.len >= parr.cap then
+local macro ensure_capacity(ec_parr) = do
+    if ec_parr.len >= ec_parr.cap then
         let newcap = 8
-        if parr.cap /= 0 then newcap = parr.cap * 2 end
-        resize_ptr(parr, parr.len, newcap)
+        if ec_parr.cap /= 0 then newcap = ec_parr.cap * 2 end
+        resize_ptr(ec_parr, ec_parr.len, newcap)
     end
 end
 
 -- TODO: overload guards with 'when condition'
+-- TODO: assign unique names to macro arguments
+-- TODO: remove unreferenced locals from IR
 macro append(arr, elem) = do
     let parr = &arr
     parr.len = _ + 1
     ensure_capacity(parr)
-    arr[arr.len - 1] = elem
+    parr.ptr[parr.len - 1] = elem
 end

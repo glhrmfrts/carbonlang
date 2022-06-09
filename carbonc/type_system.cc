@@ -2895,6 +2895,7 @@ void generate_temp_for_addr_expr(type_system& ts, ast_node& node, type_id ltype)
         make_identifier_node(*ts.ast_arena, node.pos, { tempname }), // id
         make_type_expr_node(*ts.ast_arena, node.pos, make_type_resolver_node(*ts.ast_arena, ltype)), // type
         std::move(node.children[0]), {}); // value
+    temp->local.flags |= local_flag::dont_check_for_duplicates;
 
     resolve_node_type(ts, temp.get());
 
@@ -2982,6 +2983,7 @@ bool type_check_identifier(type_system& ts, ast_node& node) {
         copy->parent = node.parent;
         auto idx = find_child_index(node.parent, &node);
         node.parent->children[*idx] = std::move(copy);
+        resolve_node_type(ts, node.parent->children[*idx].get());
     }
 
     return true;
@@ -3053,6 +3055,7 @@ void type_check_binary_expr(type_system& ts, ast_node& node) {
 bool is_deref_op(const ast_node& node) { return node.type == ast_type::unary_expr && token_to_char(node.op) == DEREF_OP; }
 
 void type_check_unary_expr(type_system& ts, ast_node& node) {
+    visit_pre_nodes(ts, node);
     visit_children(ts, node);
     node.type_error = node.children[0]->type_error;
 

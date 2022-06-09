@@ -25,7 +25,7 @@ fun main = do
 
     writeln("array...")
 
-    let arr = array(...) of MyStruct {
+    let arr = array[...] of MyStruct {
         {40,50},
         {80,90},
         {102,402},
@@ -36,7 +36,7 @@ fun main = do
 
     writeln("array of nested...")
 
-    let narr = array(...) of Nested {
+    let narr = array[...] of Nested {
         {{80,90}, {40,50}},
         {{102,402}, {500, 900}},
     }

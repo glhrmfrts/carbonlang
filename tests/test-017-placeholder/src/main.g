@@ -1,17 +1,17 @@
 import "rt"
 
 fun identifier = do
-    let a = 0
-    a = _ + 1
-    putln(a)
-    a = _ + 1
-    putln(a)
-    a = _ + 1
-    putln(a)
-    a = _ + 1
-    putln(a)
-    a = _ + 1
-    putln(a)
+    let aa = 0
+    aa = _ + 1
+    putln(aa)
+    aa = _ + 1
+    putln(aa)
+    aa = _ + 1
+    putln(aa)
+    aa = _ + 1
+    putln(aa)
+    aa = _ + 1
+    putln(aa)
 end
 
 fun field = do

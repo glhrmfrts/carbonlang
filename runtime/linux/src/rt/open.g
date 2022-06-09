@@ -59,7 +59,7 @@ fun open(
     flags   : open_flags,
     mode    : int
 ) => error = do
-    let path_cstr = to_cstr(path, array(PATH_MAX) of byte{})
+    let path_cstr = to_cstr(path, array[PATH_MAX] of byte{})
     if path_cstr == nil then
         return UNIX_ENAMETOOLONG
     end

@@ -193,7 +193,7 @@ error (
 )
 
 -- An array mapping from errno codes to error symbols
-local let errors = array(...) of error {
+local let errors = array[...] of error {
     nil,
     UNIX_EPERM,
     UNIX_ENOENT,

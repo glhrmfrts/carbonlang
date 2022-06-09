@@ -126,11 +126,13 @@ arena_ptr<ast_node> copy_node_helper(type_system& ts, ast_node& node) {
             copy_node(ts, node.children[1].get()));
     }
     else if (node.type == ast_type::var_decl) {
-        return make_var_decl_node(*ts.ast_arena, node.pos, node.op,
+        auto var_decl = make_var_decl_node(*ts.ast_arena, node.pos, node.op,
             copy_node(ts, node.children[0].get()),
             copy_node(ts, node.children[1].get()),
             copy_node(ts, node.children[2].get()),
             node.var_modifiers);
+        var_decl->local = node.local;
+        return var_decl;
     }
     else if (node.type == ast_type::func_decl) {
         return make_func_decl_node(*ts.ast_arena, node.pos,
