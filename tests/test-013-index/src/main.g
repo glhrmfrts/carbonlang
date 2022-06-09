@@ -1,24 +1,24 @@
 import "rt"
 
-type Data := struct of
+type Data = struct of
     x       : int
     y       : int
     numbers : array(3) of int
 end
 
-fun get_array := array(3) of int {40,50,60}
+fun get_array = array(3) of int {40,50,60}
 
-fun get_array_of_arrays := array(3) of array(4) of int {
+fun get_array_of_arrays = array(3) of array(4) of int {
     array(4) of int {100, 200, 300, 400},
     array(4) of int {1000, 2000, 3000, 4000},
     array(4) of int {10000, 20000, 30000, 40000},
 }
 
-fun main := do
+fun main = do
     let d : Data
-    d.numbers[0] := 10
-    d.numbers[1] := 20
-    d.numbers[2] := 30
+    d.numbers[0] = 10
+    d.numbers[1] = 20
+    d.numbers[2] = 30
     writeln(d.numbers[0]) -- 10
     writeln(d.numbers[1]) -- 20
     writeln(d.numbers[2]) -- 30

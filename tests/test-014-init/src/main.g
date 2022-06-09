@@ -1,31 +1,31 @@
 import "rt"
 
-type MyStruct := struct of
+type MyStruct = struct of
     x : int
     y : int
 end
 
-type Nested := struct of
+type Nested = struct of
     ms1 : MyStruct
     ms2 : MyStruct
 end
 
-fun writeMyStruct(strt : MyStruct) := do
+fun writeMyStruct(strt : MyStruct) = do
     write(strt.x) write(",") write(strt.y) write("\n")
 end
 
-fun writeNested(n : Nested) := do
+fun writeNested(n : Nested) = do
     writeMyStruct(n.ms1)
     writeMyStruct(n.ms2)
 end
 
-fun main := do
-    let strt := MyStruct{10, 20}
+fun main = do
+    let strt = MyStruct{10, 20}
     writeMyStruct(strt)
 
     writeln("array...")
 
-    let arr := array(...) of MyStruct {
+    let arr = array(...) of MyStruct {
         {40,50},
         {80,90},
         {102,402},
@@ -36,7 +36,7 @@ fun main := do
 
     writeln("array of nested...")
 
-    let narr := array(...) of Nested {
+    let narr = array(...) of Nested {
         {{80,90}, {40,50}},
         {{102,402}, {500, 900}},
     }

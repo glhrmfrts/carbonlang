@@ -1,27 +1,27 @@
-local const ALIGNMENT := 16
+local const ALIGNMENT = 16
 
 local extern(C) let __error_array_start : int
 local extern(C) let __error_array_end : int
 
-fun errno_to_error(c : int) => error := do
+fun errno_to_error(c : int) => error = do
     return errors[c]
 end
 
-local fun writebytes(ptr: &pure byte, sz: int) := do
+local fun writebytes(ptr: &pure byte, sz: int) = do
     for range 0,sz do |i|
-        let b : byte := ptr[i]
+        let b : byte = ptr[i]
         write(cast(int) b)
         write(",")
     end
     writeln("")
 end
 
-fun panic(msg: string) := do
+fun panic(msg: string) = do
     putln("panic: ", msg)
     exit(1)
 end
 
-fun error_string(err: error) => string := do
+fun error_string(err: error) => string = do
     if not err then
         return "(error)nil"
     end
@@ -29,11 +29,11 @@ fun error_string(err: error) => string := do
     -- Find the error name by traversing the ELF .error_array section
     -- maybe: cache this to a dict on initialization?
 
-    let addr_begin := cast(uintptr) cast(&opaque) &__error_array_start
-    let addr_end := cast(uintptr) cast(&opaque) &__error_array_end
-    let addr := addr_begin
+    let addr_begin = cast(uintptr) cast(&opaque) &__error_array_start
+    let addr_end = cast(uintptr) cast(&opaque) &__error_array_end
+    let addr = addr_begin
 
-    let errcode := cast(int) err
+    let errcode = cast(int) err
 
     for addr < addr_end do
         -- imaginary error struct:
@@ -42,17 +42,17 @@ fun error_string(err: error) => string := do
         --     code : int
         --     name : null-terminated-string
         -- }
-        let codeptr := cast(&int) cast(&opaque) addr
-        addr := addr + #sizeof(int)
+        let codeptr = cast(&int) cast(&opaque) addr
+        addr = addr + #sizeof(int)
 
-        let str := from_cstr(cast(&byte) cast(&opaque) addr)
+        let str = from_cstr(cast(&byte) cast(&opaque) addr)
 
-        if errcode = @codeptr then
+        if errcode == @codeptr then
             return str
         end
 
-        addr := addr + cast(uintptr)str.len
-        addr := cast(uintptr) align(cast(int) addr, ALIGNMENT)
+        addr = addr + cast(uintptr)str.len
+        addr = cast(uintptr) align(cast(int) addr, ALIGNMENT)
     end
 
     return "(Unknown error)"
@@ -193,7 +193,7 @@ error (
 )
 
 -- An array mapping from errno codes to error symbols
-local let errors := array(...) of error {
+local let errors = array(...) of error {
     nil,
     UNIX_EPERM,
     UNIX_ENOENT,

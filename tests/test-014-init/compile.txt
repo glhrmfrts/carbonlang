@@ -29,19 +29,19 @@ carbonc - parsing time: 384ms
 carbonc - type checking 
 unresolved types
 unresolved types
-carbonc - type checking time: 108ms
+carbonc - type checking time: 107ms
 
 carbonc - generating IR 
-carbonc - IR generation time: 25ms
+carbonc - IR generation time: 23ms
 
 carbonc - generating assembly 
 carbonc - running assembler: as _carbon/build_debug/root.asm -o _carbon/build_debug/root.o
 carbonc - running assembler: as _carbon/build_debug/rt.asm -o _carbon/build_debug/rt.o
 carbonc - running assembler: as _carbon/build_debug/rt_syscall.asm -o _carbon/build_debug/rt_syscall.o
-carbonc - assembly generation time: 120ms
+carbonc - assembly generation time: 125ms
 
 carbonc - running linker command: ld  -e _start -o _carbon/build_debug/test-014-init _carbon/build_debug/rt_syscall_calls.o _carbon/build_debug/rt_x86_64_start.o _carbon/build_debug/root.o _carbon/build_debug/rt.o _carbon/build_debug/rt_syscall.o -T ../../res/carbon.sc
 carbonc - output: a.out
 
 carbonc - total lines parsed: 1488
-carbonc - total compilation time: 720ms
+carbonc - total compilation time: 723ms

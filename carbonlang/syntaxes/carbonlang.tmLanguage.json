@@ -303,7 +303,7 @@
 					"name": "keyword.operator.logical.carbon"
 				},
 				{
-					"match": "(=|\\+=|\\-=|\\|=|\\^=|\\*=|/=|:=|%=|<<=|>>=|&\\^=|&=)",
+					"match": "(=|\\+=|\\-=|\\|=|\\^=|\\*=|/=|=|%=|<<=|>>=|&\\^=|&=)",
 					"name": "keyword.operator.assignment.carbon"
 				},
 				{

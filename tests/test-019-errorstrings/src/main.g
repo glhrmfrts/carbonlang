@@ -1,6 +1,6 @@
 import "rt"
 
-fun main := do
+fun main = do
     let err : error
     putln(err)
     putln(UNIX_ENAMETOOLONG)

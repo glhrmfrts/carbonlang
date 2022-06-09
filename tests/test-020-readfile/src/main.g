@@ -2,7 +2,7 @@
 
 import "rt"
 
-fun main := do
+fun main = do
     let file : file_handle
     defer close(file)
 

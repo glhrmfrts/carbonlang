@@ -19,7 +19,7 @@ import "rt/syscall" as syscall
 #define O_NOATIME       01000000                                                                                                                                                                                                              
 #define O_CLOEXEC       02000000        -- /* set close_on_exec */
 
-type open_flags := enumflags (
+type open_flags = enumflags (
     read
     write
     create
@@ -27,27 +27,27 @@ type open_flags := enumflags (
     truncate
 )
 
-fun to_kernel_flags(flags: open_flags) => int := do
+fun to_kernel_flags(flags: open_flags) => int = do
     let lflags : int
 
     if flags & (open_flags.read | open_flags.write) then
-        lflags := O_RDWR
+        lflags = O_RDWR
     else if flags & open_flags.write then
-        lflags := O_WRONLY
+        lflags = O_WRONLY
     else if flags & open_flags.read then
-        lflags := O_RDONLY
+        lflags = O_RDONLY
     end
 
     if flags & open_flags.create then
-        lflags := lflags | O_CREAT
+        lflags = lflags | O_CREAT
     end
 
     if flags & open_flags.append then
-        lflags := lflags | O_APPEND
+        lflags = lflags | O_APPEND
     end
 
     if flags & open_flags.truncate then
-        lflags := lflags | O_TRUNC
+        lflags = lflags | O_TRUNC
     end
 
     return lflags
@@ -58,23 +58,23 @@ fun open(
     path    : string,
     flags   : open_flags,
     mode    : int
-) => error := do
-    let path_cstr := to_cstr(path, array(PATH_MAX) of byte{})
-    if path_cstr = nil then
+) => error = do
+    let path_cstr = to_cstr(path, array(PATH_MAX) of byte{})
+    if path_cstr == nil then
         return UNIX_ENAMETOOLONG
     end
 
-    let fd := syscall.open(path_cstr, to_kernel_flags(flags), mode)
+    let fd = syscall.open(path_cstr, to_kernel_flags(flags), mode)
     if fd < 0 then
         return errno_to_error(-fd)
     end
 
-    file := fd
+    file = fd
     return nil
 end
 
-fun close(fd: file_handle) => error := do
-    let res := syscall.close(fd)
+fun close(fd: file_handle) => error = do
+    let res = syscall.close(fd)
     if res < 0 then
         return errno_to_error(-fd)
     end

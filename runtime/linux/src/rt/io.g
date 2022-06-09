@@ -1,21 +1,21 @@
 import "rt/syscall" as syscall
 
-const PATH_MAX := 4096
+const PATH_MAX = 4096
 
-typealias file_handle := int
+typealias file_handle = int
 
-fun stdin() => file_handle := do
+fun stdin() => file_handle = do
     return 0
 end
 
-fun stdout() => file_handle := do
+fun stdout() => file_handle = do
     return 1
 end
 
-fun stderr() => file_handle := do
+fun stderr() => file_handle = do
     return 2
 end
 
-fun exit(code : int) := do
+fun exit(code : int) = do
     syscall.exit(code)
 end

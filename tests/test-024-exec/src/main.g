@@ -1,10 +1,10 @@
 import "rt"
 
-fun main := do
+fun main = do
     let code : int
     if exec("/usr/bin/cat", array(...) of string{"src/main.g"}, code) then |err|
         putln("Error: ", err)
-        return
+        return err
     end
-    putln(code)
+    putln("Exit code: ", code)
 end

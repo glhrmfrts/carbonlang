@@ -1,6 +1,6 @@
-type Nice := int
+type Nice = int
 
-type open_flags := enumflags (
+type open_flags = enumflags (
     read
     write
     create
@@ -8,5 +8,5 @@ type open_flags := enumflags (
     truncate
 )
 
-fun stuff := do
+fun stuff = do
 end

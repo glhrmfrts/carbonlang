@@ -24,25 +24,25 @@ carbonc - compiling module: rt/syscall
     process_code_unit: ../../runtime/linux/src/rt/syscall/syscall.g
 assembly file: rt_x86_64_start.s
 carbonc - running assembler: as _carbon/build_debug/rt_x86_64_start.s -o _carbon/build_debug/rt_x86_64_start.o
-carbonc - parsing time: 375ms
+carbonc - parsing time: 381ms
 
 carbonc - type checking 
 unresolved types
 unresolved types
 unresolved types
-carbonc - type checking time: 117ms
+carbonc - type checking time: 118ms
 
 carbonc - generating IR 
-carbonc - IR generation time: 22ms
+carbonc - IR generation time: 23ms
 
 carbonc - generating assembly 
 carbonc - running assembler: as _carbon/build_debug/root.asm -o _carbon/build_debug/root.o
 carbonc - running assembler: as _carbon/build_debug/rt.asm -o _carbon/build_debug/rt.o
 carbonc - running assembler: as _carbon/build_debug/rt_syscall.asm -o _carbon/build_debug/rt_syscall.o
-carbonc - assembly generation time: 125ms
+carbonc - assembly generation time: 128ms
 
 carbonc - running linker command: ld  -e _start -o _carbon/build_debug/test-020-readfile _carbon/build_debug/rt_syscall_calls.o _carbon/build_debug/rt_x86_64_start.o _carbon/build_debug/root.o _carbon/build_debug/rt.o _carbon/build_debug/rt_syscall.o -T ../../res/carbon.sc
 carbonc - output: a.out
 
 carbonc - total lines parsed: 1471
-carbonc - total compilation time: 719ms
+carbonc - total compilation time: 715ms

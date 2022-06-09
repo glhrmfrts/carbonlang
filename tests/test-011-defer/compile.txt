@@ -24,15 +24,15 @@ carbonc - compiling module: rt/syscall
     process_code_unit: ../../runtime/linux/src/rt/syscall/syscall.g
 assembly file: rt_x86_64_start.s
 carbonc - running assembler: as _carbon/build_debug/rt_x86_64_start.s -o _carbon/build_debug/rt_x86_64_start.o
-carbonc - parsing time: 379ms
+carbonc - parsing time: 388ms
 
 carbonc - type checking 
 unresolved types
 unresolved types
-carbonc - type checking time: 106ms
+carbonc - type checking time: 104ms
 
 carbonc - generating IR 
-carbonc - IR generation time: 21ms
+carbonc - IR generation time: 23ms
 
 carbonc - generating assembly 
 carbonc - running assembler: as _carbon/build_debug/root.asm -o _carbon/build_debug/root.o
@@ -44,4 +44,4 @@ carbonc - running linker command: ld  -e _start -o _carbon/build_debug/test-011-
 carbonc - output: a.out
 
 carbonc - total lines parsed: 1480
-carbonc - total compilation time: 699ms
+carbonc - total compilation time: 717ms

@@ -891,15 +891,6 @@ void generate_ir_binary_expr(ast_node& node) {
         temit(ir_div, node.tid, a, b);
         push(ir_stackpop{ node.tid });
         break;
-    case '=':
-        if (!node.ir.bin_target_label.empty()) {
-            emit((node.ir.bin_invert_jump) ? ir_jmp_neq : ir_jmp_eq, a, b, ir_label{ node.ir.bin_target_label });
-        }
-        else {
-            temit((node.ir.bin_invert_jump) ? ir_cmp_neq : ir_cmp_eq, node.tid, a, b);
-            push(ir_stackpop{ node.tid });
-        }
-        break;
     case '<':
         if (!node.ir.bin_target_label.empty()) {
             emit((node.ir.bin_invert_jump) ? ir_jmp_gte : ir_jmp_lt, a, b, ir_label{ node.ir.bin_target_label });
@@ -933,6 +924,15 @@ void generate_ir_binary_expr(ast_node& node) {
     }
 
     switch (node.op) {
+    case token_type::eqeq:
+        if (!node.ir.bin_target_label.empty()) {
+            emit((node.ir.bin_invert_jump) ? ir_jmp_neq : ir_jmp_eq, a, b, ir_label{ node.ir.bin_target_label });
+        }
+        else {
+            temit((node.ir.bin_invert_jump) ? ir_cmp_neq : ir_cmp_eq, node.tid, a, b);
+            push(ir_stackpop{ node.tid });
+        }
+        break;
     case token_type::neq:
         if (!node.ir.bin_target_label.empty()) {
             emit((node.ir.bin_invert_jump) ? ir_jmp_eq : ir_jmp_neq, a, b, ir_label{ node.ir.bin_target_label });

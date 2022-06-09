@@ -1,4 +1,4 @@
-extern(C) fun __gamma_windows_main := do
+extern(C) fun __gamma_windows_main = do
     import "root"
     main()
 

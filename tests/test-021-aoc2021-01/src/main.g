@@ -1,47 +1,47 @@
 import "rt"
 
-fun is_numeric(c: byte) => bool := do
+fun is_numeric(c: byte) => bool = do
     return c >= '0' and c <= '9'
 end
 
-fun trim_non_numeric(s: string) => string := do
+fun trim_non_numeric(s: string) => string = do
     let count : int
     for range 0,s.len do |i|
         if is_numeric(s[i]) then break end
-        count := _ + 1
+        count = _ + 1
     end
 
-    let res := s
-    res.ptr := cast(&pure byte) cast(&opaque) (cast(uintptr) _ + cast(uintptr) count)
-    res.len := _ - count
-    res.cap := _ - count
+    let res = s
+    res.ptr = cast(&pure byte) cast(&opaque) (cast(uintptr) _ + cast(uintptr) count)
+    res.len = _ - count
+    res.cap = _ - count
     return res
 end
 
-fun to_int(s: string, radix: int, num: out int, rest: out string) => bool := do
+fun to_int(s: string, radix: int, num: out int, rest: out string) => bool = do
     let value : int
     let count : int
 
     for range 0,s.len do |i|
         if is_numeric(s[i]) then
-            value := _ * radix + cast(int)(s[i] + '0')
-            count := _ + 1
+            value = _ * radix + cast(int)(s[i] + '0')
+            count = _ + 1
         else
             break
         end
     end
 
-    num := value
+    num = value
 
-    rest := s 
-    rest.ptr := cast(&pure byte) cast(&opaque) (cast(uintptr) _ + cast(uintptr) count)
-    rest.len := _ - count
-    rest.cap := _ - count
+    rest = s 
+    rest.ptr = cast(&pure byte) cast(&opaque) (cast(uintptr) _ + cast(uintptr) count)
+    rest.len = _ - count
+    rest.cap = _ - count
 
     return count > 0
 end
 
-fun main := do
+fun main = do
     let file : file_handle
     defer close(file)
 
@@ -69,14 +69,14 @@ fun main := do
     defer free_array(numbers)
 
     for data.len > 0 do
-        data := trim_non_numeric(data)
+        data = trim_non_numeric(data)
 
         let num : int
         let rest : string
         if to_int(data, 10, num, rest) then
             append(numbers, num)
-            data := rest
-            num := _ + 1
+            data = rest
+            num = _ + 1
         else
             break
         end
@@ -88,7 +88,7 @@ fun main := do
 -- part 1
     for range 1,numbers.len do |i|
         if numbers[i] > numbers[i - 1] then
-            inc_count := _ + 1
+            inc_count = _ + 1
         end
     end
 
@@ -104,7 +104,7 @@ fun main := do
 
     for range 1,numbers.len - 2 do |i|
         if sums[i] > sums[i - 1] then
-            sum_inc_count := _ + 1
+            sum_inc_count = _ + 1
         end
     end
 

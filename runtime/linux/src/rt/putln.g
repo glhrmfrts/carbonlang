@@ -1,21 +1,21 @@
-macro putln(a) := do
+macro putln(a) = do
     writeln(a)
 end
 
-macro putln(a, b) := do
+macro putln(a, b) = do
     write(a)
     write(b)
     write("\n")
 end
 
-macro putln(a, b, c) := do
+macro putln(a, b, c) = do
     write(a)
     write(b)
     write(c)
     write("\n")
 end
 
-macro putln(a, b, c, d) := do
+macro putln(a, b, c, d) = do
     write(a)
     write(b)
     write(c)
@@ -23,7 +23,7 @@ macro putln(a, b, c, d) := do
     write("\n")
 end
 
-macro putln(a, b, c, d, e) := do
+macro putln(a, b, c, d, e) = do
     write(a)
     write(b)
     write(c)
@@ -32,7 +32,7 @@ macro putln(a, b, c, d, e) := do
     write("\n")
 end
 
-macro putln(a, b, c, d, e, f) := do
+macro putln(a, b, c, d, e, f) = do
     write(a)
     write(b)
     write(c)
@@ -42,7 +42,7 @@ macro putln(a, b, c, d, e, f) := do
     write("\n")
 end
 
-macro putln(a, b, c, d, e, f, g) := do
+macro putln(a, b, c, d, e, f, g) = do
     write(a)
     write(b)
     write(c)

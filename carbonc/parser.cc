@@ -323,11 +323,11 @@ struct parser_impl {
         return parse_assignment_stmt();
     }
 
-    // assignment -> expr ':=' expr
+    // assignment -> expr '=' expr
     arena_ptr<ast_node> parse_assignment_stmt() {
         auto pos = lex->pos();
         auto lhs = parse_expr();
-        if (TOK == token_type::coloneq) {
+        if (TOK_CHAR == '=') {
             lex->next();
             auto rhs = parse_expr();
             return make_assign_stmt_node(*ast_arena, pos, std::move(lhs), std::move(rhs));
@@ -898,12 +898,12 @@ struct parser_impl {
         }
 
         auto contents = arena_ptr<ast_node>{ nullptr, nullptr };
-        if (TOK == token_type::coloneq) {
+        if (TOK_CHAR == '=') {
             lex->next();
             contents = parse_type_expr();
         }
         else {
-            throw parse_error(filename, lex->pos(), "expected ':=' in type declaration");
+            throw parse_error(filename, lex->pos(), "expected '=' in type declaration");
         }
 
         if (arg_list.get()) {
@@ -943,7 +943,7 @@ struct parser_impl {
         scope_guard _{ [this]() { func_body_level--; } };
 
         auto body = arena_ptr<ast_node>{ nullptr, nullptr };
-        if (TOK == token_type::coloneq) {
+        if (TOK_CHAR == '=') {
             lex->next();
             body = parse_func_body();
         }
@@ -1003,7 +1003,7 @@ struct parser_impl {
         scope_guard _{ [this]() { func_body_level--; } };
 
         auto body = arena_ptr<ast_node>{ nullptr, nullptr };
-        if (TOK == token_type::coloneq) {
+        if (TOK_CHAR == '=') {
             lex->next();
             body = parse_func_body();
         }
@@ -1041,7 +1041,7 @@ struct parser_impl {
         }
 
         arena_ptr<ast_node> value{ nullptr, nullptr };
-        if (TOK == token_type::coloneq) {
+        if (TOK_CHAR == '=') {
             lex->next();
             value = parse_expr();
         }
@@ -1079,9 +1079,9 @@ struct parser_impl {
             var_type = parse_type_expr();
         }
 
-        // ':=' value
+        // '=' value
         arena_ptr<ast_node> value{nullptr, nullptr};
-        if (TOK == token_type::coloneq) {
+        if (TOK_CHAR == '=') {
             lex->next();
             value = parse_expr();
         }
@@ -1437,8 +1437,8 @@ struct parser_impl {
                     auto id = make_identifier_node(*ast_arena, lex->pos(), { lex->string_value() });
                     lex->next();
 
-                    if (TOK != token_type::coloneq) {
-                        throw parse_error(filename, lex->pos(), "expected ':=' in designated initializer");
+                    if (TOK_CHAR == '=') {
+                        throw parse_error(filename, lex->pos(), "expected '=' in designated initializer");
                     }
                     lex->next();
 

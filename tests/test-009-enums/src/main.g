@@ -1,6 +1,6 @@
 import "rt"
 
-type VehicleKind := enum (
+type VehicleKind = enum (
     Invalid
     Car
     Motorcycle
@@ -10,10 +10,10 @@ type VehicleKind := enum (
     Airplane
 )
 
-fun main := do
+fun main = do
     let vk : VehicleKind
-    writeln(vk = VehicleKind.Invalid) -- true
+    writeln(vk == VehicleKind.Invalid) -- true
 
-    vk := VehicleKind.Bicycle
-    writeln(vk = VehicleKind.Bicycle) -- true
+    vk = VehicleKind.Bicycle
+    writeln(vk == VehicleKind.Bicycle) -- true
 end

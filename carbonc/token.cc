@@ -39,7 +39,7 @@ static std::unordered_map<token_type, token_properties> token_props = {
     {token_from_char('^'), { BINARY_OP, 590 }},
     {token_from_char('&'), { BINARY_OP | UNARY_OP, 600 }},
 
-    {token_from_char('='), {BINARY_OP, 700}},
+    {token_type::eqeq, { BINARY_OP, 700 }},
     {token_type::neq, { BINARY_OP, 700 }},
 
     {token_from_char('>'), { BINARY_OP, 800 }},
@@ -101,7 +101,6 @@ bool is_cmp_binary_op(token_type t) {
     switch (token_to_char(t)) {
     case '>':
     case '<':
-    case '=':
         return true;
     }
 
@@ -109,6 +108,7 @@ bool is_cmp_binary_op(token_type t) {
     case token_type::gteq:
     case token_type::lteq:
     case token_type::neq:
+    case token_type::eqeq:
         return true;
     }
 
