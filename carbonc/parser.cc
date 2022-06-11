@@ -1258,9 +1258,15 @@ struct parser_impl {
     arena_ptr<ast_node> parse_call_or_index_or_field_expr() {
         auto pos = lex->pos();
         auto expr = parse_primary_expr();
-        while (expr && (TOK_CHAR == '(' || TOK_CHAR == '[' || TOK_CHAR == '.')) {
+        while (expr && (TOK_CHAR == '(' || TOK_CHAR == '[' || TOK_CHAR == '.' || TOK_CHAR == ':')) {
             if (TOK_CHAR == '(') {
                 auto arg_list = parse_arg_list(')', [this]() {
+                    return parse_expr();
+                });
+                expr = make_call_expr_node(*ast_arena, pos, std::move(expr), std::move(arg_list));
+            }
+            else if (TOK_CHAR == ':') {
+                auto arg_list = parse_arg_list(';', [this]() {
                     return parse_expr();
                 });
                 expr = make_call_expr_node(*ast_arena, pos, std::move(expr), std::move(arg_list));
@@ -1481,7 +1487,7 @@ struct parser_impl {
         lex->next(); // eat the '('
 
         // parse args
-        if (TOK_CHAR != end) {
+        if ((int)(TOK) != (int)end) {
             for (int i = 0; i < LIMIT; i++) {
                 auto arg = parse_arg();
                 if (arg) {
@@ -1505,10 +1511,14 @@ struct parser_impl {
 
         char tokchar = TOK_CHAR;
 
-        if (TOK_CHAR != end) {
-            throw parse_error(filename, lex->pos(), "expected closing parentheses in argument list");
+        if ((int)(TOK) != (int)end) {
+            if (end != ';') {
+                throw parse_error(filename, lex->pos(), "expected closing parentheses in argument list");
+            }
         }
-        lex->next();
+        else {
+            lex->next();
+        }
 
         return make_arg_list_node(*ast_arena, pos, std::move(args));
     }

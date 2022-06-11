@@ -13,5 +13,6 @@ fun main = do
     let arr : array of &pure byte
     let str : string
     let buf : array[4096] of byte
-    append(arr, to_cstr(str, buf))
+    append: arr, to_cstr(str, buf)
+    append: arr, to_cstr(str, buf)
 end

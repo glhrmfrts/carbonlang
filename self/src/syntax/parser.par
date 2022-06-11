@@ -12,7 +12,6 @@ type either of (L, R) = struct of
     right: R
 end
 
--- TODO: allow macros to be called like this: 'try: arg'
 -- TODO: create 'compute' statement
 -- TODO: create datatype 'error or ...'
 
