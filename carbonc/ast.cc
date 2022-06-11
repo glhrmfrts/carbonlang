@@ -378,11 +378,12 @@ arena_ptr<ast_node> make_stmt_list_node(memory_arena& arena, const position& pos
     return ptr;
 }
 
-arena_ptr<ast_node> make_compound_stmt_node(memory_arena& arena, const position& pos, std::vector<arena_ptr<ast_node>>&& list) {
+arena_ptr<ast_node> make_compound_stmt_node(memory_arena& arena, const position& pos, std::vector<arena_ptr<ast_node>>&& list, bool as_expr) {
     auto ptr = make_in_arena<ast_node>(arena);
     ptr->node_id = node_id_gen++;
     ptr->type = ast_type::compound_stmt;
     ptr->pos = pos;
+    ptr->as_expr = as_expr;
     ptr->children = std::move(list);
     return ptr;
 }
@@ -406,6 +407,15 @@ arena_ptr<ast_node> make_return_stmt_node(memory_arena& arena, const position& p
     return ptr;
 }
 
+arena_ptr<ast_node> make_compute_stmt_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& expr) {
+    auto ptr = make_in_arena<ast_node>(arena);
+    ptr->node_id = node_id_gen++;
+    ptr->type = ast_type::compute_stmt;
+    ptr->pos = pos;
+    ptr->children.push_back(std::move(expr));
+    return ptr;
+}
+
 arena_ptr<ast_node> make_asm_stmt_node(memory_arena& arena, const position& pos, std::string&& value) {
     auto ptr = make_in_arena<ast_node>(arena);
     ptr->node_id = node_id_gen++;
@@ -420,11 +430,12 @@ arena_ptr<ast_node> make_asm_stmt_node(memory_arena& arena, const position& pos,
     return ptr;
 }
 
-arena_ptr<ast_node> make_if_stmt_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& cond, arena_ptr<ast_node>&& body, arena_ptr<ast_node>&& elsebody) {
+arena_ptr<ast_node> make_if_stmt_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& cond, arena_ptr<ast_node>&& body, arena_ptr<ast_node>&& elsebody, bool as_expr) {
     auto ptr = make_in_arena<ast_node>(arena);
     ptr->node_id = node_id_gen++;
     ptr->type = ast_type::if_stmt;
     ptr->pos = pos;
+    ptr->as_expr = as_expr;
     ptr->children.push_back(std::move(cond));
     ptr->children.push_back(std::move(body));
     if (elsebody) {

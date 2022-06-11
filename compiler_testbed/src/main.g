@@ -1,18 +1,21 @@
 typealias string = array of pure byte
 
-macro append(arr, elem) = do
-    let parr = &arr
-    parr.len = _ + 1
-    --ensure_capacity(parr)
-    parr.ptr[parr.len - 1] = elem
-end
+fun write(x: array of pure byte) = do end
 
-fun to_cstr(str: string, buffer: in out array of byte) => &pure byte = do return nil end
+fun write(x: int) = do end
+
+-- TODO: implement compute for temporaries (expressions without an assignee)
+-- TODO: implement compute for macros
+-- TODO: validate that all possible paths compute a value
+-- TODO: remove useless jumps from IR
 
 fun main = do
-    let arr : array of &pure byte
-    let str : string
-    let buf : array[4096] of byte
-    append: arr, to_cstr(str, buf)
-    append: arr, to_cstr(str, buf)
+    let x : int
+    x = do
+        if x == 4 then
+            compute 76
+        end
+        compute 32
+    end
+    write(x)
 end

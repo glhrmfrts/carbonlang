@@ -63,7 +63,7 @@ fun process_source_directory(state: in out MainState, dirname: string, modname: 
                 append(submodname, file)
             end
 
-            discard: try: process_source_directory(abspath, submodname)
+            discard try: process_source_directory(abspath, submodname)
         end
     end
 end
@@ -75,4 +75,25 @@ fun main = do
     if process_source_directory(state, state.source_dir, "") then |err|
         putln("pardal - compiler failed with error: ", err)
     end
+
+    -- Creates the coroutine, but do not start it.
+    let a : coroutine of int = coroutine fibbonaci_coro(15)
+
+    -- The first resume call will start the coroutine and return the result
+    -- from the first 'yield'.
+    let result : error or int = resume a
+
+    -- We can check if the result is an error, if it is, then the coroutine is dead.
+    let number = result catch |err|
+        assert: err == COROUTINE_DEAD_ERROR
+        exit(1)
+    end
+
+    for true do
+        -- Prints each result returned by the coroutine, when it's done,
+        -- it will catch the COROUTINE_DEAD_ERROR and break from the loop
+        writeln(resume a catch break end)
+    end
+
+    let a = compute 5
 end

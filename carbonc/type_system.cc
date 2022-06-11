@@ -1548,9 +1548,13 @@ type_id generate_deref_for_input(type_system& ts, ast_node& l, type_id val_type,
 bool resolve_local_variable_type(type_system& ts, ast_node& l, bool is_arg = false) {
     auto decl_type = l.var_type() ? resolve_node_type(ts, l.var_type()) : type_id{};
 
+    ts.assignee_stack.push(l.var_decl_ids().front().get());
+
     if (l.var_type()) push_receiver_type(ts, decl_type);
     auto val_type = l.var_value() ? resolve_node_type(ts, l.var_value()) : type_id{};
     if (l.var_type()) pop_receiver_type(ts);
+
+    ts.assignee_stack.pop();
 
     decl_type = l.var_type() ? l.var_type()->tid : type_id{};
     val_type = l.var_value() ? l.var_value()->tid : type_id{};
@@ -2094,7 +2098,7 @@ void register_func_declaration_node(type_system& ts, ast_node& node) {
 
             auto new_lists = std::vector<arena_ptr<ast_node>>{};
             new_lists.push_back(std::move(new_slist));
-            auto new_body = make_compound_stmt_node(*ts.ast_arena, body->pos, std::move(new_lists));
+            auto new_body = make_compound_stmt_node(*ts.ast_arena, body->pos, std::move(new_lists), false);
 
             node.children[ast_node::child_func_decl_body] = std::move(new_body);
             body = node.children[ast_node::child_func_decl_body].get();
@@ -3229,7 +3233,7 @@ void type_check_call_expr(type_system& ts, ast_node& node) {
 
 void type_check_return_stmt(type_system& ts, ast_node& node) {
     if (ts.inside_defer) {
-        add_type_error(ts, node.pos, "illegal use of return statement while inside defer statement");
+        add_type_error(ts, node.pos, "illegal use of return statement inside defer statement");
         node.type_error = true;
     }
 
@@ -3263,6 +3267,39 @@ void type_check_return_stmt(type_system& ts, ast_node& node) {
     if (ts.current_scope->kind == scope_kind::func_body) {
         ts.current_scope->self->func.has_root_return_statements = true;
     }
+}
+
+void type_check_compute_stmt(type_system& ts, ast_node& node) {
+    auto cmpd = find_first_compound_expr(node);
+    if (!cmpd) {
+        add_type_error(ts, node.pos, "compute statement outside of compound expression");
+        return;
+    }
+
+    node.tid = resolve_node_type(ts, node.children.front().get());
+    if (!node.tid.valid() || node.type_error) {
+        return;
+    }
+
+    if (cmpd->tid.valid() && !is_assignable_to(ts, node.tid, cmpd->tid)) {
+        add_type_error(ts, node.pos, "compute statement of incompatible type '%s'", type_to_string(node.tid).c_str());
+        complement_error(ts, node.pos, "previous compute statements had type '%s'", type_to_string(cmpd->tid).c_str());
+        return;
+    }
+    cmpd->tid = node.tid;
+
+    auto assignee = ts.assignee_stack.top();
+    if (!assignee) {
+        add_type_error(ts, node.pos, "compute statement without destination");
+        return;
+    }
+
+    // Transform this into an assignment statement
+    node.type = ast_type::assign_stmt;
+    node.as_expr = true;
+    node.children.push_back({ nullptr, nullptr });
+    node.children[1] = std::move(node.children[0]);
+    node.children[0] = copy_node(ts, assignee);
 }
 
 void type_check_if_or_cond_stmt(type_system& ts, ast_node& node) {
@@ -3954,6 +3991,10 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
     }
     case ast_type::return_stmt: {
         type_check_return_stmt(ts, node);
+        break;
+    }
+    case ast_type::compute_stmt: {
+        type_check_compute_stmt(ts, node);
         break;
     }
     case ast_type::continue_stmt:

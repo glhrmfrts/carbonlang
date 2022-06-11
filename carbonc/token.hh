@@ -30,6 +30,7 @@ enum class token_type : unsigned int {
     fun,
     then,
     return_,
+    compute,
     extern_,
     const_,
     catch_,

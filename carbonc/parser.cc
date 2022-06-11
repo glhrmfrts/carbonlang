@@ -310,6 +310,8 @@ struct parser_impl {
             return parse_if_stmt();
         case token_type::return_:
             return parse_return_stmt();
+        case token_type::compute:
+            return parse_compute_stmt();
         case token_type::asm_:
             return parse_asm_stmt();
         case token_type::defer:
@@ -319,7 +321,6 @@ struct parser_impl {
             return parse_catch_stmt();
 #endif
         }
-
         return parse_assignment_stmt();
     }
 
@@ -331,6 +332,11 @@ struct parser_impl {
             lex->next();
             auto rhs = parse_expr();
             return make_assign_stmt_node(*ast_arena, pos, std::move(lhs), std::move(rhs));
+        }
+        else if (lhs) {
+            if (lhs->type != ast_type::call_expr) {
+                throw parse_error(filename, pos, "naked expression is not a function call");
+            }
         }
         return lhs;
     }
@@ -354,7 +360,7 @@ struct parser_impl {
         return false;
     }
 
-    arena_ptr<ast_node> parse_compound_stmt(std::vector<token_type> finalizers) {
+    arena_ptr<ast_node> parse_compound_stmt(std::vector<token_type> finalizers, bool as_expr = false) {
         enum { LIMIT = 8 * 1024 };
 
         auto pos = lex->pos();
@@ -388,7 +394,7 @@ struct parser_impl {
         }
 
         if (has_token_type(finalizers, TOK)) {
-            return make_compound_stmt_node(*ast_arena, pos, std::move(children));
+            return make_compound_stmt_node(*ast_arena, pos, std::move(children), as_expr);
         }
 
         if (TOK != token_type::end) {
@@ -396,7 +402,7 @@ struct parser_impl {
         }
         lex->next();
 
-        return make_compound_stmt_node(*ast_arena, pos, std::move(children));
+        return make_compound_stmt_node(*ast_arena, pos, std::move(children), as_expr);
     }
 
     arena_ptr<ast_node> parse_decl_list() {
@@ -472,7 +478,7 @@ struct parser_impl {
         }
     }
 
-    arena_ptr<ast_node> parse_if_stmt() {
+    arena_ptr<ast_node> parse_if_stmt(bool as_expr = false) {
         auto pos = lex->pos();
         lex->next(); // eat the 'if'
 
@@ -496,7 +502,7 @@ struct parser_impl {
             }
         }
 
-        return make_if_stmt_node(*ast_arena, pos, std::move(cond), std::move(body), std::move(elsebody));
+        return make_if_stmt_node(*ast_arena, pos, std::move(cond), std::move(body), std::move(elsebody), as_expr);
     }
 
     arena_ptr<ast_node> parse_return_stmt() {
@@ -505,6 +511,17 @@ struct parser_impl {
 
         auto expr = parse_expr();
         return make_return_stmt_node(*ast_arena, pos, std::move(expr));
+    }
+
+    arena_ptr<ast_node> parse_compute_stmt() {
+        auto pos = lex->pos();
+        lex->next(); // eat the 'return'
+
+        auto expr = parse_expr();
+        if (!expr) {
+            throw parse_error(filename, pos, "compute statement expects a expression");
+        }
+        return make_compute_stmt_node(*ast_arena, pos, std::move(expr));
     }
 
     arena_ptr<ast_node> parse_asm_stmt() {
@@ -1360,6 +1377,12 @@ struct parser_impl {
             auto pos = lex->pos();
             lex->next();
             return make_rest_expr_node(*ast_arena, pos, { nullptr, nullptr });
+        }
+        case token_type::do_: {
+            return parse_compound_stmt({}, true);
+        }
+        case token_type::if_: {
+            return parse_if_stmt(true);
         }
         default: {
             char c = TOK_CHAR;

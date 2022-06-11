@@ -349,6 +349,9 @@ void analyse_node(ast_node& node) {
         break;
     }
     case ast_type::compound_stmt: {
+        if (node.as_expr) {
+            node.ir.if_end_label = ".do" + std::to_string(node.node_id) + "$end";
+        }
         ts->enter_scope(node);
         send_locals_to_func_scope(node);
         analyse_children(node);
@@ -697,6 +700,22 @@ std::vector<ast_node*> collect_defer_statements_for_return() {
     return result;
 }
 
+std::vector<ast_node*> collect_defer_statements_for_compute() {
+    std::vector<ast_node*> result;
+    auto scope = ts->current_scope;
+    while (scope) {
+        for (std::size_t i = scope->self->ir.scope_defer_statements.size(); i > 0; i--) {
+            auto dstmt = scope->self->ir.scope_defer_statements[i - 1];
+            result.push_back(dstmt);
+        }
+
+        if (scope->self->as_expr) { break; }
+
+        scope = scope->parent;
+    }
+    return result;
+}
+
 void generate_ir_defer_stmt(ast_node& node) {
     std::size_t begin_opstack_size = operand_stack.size();
     generate_ir_node(node);
@@ -843,8 +862,12 @@ void generate_ir_assignment(ast_node& node) {
             auto dest = pop();
 
             generate_ir_node(*node.children[1]);
-            auto src = pop();
+            if (node.children[1]->type == ast_type::compound_stmt || node.children[1]->type == ast_type::if_stmt) {
+                // Already handled by compute statements
+                return;
+            }
 
+            auto src = pop();
             emit(ir_copy, dest, src, ir_int{ comp_int_type(node.tid.get().size), ts->int_type });
         }
         else {
@@ -852,9 +875,21 @@ void generate_ir_assignment(ast_node& node) {
             auto dest = pop();
 
             generate_ir_node(*node.children[1]);
-            auto src = pop();
+            if (node.children[1]->type == ast_type::compound_stmt || node.children[1]->type == ast_type::if_stmt) {
+                // Already handled by compute statements
+                return;
+            }
 
+            auto src = pop();
             emit(ir_load, dest, src);
+        }
+
+        if (node.as_expr) {
+            auto defer_stmts = collect_defer_statements_for_compute();
+            for (auto s : defer_stmts) { generate_ir_defer_stmt(*s->children[0]); }
+
+            auto cmpd = find_first_compound_expr(node);
+            emit(ir_jmp, ir_label{ cmpd->ir.if_end_label });
         }
     }
 }
@@ -1108,6 +1143,10 @@ void generate_ir_var(ast_node& node) {
             // Already handled in init list assignments
             return;
         }
+        if (node.var_value()->type == ast_type::compound_stmt || node.var_value()->type == ast_type::if_stmt) {
+            // Already handled in compute statement
+            return;
+        }
         if (node.var_value()->type == ast_type::unary_expr && node.var_value()->children[0]->slice.self) {
             // Mutable slice case, already handled in init list assignments.
             return;
@@ -1316,10 +1355,18 @@ void generate_ir_node(ast_node& node) {
     case ast_type::compound_stmt:
         ts->enter_scope(node);
         generate_ir_children(node);
+
         for (std::size_t i = node.ir.scope_defer_statements.size(); i > 0; i--) {
             auto dstmt = node.ir.scope_defer_statements[i - 1];
             generate_ir_node(*dstmt->children[0]);
         }
+
+        // Defer statements already collected by 'compute'
+
+        if (node.as_expr) {
+            emit(ir_make_label, ir_label{ node.ir.if_end_label });
+        }
+
         ts->leave_scope();
         break;
     case ast_type::return_stmt:
@@ -1508,8 +1555,6 @@ void print_ir(const std::string& modname) {
         f << "endf\n\n";
     }
 }
-
-
 
 }
 

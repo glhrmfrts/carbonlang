@@ -53,6 +53,7 @@ enum class ast_type {
 
     compound_stmt,
     return_stmt,
+    compute_stmt,
     asm_stmt,
     if_stmt,
     for_cond_stmt,
@@ -155,6 +156,7 @@ struct ast_node {
     bool disabled = false;
     std::string filename;
     std::string modname;
+    bool as_expr = false;
 
     // data filled by the type system
     scope_def scope;
@@ -283,15 +285,15 @@ arena_ptr<ast_node> make_arg_list_node(memory_arena& arena, const position& pos,
 
 arena_ptr<ast_node> make_decl_list_node(memory_arena& arena, const position& pos, std::vector<arena_ptr<ast_node>>&& children);
 
-arena_ptr<ast_node> make_let_decl_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& decl_list, arena_ptr<ast_node>&& body);
-
 arena_ptr<ast_node> make_stmt_list_node(memory_arena& arena, const position& pos, std::vector<arena_ptr<ast_node>>&& children);
 
-arena_ptr<ast_node> make_compound_stmt_node(memory_arena& arena, const position& pos, std::vector<arena_ptr<ast_node>>&& children);
+arena_ptr<ast_node> make_compound_stmt_node(memory_arena& arena, const position& pos, std::vector<arena_ptr<ast_node>>&& children, bool as_expr);
 
 arena_ptr<ast_node> make_assign_stmt_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& lhs, arena_ptr<ast_node>&& rhs);
 
 arena_ptr<ast_node> make_return_stmt_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& expr);
+
+arena_ptr<ast_node> make_compute_stmt_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& expr);
 
 arena_ptr<ast_node> make_asm_stmt_node(memory_arena& arena, const position& pos, std::string&& value);
 
@@ -299,7 +301,7 @@ arena_ptr<ast_node> make_for_cond_stmt_node(memory_arena& arena, const position&
 
 arena_ptr<ast_node> make_for_numeric_stmt_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& ids, arena_ptr<ast_node>&& iter, arena_ptr<ast_node>&& body);
 
-arena_ptr<ast_node> make_if_stmt_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& cond, arena_ptr<ast_node>&& body, arena_ptr<ast_node>&& elsebody);
+arena_ptr<ast_node> make_if_stmt_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& cond, arena_ptr<ast_node>&& body, arena_ptr<ast_node>&& elsebody, bool as_expr);
 
 arena_ptr<ast_node> make_defer_stmt_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& body);
 
@@ -349,13 +351,24 @@ std::string visibility_name(decl_visibility op);
 
 std::string func_linkage_name(func_linkage l);
 
-inline static bool has_var_modifier(ast_node& node, token_type mod) {
+static inline bool has_var_modifier(ast_node& node, token_type mod) {
     for (const auto nm : node.var_modifiers) {
         if (nm == mod) {
             return true;
         }
     }
     return false;
+}
+
+static inline ast_node* find_first_compound_expr(ast_node& node) {
+    auto parent = node.parent;
+    while (parent != nullptr) {
+        if (parent->type == ast_type::compound_stmt && parent->as_expr) {
+            return parent;
+        }
+        parent = parent->parent;
+    }
+    return nullptr;
 }
 
 }
