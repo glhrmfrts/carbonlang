@@ -38,9 +38,8 @@ local macro ensure_capacity(ec_parr) = do
     end
 end
 
--- TODO: overload guards with 'when condition'
--- TODO: assign unique names to macro arguments
 -- TODO: remove unreferenced locals from IR
+-- TODO(future): overload guards with 'when condition'
 macro append(arr, elem) = do
     let parr = &arr
     parr.len = _ + 1

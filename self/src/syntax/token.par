@@ -1,0 +1,22 @@
+type TokenType = enum of
+    range 1, 255
+    andand
+    oror
+end
+
+local type TokenFlags = enumflags of
+    unary_op
+    binary_op
+end
+
+local type TokenProperties = struct of
+    flags : TokenFlags
+end
+
+local let token_properties = array[TokenType] of TokenProperties {
+    #char('+') => {flags => TokenFlags.binary_op}
+}
+
+fun is_unary_op(tok: TokenType) = token_properties[tok].flags & TokenFlags.unary_op
+
+fun is_binary_op(tok: TokenType) = token_properties[tok].flags & TokenFlags.binary_op

@@ -1,0 +1,3 @@
+const name        = "pardal"
+const description = "Pardal Self-hosted Compiler"
+const source_dir  = "src"

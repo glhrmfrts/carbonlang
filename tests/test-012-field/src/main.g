@@ -24,7 +24,6 @@ fun main = do
     write(get_data().b) write(",") -- 20
     write(get_data().c) write("\n") -- 30
 
-    -- TODO(bug): test init expressions because of buggy array of structs
     let array_of_datas : array[3] of Data
 
     array_of_datas[0].a = 50

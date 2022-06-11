@@ -1,0 +1,78 @@
+import "fs" as fs
+import "mem" as mem
+
+type MainState = struct of
+    ast_arena : mem.arena_allocator
+    work_dir : string
+    source_dir : string
+end
+
+fun process_source_file(
+    state: in out MainState,
+    abspath: string,
+    filename: string,
+    modname: string
+) => error or &syntax.Node = do
+    let contents = try: fs.read_string(state.ast_arena, abspath)
+    let p = syntax.create_parser(state.ast_arena, abspath, contents)
+    defer syntax.free(p)
+    return syntax.parse_file(p, result)
+end
+
+fun append(dest: in out string, src: string) = do
+    for range 0, src.len do |i|
+        append(dest, src[i])
+    end
+end
+
+fun process_source_directory(state: in out MainState, dirname: string, modname: string) => error or nil = do
+    write("pardal - compiling module: ")
+    if empty(modname) then
+        writeln("root")
+    else
+        writeln(modname)
+    end
+
+    let files = try: fs.list_dir(dirname)
+    defer free(files)
+
+    -- First compile this module
+    for range 0, files.len do |i|
+        let file = files[i]
+        let abspath = fs.join(dirname, file, array[PATH_MAX] of byte{})
+
+        if not fs.is_dir(abspath) then
+            discard: try: process_source_file(abspath, file, modname)
+        end
+    end
+
+    -- Then traverse submodules
+    for range 0, files.len do |file|
+        let file = files[i]
+        let abspath = fs.join(dirname, file, array[PATH_MAX] of byte{})
+
+        if fs.is_dir(abspath) then
+            let submodname : string
+            defer free(submodname)
+
+            if not empty(modname) then
+                append(submodname, modname)
+                append(submodname, "/")
+                append(submodname, file)
+            else
+                append(submodname, file)
+            end
+
+            discard: try: process_source_directory(abspath, submodname)
+        end
+    end
+end
+
+fun main = do
+    let state : MainState
+    state.work_dir = fs.working_dir()
+    state.source_dir = "src"
+    if process_source_directory(state, state.source_dir, "") then |err|
+        putln("pardal - compiler failed with error: ", err)
+    end
+end

@@ -1,7 +1,5 @@
 import "rt"
 
--- TODO: use block parameter syntax for loops
-
 fun test_numeric_for = do
     let counter = 0
     for range 0,5 do |i|

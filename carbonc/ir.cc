@@ -1,5 +1,5 @@
 /**
- * An IR that generates code for a imaginary Hybrid Stack-machine and Triple Code. Instruction results are
+ * An IR that generates code for a imaginary Hybrid Stack-machine and Three-Address code. Instruction results are
  * not always pushed to the stack. Similarly, instruction operands are not always provided
  * by the stack. Only complex instructions push their results to the stack.
  */
@@ -1508,6 +1508,8 @@ void print_ir(const std::string& modname) {
         f << "endf\n\n";
     }
 }
+
+
 
 }
 

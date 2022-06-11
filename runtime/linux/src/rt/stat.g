@@ -40,8 +40,6 @@ fun stat(filename: string, buf: out stat_type) => error = do
         return errno_to_error(-res)
     end
 
-    -- TODO: make this error: buf.size = cstat.st_size
-
     buf.size = cast(int) cstat.st_size
 
     return nil

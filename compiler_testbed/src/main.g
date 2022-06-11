@@ -10,8 +10,8 @@ end
 fun to_cstr(str: string, buffer: in out array of byte) => &pure byte = do return nil end
 
 fun main = do
-    let carr : array of &pure byte
+    let arr : array of &pure byte
     let str : string
     let buf : array[4096] of byte
-    append(carr, to_cstr(str, buf))
+    append(arr, to_cstr(str, buf))
 end

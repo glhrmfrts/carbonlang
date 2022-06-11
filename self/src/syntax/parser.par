@@ -1,0 +1,116 @@
+macro try(x) = do
+    let temp = x
+    if temp.err then
+        return temp.err
+    else
+        compute temp.value
+    end
+end
+
+type either of (L, R) = struct of
+    left: L
+    right: R
+end
+
+-- TODO: allow macros to be called like this: 'try: arg'
+-- TODO: create 'compute' statement
+-- TODO: create datatype 'error or ...'
+
+let v : optional of Value
+
+fun list_dir(path: string) => error or array of string = do
+
+end
+
+fun create_decl_list_node(a: in out mem.arena_allocator, pos: Position, children: array of &Node) => &Node = do
+    let node = mem.push(Node, a)
+    node.kind = NodeKind.decl_list
+    node.pos = pos
+    for range 0, len(children) do |i| add_child(node, children(i)) end
+    return node
+end
+
+fun create_stmt_list_node(a: in out mem.arena_allocator, pos: Position, children: array of &Node) => &Node = do
+    let node = mem.push(Node, a)
+    node.kind = NodeKind.stmt_list
+    node.pos = pos
+    for range 0, len(children) do |i| add_child(node, children(i)) end
+    return node
+end
+
+type ParseResult = struct of
+    is_error    : bool
+    err         : ParseError
+    node        : &Node
+end
+
+macro ok(node) = ParseResult{false, {}, node}
+
+macro parse_error(msg) = ParseResult{true, {#unpack(msg)}, nil}
+
+fun parse_decl_list(p: in out Parser) => ParseResult = do
+    let children : array of &Node
+
+    for true do
+        let decl = try: parse_decl(p)
+        if decl then append(children, decl) end
+
+        if tok(p) /= '(' then
+            return parse_error: #pack(pos(p), ": expecting '(' in function declaration, instead got: ", token_type_to_string(TOK))
+        end
+    end
+
+    return ok: create_decl_list_node(@p.arena, pos, children)
+end
+
+let f = dos()
+if f.err then exit(1) end
+
+
+
+fun write(x: Node) = do
+
+end
+
+fun write(x: &Node) = do
+    write(@x)
+end
+
+fun read_stuff(buffer: in out array of byte) => async_task = do
+    
+end
+
+fun start_task(x) coroutine => async_task = do
+    setup()
+    let buffer : array of byte
+    yield ble.read_char(ble.characteristic.packet_count, buffer)
+    return 3 -- ERROR: coroutines are not allowed to return values
+end
+
+fun parse_file(p: in out Parser) error => &Node = do
+    let children : array of &Node
+
+    let co = start_task()
+
+    let task = resume(co) catch |err|
+        if err == COROUTINE_EXITED then
+            okay()
+        end
+    end
+
+    if task.done then
+        task = resume(co)
+    end
+
+    for do
+        let decl_list = parse_decl_list(p)
+        if decl_list then append(children, decl_list) end
+
+        let stmt_list = parse_stmt_list(p)
+        if stmt_list then append(children, stmt_list) end
+    end
+
+    return create_file_node(p.filename, children)
+end
+
+rm -rf qoneup-install-dev; mkdir qoneup-install-dev && cd qoneup-install-dev && curl https://quoretech-debian-repo.s3.amazonaws.com/qoneup-install-dev.tar --output qoneup-install-dev.tar --&& tar -xvf qoneup-install-dev.tar && sudo scripts/install-dev.sh

@@ -2609,6 +2609,26 @@ void separate_call_args(type_system& ts, ast_node& node) {
     }
 }
 
+void macro_pre_pass(type_system& ts, ast_node* node, const std::vector<std::string>& original_arg_names, const std::string& macro_prefix) {
+    if (node->type == ast_type::identifier) {
+        for (const auto& aname : original_arg_names) {
+            std::string idname = node->id_parts.front();
+            if (aname == node->id_parts.front()) {
+                node->id_parts = { macro_prefix + "$" + idname };
+                break;
+            }
+        }
+    }
+    else {
+        for (auto& child : node->pre_nodes) {
+            if (child) macro_pre_pass(ts, child.get(), original_arg_names, macro_prefix);
+        }
+        for (auto& child : node->children) {
+            if (child) macro_pre_pass(ts, child.get(), original_arg_names, macro_prefix);
+        }
+    }
+}
+
 void macro_instantiate(type_system& ts, ast_node& node, func_def* func) {
     auto macro_instance = make_in_arena<ast_node>(*ts.ast_arena);
     macro_instance->type = ast_type::macro_instance;
@@ -2622,10 +2642,23 @@ void macro_instantiate(type_system& ts, ast_node& node, func_def* func) {
 
     add_block_scope(ts, *macro_instance, *macro_instance);
 
+    auto macro_prefix = func->self->tdef.mangled_name.str + std::to_string(node.node_id);
+
+    std::vector<std::string> original_arg_names;
+
     int arg_index = 0;
     for (auto& arg : node.call_args()) {
         auto& name = func->self->func_args().at(arg_index);
-        auto id = string_hash{ name->var_decl_ids().front()->id_parts.front() };
+        original_arg_names.push_back(name->var_decl_ids().front()->id_parts.front());
+        arg_index++;
+    }
+
+    macro_pre_pass(ts, macro_instance->children[0].get(), original_arg_names, macro_prefix);
+
+    arg_index = 0;
+    for (auto& arg : node.call_args()) {
+        auto& name = func->self->func_args().at(arg_index);
+        auto id = string_hash{ macro_prefix + "$" + name->var_decl_ids().front()->id_parts.front() };
         auto value = const_value(arg.get());
         declare_const_symbol(ts, id, value, ts.quote_type);
         arg_index++;
