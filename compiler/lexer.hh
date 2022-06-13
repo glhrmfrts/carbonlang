@@ -1,7 +1,7 @@
 #pragma once
 
 #include <string>
-#include "carbonc.hh"
+#include "compiler.hh"
 #include "token.hh"
 
 namespace carbon {

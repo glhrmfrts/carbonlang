@@ -11,7 +11,7 @@
 #include "token.hh"
 #include "type_id.hh"
 #include "comptime.hh"
-#include "carbonc.hh"
+#include "compiler.hh"
 
 namespace carbon {
 

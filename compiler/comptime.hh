@@ -1,6 +1,6 @@
 #pragma once
 
-#include "carbonc.hh"
+#include "compiler.hh"
 #include "type_id.hh"
 
 namespace carbon {

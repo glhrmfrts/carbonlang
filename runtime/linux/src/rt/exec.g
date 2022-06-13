@@ -11,6 +11,8 @@ error ( EXEC_CHILD_SIGNAL )
 fun exec(cmd: string, args: array of string, exit_code: out int) => error = do
     let child = syscall.fork()
     if child == 0 then
+        discard syscall.close(1)
+
         let bufs : array of array[PATH_MAX] of byte
         let argv : array of &pure byte
         resize(bufs, args.len + 1)

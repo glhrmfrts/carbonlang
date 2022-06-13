@@ -3,7 +3,7 @@
 #include <string>
 #include <string_view>
 #include <vector>
-#include "carbonc.hh"
+#include "compiler.hh"
 #include "memory.hh"
 #include "token.hh"
 #include "type_system.hh"

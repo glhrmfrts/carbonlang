@@ -2,7 +2,7 @@
 
 #include <variant>
 #include <memory>
-#include "carbonc.hh"
+#include "compiler.hh"
 #include "type_system.hh"
 
 namespace carbon {

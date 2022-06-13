@@ -65,7 +65,7 @@ void compile_file(type_system& ts, const std::string& filename, const std::strin
     if (!read_file_text(filename, src)) return;
 
     auto timebegin = std::chrono::system_clock::now();
-    //std::cout << "carbonc - compiling file: " << filename << "\n";
+    //std::cout << "pardalc - compiling file: " << filename << "\n";
 
     parser p{ *ts.ast_arena, src, filename, modname };
     arena_ptr<ast_node> ast{ nullptr, nullptr };
@@ -77,7 +77,7 @@ void compile_file(type_system& ts, const std::string& filename, const std::strin
         }
     }
     catch (const parse_error& e) {
-        std::cerr << "carbonc - parse error: " << e.what() << "\n";
+        std::cerr << "pardalc - parse error: " << e.what() << "\n";
         auto line = get_source_code_near(src, e.pos);
         std::cerr << "                       " << line << "\n";
         exit(EXIT_FAILURE);
@@ -88,7 +88,7 @@ void compile_file(type_system& ts, const std::string& filename, const std::strin
     ts.process_code_unit(std::move(ast));
 
     auto dur = std::chrono::system_clock::now() - timebegin;
-    //std::cout << "carbonc - parsing time: " << std::chrono::duration_cast<std::chrono::milliseconds>(dur).count() << "ms\n\n";
+    //std::cout << "pardalc - parsing time: " << std::chrono::duration_cast<std::chrono::milliseconds>(dur).count() << "ms\n\n";
 }
 
 void process_directory(type_system& ts, const std::string& dir, const std::string& srcdir) {
@@ -96,7 +96,7 @@ void process_directory(type_system& ts, const std::string& dir, const std::strin
     for (const auto& file : list(dir)) {
         auto fullpath = join(dir, file);
 
-        if (file.find(".g") != std::string::npos) {
+        if (file.find(SOURCE_EXTENSION) != std::string::npos) {
             filecount++;
         }
 
@@ -141,7 +141,7 @@ void process_directory(type_system& ts, const std::string& dir, const std::strin
             auto fullpath = join(dir, file);
 
             if (!is_directory(fullpath)) {
-                if (file.find(".g") != std::string::npos) {
+                if (file.find(SOURCE_EXTENSION) != std::string::npos) {
                     auto mname = fullpath.substr(srcdir.size() + 1);
                     compile_file(ts, fullpath, mname);
                 }
@@ -192,7 +192,7 @@ std::string run_assembler(const project_info& p, const std::string& asm_file) {
 
     auto nasm_cmd = p.cb_path + "/bin/win64/nasm.exe -fwin64 " + asm_file;
     if (p.verbose) {
-        std::cout << "carbonc - running assembler: " << nasm_cmd << std::endl;
+        std::cout << "pardalc - running assembler: " << nasm_cmd << std::endl;
     }
 
     FILE* ph = _popen(nasm_cmd.c_str(), "r");
@@ -208,7 +208,7 @@ std::string run_assembler(const project_info& p, const std::string& asm_file) {
     as_cmd.append(obj_file);
 
     if (p.verbose) {
-        std::cout << "carbonc - running assembler: " << as_cmd << std::endl;
+        std::cout << "pardalc - running assembler: " << as_cmd << std::endl;
     }
 
     FILE* ph = popen(as_cmd.c_str(), "r");
@@ -247,7 +247,7 @@ std::string run_linker(
     cmd.append(" kernel32.dll shell32.dll ucrtbase.dll ");
 
     if (p.verbose) {
-        std::cout << "carbonc - running linker command: " << cmd << "\n";
+        std::cout << "pardalc - running linker command: " << cmd << "\n";
     }
 
 // Execute the command
@@ -289,7 +289,7 @@ std::string run_linker(
     cmd.append(join(p.cb_path, "res/carbon.sc"));
 
     if (p.verbose) {
-        std::cout << "carbonc - running linker command: " << cmd << "\n";
+        std::cout << "pardalc - running linker command: " << cmd << "\n";
     }
 
 // Execute the command
@@ -356,8 +356,8 @@ void parse_options(project_info& p, int argc, const char* argv[]) {
 
 void print_usage() {
     printf(
-        "carbonc %s - usage:\n"
-        "   carbonc {options}\n"
+        "pardalc %s - usage:\n"
+        "   pardalc {options}\n"
         "\n"
         "options:\n"
         "   -B, --build-dir - Path to generate build intermediate files, defaults to './_carbon'\n"
@@ -383,7 +383,7 @@ bool run_project_mode(int argc, const char* argv[]) {
 
     auto dirname = basename(from_native_path(std::string{ dirnamebuf }));
 
-    std::cout << "carbonc - compiling target: " << dirname << "\n\n";
+    std::cout << "pardalc - compiling target: " << dirname << "\n\n";
 
     const char* cbpath = NULL;
 #if defined(CARBON_PATH)
@@ -397,7 +397,7 @@ bool run_project_mode(int argc, const char* argv[]) {
     }
 
     if (!cbpath) {
-        std::cerr << "carbonc - error: environment variable CARBON_PATH or command-line argument --carbon-path,-p are required to compile!\n";
+        std::cerr << "pardalc - error: environment variable CARBON_PATH or command-line argument --carbon-path,-p are required to compile!\n";
         return false;
     }
     proj.cb_path = cbpath;
@@ -431,18 +431,18 @@ bool run_project_mode(int argc, const char* argv[]) {
 
     if (proj.verbose) {
         auto cdur = std::chrono::system_clock::now() - timebegin;
-        std::cout << "carbonc - parsing time: " << std::chrono::duration_cast<std::chrono::milliseconds>(cdur).count() << "ms\n\n";
+        std::cout << "pardalc - parsing time: " << std::chrono::duration_cast<std::chrono::milliseconds>(cdur).count() << "ms\n\n";
     }
 
     {
         auto ctimebegin = std::chrono::system_clock::now();
         if (proj.verbose) {
-            std::cout << "carbonc - type checking " << "\n";
+            std::cout << "pardalc - type checking " << "\n";
         }
         ts.resolve_and_check();
         if (proj.verbose) {
             auto cdur = std::chrono::system_clock::now() - ctimebegin;
-            std::cout << "carbonc - type checking time: " << std::chrono::duration_cast<std::chrono::milliseconds>(cdur).count() << "ms\n\n";
+            std::cout << "pardalc - type checking time: " << std::chrono::duration_cast<std::chrono::milliseconds>(cdur).count() << "ms\n\n";
         }
     }
 
@@ -476,8 +476,8 @@ bool run_project_mode(int argc, const char* argv[]) {
 
         if (ts.errors.size() > errcount) {
             std::cerr << "----------------------------------------------------------------------------------\n";
-            std::cerr << "carbonc - more " << (ts.errors.size() - errcount) << " errors were found, but only " << maxerrs << " were reported\n";
-            std::cerr << "carbonc - use the '--maxerrors {n}' option to change the error limit\n";
+            std::cerr << "pardalc - more " << (ts.errors.size() - errcount) << " errors were found, but only " << maxerrs << " were reported\n";
+            std::cerr << "pardalc - use the '--maxerrors {n}' option to change the error limit\n";
         }
         return false;
     }
@@ -486,7 +486,7 @@ bool run_project_mode(int argc, const char* argv[]) {
     {
         auto ctimebegin = std::chrono::system_clock::now();
         if (proj.verbose) {
-            std::cout << "carbonc - generating IR " << "\n";
+            std::cout << "pardalc - generating IR " << "\n";
         }
 
         for (auto& mod : ts.root->children) {
@@ -495,14 +495,14 @@ bool run_project_mode(int argc, const char* argv[]) {
 
         if (proj.verbose) {
             auto cdur = std::chrono::system_clock::now() - ctimebegin;
-            std::cout << "carbonc - IR generation time: " << std::chrono::duration_cast<std::chrono::milliseconds>(cdur).count() << "ms\n\n";
+            std::cout << "pardalc - IR generation time: " << std::chrono::duration_cast<std::chrono::milliseconds>(cdur).count() << "ms\n\n";
         }
     }
 
     {
         auto ctimebegin = std::chrono::system_clock::now();
         if (proj.verbose) {
-            std::cout << "carbonc - generating assembly " << "\n";
+            std::cout << "pardalc - generating assembly " << "\n";
         }
 
         for (auto& mod : ts.root->children) {
@@ -517,7 +517,7 @@ bool run_project_mode(int argc, const char* argv[]) {
 
         if (proj.verbose) {
             auto cdur = std::chrono::system_clock::now() - ctimebegin;
-            std::cout << "carbonc - assembly generation time: " << std::chrono::duration_cast<std::chrono::milliseconds>(cdur).count() << "ms\n\n";
+            std::cout << "pardalc - assembly generation time: " << std::chrono::duration_cast<std::chrono::milliseconds>(cdur).count() << "ms\n\n";
         }
     }
 
@@ -542,15 +542,15 @@ bool run_project_mode(int argc, const char* argv[]) {
         }
 
         if (exists(outpath)) {
-            std::cout << "carbonc - output: " << outpath << "\n";
+            std::cout << "pardalc - output: " << outpath << "\n";
         }
     }
 
     auto dur = std::chrono::system_clock::now() - timebegin;
     
     if (proj.verbose) {
-        std::cout << "\ncarbonc - total lines parsed: " << total_lines_parsed;
-        std::cout << "\ncarbonc - total compilation time: " << std::chrono::duration_cast<std::chrono::milliseconds>(dur).count() << "ms\n";
+        std::cout << "\npardalc - total lines parsed: " << total_lines_parsed;
+        std::cout << "\npardalc - total compilation time: " << std::chrono::duration_cast<std::chrono::milliseconds>(dur).count() << "ms\n";
     }
 
     return true;

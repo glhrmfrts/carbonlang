@@ -29,9 +29,9 @@ end
 
 fun main = do
     test_defer()
-    test_cond_defer_always(3)
-    test_cond_defer_always(13)
-    test_cond_defer_maybe(3)
-    test_cond_defer_maybe(13)
+    discard test_cond_defer_always(3)
+    discard test_cond_defer_always(13)
+    discard test_cond_defer_maybe(3)
+    discard test_cond_defer_maybe(13)
     test_loop_defer()
 end

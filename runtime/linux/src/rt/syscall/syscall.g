@@ -68,3 +68,13 @@ end
 fun chdir(path: &pure byte) => int = do
     return syscall_1(SYS_chdir, cast(int)cast(uintptr)path)
 end
+
+fun pipe2(fds: &int, flags: int) => int = do
+    return syscall_2(SYS_pipe2,
+                    cast(int)cast(uintptr)fds,
+                    flags)
+end
+
+fun dup2(oldfd: int, newfd: int) => int = do
+    return syscall_2(SYS_dup2, oldfd, newfd)
+end

@@ -2,6 +2,8 @@
 
 namespace carbon {
 
+constexpr auto SOURCE_EXTENSION = ".g";
+
 enum class target_type {
     executable,
     static_library,

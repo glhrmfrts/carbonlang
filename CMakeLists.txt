@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.1)
 
-project(carbon)
+project(pardal)
 
-add_subdirectory(carbonc)
+add_subdirectory(compiler)

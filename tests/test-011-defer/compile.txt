@@ -1,29 +1,15 @@
-carbonc - compiling target: test-011-defer
+pardalc - compiling target: test-011-defer
 
 assembly file: rt_syscall_calls.s
-carbonc - running assembler: as _carbon/build_debug/rt_syscall_calls.s -o _carbon/build_debug/rt_syscall_calls.o
+pardalc - running assembler: as _carbon/build_debug/rt_syscall_calls.s -o _carbon/build_debug/rt_syscall_calls.o
 carbonc - compiling module: rt/syscall
 assembly file: rt_x86_64_start.s
-carbonc - running assembler: as _carbon/build_debug/rt_x86_64_start.s -o _carbon/build_debug/rt_x86_64_start.o
+pardalc - running assembler: as _carbon/build_debug/rt_x86_64_start.s -o _carbon/build_debug/rt_x86_64_start.o
 carbonc - compiling module: rt
 carbonc - compiling module: root
-carbonc - parsing time: 398ms
+pardalc - parsing time: 331ms
 
-carbonc - type checking 
+pardalc - type checking 
 unresolved types
-carbonc - type checking time: 59ms
+pardalc - type checking time: 45ms
 
-carbonc - generating IR 
-carbonc - IR generation time: 16ms
-
-carbonc - generating assembly 
-carbonc - running assembler: as _carbon/build_debug/rt_syscall.asm -o _carbon/build_debug/rt_syscall.o
-carbonc - running assembler: as _carbon/build_debug/rt.asm -o _carbon/build_debug/rt.o
-carbonc - running assembler: as _carbon/build_debug/root.asm -o _carbon/build_debug/root.o
-carbonc - assembly generation time: 123ms
-
-carbonc - running linker command: ld  -e _start -o _carbon/build_debug/test-011-defer _carbon/build_debug/rt_syscall_calls.o _carbon/build_debug/rt_x86_64_start.o _carbon/build_debug/rt_syscall.o _carbon/build_debug/rt.o _carbon/build_debug/root.o -T ../../res/carbon.sc
-carbonc - output: a.out
-
-carbonc - total lines parsed: 1492
-carbonc - total compilation time: 674ms

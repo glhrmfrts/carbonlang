@@ -5,7 +5,7 @@
 #include <string_view>
 #include <iostream>
 #include <fstream>
-#include "carbonc.hh"
+#include "compiler.hh"
 
 namespace carbon {
 
