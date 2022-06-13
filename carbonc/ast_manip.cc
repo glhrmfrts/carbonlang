@@ -201,7 +201,9 @@ arena_ptr<ast_node> copy_node_helper(type_system& ts, ast_node& node) {
         return make_compound_stmt_node(*ts.ast_arena, node.pos, std::move(args), node.as_expr);
     }
     else if (node.type == ast_type::assign_stmt) {
-        return make_assign_stmt_node(*ts.ast_arena, node.pos, copy_node(ts, node.children[0].get()), copy_node(ts, node.children[1].get()));
+        auto as = make_assign_stmt_node(*ts.ast_arena, node.pos, copy_node(ts, node.children[0].get()), copy_node(ts, node.children[1].get()));
+        as->as_expr = node.as_expr;
+        return as;
     }
     else if (node.type == ast_type::return_stmt) {
         return make_return_stmt_node(*ts.ast_arena, node.pos, copy_node(ts, node.children[0].get()));
@@ -226,6 +228,34 @@ arena_ptr<ast_node> copy_node_helper(type_system& ts, ast_node& node) {
                 { nullptr, nullptr },
                 node.as_expr);
         }
+    }
+    else if (node.type == ast_type::for_cond_stmt) {
+        return make_for_cond_stmt_node(*ts.ast_arena, node.pos, copy_node(ts, node.children[0].get()), copy_node(ts, node.children[1].get()));
+    }
+    else if (node.type == ast_type::for_numeric_stmt) {
+        return make_for_numeric_stmt_node(*ts.ast_arena, node.pos,
+            copy_node(ts, node.children[0].get()),
+            copy_node(ts, node.children[1].get()),
+            copy_node(ts, node.children[2].get()));
+    }
+    else if (node.type == ast_type::range_expr) {
+        return make_range_expr_node(*ts.ast_arena, node.pos, copy_node(ts, node.children[0].get()));
+    }
+    else if (node.type == ast_type::block_parameter_list) {
+        std::vector<arena_ptr<ast_node>> args;
+        for (auto& arg : node.children) {
+            args.push_back(copy_node(ts, arg.get()));
+        }
+        auto res = make_arg_list_node(*ts.ast_arena, node.pos, std::move(args));
+        res->type = ast_type::block_parameter_list;
+        return res;
+    }
+    else if (node.type == ast_type::macro_instance) {
+        auto mi = make_in_arena<ast_node>(*ts.ast_arena);
+        mi->type = ast_type::macro_instance;
+        mi->pos = node.pos;
+        mi->children.push_back(copy_node(ts, node.children[0].get()));
+        return mi;
     }
     fprintf(stderr, "copy_node: node type not handled: %d\n", (int)node.type);
     assert(!"copy_node: node type not handled!");

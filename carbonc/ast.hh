@@ -363,7 +363,7 @@ static inline bool has_var_modifier(ast_node& node, token_type mod) {
 static inline ast_node* find_first_compound_expr(ast_node& node) {
     auto parent = node.parent;
     while (parent != nullptr) {
-        if (parent->type == ast_type::compound_stmt && parent->as_expr) {
+        if ((parent->type == ast_type::compound_stmt || parent->type == ast_type::if_stmt) && parent->as_expr) {
             return parent;
         }
         parent = parent->parent;

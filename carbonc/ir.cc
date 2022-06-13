@@ -335,10 +335,7 @@ void analyse_node(ast_node& node) {
 
         node.ir.if_body_label = ".if" + std::to_string(node.node_id) + "$body";
         node.ir.if_else_label = ".if" + std::to_string(node.node_id) + "$else";
-
-        if (node.children.size() == 3) {
-            node.ir.if_end_label = ".if" + std::to_string(node.node_id) + "$end";
-        }
+        node.ir.if_end_label = ".if" + std::to_string(node.node_id) + "$end";
 
         distribute_bool_op_targets(*node.children[0], node.ir.if_body_label, node.ir.if_else_label);
 
@@ -662,7 +659,13 @@ void generate_if_stmt(ast_node& node) {
     }
     generate_ir_node(*node.children[1]);
     if (node.children.size() == 3) {
-        emit(ir_jmp, ir_label{ node.ir.if_end_label });
+        auto& last_instr = currentfunc->instrs.back();
+
+        if (!(last_instr.op == ir_jmp
+            && std::holds_alternative<ir_label>(last_instr.operands.front())
+            && std::get<ir_label>(last_instr.operands.front()).name == node.ir.if_end_label)) {
+            emit(ir_jmp, ir_label{ node.ir.if_end_label });
+        }
 
         emit(ir_make_label, ir_label{ node.ir.if_else_label });
         generate_ir_node(*node.children[2]);
@@ -671,6 +674,7 @@ void generate_if_stmt(ast_node& node) {
     }
     else {
         emit(ir_make_label, ir_label{ node.ir.if_else_label });
+        emit(ir_make_label, ir_label{ node.ir.if_end_label });
     }
 }
 

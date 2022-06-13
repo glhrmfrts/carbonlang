@@ -11,8 +11,6 @@ fun fib(n: int) = do
 end
 
 fun main = do
-    writeln(fib(20))
-
     let i = 0
     i = i + 1
     writeln(i)

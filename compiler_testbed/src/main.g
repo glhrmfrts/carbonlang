@@ -4,18 +4,19 @@ fun write(x: array of pure byte) = do end
 
 fun write(x: int) = do end
 
--- TODO: implement compute for temporaries (expressions without an assignee)
--- TODO: implement compute for macros
--- TODO: validate that all possible paths compute a value
+-- TODO: compute: validate that all possible paths compute a value
 -- TODO: remove useless jumps from IR
 
+macro putln(x) = do write(x) end
+
 fun main = do
-    let x : int
-    x = do
-        if x == 4 then
-            compute 76
+    putln(do
+        let n = 10
+        for range 0,n do |i|
+            if i == 5 then
+                compute i
+            end
         end
-        compute 32
-    end
-    write(x)
+        compute 0
+    end)
 end

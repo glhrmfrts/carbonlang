@@ -26,6 +26,8 @@ macro adder(a, b) = a * b
 
 macro muladd(a, b, c) = adder(a, b) + c
 
+macro recurid(x, y) = x * y
+
 fun main = do
     my_putln("Hello ", "World")
     my_putln("Hello ", "World ", "You!")
@@ -37,4 +39,9 @@ fun main = do
 
     let res = muladd(2, 5, 3)
     writeln(res) -- 13
+
+    let x = 3
+    let y = 5
+    let z = recurid(x, y)
+    writeln(z) -- 15
 end

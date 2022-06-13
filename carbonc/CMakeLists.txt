@@ -7,7 +7,7 @@ include_directories(${PROJECT_SOURCE_DIR}/deps/stb)
 
 set(CMAKE_CXX_STANDARD 17)
 
-add_compile_options(-g)
+add_compile_options(-O3)
 
 add_compile_definitions(CARBON_VERSION="${CARBON_VERSION}")
 

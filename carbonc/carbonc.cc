@@ -111,6 +111,14 @@ void process_directory(type_system& ts, const std::string& dir, const std::strin
         }
     }
 
+    for (const auto& file : list(dir)) {
+        auto fullpath = join(dir, file);
+
+        if (is_directory(fullpath)) {
+            process_directory(ts, fullpath, srcdir);
+        }
+    }
+
     if (filecount > 0) {
         auto modname = dir;
         while (replace(modname, srcdir, ""));
@@ -140,14 +148,6 @@ void process_directory(type_system& ts, const std::string& dir, const std::strin
             }
         }
         ts.end_module();
-    }
-
-    for (const auto& file : list(dir)) {
-        auto fullpath = join(dir, file);
-
-        if (is_directory(fullpath)) {
-            process_directory(ts, fullpath, srcdir);
-        }
     }
 }
 
@@ -417,8 +417,6 @@ bool run_project_mode(int argc, const char* argv[]) {
     ensure_directory_exists("_carbon/build_debug/.");
     ensure_directory_exists("_carbon/out_debug/.");
 
-    process_source_directory(ts, "./src");
-
     if (proj.embed_std) {
         process_source_directory(ts, std_library_path);
     }
@@ -428,6 +426,8 @@ bool run_project_mode(int argc, const char* argv[]) {
         auto inc_src = join(inc_path, "src");
         process_source_directory(ts, inc_src);
     }
+
+    process_source_directory(ts, "./src");
 
     if (proj.verbose) {
         auto cdur = std::chrono::system_clock::now() - timebegin;

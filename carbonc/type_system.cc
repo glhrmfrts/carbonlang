@@ -2363,12 +2363,15 @@ void register_for_declarations(type_system& ts, ast_node& node) {
 
 
             auto decl_iterstart = make_var_decl_with_value(*ts.ast_arena, "$for_iter_start", copy_node(ts, iterstart.get()));
+            decl_iterstart->local.flags |= local_flag::dont_check_for_duplicates;
             resolve_node_type(ts, decl_iterstart.get());
 
             auto decl_iterend = make_var_decl_with_value(*ts.ast_arena, "$for_iter_end", copy_node(ts, iterend.get()));
+            decl_iterend->local.flags |= local_flag::dont_check_for_duplicates;
             resolve_node_type(ts, decl_iterend.get());
 
             auto decl_iterstep = make_var_decl_with_value(*ts.ast_arena, "$for_iter_step", copy_node(ts, iterstep.get()));
+            decl_iterstep->local.flags |= local_flag::dont_check_for_duplicates;
             resolve_node_type(ts, decl_iterstep.get());
 
 
@@ -2633,6 +2636,21 @@ void macro_pre_pass(type_system& ts, ast_node* node, const std::vector<std::stri
     }
 }
 
+bool check_macro_is_compound_expr(ast_node& body) {
+    if ((body.type == ast_type::compound_stmt || body.type == ast_type::if_stmt) && body.as_expr) return false;
+
+    for (auto& child : body.children) {
+        if (child && child->type == ast_type::compute_stmt) {
+            return true;
+        }
+        else if (child && check_macro_is_compound_expr(*child)) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
 void macro_instantiate(type_system& ts, ast_node& node, func_def* func) {
     auto macro_instance = make_in_arena<ast_node>(*ts.ast_arena);
     macro_instance->type = ast_type::macro_instance;
@@ -2641,6 +2659,9 @@ void macro_instantiate(type_system& ts, ast_node& node, func_def* func) {
 
     auto macro_body = copy_node(ts, func->self->children[2].get());
     macro_body->parent = macro_instance.get();
+    if (check_macro_is_compound_expr(*macro_body)) {
+        macro_body->as_expr = true;
+    }
 
     macro_instance->children.push_back(std::move(macro_body));
 
@@ -2905,6 +2926,28 @@ arena_ptr<ast_node> make_condition_decl_for_block_param(type_system& ts, ast_nod
     ref->pre_nodes.push_back(std::move(temp));
 
     return ref;
+}
+
+void generate_temp_for_compound_expr(type_system& ts, ast_node& node) {
+    auto parent = node.parent;
+    auto idx = find_child_index(parent, &node);
+    auto self = std::move(parent->children[*idx]);
+
+    auto tempname = generate_temp_name();
+    auto temp = make_var_decl_node_single(*ts.ast_arena, node.pos, token_type::let,
+        make_identifier_node(*ts.ast_arena, node.pos, { tempname }), // id
+        {nullptr, nullptr}, // type
+        std::move(self), {}); // value
+    temp->local.flags |= local_flag::dont_check_for_duplicates;
+
+    resolve_node_type(ts, temp.get());
+
+    auto ref = make_identifier_node(*ts.ast_arena, temp->pos, { tempname });
+    resolve_node_type(ts, ref.get());
+
+    ref->pre_nodes.push_back(std::move(temp));
+
+    parent->children[*idx] = std::move(ref);
 }
 
 void generate_temp_for_field_expr(type_system& ts, ast_node& node, type_id ltype) {
@@ -3276,7 +3319,9 @@ void type_check_compute_stmt(type_system& ts, ast_node& node) {
         return;
     }
 
-    node.tid = resolve_node_type(ts, node.children.front().get());
+    node.children[0]->parent = &node;
+    resolve_node_type(ts, node.children.front().get());
+    node.tid = node.children.front()->tid;
     if (!node.tid.valid() || node.type_error) {
         return;
     }
@@ -3303,6 +3348,13 @@ void type_check_compute_stmt(type_system& ts, ast_node& node) {
 }
 
 void type_check_if_or_cond_stmt(type_system& ts, ast_node& node) {
+    if (node.as_expr) {
+        if (node.parent->type != ast_type::assign_stmt && node.parent->type != ast_type::var_decl) {
+            generate_temp_for_compound_expr(ts, node);
+            return;
+        }
+    }
+
     bool prevloop = g_inside_loop;
     if (node.type == ast_type::for_cond_stmt) {
         g_inside_loop = true;
@@ -3964,13 +4016,27 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
     }
     case ast_type::macro_instance: {
         check_for_unresolved = false;
-        enter_scope_local(ts, node);
+        if (node.scope.kind == scope_kind::invalid) {
+            add_block_scope(ts, node, node);
+        }
+        else {
+            enter_scope_local(ts, node);
+        }
         visit_children(ts, node);
         leave_scope_local(ts);
         break;
     }
     case ast_type::compound_stmt: {
-        check_for_unresolved = false;
+        if (node.as_expr) {
+            if (node.parent->type != ast_type::assign_stmt && node.parent->type != ast_type::var_decl) {
+                generate_temp_for_compound_expr(ts, node);
+                break;
+            }
+        }
+        else {
+            check_for_unresolved = false;
+        }
+
         if (node.parent->type != ast_type::func_decl) {
             if (node.scope.kind == scope_kind::invalid) {
                 add_block_scope(ts, node, node);
@@ -4007,6 +4073,10 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
         break;
     }
     case ast_type::for_numeric_stmt: {
+        node.children[0]->parent = &node;
+        node.children[1]->parent = &node;
+        node.children[2]->parent = &node;
+
         check_for_unresolved = false;
         visit_tree(ts, *node.children[1]);
 
@@ -4034,7 +4104,7 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
     }
     case ast_type::if_stmt:
     case ast_type::for_cond_stmt: {
-        check_for_unresolved = false;
+        check_for_unresolved = node.as_expr;
         type_check_if_or_cond_stmt(ts, node);
         break;
     }
@@ -4370,6 +4440,7 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
 
             auto arglist = make_arg_list_node(*ts.ast_arena, node.pos, std::move(nodes));
             auto initlist = make_init_expr_node(*ts.ast_arena, node.pos, std::move(slicetypenode), std::move(arglist));
+            initlist->tid = slicetype;
 
             auto parent = node.parent;
             auto idx = find_child_index(parent, &node);
@@ -4406,6 +4477,7 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
 
     if (check_for_unresolved) {
         if (node.tid == invalid_type) {
+            //printf("node unresolved: %d\n", (int)node.type);
             ts.unresolved_types = true;
         }
     }
@@ -5053,7 +5125,7 @@ void type_system::process_code_unit(arena_ptr<ast_node> node) {
     current_scope->self->children.push_back(std::move(node));
     auto& unit = current_scope->self->children.back();
 
-    std::cout << "    process_code_unit: " << unit->filename << std::endl;
+    // std::cout << "    process_code_unit: " << unit->filename << std::endl;
 
     for (int i = 0; i < 2; i++) {
         this->subpass = i;

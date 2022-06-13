@@ -13,7 +13,7 @@ build: gen
 install: build
 	install $(BUILD_DIR)/carbonc/carbonc -t /usr/bin/
 
-CURRENT_TEST=tests/test-024-exec
+CURRENT_TEST=tests/test-025-compute
 
 com:
 	cd $(CURRENT_TEST) && \
@@ -142,5 +142,10 @@ test:
 		cd tests/test-024-exec && \
 		carbonc -p ../.. -I runtime/linux -V -o a.out > compile.txt && \
 		./a.out > out.txt && diff out.txt expected.txt && echo "\033[1;32mtest-024-exec: OK\033[0m"
+
+	@echo "test-025-compute: ..." && \
+		cd tests/test-025-compute && \
+		carbonc -p ../.. -I runtime/linux -V -o a.out > compile.txt && \
+		./a.out > out.txt && diff out.txt expected.txt && echo "\033[1;32mtest-025-compute: OK\033[0m"
 
 .PHONY: all

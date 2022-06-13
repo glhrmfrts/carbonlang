@@ -1,0 +1,8 @@
+smaller
+greater
+smaller
+greater
+greater
+smaller
+5
+5
