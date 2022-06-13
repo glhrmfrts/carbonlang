@@ -79,11 +79,11 @@ fun read_stuff(buffer: in out array of byte) => async_task = do
     
 end
 
-fun start_task(x) coroutine => async_task = do
+fun start_task(x) yield => async_task = do
     setup()
     let buffer : array of byte
     yield ble.read_char(ble.characteristic.packet_count, buffer)
-    return 3 -- ERROR: coroutines are not allowed to return values
+    return 3
 end
 
 fun parse_file(p: in out Parser) error => &Node = do

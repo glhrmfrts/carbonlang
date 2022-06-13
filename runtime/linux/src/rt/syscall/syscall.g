@@ -64,3 +64,7 @@ fun execve(cmdline: &pure byte, argv: & &pure byte, envp: & &pure byte) = do
         cast(int)cast(uintptr)envp
     )
 end
+
+fun chdir(path: &pure byte) => int = do
+    return syscall_1(SYS_chdir, cast(int)cast(uintptr)path)
+end

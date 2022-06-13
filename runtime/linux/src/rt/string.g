@@ -1,4 +1,6 @@
-typealias string = array of pure byte
+typealias string = array of byte
+
+typealias string_view = array of pure byte
 
 fun memcpy(dest: &opaque, src: &opaque, n: int) = do
     asm%do
@@ -45,4 +47,11 @@ end
 
 fun from_cstr(ptr : &pure byte) => string = do
     return string{ ptr, cstrlen(ptr) }
+end
+
+-- TODO(bug): cannot name this append (?)
+fun appends(s: in out string, what: string) = do
+    for range 0, what.len do |i|
+        append(s, what[i])
+    end
 end

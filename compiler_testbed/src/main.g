@@ -10,13 +10,8 @@ fun write(x: int) = do end
 macro putln(x) = do write(x) end
 
 fun main = do
-    putln(do
-        let n = 10
-        for range 0,n do |i|
-            if i == 5 then
-                compute i
-            end
-        end
-        compute 0
-    end)
+    let strarr = {"Hello", "World", "How", "Are", "You?"}
+    for range 0,strarr.len do |i|
+        putln(strarr[i])
+    end
 end

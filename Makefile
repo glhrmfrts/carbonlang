@@ -13,7 +13,7 @@ build: gen
 install: build
 	install $(BUILD_DIR)/carbonc/carbonc -t /usr/bin/
 
-CURRENT_TEST=tests/test-025-compute
+CURRENT_TEST=tests/test-014-init
 
 com:
 	cd $(CURRENT_TEST) && \

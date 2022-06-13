@@ -42,4 +42,11 @@ fun main = do
     }
     writeNested(narr[0])
     writeNested(narr[1])
+
+    let strarr = {"Hello", "World", "How", "Are", "You?"}
+    for range 0,strarr.len do |i|
+        write(strarr[i])
+        write(" ")
+    end
+    writeln("")
 end

@@ -287,9 +287,9 @@ type_id execute_builtin_type_constructor(type_system& ts, type_constructor& tpl,
 }
 
 string_hash build_static_array_name(comp_int_type size, type_id t) {
-    std::string result = "array(";
+    std::string result = "array[";
     result.append(std::to_string(size));
-    result.append(") of ");
+    result.append("] of ");
     result.append(t.get().name.str);
     return { result };
 }
@@ -569,7 +569,7 @@ bool is_assignable_to(type_system& ts, type_id a, type_id b) {
         return true;
     }
 
-    if ((tsrc.flags & type_flags::is_pure) && tsrc.elem_type == ttarget.id) {
+    if ((tsrc.flags & type_flags::is_pure) && is_assignable_to(ts, tsrc.elem_type, ttarget.id)) {
         if (!is_aggregate_type(ttarget.elem_type)) {
             return true;
         }
@@ -3150,12 +3150,7 @@ void type_check_unary_expr(type_system& ts, ast_node& node) {
         }
         else {
             node.lvalue.self = &node;
-            if (node.children[0]->tid.get().flags & type_flags::is_pure) {
-                node.tid = get_pure_type_to(ts, node.children[0]->tid.get().elem_type);
-            }
-            else {
-                node.tid = node.children[0]->tid.get().elem_type;
-            }
+            node.tid = node.children[0]->tid.get().elem_type;
             node.type_error = false;
         }
     }
@@ -3186,7 +3181,15 @@ void type_check_unary_expr(type_system& ts, ast_node& node) {
             node.type_error = true;
         }
         else {
-            node.tid = get_ptr_type_to(ts, node.children[0]->tid);
+            auto elem_type = node.children[0]->tid;
+            if (elem_type.get().flags & (type_flags::is_in | type_flags::is_out)) {
+                elem_type = node.children[0]->tid.get().elem_type;
+                node.children[0] = make_deref_expr(ts, std::move(node.children[0]));
+                node.children[0]->parent = &node;
+                resolve_node_type(ts, node.children[0].get());
+            }
+
+            node.tid = get_ptr_type_to(ts, elem_type);
             node.type_error = false;
         }
     }
@@ -3641,6 +3644,7 @@ void type_check_init_expr(type_system& ts, ast_node& node) {
     type_id receiver_type{};
 
     if (node.children[0]) {
+        node.children[0]->parent = &node;
         visit_tree(ts, *node.children[0]);
         receiver_type = node.children[0]->tid;
     }
@@ -3652,18 +3656,30 @@ void type_check_init_expr(type_system& ts, ast_node& node) {
     if (node.initlist.deduce_to_tuple && !node.tid.valid()) {
         std::vector<const_value> elem_types;
         bool all_resolved = true;
+        type_id first_type{};
+        for (auto& child : node.children[1]->children) {
+            resolve_node_type(ts, child.get());
+        }
         for (auto& child : node.children[1]->children) {
             resolve_node_type(ts, child.get());
             if (!child->tid.valid()) {
                 all_resolved = false;
             }
             else {
-                elem_types.push_back(child->tid);
+                if (first_type.valid() && !is_assignable_to(ts, child->tid, first_type)) {
+                    add_type_error(ts, child->pos, "array initializer element has incompatible type '%s'", type_to_string(child->tid).c_str());
+                    complement_error(ts, node.pos, "previous elements had type '%s'", type_to_string(first_type).c_str());
+                    all_resolved = false;
+                }
+                else {
+                    elem_types.push_back(child->tid);
+                    first_type = child->tid;
+                }
             }
         }
         if (all_resolved) {
             // TODO: resolve to array of single type or array of variants
-            //node.tid = execute_builtin_type_constructor(ts, *ts.tuple_type_constructor, elem_types);
+            node.tid = get_static_array_type(ts, elem_types.size(), first_type);
         }
     }
     else if (receiver_type.valid() && is_aggregate_type(receiver_type)) {
@@ -3704,9 +3720,9 @@ void type_check_init_expr(type_system& ts, ast_node& node) {
                 node.children[1]->children.push_back(std::move(zerovalue));
             }
         }
-    }
 
-    node.tid = receiver_type;
+        node.tid = receiver_type;
+    }
 }
 
 type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
@@ -4915,7 +4931,7 @@ type_system::type_system(memory_arena& arena) {
                 tf.array.deduce_size = false;
             }
             else if (std::holds_alternative<ellipsis_value>(args[0])) {
-                tf.name = string_hash{ "array(...)" };
+                tf.name = string_hash{ "array[...]" };
                 tf.mangled_name = string_hash{ "array_unsized" };
                 tf.array.length = 0;
                 tf.array.deduce_size = true;

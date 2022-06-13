@@ -7,7 +7,7 @@ assembly file: rt_x86_64_start.s
 carbonc - running assembler: as _carbon/build_debug/rt_x86_64_start.s -o _carbon/build_debug/rt_x86_64_start.o
 carbonc - compiling module: rt
 carbonc - compiling module: root
-carbonc - parsing time: 383ms
+carbonc - parsing time: 344ms
 
 carbonc - type checking 
 unresolved types
@@ -15,16 +15,16 @@ unresolved types
 carbonc - type checking time: 51ms
 
 carbonc - generating IR 
-carbonc - IR generation time: 19ms
+carbonc - IR generation time: 15ms
 
 carbonc - generating assembly 
 carbonc - running assembler: as _carbon/build_debug/rt_syscall.asm -o _carbon/build_debug/rt_syscall.o
 carbonc - running assembler: as _carbon/build_debug/rt.asm -o _carbon/build_debug/rt.o
 carbonc - running assembler: as _carbon/build_debug/root.asm -o _carbon/build_debug/root.o
-carbonc - assembly generation time: 151ms
+carbonc - assembly generation time: 103ms
 
 carbonc - running linker command: ld  -e _start -o _carbon/build_debug/test-023-rule110 _carbon/build_debug/rt_syscall_calls.o _carbon/build_debug/rt_x86_64_start.o _carbon/build_debug/rt_syscall.o _carbon/build_debug/rt.o _carbon/build_debug/root.o -T ../../res/carbon.sc
 carbonc - output: a.out
 
-carbonc - total lines parsed: 1460
-carbonc - total compilation time: 714ms
+carbonc - total lines parsed: 1470
+carbonc - total compilation time: 590ms
