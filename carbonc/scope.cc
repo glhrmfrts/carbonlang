@@ -307,6 +307,35 @@ symbol_info* find_symbol(type_system& ts, const std::pair<string_hash, string_ha
     return {};
 }
 
+std::vector<symbol_info*> find_all_symbols(type_system& ts, const string_hash& name) {
+    std::vector<symbol_info*> symbols;
+    auto scope = ts.current_scope;
+    while (scope != nullptr) {
+        // Look into the current scope
+        auto it = scope->symbols.find(name);
+        if (it != scope->symbols.end()) {
+            symbols.push_back(it->second.get());
+        }
+
+        // Look into it's imports
+        for (const auto& imp : scope->imports) {
+            if (!imp.alias) {
+                auto impscope = ts.module_scopes[imp.qual_name];
+                if (!impscope) break;
+
+                auto it = impscope->symbols.find(name);
+                if (it != impscope->symbols.end()) {
+                    symbols.push_back(it->second.get());
+                }
+            }
+        }
+
+        // Go up one level
+        scope = scope->parent;
+    }
+    return symbols;
+}
+
 // Finds the type in scope or parents
 type_id find_type_by_id_hash(type_system& ts, const std::pair<string_hash, string_hash>& pair) {
     auto sym = find_symbol(ts, pair);

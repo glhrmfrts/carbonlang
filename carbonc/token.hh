@@ -60,6 +60,7 @@ enum class token_type : unsigned int {
     coloneq,
     dotdot,
     dotdotdot,
+    discard,
     nil,
     nullptr_,
     defer,

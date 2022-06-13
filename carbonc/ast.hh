@@ -63,6 +63,7 @@ enum class ast_type {
     break_stmt,
     assign_stmt,
     catch_stmt,
+    discard_stmt,
 
     type_expr,
     struct_type,
@@ -294,6 +295,8 @@ arena_ptr<ast_node> make_assign_stmt_node(memory_arena& arena, const position& p
 arena_ptr<ast_node> make_return_stmt_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& expr);
 
 arena_ptr<ast_node> make_compute_stmt_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& expr);
+
+arena_ptr<ast_node> make_discard_stmt_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& expr);
 
 arena_ptr<ast_node> make_asm_stmt_node(memory_arena& arena, const position& pos, std::string&& value);
 

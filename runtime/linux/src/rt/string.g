@@ -2,14 +2,14 @@ typealias string = array of byte
 
 typealias string_view = array of pure byte
 
-fun memcpy(dest: &opaque, src: &opaque, n: int) = do
+fun memcpy(dest: rawptr, src: rawptr, n: int) = do
     asm%do
         mov %rdx,%rcx
         rep movsb
     end%asm
 end
 
-fun memset(dest: &opaque, value: byte, count: int) = do
+fun memset(dest: rawptr, value: byte, count: int) = do
     asm%do
         mov %rsi,%rax
         mov %rdx,%rcx
@@ -20,8 +20,8 @@ end
 fun cstr_equals(p1 : &pure byte, p2 : &pure byte) => bool = do
     for @p1 /= '\0' do
         if @p1 /= @p2 then return false end
-        p1 = cast(&pure byte) cast(&opaque) (cast(uintptr) _ + 1)
-        p2 = cast(&pure byte) cast(&opaque) (cast(uintptr) _ + 1)
+        p1 = cast(&pure byte) cast(rawptr) (cast(uintptr) _ + 1)
+        p2 = cast(&pure byte) cast(rawptr) (cast(uintptr) _ + 1)
     end
     return true
 end
@@ -32,7 +32,7 @@ fun cstrlen(ptr: &pure byte) => int = do
     let count : int
     for @ptr /= '\0' do
         count = count + 1
-        ptr = cast(&pure byte) cast(&opaque) (cast(uintptr) _ + 1)
+        ptr = cast(&pure byte) cast(rawptr) (cast(uintptr) _ + 1)
     end
     return count
 end
@@ -49,9 +49,3 @@ fun from_cstr(ptr : &pure byte) => string = do
     return string{ ptr, cstrlen(ptr) }
 end
 
--- TODO(bug): cannot name this append (?)
-fun appends(s: in out string, what: string) = do
-    for range 0, what.len do |i|
-        append(s, what[i])
-    end
-end

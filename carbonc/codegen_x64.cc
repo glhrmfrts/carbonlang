@@ -531,7 +531,7 @@ struct generator {
         }
         else if (gd.type.get().kind == type_kind::ptr) {
             if (gd.value && std::holds_alternative<ir_int>(*gd.value)) {
-                em->add_global(gd.name, ts->opaque_ptr_type, gd.visibility);
+                em->add_global(gd.name, ts->raw_ptr_type, gd.visibility);
             }
             // TODO: handle globals pointing to other globals
         }
@@ -759,7 +759,7 @@ struct generator {
                 em->calldest(todest(f));
             }
 
-            if (instr.result_type != ts->opaque_type) {
+            if (instr.result_type != ts->discard_type) {
                 auto dest = adjust_for_type(instr_dest_to_gen_dest(idata.dest), instr.result_type);
                 auto arax = adjust_for_type(reg_result, instr.result_type);
                 if (!(dest == arax)) {
@@ -772,7 +772,7 @@ struct generator {
         case ir_return: {
             auto [a, atype] = transform_ir_operand(instr.operands[0]);
 
-            if (instr.result_type != ts->opaque_type) {
+            if (instr.result_type != ts->discard_type) {
                 auto regres = adjust_for_type(reg_result, instr.result_type);
 
                 if (std::holds_alternative<gen_register>(a)) {
@@ -814,7 +814,7 @@ struct generator {
                 expr.base = std::get<gen_register>(a);
                 expr.index = reg_intermediate;
                 expr.mult = comp_int_type(esize_offs);
-                load_address(dest, expr, ts->opaque_ptr_type);
+                load_address(dest, expr, ts->raw_ptr_type);
             }
             else if (is_mem(a)) {
                 auto expr = gen_addr{};
@@ -825,14 +825,14 @@ struct generator {
                 }
                 else {
                     auto org_expr = std::get<gen_data_offset>(a);
-                    load_address(rax, org_expr, ts->opaque_ptr_type);
+                    load_address(rax, org_expr, ts->raw_ptr_type);
                     expr.base = rax;
                     expr.offset = 0;
                 }
                 expr.op_size = elem_size;
                 expr.index = reg_intermediate;
                 expr.mult = comp_int_type(esize_offs);
-                load_address(dest, expr, ts->opaque_ptr_type);
+                load_address(dest, expr, ts->raw_ptr_type);
             }
 
             gen_operand result;
@@ -968,14 +968,14 @@ struct generator {
                 load_address(rdi, todest(a), atype);
             }
             else {
-                move(rdi, ts->opaque_ptr_type, a, atype);
+                move(rdi, ts->raw_ptr_type, a, atype);
             }
 
             if (is_mem(b)) {
                 load_address(rsi, todest(b), btype);
             }
             else {
-                move(rsi, ts->opaque_ptr_type, b, btype);
+                move(rsi, ts->raw_ptr_type, b, btype);
             }
 
             move(rcx, ts->int_type, c, ctype);

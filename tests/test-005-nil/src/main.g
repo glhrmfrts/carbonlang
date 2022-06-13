@@ -11,4 +11,7 @@ fun main = do
     let d : Data = nil
     write(d.x) write(",") write(d.y)
     writeln("")
+
+    let v = {}
+    writeln(v)
 end

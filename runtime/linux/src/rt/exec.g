@@ -22,11 +22,11 @@ fun exec(cmd: string, args: array of string, exit_code: out int) => error = do
         end
         append(argv, nil)
 
-        syscall.execve(cmd.ptr, argv.ptr, nil)
+        discard syscall.execve(cmd.ptr, argv.ptr, nil)
         syscall.exit(0)
     else if child > 0 then
         let status : int
-        syscall.wait4(child, &status, 0, nil)
+        discard syscall.wait4(child, &status, 0, nil)
         if wifexited(status) then
             exit_code = wexitstatus(status)
             return nil

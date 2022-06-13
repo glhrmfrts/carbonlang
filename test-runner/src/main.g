@@ -1,5 +1,11 @@
 import "rt"
 
+fun append(s: in out string, what: string) = do
+    for range 0, what.len do |i|
+        append(s, what[i])
+    end
+end
+
 fun main = do
     let COMPILER_PATH = "/usr/bin/carbonc"
     let testdirs = {
@@ -16,8 +22,8 @@ fun main = do
         let dirname = testdirs[i]
 
         let fullpath : string
-        appends(fullpath, "../tests/")
-        appends(fullpath, dirname)
+        append(fullpath, "../tests/")
+        append(fullpath, dirname)
         chdir(fullpath)
 
         putln("Running: ", fullpath)

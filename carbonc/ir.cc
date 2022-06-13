@@ -147,7 +147,7 @@ void discard_opstack(std::size_t tosize) {
         for (std::size_t i = tosize; i < operand_stack.size(); i++) {
             args.push_back(pop());
         }
-        emitops(ir_noop, ts->opaque_type, args);
+        emitops(ir_noop, ts->discard_type, args);
     }
 }
 
@@ -807,7 +807,7 @@ void generate_ir_call_expr(ast_node& node) {
         args.push_back(pop());
     }
 
-    bool pushes = node.tid != ts->opaque_type;
+    bool pushes = node.tid != ts->discard_type;
     if (node.call.flags & call_flag::is_aggregate_return) {
         pushes = false;
     }
@@ -817,7 +817,7 @@ void generate_ir_call_expr(ast_node& node) {
         push(ir_stackpop{ node.tid });
     }
     else {
-        emitops(ir_call, ts->opaque_type, args);
+        emitops(ir_call, ts->discard_type, args);
     }
 
     // If this function is not from this program/module, add an extern declaration
@@ -1376,6 +1376,12 @@ void generate_ir_node(ast_node& node) {
     case ast_type::return_stmt:
         generate_ir_return_stmt(node);
         break;
+    case ast_type::discard_stmt: {
+        std::size_t opsize = operand_stack.size();
+        generate_ir_node(*node.children[0]);
+        discard_opstack(opsize);
+        break;
+    }
     case ast_type::defer_stmt:
         ts->current_scope->self->ir.scope_defer_statements.push_back(&node);
         break;
@@ -1620,7 +1626,7 @@ bool instr_pushes_to_stack(const ir_instr& instr) {
     case ir_cmp_neq:
         return true;
     case ir_call:
-        return instr.result_type != ts->opaque_type;
+        return instr.result_type != ts->discard_type;
     default:
         return false;
     }

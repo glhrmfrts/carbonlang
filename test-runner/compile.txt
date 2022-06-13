@@ -1,0 +1,10 @@
+carbonc - compiling target: test-runner
+
+assembly file: rt_syscall_calls.s
+carbonc - compiling module: rt/syscall
+assembly file: rt_x86_64_start.s
+carbonc - compiling module: rt
+carbonc - compiling module: root
+unresolved types
+unresolved types
+carbonc - output: a.out

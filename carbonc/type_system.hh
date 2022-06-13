@@ -42,7 +42,7 @@ enum class type_qualifier {
 };
 
 enum class type_kind {
-    void_,
+    discard,
     module_,
     nil,
     ptr,
@@ -382,8 +382,8 @@ struct type_system {
 
     type_id type_type{};
     type_id nil_type{};
-    type_id opaque_type{};
-    type_id opaque_ptr_type{};
+    type_id discard_type{};
+    type_id raw_ptr_type{};
     type_id intptr_type{};
     type_id byte_type{};
     type_id bool_type{};

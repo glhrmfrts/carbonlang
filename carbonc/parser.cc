@@ -161,6 +161,10 @@ struct parser_impl {
             result = make_identifier_node(*ast_arena, lex->pos(), { "$nil" });
             lex->next();
         }
+        else if (TOK == token_type::discard) {
+            result = make_identifier_node(*ast_arena, lex->pos(), { "$discard" });
+            lex->next();
+        }
         else if (TOK_CHAR == '#') {
             // built-in function
             result = parse_primary_expr();
@@ -316,6 +320,8 @@ struct parser_impl {
             return parse_asm_stmt();
         case token_type::defer:
             return parse_defer_stmt();
+        case token_type::discard:
+            return parse_discard_stmt();
 #if 0
         case token_type::catch_:
             return parse_catch_stmt();
@@ -522,6 +528,17 @@ struct parser_impl {
             throw parse_error(filename, pos, "compute statement expects a expression");
         }
         return make_compute_stmt_node(*ast_arena, pos, std::move(expr));
+    }
+
+    arena_ptr<ast_node> parse_discard_stmt() {
+        auto pos = lex->pos();
+        lex->next(); // eat the 'return'
+
+        auto expr = parse_expr();
+        if (!expr) {
+            throw parse_error(filename, pos, "discard statement expects a expression");
+        }
+        return make_discard_stmt_node(*ast_arena, pos, std::move(expr));
     }
 
     arena_ptr<ast_node> parse_asm_stmt() {

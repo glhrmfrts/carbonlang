@@ -19,7 +19,7 @@ fun test_numeric_for_neg = do
     end
 end
 
-fun get_limit = do
+fun get_limit => int = do
     writeln("get_limit")
     return 5
 end

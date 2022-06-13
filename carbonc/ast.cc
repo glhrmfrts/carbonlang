@@ -416,6 +416,15 @@ arena_ptr<ast_node> make_compute_stmt_node(memory_arena& arena, const position& 
     return ptr;
 }
 
+arena_ptr<ast_node> make_discard_stmt_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& expr) {
+    auto ptr = make_in_arena<ast_node>(arena);
+    ptr->node_id = node_id_gen++;
+    ptr->type = ast_type::discard_stmt;
+    ptr->pos = pos;
+    ptr->children.push_back(std::move(expr));
+    return ptr;
+}
+
 arena_ptr<ast_node> make_asm_stmt_node(memory_arena& arena, const position& pos, std::string&& value) {
     auto ptr = make_in_arena<ast_node>(arena);
     ptr->node_id = node_id_gen++;

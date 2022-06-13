@@ -388,7 +388,7 @@ std::pair<const_value, bool> node_to_const_value(type_system& ts, ast_node& node
     }
     case ast_type::rest_expr: {
         arg = ellipsis_value{};
-        node.tid = ts.opaque_type;
+        node.tid = ts.discard_type;
         break;
     }
     default: {
@@ -588,7 +588,7 @@ bool is_assignable_to(type_system& ts, type_id a, type_id b) {
     }
 
     if (tsrc.kind == type_kind::ptr && ttarget.kind == type_kind::ptr) {
-        if (get_alias_root(ts, ttarget.id) == ts.opaque_ptr_type) {
+        if (get_alias_root(ts, ttarget.id) == ts.raw_ptr_type) {
             return true;
         }
 
@@ -891,7 +891,7 @@ void transform_slice_expr_to_init_expr(type_system& ts, ast_node& node, bool mut
 using cast_check_func = std::function<bool(type_system&, type_def&, type_def&)>;
 
 bool can_pointer_be_cast_from(type_system& ts, type_def& self, type_def& from) {
-    if (get_pure_alias_root(ts, self.id) == ts.opaque_ptr_type) {
+    if (get_pure_alias_root(ts, self.id) == ts.raw_ptr_type) {
         if (from.kind == type_kind::ptr) {
             return true;
         }
@@ -900,7 +900,7 @@ bool can_pointer_be_cast_from(type_system& ts, type_def& self, type_def& from) {
         }
     }
 
-    if (get_pure_alias_root(ts, from.id) == ts.opaque_ptr_type) {
+    if (get_pure_alias_root(ts, from.id) == ts.raw_ptr_type) {
         return true;
     }
 
@@ -1200,6 +1200,12 @@ type_id get_type_expr_node_type(type_system& ts, ast_node& node) {
             break;
         }
 
+        if (node.id_parts.front() == "$nil") {
+            node.tid = ts.discard_type;
+            node.type_error = false;
+            break;
+        }
+
         auto sym = find_symbol(ts, separate_module_identifier(node.id_parts));
         if (sym) {
             if (sym->kind == symbol_kind::type) {
@@ -1322,7 +1328,7 @@ type_id get_type_expr_node_type(type_system& ts, ast_node& node) {
             }
         }
         else {
-            node.tid = ts.opaque_type;
+            node.tid = ts.nil_type;
         }
         break;
     }
@@ -1846,7 +1852,7 @@ void resolve_func_args_type(type_system& ts, ast_node& node) {
 
 type_id deduce_func_return_type(type_system& ts, ast_node& f) {
     if (f.func.return_statements.empty()) {
-        return ts.opaque_type;
+        return ts.discard_type;
     }
 
     auto funcname = node_to_string(*f.func_id());
@@ -1871,7 +1877,7 @@ type_id deduce_func_return_type(type_system& ts, ast_node& f) {
             }
         }
         else if (ret->children.empty() || !ret->children[0]) {
-            ret_type = ts.opaque_type;
+            ret_type = ts.discard_type;
         }
     }
     return ret_type;
@@ -1937,6 +1943,10 @@ type_id resolve_func_type(type_system& ts, ast_node& f) {
     f.tdef.is_signed = false;
 
     type_id ret_type = invalid_type;
+    if (!f.func_ret_type()) {
+        f.children[2] = make_type_expr_node(*ts.ast_arena, f.pos, make_type_resolver_node(*ts.ast_arena, ts.discard_type));
+    }
+
     if (f.func_ret_type()) {
         ret_type = resolve_node_type(ts, f.func_ret_type());
         if (!ret_type.valid()) {
@@ -1945,7 +1955,7 @@ type_id resolve_func_type(type_system& ts, ast_node& f) {
         }
 
         if (ret_type.valid()) {
-            if (f.func.return_statements.empty() && ret_type != ts.opaque_type && f.func.linkage == func_linkage::local_carbon && f.func_body()) {
+            if (f.func.return_statements.empty() && ret_type != ts.discard_type && f.func.linkage == func_linkage::local_carbon && f.func_body()) {
                 int asmcount = 0;
                 int nonasmcount = 0;
                 count_asm_statements(ts, *f.func_body(), &asmcount, &nonasmcount);
@@ -1973,7 +1983,8 @@ type_id resolve_func_type(type_system& ts, ast_node& f) {
         }
     }
     else {
-        ret_type = deduce_func_return_type(ts, f);
+        //ret_type = deduce_func_return_type(ts, f);
+        add_type_error(ts, f.pos, "function without return type");
     }
     
     if (!f.tid.valid() && !f.func.args_unresolved && ret_type.valid()) {
@@ -2115,10 +2126,13 @@ void register_func_declaration_node(type_system& ts, ast_node& node) {
         add_func_scope(ts, node, *body);
     }
 
+    node.func.args_unresolved = true;
+
     declare_func_arguments(ts, node);
     for (auto& arg : arg_list) {
         resolve_local_variable_type(ts, *arg, true);
     }
+    resolve_func_args_type(ts, node);
 
     if (body) {
         visit_tree(ts, *body);
@@ -2126,7 +2140,7 @@ void register_func_declaration_node(type_system& ts, ast_node& node) {
     }
 
     // try to resolve the func type already
-    node.func.args_unresolved = true; // assume args are unresolved, possibly wasting a type check pass
+    // node.func.args_unresolved = true; // assume args are unresolved, possibly wasting a type check pass
     resolve_func_type(ts, node);
 }
 
@@ -2469,6 +2483,7 @@ arena_ptr<ast_node> make_neq_false_node(type_system& ts, arena_ptr<ast_node>&& v
         return node;
     }
     else if (val->tid.valid()) {
+        printf("make_neq_false_node: %s\n", type_to_string(val->tid).c_str());
         assert(false);
         return { nullptr, nullptr };
     }
@@ -2702,12 +2717,39 @@ void macro_instantiate(type_system& ts, ast_node& node, func_def* func) {
     node.parent->children[*idx] = std::move(macro_instance);
 }
 
+bool match_call_with_symbol_overloads(type_system& ts, ast_node& node, symbol_info* bsym) {
+    // try to match the arguments performing implicit conversions using the function non-generic overloads
+    bool resolved = false;
+    for (std::size_t i = 0; i < bsym->overload_funcs.size(); i++) {
+        auto func = bsym->overload_funcs[i];
+        if (match_arg_list(ts, func->self->func_args(), node.call_args(), func->const_args, node.call.const_args)) {
+            resolved = true;
+            node.tid = func->self->tdef.func.ret_type;
+            node.call.func_type_id = func->self->tid;
+            node.call.funcdef = func;
+            node.type_error = false;
+            break;
+        }
+    }
+    if (!resolved) {
+        for (std::size_t i = 0; i < bsym->overload_macros.size(); i++) {
+            auto func = bsym->overload_macros[i];
+            if (func->num_args == node.call_args().size()) {
+                resolved = true;
+                macro_instantiate(ts, node, func);
+                break;
+            }
+        }
+    }
+    return resolved;
+}
+
 void resolve_call_funcdef(type_system& ts, ast_node& node) {
     //auto pair = separate_module_identifier(node.call_func()->id_parts);
     separate_call_args(ts, node);
-#if 0
 
-#endif
+    bool resolved = false;
+
     if (node.call_func()->lvalue.symbol && node.call_func()->type == ast_type::identifier) {
         std::string mod = "";
         std::string id = "";
@@ -2718,6 +2760,7 @@ void resolve_call_funcdef(type_system& ts, ast_node& node) {
         else {
             id = node.call_func()->id_parts.front();
         }
+
         for (const auto& linkage : { func_linkage::local_carbon, func_linkage::external_c }) {
             node.call.mangled_name = mangle_func_name(ts, { id }, node.call.const_args, node.call_args(), linkage);
 
@@ -2734,39 +2777,46 @@ void resolve_call_funcdef(type_system& ts, ast_node& node) {
                 break;
             }
         }
+
+        if (mod.empty() && !node.tid.valid()) {
+            auto bsyms = find_all_symbols(ts, id);
+            for (auto bsym : bsyms) {
+                if (bsym->kind == symbol_kind::overloaded_func_base) {
+                    resolved = match_call_with_symbol_overloads(ts, node, bsym);
+                    if (resolved) {
+                        break;
+                    }
+                }
+            }
+            if (!resolved) {
+                unk_type_error(ts, node.tid, node.pos, "cannot determine type of function call to '%s'", id.c_str());
+                for (auto bsym : bsyms) {
+                    if (bsym->kind == symbol_kind::overloaded_func_base) {
+                        for (std::size_t i = 0; i < bsym->overload_funcs.size(); i++) {
+                            auto func = bsym->overload_funcs[i];
+                            complement_error(ts, node.pos, "candidate #%d: '%s' declared in %s:%d",
+                                (i + 1), func_declaration_to_string(func).c_str(), func->self->pos.filename.c_str(), func->self->pos.line_number);
+                        }
+                        for (std::size_t i = 0; i < bsym->overload_macros.size(); i++) {
+                            auto func = bsym->overload_macros[i];
+                            complement_error(ts, node.pos, "candidate #%d: '%s' declared in %s:%d",
+                                (bsym->overload_funcs.size() + i + 1), func_declaration_to_string(func).c_str(), func->self->pos.filename.c_str(), func->self->pos.line_number);
+                        }
+                    }
+                }
+                complement_error(ts, node.pos, "call arguments: (%s)", type_list_to_string(node.call.arg_types).c_str());
+            }
+        }
     }
 
-    if (!node.tid.valid() && node.call_func()->lvalue.symbol) {
+    if (!resolved && !node.tid.valid() && node.call_func()->lvalue.symbol) {
         node.type_error = true;
 
         auto funcname = node_to_string(*node.call_func());
 
         auto bsym = node.call_func()->lvalue.symbol;
         if (bsym && bsym->kind == symbol_kind::overloaded_func_base) {
-            // try to match the arguments performing implicit conversions using the function non-generic overloads
-            bool resolved = false;
-            for (std::size_t i = 0; i < bsym->overload_funcs.size(); i++) {
-                auto func = bsym->overload_funcs[i];
-                if (match_arg_list(ts, func->self->func_args(), node.call_args(), func->const_args, node.call.const_args)) {
-                    resolved = true;
-                    node.tid = func->self->tdef.func.ret_type;
-                    node.call.func_type_id = func->self->tid;
-                    node.call.funcdef = func;
-                    node.type_error = false;
-                    break;
-                }
-            }
-
-            for (std::size_t i = 0; i < bsym->overload_macros.size(); i++) {
-                auto func = bsym->overload_macros[i];
-                if (func->num_args == node.call_args().size()) {
-                    resolved = true;
-
-                    macro_instantiate(ts, node, func);
-                    break;
-                }
-            }
-
+            bool resolved = match_call_with_symbol_overloads(ts, node, bsym);
             if (!resolved) {
                 unk_type_error(ts, node.tid, node.pos, "cannot determine type of function call to '%s'", funcname.c_str());
                 complement_error(ts, node.pos, "function exists but cannot find a matching argument list");
@@ -3001,7 +3051,7 @@ void transform_aggregate_call_into_pointer_argument_helper_ts(type_system& ts, a
     call->call_args().insert(call->call_args().begin(), std::move(addr));
 
     //call->tid = get_ptr_type_to(ts, call->tid);
-    call->tid = ts.opaque_type;
+    call->tid = ts.discard_type;
 
     call->call.flags |= call_flag::is_aggregate_return;
 }
@@ -3124,7 +3174,20 @@ void type_check_binary_expr(type_system& ts, ast_node& node) {
     visit_children(ts, node);
 
     if (is_logic_binary_op(node)) {
-        ensure_bool_op_is_comparison(ts, node);
+        bool ok = true;
+        if (!is_boolish_type(ts, node.children[0]->tid)) {
+            add_type_error(ts, node.children[0]->pos, "left-side of logic operator has type '%s', expected bool, enumflags or error",
+                type_to_string(node.children[0]->tid).c_str());
+            ok = false;
+        }
+        if (!is_boolish_type(ts, node.children[1]->tid)) {
+            add_type_error(ts, node.children[1]->pos, "right-side of logic operator has type '%s', expected bool, enumflags or error",
+                type_to_string(node.children[1]->tid).c_str());
+            ok = false;
+        }
+        if (ok) {
+            ensure_bool_op_is_comparison(ts, node);
+        }
     }
 
     // TODO: check operators make sense for types
@@ -3284,7 +3347,7 @@ void type_check_return_stmt(type_system& ts, ast_node& node) {
     }
 
     if (!node.children.front()) {
-        node.tid = ts.opaque_type;
+        node.tid = ts.discard_type;
     }
     else {
         node.tid = resolve_node_type(ts, node.children.front().get());
@@ -3654,32 +3717,37 @@ void type_check_init_expr(type_system& ts, ast_node& node) {
 
     node.initlist.deduce_to_tuple = !receiver_type.valid();
     if (node.initlist.deduce_to_tuple && !node.tid.valid()) {
-        std::vector<const_value> elem_types;
-        bool all_resolved = true;
-        type_id first_type{};
-        for (auto& child : node.children[1]->children) {
-            resolve_node_type(ts, child.get());
-        }
-        for (auto& child : node.children[1]->children) {
-            resolve_node_type(ts, child.get());
-            if (!child->tid.valid()) {
-                all_resolved = false;
+        if (node.children[1]->children.size() > 0) {
+            std::vector<const_value> elem_types;
+            bool all_resolved = true;
+            type_id first_type{};
+            for (auto& child : node.children[1]->children) {
+                resolve_node_type(ts, child.get());
             }
-            else {
-                if (first_type.valid() && !is_assignable_to(ts, child->tid, first_type)) {
-                    add_type_error(ts, child->pos, "array initializer element has incompatible type '%s'", type_to_string(child->tid).c_str());
-                    complement_error(ts, node.pos, "previous elements had type '%s'", type_to_string(first_type).c_str());
+            for (auto& child : node.children[1]->children) {
+                resolve_node_type(ts, child.get());
+                if (!child->tid.valid()) {
                     all_resolved = false;
                 }
                 else {
-                    elem_types.push_back(child->tid);
-                    first_type = child->tid;
+                    if (first_type.valid() && !is_assignable_to(ts, child->tid, first_type)) {
+                        add_type_error(ts, child->pos, "array initializer element has incompatible type '%s'", type_to_string(child->tid).c_str());
+                        complement_error(ts, node.pos, "previous elements had type '%s'", type_to_string(first_type).c_str());
+                        all_resolved = false;
+                    }
+                    else {
+                        elem_types.push_back(child->tid);
+                        first_type = child->tid;
+                    }
                 }
             }
+            if (all_resolved) {
+                // TODO: resolve to array of single type or array of variants
+                node.tid = get_static_array_type(ts, elem_types.size(), first_type);
+            }
         }
-        if (all_resolved) {
-            // TODO: resolve to array of single type or array of variants
-            node.tid = get_static_array_type(ts, elem_types.size(), first_type);
+        else {
+            node.tid = ts.nil_type;
         }
     }
     else if (receiver_type.valid() && is_aggregate_type(receiver_type)) {
@@ -3732,6 +3800,19 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
     bool check_for_unresolved = true;
 
     switch (node.type) {
+    case ast_type::stmt_list: {
+        check_for_unresolved = false;
+        visit_pre_nodes(ts, node);
+        visit_children(ts, node);
+        for (auto& child : node.children) {
+            if (child->tid.valid() && (child->tid.get().kind != type_kind::discard)) {
+                if (child->type != ast_type::assign_stmt && child->type != ast_type::return_stmt) {
+                    add_type_error(ts, child->pos, "unused expression result, use 'discard' to ignore");
+                }
+            }
+        }
+        break;
+    }
     case ast_type::imports_decl: {
         check_for_unresolved = false;
 
@@ -4077,6 +4158,11 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
     }
     case ast_type::compute_stmt: {
         type_check_compute_stmt(ts, node);
+        break;
+    }
+    case ast_type::discard_stmt: {
+        node.tid = ts.discard_type;
+        visit_children(ts, node);
         break;
     }
     case ast_type::continue_stmt:
@@ -4468,7 +4554,7 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
         break;
     case ast_type::init_tag: {
         if (node.op == token_type::noinit) {
-            node.tid = ts.opaque_type;
+            node.tid = ts.nil_type;
         }
         else if (node.op == token_type::placeholder) {
             ast_node* assignee = ts.assignee_stack.top();
@@ -5073,7 +5159,6 @@ type_system::type_system(memory_arena& arena) {
         tf.mangled_name = string_hash{ "nil" };
         tf.size = sizeof(void*);
         tf.alignment = alignof(void*);
-        tf.elem_type = opaque_type;
         nil_type = register_builtin_type(*this, std::move(node));
     }
 
@@ -5081,12 +5166,12 @@ type_system::type_system(memory_arena& arena) {
         auto node = make_in_arena<ast_node>(*ast_arena);
 
         type_def& tf = node->tdef;
-        tf.kind = type_kind::void_;
-        tf.name = string_hash{ "opaque" };
-        tf.mangled_name = string_hash{ "opaque" };
+        tf.kind = type_kind::discard;
+        tf.name = string_hash{ "discard" };
+        tf.mangled_name = string_hash{ "discard" };
         tf.size = 0;
         tf.alignment = 0;
-        opaque_type = register_builtin_type(*this, std::move(node));
+        discard_type = register_builtin_type(*this, std::move(node));
     }
 
     {
@@ -5101,8 +5186,19 @@ type_system::type_system(memory_arena& arena) {
         module_type = register_builtin_type(*this, std::move(node));
     }
 
-    // void*
-    opaque_ptr_type = get_ptr_type_to(*this, opaque_type);
+    {
+        auto node = make_in_arena<ast_node>(*ast_arena);
+
+        type_def& tf = node->tdef;
+        tf.kind = type_kind::ptr;
+        tf.name = string_hash{ "rawptr" };
+        tf.mangled_name = string_hash{ "rawptr" };
+        tf.size = sizeof(void*);
+        tf.alignment = alignof(void*);
+        tf.elem_type = discard_type;
+        raw_ptr_type = register_builtin_type(*this, std::move(node));
+    }
+
     raw_string_type = register_pointer_type(*this, "$rawstring", "byte");
 
     declare_const_symbol(*this, string_hash{ "OS_WINDOWS" }, const_value{ 1 }, int_type);

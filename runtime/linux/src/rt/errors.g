@@ -29,8 +29,8 @@ fun error_string(err: error) => string = do
     -- Find the error name by traversing the ELF .error_array section
     -- maybe: cache this to a dict on initialization?
 
-    let addr_begin = cast(uintptr) cast(&opaque) &__error_array_start
-    let addr_end = cast(uintptr) cast(&opaque) &__error_array_end
+    let addr_begin = cast(uintptr) cast(rawptr) &__error_array_start
+    let addr_end = cast(uintptr) cast(rawptr) &__error_array_end
     let addr = addr_begin
 
     let errcode = cast(int) err
@@ -42,10 +42,10 @@ fun error_string(err: error) => string = do
         --     code : int
         --     name : null-terminated-string
         -- }
-        let codeptr = cast(&int) cast(&opaque) addr
+        let codeptr = cast(&int) cast(rawptr) addr
         addr = addr + #sizeof(int)
 
-        let str = from_cstr(cast(&byte) cast(&opaque) addr)
+        let str = from_cstr(cast(&byte) cast(rawptr) addr)
 
         if errcode == @codeptr then
             return str

@@ -12,7 +12,6 @@ type either of (L, R) = struct of
     right: R
 end
 
--- TODO: create 'compute' statement
 -- TODO: create datatype 'error or ...'
 
 let v : optional of Value
@@ -111,5 +110,3 @@ fun parse_file(p: in out Parser) error => &Node = do
 
     return create_file_node(p.filename, children)
 end
-
-rm -rf qoneup-install-dev; mkdir qoneup-install-dev && cd qoneup-install-dev && curl https://quoretech-debian-repo.s3.amazonaws.com/qoneup-install-dev.tar --output qoneup-install-dev.tar --&& tar -xvf qoneup-install-dev.tar && sudo scripts/install-dev.sh

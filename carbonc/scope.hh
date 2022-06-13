@@ -43,6 +43,8 @@ symbol_info* find_symbol_in_current_scope_thispass(type_system& ts, const string
 
 symbol_info* find_symbol(type_system& ts, const std::pair<string_hash, string_hash>& pair);
 
+std::vector<symbol_info*> find_all_symbols(type_system& ts, const string_hash& name);
+
 // Finds the type in scope or parents
 type_id find_type_by_id_hash(type_system& ts, const std::pair<string_hash, string_hash>& pair);
 

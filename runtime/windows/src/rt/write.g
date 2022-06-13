@@ -1,4 +1,4 @@
-extern(C) fun WriteFile(handle: int, str: &pure byte, len: int, written: &int, ov: &opaque)
+extern(C) fun WriteFile(handle: int, str: &pure byte, len: int, written: &int, ov: rawptr)
 
 fun write(handle: file_handle, data: array of pure byte) => int = do
     let written : int

@@ -2,7 +2,7 @@ import "rt"
 
 let a : int
 
-fun side_effect = do
+fun side_effect => bool = do
     a = a + 1
     return true
 end

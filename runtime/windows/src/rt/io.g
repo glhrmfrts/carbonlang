@@ -1,6 +1,6 @@
 typealias file_handle = int
 
-extern(C) fun GetStdHandle(nStdHandle: int): &opaque
+extern(C) fun GetStdHandle(nStdHandle: int): rawptr
 
 const STD_INPUT_HANDLE  = -10
 const STD_OUTPUT_HANDLE = -11

@@ -1,7 +1,7 @@
 -- A dumb linear allocator with blocks that never get re-used, only freed when they are not referenced anymore.
 
 local type memory_block = struct of
-    ptr         : &opaque
+    ptr         : rawptr
     filled      : int
     capacity    : int
     allocations : int
@@ -12,19 +12,19 @@ end
 local let last_block : &memory_block
 local let last_block_id : int
 
-local fun alloc_in_block(block: in out memory_block, size: int) => &opaque = do
+local fun alloc_in_block(block: in out memory_block, size: int) => rawptr = do
     let ptr = cast(uintptr) block.ptr + cast(uintptr) block.filled
     block.filled = _ + size
     block.allocations = _ + 1
     --putln("---- Allocating memory: ", cast(int)cast(uintptr)ptr, " of: ", size, " allocations: ", block.allocations)
-    return cast(&opaque) ptr
+    return cast(rawptr) ptr
 end
 
-fun align(size: int, alignment: int) = do
+fun align(size: int, alignment: int) => int = do
     return size + (-size & (alignment - 1))
 end
 
-fun alloc(usersize: int) => &opaque = do
+fun alloc(usersize: int) => rawptr = do
     const ALIGNMENT = 16
     const MIN_BLOCK_SIZE = 4096
 
@@ -43,7 +43,7 @@ fun alloc(usersize: int) => &opaque = do
     pblock = cast(&memory_block) mmap(block_size)
     if pblock /= nil then
         memset(pblock, 0, block_size)
-        pblock.ptr = cast(&opaque)(cast(uintptr)pblock + #sizeof(memory_block))
+        pblock.ptr = cast(rawptr)(cast(uintptr)pblock + #sizeof(memory_block))
         pblock.capacity = block_size - #sizeof(memory_block)
         pblock.id = last_block_id + 1
         last_block_id = _ + 1
@@ -65,7 +65,7 @@ fun alloc(usersize: int) => &opaque = do
     return nil
 end
 
-fun free(ptr: &opaque) = do
+fun free(ptr: rawptr) = do
     let pblock = last_block
     let prevblock : &memory_block
 

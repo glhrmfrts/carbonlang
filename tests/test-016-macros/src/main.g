@@ -1,6 +1,5 @@
 import "rt"
 
--- TODO(bug): consider overloads from multiple modules
 -- TODO(bug): overload candidate reporting is broken for macros
 
 macro my_putln(a, b) = do

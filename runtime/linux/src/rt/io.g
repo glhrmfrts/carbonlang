@@ -21,5 +21,5 @@ fun exit(code: int) = do
 end
 
 fun chdir(path: string) = do
-    syscall.chdir(to_cstr(path, array[PATH_MAX] of byte{}))
+    discard syscall.chdir(to_cstr(path, array[PATH_MAX] of byte{}))
 end

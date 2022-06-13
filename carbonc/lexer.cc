@@ -289,6 +289,9 @@ struct lexer_impl {
             if (!std::strcmp("compute", l.string)) {
                 return token_type::compute;
             }
+            if (!std::strcmp("discard", l.string)) {
+                return token_type::discard;
+            }
             break;
         case 8:
             if (!std::strcmp("internal", l.string)) {

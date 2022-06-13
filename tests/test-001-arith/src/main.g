@@ -1,6 +1,6 @@
 import "rt"
 
-fun fib(n: int) = do
+fun fib(n: int) => int = do
     if n == 0 then
         return 0
     else if n == 1 then
