@@ -61,6 +61,11 @@ fun writeln(e: error) = do
     writeln("")
 end
 
+fun writeln(b: byte) = do
+    write(b)
+    writeln("")
+end
+
 local fun int_to_string(value: int, base: int, result: in out array of byte) => int = do
     -- check that the base if valid
     if base < 2 or base > 36 then return 0 end
@@ -76,7 +81,7 @@ local fun int_to_string(value: int, base: int, result: in out array of byte) => 
             offs = offs - 1
             break
         end
-        
+
         tmp_value = value
         value = value / base
         nvalue = value
@@ -91,22 +96,22 @@ local fun int_to_string(value: int, base: int, result: in out array of byte) => 
     -- Apply negative sign
     if tmp_value < 0 then
         @ptr = '-'
-        ptr = cast(&byte) cast(rawptr) (cast(uintptr) _ + 1)
+        ptr = cast(&byte) cast(opaque) (cast(uintptr) _ + 1)
         offs = offs + 1
     end
 
     @ptr = '\0'
-    ptr = cast(&byte) cast(rawptr) (cast(uintptr) _ - 1)
+    ptr = cast(&byte) cast(opaque) (cast(uintptr) _ - 1)
 
     let tmp_char : byte
     for ptr1 < ptr do
         tmp_char = @ptr
 
         @ptr = @ptr1
-        ptr = cast(&byte) cast(rawptr) (cast(uintptr) _ - 1)
+        ptr = cast(&byte) cast(opaque) (cast(uintptr) _ - 1)
 
         @ptr1 = tmp_char
-        ptr1 = cast(&byte) cast(rawptr) (cast(uintptr) _ + 1)
+        ptr1 = cast(&byte) cast(opaque) (cast(uintptr) _ + 1)
     end
 
     result.len = offs

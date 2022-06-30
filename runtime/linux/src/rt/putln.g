@@ -52,3 +52,28 @@ macro putln(a, b, c, d, e, f, g) = do
     write(g)
     write("\n")
 end
+
+macro putln(a, b, c, d, e, f, g, h) = do
+    write(a)
+    write(b)
+    write(c)
+    write(d)
+    write(e)
+    write(f)
+    write(g)
+    write(h)
+    write("\n")
+end
+
+macro putln(a, b, c, d, e, f, g, h, i) = do
+    write(a)
+    write(b)
+    write(c)
+    write(d)
+    write(e)
+    write(f)
+    write(g)
+    write(h)
+    write(i)
+    write("\n")
+end

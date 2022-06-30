@@ -6,12 +6,12 @@ macro wexitstatus(wexit_status) = (wexit_status & 0xff00) >> 8
 macro wtermsig(wterm_status) = wterm_status & 0x7f
 macro wifsignaled(wifsig_status) = (wifsig_status & 0xffff) - 1 < 0xff
 
-error ( EXEC_CHILD_SIGNAL )
+enumerror ( EXEC_CHILD_SIGNAL )
 
 fun exec(cmd: string, args: array of string, exit_code: out int) => error = do
     let child = syscall.fork()
     if child == 0 then
-        discard syscall.close(1)
+        --discard syscall.close(1)
 
         let bufs : array of array[PATH_MAX] of byte
         let argv : array of &pure byte

@@ -1,5 +1,15 @@
 import "rt"
 
+-- TODO: 'opaque' instead of 'rawptr'
+-- TODO: bring back tuple types (return in register optimization)
+-- TODO: immutable function pointers by default
+-- TODO: allow '-' in identifiers
+-- TODO: pointer deref -> macro
+-- TODO: array index -> macro
+-- TODO: essential types
+-- TODO: typed macros
+-- TODO: basic generic functions using essential types
+
 fun test_if_stmt(a: int) = do
     let x = if a>3 then compute "greater" else compute "smaller" end
     putln(x)

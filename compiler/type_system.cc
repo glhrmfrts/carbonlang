@@ -32,6 +32,8 @@ void type_check_field_expr(type_system& ts, ast_node& node, bool change_to_ident
 
 std::vector<arena_ptr<ast_node>>* get_compound_block_params(ast_node& compound);
 
+arena_ptr<ast_node> collapse_const_value(type_system& ts, ast_node& node, type_id target_type);
+
 // Section: errors
 
 template <typename... Args> void add_module_error(type_system& ts, const position& pos, const char* fmt, Args&&... args) {
@@ -240,7 +242,10 @@ type_id get_pure_alias_root(type_system& ts, type_id tid) {
 }
 
 bool is_arith_type(type_id tid) {
-    return tid.get().kind == type_kind::integral || tid.get().kind == type_kind::real || tid.get().kind == type_kind::enumflags;
+    return tid.get().kind == type_kind::integral
+        || tid.get().kind == type_kind::real
+        || tid.get().kind == type_kind::enumflags
+        || tid.get().kind == type_kind::const_int;
 }
 
 bool compare_types_exact(const type_def& a, const type_def& b) {
@@ -396,12 +401,19 @@ std::pair<const_value, bool> node_to_const_value(type_system& ts, ast_node& node
         break;
     }
     }
-    return std::make_pair(arg, node.tid.valid());
+    return std::make_pair(arg, !std::holds_alternative<invalid_const_value>(arg));
 }
 
 std::pair<const_value, bool> node_to_const_value_fold(type_system& ts, ast_node& node, bool emit_error = true) {
     const_value arg = {};
     switch (node.type) {
+    case ast_type::macro_instance: {
+        auto [avalue, aok] = node_to_const_value_fold(ts, *node.children[0], emit_error);
+        if (aok) {
+            arg = avalue;
+        }
+        break;
+    }
     case ast_type::cast_expr: {
         auto [avalue, aok] = node_to_const_value_fold(ts, *node.children[1], emit_error);
         if (aok && std::holds_alternative<comp_int_type>(avalue)) {
@@ -547,6 +559,13 @@ type_id get_func_pointer_type_to(type_system& ts, type_id func_type) {
     return execute_type_constructor(ts, ts.builtin_scope->scope, *ts.func_pointer_type_constructor, args);
 }
 
+bool is_const_type(type_id tid) {
+    if (!tid.valid()) {
+        return false;
+    }
+    return tid.get().kind == type_kind::const_int || tid.get().kind == type_kind::const_string;
+}
+
 // is A assignable to B?
 bool is_assignable_to(type_system& ts, type_id a, type_id b) {
     if (a == invalid_type || b == invalid_type) return false;
@@ -588,7 +607,7 @@ bool is_assignable_to(type_system& ts, type_id a, type_id b) {
     }
 
     if (tsrc.kind == type_kind::ptr && ttarget.kind == type_kind::ptr) {
-        if (get_alias_root(ts, ttarget.id) == ts.raw_ptr_type) {
+        if (get_alias_root(ts, ttarget.id) == ts.opaque_type) {
             return true;
         }
 
@@ -631,6 +650,16 @@ bool is_assignable_to(type_system& ts, type_id a, type_id b) {
                 return is_assignable_to(ts, tsrc.elem_type, ttarget.elem_type);
             }
         }
+    }
+
+    // const types
+
+    if (tsrc.kind == type_kind::const_int && ttarget.kind == type_kind::integral) {
+        return true;
+    }
+
+    if (tsrc.kind == type_kind::const_string && ttarget.kind == type_kind::array && is_assignable_to(ts, ttarget.elem_type, ts.byte_type)) {
+        return true;
     }
 
     return false;
@@ -687,6 +716,27 @@ void try_coerce_to(type_system& ts, ast_node& from, type_id to) {
 
     if (can_coerce) {
         from.tid = to;
+    }
+}
+
+type_id get_const_target_type(type_system& ts, type_id const_tid, type_id target_tid) {
+    switch (const_tid.get().kind) {
+    case type_kind::const_int: {
+        if (target_tid.valid() && !is_const_type(target_tid)) {
+            return target_tid;
+        }
+        else {
+            return ts.int_type;
+        }
+    }
+    case type_kind::const_string: {
+        auto rstype = ts.byte_type;
+        auto pure_rstype = get_pure_type_to(ts, rstype);
+        auto pointer_type = get_ptr_type_to(ts, pure_rstype);
+        return get_array_type_to(ts, pure_rstype);
+    }
+    default:
+        return {};
     }
 }
 
@@ -891,7 +941,7 @@ void transform_slice_expr_to_init_expr(type_system& ts, ast_node& node, bool mut
 using cast_check_func = std::function<bool(type_system&, type_def&, type_def&)>;
 
 bool can_pointer_be_cast_from(type_system& ts, type_def& self, type_def& from) {
-    if (get_pure_alias_root(ts, self.id) == ts.raw_ptr_type) {
+    if (get_pure_alias_root(ts, self.id) == ts.opaque_type) {
         if (from.kind == type_kind::ptr) {
             return true;
         }
@@ -900,7 +950,7 @@ bool can_pointer_be_cast_from(type_system& ts, type_def& self, type_def& from) {
         }
     }
 
-    if (get_pure_alias_root(ts, from.id) == ts.raw_ptr_type) {
+    if (get_pure_alias_root(ts, from.id) == ts.opaque_type) {
         return true;
     }
 
@@ -1069,7 +1119,7 @@ type_id get_value_node_type(type_system& ts, ast_node& node) {
             return node.tid;
         }
 
-        auto& sym = ts.builtin_scope->scope.symbols[string_hash{ "int" }];
+        auto& sym = ts.builtin_scope->scope.symbols[string_hash{ "const_int" }];
         return to_type_id(*sym);
     }
     case ast_type::float_literal: {
@@ -1100,6 +1150,13 @@ type_id get_value_node_type(type_system& ts, ast_node& node) {
         if (node.children[0]->tid == invalid_type || node.children[1]->tid == invalid_type ||
             node.children[0]->type_error || node.children[1]->type_error) {
             return invalid_type;
+        }
+
+        if (is_const_type(node.children[0]->tid) && !is_const_type(node.children[1]->tid)) {
+            node.children[0] = collapse_const_value(ts, *node.children[0], node.children[1]->tid);
+        }
+        if (is_const_type(node.children[1]->tid) && !is_const_type(node.children[0]->tid)) {
+            node.children[1] = collapse_const_value(ts, *node.children[1], node.children[0]->tid);
         }
 
         if (is_cmp_binary_op(node.op) || is_arith_binary_op(node.op)) {
@@ -1568,6 +1625,11 @@ bool resolve_local_variable_type(type_system& ts, ast_node& l, bool is_arg = fal
     val_type = generate_deref_for_input(ts, l, val_type, 2);
 
     if (l.var_type() && decl_type.valid()) {
+        if (is_const_type(decl_type) && l.op != token_type::const_) {
+            add_type_error(ts, l.var_type()->pos, "cannot have a non-const variable of const type");
+            return false;
+        }
+
         if (decl_type.get().array.deduce_size
             && val_type.valid()
             && is_assignable_to(ts, val_type.get().elem_type, decl_type.get().elem_type)
@@ -1587,6 +1649,10 @@ bool resolve_local_variable_type(type_system& ts, ast_node& l, bool is_arg = fal
             add_type_error(ts, l.var_value()->pos, "cannot assign value of type '%s' to '%s'",
                 type_to_string(l.var_value()->tid).c_str(), type_to_string(l.var_type()->tid).c_str());
             return false;
+        }
+
+        if (l.var_value() && is_const_type(l.var_value()->tid)) {
+            l.tid = get_const_target_type(ts, l.var_value()->tid, decl_type);
         }
     }
     else if (!l.var_type()) {
@@ -2144,6 +2210,45 @@ void register_func_declaration_node(type_system& ts, ast_node& node) {
     resolve_func_type(ts, node);
 }
 
+arena_ptr<ast_node> collapse_const_value(type_system& ts, ast_node& node, type_id target_type) {
+    switch (node.tid.get().kind) {
+    case type_kind::const_int: {
+        auto [value, ok] = node_to_const_value_fold(ts, node, true);
+        if (!std::holds_alternative<comp_int_type>(value)) {
+            return { nullptr, nullptr };
+        }
+        auto res = make_int_literal_node(*ts.ast_arena, node.pos, std::get<comp_int_type>(value));
+        res->tid = get_const_target_type(ts, node.tid, target_type);
+        return res;
+    }
+    case type_kind::const_string: {
+        // Transform the string literal into a array of chars
+        auto& sym = ts.builtin_scope->scope.symbols[string_hash{ "byte" }];
+        auto rstype = to_type_id(*sym);
+        auto pure_rstype = get_pure_type_to(ts, rstype);
+        auto pointer_type = get_ptr_type_to(ts, pure_rstype);
+
+        auto slicetype = get_array_type_to(ts, pure_rstype);
+        //auto pureslicetype = get_pure_type_to(ts, slicetype);
+        auto slicetypenode = make_type_expr_node(*ts.ast_arena, node.pos, make_type_resolver_node(*ts.ast_arena, slicetype));
+
+        std::vector<arena_ptr<ast_node>> nodes;
+        nodes.push_back(make_string_literal_node(*ts.ast_arena, node.pos, std::string{ node.string_value }));
+        nodes.push_back(make_int_literal_node(*ts.ast_arena, node.pos, node.string_value.size()));
+        nodes.push_back(make_int_literal_node(*ts.ast_arena, node.pos, node.string_value.size() + 1));
+        nodes[0]->tid = pointer_type; // So the created string literal doesn't need to be transformed.
+
+        auto arglist = make_arg_list_node(*ts.ast_arena, node.pos, std::move(nodes));
+        auto initlist = make_init_expr_node(*ts.ast_arena, node.pos, std::move(slicetypenode), std::move(arglist));
+        initlist->tid = slicetype;
+
+        return initlist;
+    }
+    default:
+        return { nullptr, nullptr };
+    }
+}
+
 void resolve_and_declare_local_variables(type_system& ts, ast_node& node) {
     size_t num_new = 0;
     bool diderror = false;
@@ -2208,6 +2313,13 @@ void resolve_and_declare_local_variables(type_system& ts, ast_node& node) {
             add_type_error(ts, node.pos, "invalid constant expression");
         }
         return;
+    }
+    else if (node.var_value()) {
+        if (node.var_value()->tid.valid() && is_const_type(node.var_value()->tid)) {
+            node.children[2] = collapse_const_value(ts, *node.var_value(), node.tid);
+            assert(node.children[2].get());
+            node.tid = node.children[2]->tid;
+        }
     }
 
     auto id = string_hash{ build_identifier_value(node.var_id()->id_parts) };
@@ -2317,6 +2429,10 @@ void resolve_assignment_type(type_system& ts, ast_node& node) {
             node.tid = invalid_type;
             return;
         }
+    }
+
+    if (is_const_type(node.children[1]->tid)) {
+        node.children[1] = collapse_const_value(ts, *node.children[1], node.children[0]->tid);
     }
 
     node.type_error = false;
@@ -3023,7 +3139,7 @@ void generate_temp_for_addr_expr(type_system& ts, ast_node& node, type_id ltype)
     auto tempname = generate_temp_name();
     auto temp = make_var_decl_node_single(*ts.ast_arena, node.pos, token_type::let,
         make_identifier_node(*ts.ast_arena, node.pos, { tempname }), // id
-        make_type_expr_node(*ts.ast_arena, node.pos, make_type_resolver_node(*ts.ast_arena, ltype)), // type
+        { nullptr, nullptr }, // type
         std::move(node.children[0]), {}); // value
     temp->local.flags |= local_flag::dont_check_for_duplicates;
 
@@ -3272,7 +3388,7 @@ void type_check_unary_expr(type_system& ts, ast_node& node) {
         ensure_bool_op_is_comparison_unary(ts, node);
     }
     else if (node.op == token_from_char('-') || node.op == token_from_char('~')) {
-        if (!node.children[0]->tid.valid() || !(node.children[0]->tid.get().kind == type_kind::integral)) {
+        if (!node.children[0]->tid.valid() || !(node.children[0]->tid.get().kind == type_kind::integral || node.children[0]->tid.get().kind == type_kind::const_int)) {
             add_type_error(ts, node.pos, "right side of unary '%c' has type '%s', it must be an integer",
                 token_to_char(node.op), type_to_string(node.children[0]->tid).c_str());
             return;
@@ -3351,12 +3467,11 @@ void type_check_return_stmt(type_system& ts, ast_node& node) {
     }
     else {
         node.tid = resolve_node_type(ts, node.children.front().get());
-        if (!node.tid.valid() || node.type_error) {
-            auto funcname = node_to_string(
-                *(find_nearest_scope_local(ts, scope_kind::func_body)->self->func_id())
-            );
-            //complement_error(ts, node.pos, "in return statement of function '%s'", funcname.c_str());
+        if (is_const_type(node.children.front()->tid)) {
+            // TODO: use function return type as target type
+            node.children[0] = collapse_const_value(ts, *node.children[0], {});
         }
+        node.tid = node.children.front()->tid;
     }
 
     // TODO: check if scope / sanity check
@@ -3403,6 +3518,13 @@ void type_check_compute_stmt(type_system& ts, ast_node& node) {
     if (!assignee) {
         add_type_error(ts, node.pos, "compute statement without destination");
         return;
+    }
+
+    if (is_const_type(node.children[0]->tid)) {
+        // TODO: use function return type as target type
+        node.children[0] = collapse_const_value(ts, *node.children[0], {});
+        node.tid = node.children[0]->tid;
+        cmpd->tid = node.tid;
     }
 
     // Transform this into an assignment statement
@@ -3522,6 +3644,10 @@ void type_check_field_expr(type_system& ts, ast_node& node, bool change_to_ident
     }
 
     if (node.children[0]->tid.valid()) {
+        if (is_const_type(node.children[0]->tid)) {
+            node.children[0] = collapse_const_value(ts, *node.children[0], {});
+        }
+
         auto ltype = node.children[0]->tid;
         auto stype = ltype;
 
@@ -3595,6 +3721,14 @@ void type_check_field_expr(type_system& ts, ast_node& node, bool change_to_ident
 
 void type_check_index_expr(type_system& ts, ast_node& node) {
     visit_children(ts, node);
+    // TODO: evaluate const value if both children are const
+    if (node.children[0] && is_const_type(node.children[0]->tid)) {
+        node.children[0] = collapse_const_value(ts, *node.children[0], {});
+    }
+
+    if (node.children[1] && is_const_type(node.children[1]->tid)) {
+        node.children[1] = collapse_const_value(ts, *node.children[1], {});
+    }
 
     bool arr = false;
     bool sli = false;
@@ -3721,8 +3855,12 @@ void type_check_init_expr(type_system& ts, ast_node& node) {
             std::vector<const_value> elem_types;
             bool all_resolved = true;
             type_id first_type{};
-            for (auto& child : node.children[1]->children) {
+            for (size_t i = 0; i < node.children[1]->children.size(); i++) {
+                auto& child = node.children[1]->children[i];
                 resolve_node_type(ts, child.get());
+                if (is_const_type(child->tid)) {
+                    node.children[1]->children[i] = collapse_const_value(ts, *child, {});
+                }
             }
             for (auto& child : node.children[1]->children) {
                 resolve_node_type(ts, child.get());
@@ -3761,17 +3899,27 @@ void type_check_init_expr(type_system& ts, ast_node& node) {
         const auto& fields = receiver_type.get().structure.fields;
         int narg = 0;
         bool did_error = false;
-        for (auto& child : node.children[1]->children) {
+        for (size_t i = 0; i < node.children[1]->children.size(); i++) {
+            auto& child = node.children[1]->children[i];
             if (narg >= fields.size()) break;
 
             push_receiver_type(ts, fields[narg].type);
             resolve_node_type(ts, child.get());
             pop_receiver_type(ts);
 
-            if (!is_assignable_to(ts, child->tid, fields[narg].type)) {
-                add_type_error(ts, child->pos, "cannot assign value of type '%s' to '%s'",
-                    type_to_string(child->tid).c_str(), type_to_string(fields[narg].type).c_str());
-                did_error = true;
+            if (is_const_type(child->tid)) {
+                node.children[1]->children[i] = collapse_const_value(ts, *child, {});
+            }
+
+            {
+                generate_deref_for_input(ts, *node.children[1], child->tid, i);
+                auto& child = node.children[1]->children[i];
+
+                if (!is_assignable_to(ts, child->tid, fields[narg].type)) {
+                    add_type_error(ts, child->pos, "cannot assign value of type '%s' to '%s'",
+                        type_to_string(child->tid).c_str(), type_to_string(fields[narg].type).c_str());
+                    did_error = true;
+                }
             }
 
             narg++;
@@ -4524,32 +4672,7 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
         break;
     case ast_type::string_literal:
         if (!node.tid.valid()) {
-            // Transform the string literal into a array of chars
-            auto& sym = ts.builtin_scope->scope.symbols[string_hash{ "byte" }];
-            auto rstype = to_type_id(*sym);
-            auto pure_rstype = get_pure_type_to(ts, rstype);
-            auto pointer_type = get_ptr_type_to(ts, pure_rstype);
-
-            auto slicetype = get_array_type_to(ts, pure_rstype);
-            //auto pureslicetype = get_pure_type_to(ts, slicetype);
-            auto slicetypenode = make_type_expr_node(*ts.ast_arena, node.pos, make_type_resolver_node(*ts.ast_arena, slicetype));
-
-            std::vector<arena_ptr<ast_node>> nodes;
-            nodes.push_back(make_string_literal_node(*ts.ast_arena, node.pos, std::string{ node.string_value }));
-            nodes.push_back(make_int_literal_node(*ts.ast_arena, node.pos, node.string_value.size()));
-            nodes.push_back(make_int_literal_node(*ts.ast_arena, node.pos, node.string_value.size() + 1));
-            nodes[0]->tid = pointer_type; // So the created string literal doesn't need to be transformed.
-
-            auto arglist = make_arg_list_node(*ts.ast_arena, node.pos, std::move(nodes));
-            auto initlist = make_init_expr_node(*ts.ast_arena, node.pos, std::move(slicetypenode), std::move(arglist));
-            initlist->tid = slicetype;
-
-            auto parent = node.parent;
-            auto idx = find_child_index(parent, &node);
-            if (idx) {
-                initlist->parent = parent;
-                parent->children[*idx] = std::move(initlist);
-            }
+            node.tid = ts.const_string_type;
         }
         break;
     case ast_type::init_tag: {
@@ -4849,6 +4972,18 @@ type_system::type_system(memory_arena& arena) {
     int16_type = register_integral_type<std::int16_t>(*this, "int16");
     int32_type = register_integral_type<std::int32_t>(*this, "int32");
     int64_type = register_integral_type<std::int64_t>(*this, "int64");
+
+    const_int_type = register_integral_like_type<comp_int_type>(*this, "const_int", type_kind::const_int);
+
+    {
+        auto node = make_in_arena<ast_node>(*ast_arena);
+
+        type_def& tf = node->tdef;
+        tf.kind = type_kind::const_string;
+        tf.name = string_hash{ "const_string" };
+        tf.mangled_name = string_hash{ "const_string" };
+        const_string_type = register_builtin_type(*this, std::move(node));
+    }
 
     register_real_type<float>(*this, "float");
     register_real_type<double>(*this, "double");
@@ -5191,12 +5326,12 @@ type_system::type_system(memory_arena& arena) {
 
         type_def& tf = node->tdef;
         tf.kind = type_kind::ptr;
-        tf.name = string_hash{ "rawptr" };
-        tf.mangled_name = string_hash{ "rawptr" };
+        tf.name = string_hash{ "opaque" };
+        tf.mangled_name = string_hash{ "opaque" };
         tf.size = sizeof(void*);
         tf.alignment = alignof(void*);
         tf.elem_type = discard_type;
-        raw_ptr_type = register_builtin_type(*this, std::move(node));
+        opaque_type = register_builtin_type(*this, std::move(node));
     }
 
     raw_string_type = register_pointer_type(*this, "$rawstring", "byte");

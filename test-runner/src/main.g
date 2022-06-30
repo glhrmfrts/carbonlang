@@ -7,7 +7,6 @@ fun append(s: in out string, what: string) = do
 end
 
 fun main = do
-    let COMPILER_PATH = "/usr/bin/carbonc"
     let testdirs = {
         "test-001-arith",
         "test-002-arrays",
@@ -57,7 +56,11 @@ fun main = do
         putln("Running: ", fullpath)
 
         let code : int
-        let err = exec(COMPILER_PATH, {"-p", "../..", "-I", "runtime/linux", "-V", "-o", "a.out"}, code)
+        let err = exec(
+            COMPILER_PATH,
+            {"-p", "../..", "-I", "runtime/linux", "-V", "-o", "a.out"},
+            code
+        )
         if err or code /= 0 then
             putln("Error: ", fullpath, " ", err, " exit code: ", code)
         else

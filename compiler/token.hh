@@ -71,6 +71,7 @@ enum class token_type : unsigned int {
     struct_,
     enum_,
     enumflags,
+    enumerror,
     noinit,
     of_,
     do_,

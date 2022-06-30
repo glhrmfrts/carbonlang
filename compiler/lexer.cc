@@ -307,6 +307,9 @@ struct lexer_impl {
             if (!std::strcmp("enumflags", l.string)) {
                 return token_type::enumflags;
             }
+            if (!std::strcmp("enumerror", l.string)) {
+                return token_type::enumerror;
+            }
             if (!std::strcmp("arrayview", l.string)) {
                 return token_type::arrayview_;
             }

@@ -8,7 +8,7 @@ type Data = struct of
     c: int
 end
 
-fun get_data = Data{10,20,30}
+fun get_data => Data = Data{10,20,30}
 
 fun main = do
     let d = Data{1,2,3}

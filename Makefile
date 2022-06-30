@@ -15,7 +15,7 @@ build: gen
 install: build
 	install $(BUILD_DIR)/compiler/$(COMPILER_NAME) -t $(INSTALL_DIR)/bin
 
-CURRENT_TEST=tests/test-005-nil
+CURRENT_TEST=tests/test-025-compute
 
 com:
 	cd $(CURRENT_TEST) && \

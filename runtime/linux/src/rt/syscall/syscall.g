@@ -28,19 +28,19 @@ fun close(fd : int) => int = do
     return syscall_1(SYS_close, fd)
 end
 
-fun stat(filename: &pure byte, buf: rawptr) => int = do
+fun stat(filename: &pure byte, buf: opaque) => int = do
     return syscall_2(SYS_stat, cast(int)cast(uintptr)filename, cast(int)cast(uintptr)buf)
 end
 
-fun fstat(fd: int, buf: rawptr) => int = do
+fun fstat(fd: int, buf: opaque) => int = do
     return syscall_2(SYS_fstat, fd, cast(int)cast(uintptr)buf)
 end
 
-fun mmap(addr: rawptr, size: int, prot: int, flags: int, fd: int, offs: int) => rawptr = do
-    return cast(rawptr)cast(uintptr) syscall_6(SYS_mmap, cast(int)cast(uintptr)addr, size, prot, flags, fd, offs)
+fun mmap(addr: opaque, size: int, prot: int, flags: int, fd: int, offs: int) => opaque = do
+    return cast(opaque)cast(uintptr) syscall_6(SYS_mmap, cast(int)cast(uintptr)addr, size, prot, flags, fd, offs)
 end
 
-fun munmap(addr: rawptr, size: int) => int = do
+fun munmap(addr: opaque, size: int) => int = do
     return syscall_2(SYS_munmap, cast(int)cast(uintptr)addr, size)
 end
 
@@ -52,7 +52,7 @@ fun fork() => int = do
     return syscall_1(SYS_fork, 0)
 end
 
-fun wait4(pid: int, status: &int, options: int, usage: rawptr) => int = do
+fun wait4(pid: int, status: &int, options: int, usage: opaque) => int = do
     return syscall_4(SYS_wait4, pid, cast(int)cast(uintptr)status, options, cast(int)cast(uintptr)usage)
 end
 

@@ -12,7 +12,7 @@ fun trim_non_numeric(s: string) => string = do
     end
 
     let res = s
-    res.ptr = cast(&pure byte) cast(&opaque) (cast(uintptr) _ + cast(uintptr) count)
+    res.ptr = cast(&pure byte) cast(opaque) (cast(uintptr) _ + cast(uintptr) count)
     res.len = _ - count
     res.cap = _ - count
     return res
@@ -33,8 +33,8 @@ fun to_int(s: string, radix: int, num: out int, rest: out string) => bool = do
 
     num = value
 
-    rest = s 
-    rest.ptr = cast(&pure byte) cast(&opaque) (cast(uintptr) _ + cast(uintptr) count)
+    rest = s
+    rest.ptr = cast(&pure byte) cast(opaque) (cast(uintptr) _ + cast(uintptr) count)
     rest.len = _ - count
     rest.cap = _ - count
 

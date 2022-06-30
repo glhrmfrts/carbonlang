@@ -1,29 +1,29 @@
-carbonc - compiling target: test-012-field
+pardalc - compiling target: test-012-field
 
 assembly file: rt_syscall_calls.s
-carbonc - running assembler: as _carbon/build_debug/rt_syscall_calls.s -o _carbon/build_debug/rt_syscall_calls.o
+pardalc - running assembler: as _carbon/build_debug/rt_syscall_calls.s -o _carbon/build_debug/rt_syscall_calls.o
 carbonc - compiling module: rt/syscall
 assembly file: rt_x86_64_start.s
-carbonc - running assembler: as _carbon/build_debug/rt_x86_64_start.s -o _carbon/build_debug/rt_x86_64_start.o
+pardalc - running assembler: as _carbon/build_debug/rt_x86_64_start.s -o _carbon/build_debug/rt_x86_64_start.o
 carbonc - compiling module: rt
 carbonc - compiling module: root
-carbonc - parsing time: 346ms
+pardalc - parsing time: 406ms
 
-carbonc - type checking 
+pardalc - type checking 
 unresolved types
-carbonc - type checking time: 57ms
+pardalc - type checking time: 116ms
 
-carbonc - generating IR 
-carbonc - IR generation time: 17ms
+pardalc - generating IR 
+pardalc - IR generation time: 26ms
 
-carbonc - generating assembly 
-carbonc - running assembler: as _carbon/build_debug/rt_syscall.asm -o _carbon/build_debug/rt_syscall.o
-carbonc - running assembler: as _carbon/build_debug/rt.asm -o _carbon/build_debug/rt.o
-carbonc - running assembler: as _carbon/build_debug/root.asm -o _carbon/build_debug/root.o
-carbonc - assembly generation time: 120ms
+pardalc - generating assembly 
+pardalc - running assembler: as _carbon/build_debug/rt_syscall.asm -o _carbon/build_debug/rt_syscall.o
+pardalc - running assembler: as _carbon/build_debug/rt.asm -o _carbon/build_debug/rt.o
+pardalc - running assembler: as _carbon/build_debug/root.asm -o _carbon/build_debug/root.o
+pardalc - assembly generation time: 131ms
 
-carbonc - running linker command: ld  -e _start -o _carbon/build_debug/test-012-field _carbon/build_debug/rt_syscall_calls.o _carbon/build_debug/rt_x86_64_start.o _carbon/build_debug/rt_syscall.o _carbon/build_debug/rt.o _carbon/build_debug/root.o -T ../../res/carbon.sc
-carbonc - output: a.out
+pardalc - running linker command: ld  -e _start -o _carbon/build_debug/test-012-field _carbon/build_debug/rt_syscall_calls.o _carbon/build_debug/rt_x86_64_start.o _carbon/build_debug/rt_syscall.o _carbon/build_debug/rt.o _carbon/build_debug/root.o -T ../../res/carbon.sc
+pardalc - output: a.out
 
-carbonc - total lines parsed: 1498
-carbonc - total compilation time: 616ms
+pardalc - total lines parsed: 1519
+pardalc - total compilation time: 741ms

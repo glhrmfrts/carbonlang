@@ -1275,6 +1275,9 @@ void generate_ir_identifier(ast_node& node) {
 }
 
 void generate_ir_string_literal(ast_node& node) {
+    // a const string cannot reach the IR
+    assert(node.tid.get().kind != type_kind::const_string);
+
     int index = find_or_add_global_string_data(std::string{node.string_value});
     temit(ir_load_addr, ts->raw_string_type, ir_string{index});
     push(ir_stackpop{ ts->raw_string_type });

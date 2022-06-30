@@ -531,7 +531,7 @@ struct generator {
         }
         else if (gd.type.get().kind == type_kind::ptr) {
             if (gd.value && std::holds_alternative<ir_int>(*gd.value)) {
-                em->add_global(gd.name, ts->raw_ptr_type, gd.visibility);
+                em->add_global(gd.name, ts->opaque_type, gd.visibility);
             }
             // TODO: handle globals pointing to other globals
         }
@@ -814,7 +814,7 @@ struct generator {
                 expr.base = std::get<gen_register>(a);
                 expr.index = reg_intermediate;
                 expr.mult = comp_int_type(esize_offs);
-                load_address(dest, expr, ts->raw_ptr_type);
+                load_address(dest, expr, ts->opaque_type);
             }
             else if (is_mem(a)) {
                 auto expr = gen_addr{};
@@ -825,14 +825,14 @@ struct generator {
                 }
                 else {
                     auto org_expr = std::get<gen_data_offset>(a);
-                    load_address(rax, org_expr, ts->raw_ptr_type);
+                    load_address(rax, org_expr, ts->opaque_type);
                     expr.base = rax;
                     expr.offset = 0;
                 }
                 expr.op_size = elem_size;
                 expr.index = reg_intermediate;
                 expr.mult = comp_int_type(esize_offs);
-                load_address(dest, expr, ts->raw_ptr_type);
+                load_address(dest, expr, ts->opaque_type);
             }
 
             gen_operand result;
@@ -968,14 +968,14 @@ struct generator {
                 load_address(rdi, todest(a), atype);
             }
             else {
-                move(rdi, ts->raw_ptr_type, a, atype);
+                move(rdi, ts->opaque_type, a, atype);
             }
 
             if (is_mem(b)) {
                 load_address(rsi, todest(b), btype);
             }
             else {
-                move(rsi, ts->raw_ptr_type, b, btype);
+                move(rsi, ts->opaque_type, b, btype);
             }
 
             move(rcx, ts->int_type, c, ctype);

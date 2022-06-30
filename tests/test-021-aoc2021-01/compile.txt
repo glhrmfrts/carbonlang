@@ -1,30 +1,30 @@
-carbonc - compiling target: test-021-aoc2021-01
+pardalc - compiling target: test-021-aoc2021-01
 
 assembly file: rt_syscall_calls.s
-carbonc - running assembler: as _carbon/build_debug/rt_syscall_calls.s -o _carbon/build_debug/rt_syscall_calls.o
+pardalc - running assembler: as _carbon/build_debug/rt_syscall_calls.s -o _carbon/build_debug/rt_syscall_calls.o
 carbonc - compiling module: rt/syscall
 assembly file: rt_x86_64_start.s
-carbonc - running assembler: as _carbon/build_debug/rt_x86_64_start.s -o _carbon/build_debug/rt_x86_64_start.o
+pardalc - running assembler: as _carbon/build_debug/rt_x86_64_start.s -o _carbon/build_debug/rt_x86_64_start.o
 carbonc - compiling module: rt
 carbonc - compiling module: root
-carbonc - parsing time: 340ms
+pardalc - parsing time: 436ms
 
-carbonc - type checking 
+pardalc - type checking 
 unresolved types
 unresolved types
-carbonc - type checking time: 56ms
+pardalc - type checking time: 143ms
 
-carbonc - generating IR 
-carbonc - IR generation time: 16ms
+pardalc - generating IR 
+pardalc - IR generation time: 32ms
 
-carbonc - generating assembly 
-carbonc - running assembler: as _carbon/build_debug/rt_syscall.asm -o _carbon/build_debug/rt_syscall.o
-carbonc - running assembler: as _carbon/build_debug/rt.asm -o _carbon/build_debug/rt.o
-carbonc - running assembler: as _carbon/build_debug/root.asm -o _carbon/build_debug/root.o
-carbonc - assembly generation time: 102ms
+pardalc - generating assembly 
+pardalc - running assembler: as _carbon/build_debug/rt_syscall.asm -o _carbon/build_debug/rt_syscall.o
+pardalc - running assembler: as _carbon/build_debug/rt.asm -o _carbon/build_debug/rt.o
+pardalc - running assembler: as _carbon/build_debug/root.asm -o _carbon/build_debug/root.o
+pardalc - assembly generation time: 134ms
 
-carbonc - running linker command: ld  -e _start -o _carbon/build_debug/test-021-aoc2021-01 _carbon/build_debug/rt_syscall_calls.o _carbon/build_debug/rt_x86_64_start.o _carbon/build_debug/rt_syscall.o _carbon/build_debug/rt.o _carbon/build_debug/root.o -T ../../res/carbon.sc
-carbonc - output: a.out
+pardalc - running linker command: ld  -e _start -o _carbon/build_debug/test-021-aoc2021-01 _carbon/build_debug/rt_syscall_calls.o _carbon/build_debug/rt_x86_64_start.o _carbon/build_debug/rt_syscall.o _carbon/build_debug/rt.o _carbon/build_debug/root.o -T ../../res/carbon.sc
+pardalc - output: a.out
 
-carbonc - total lines parsed: 1569
-carbonc - total compilation time: 578ms
+pardalc - total lines parsed: 1590
+pardalc - total compilation time: 819ms

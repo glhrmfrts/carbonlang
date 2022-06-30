@@ -44,6 +44,8 @@ enum class type_qualifier {
 enum class type_kind {
     discard,
     module_,
+    const_int,
+    const_string,
     nil,
     ptr,
     input,
@@ -383,7 +385,7 @@ struct type_system {
     type_id type_type{};
     type_id nil_type{};
     type_id discard_type{};
-    type_id raw_ptr_type{};
+    type_id opaque_type{};
     type_id intptr_type{};
     type_id byte_type{};
     type_id bool_type{};
@@ -392,6 +394,8 @@ struct type_system {
     type_id typeid_type{};
     type_id quote_type{};
     type_id module_type{};
+    type_id const_string_type{};
+    type_id const_int_type{};
 
     type_id raw_string_type{}; // only used internally
     type_id usize_type{};

@@ -596,7 +596,7 @@ struct parser_impl {
             return parse_type_decl();
         case token_type::typealias:
             return parse_type_decl(true);
-        case token_type::error:
+        case token_type::enumerror:
             return parse_error_decl();
         case token_type::import_:
             return parse_import_decl();
@@ -720,7 +720,7 @@ struct parser_impl {
         lex->next();
 
         if (TOK_CHAR != '(') {
-            throw parse_error(filename, lex->pos(), "expecting '(' in error declaration");
+            throw parse_error(filename, lex->pos(), "expecting '(' in enumerror declaration");
         }
         lex->next();
 
@@ -731,7 +731,7 @@ struct parser_impl {
         }
 
         if (TOK_CHAR != ')') {
-            throw parse_error(filename, lex->pos(), "expecting closing ')' in error declaration");
+            throw parse_error(filename, lex->pos(), "expecting closing ')' in enumerror declaration");
         }
         lex->next();
 

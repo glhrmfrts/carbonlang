@@ -17,10 +17,10 @@ local const PROT_GROWSDOWN = 0x01000000
 local const PROT_GROWSUP   = 0x02000000
 
 -- mmap with default parameters
-fun mmap(size: int) => rawptr = do
+fun mmap(size: int) => opaque = do
     return syscall.mmap(nil, size, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, 0, 0)
 end
 
-fun munmap(ptr: rawptr, size: int) = do
+fun munmap(ptr: opaque, size: int) = do
     discard syscall.munmap(ptr, size)
 end
