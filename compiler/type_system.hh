@@ -311,6 +311,7 @@ struct func_def {
     std::vector<std::string> extern_alias;
     int num_args;
     bool has_root_return_statements;
+    bool is_body_expr;
 };
 
 struct field_access {

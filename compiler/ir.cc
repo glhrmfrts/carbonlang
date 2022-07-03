@@ -39,7 +39,7 @@ static const std::string opnames[] = {
     "ir_index",
     "ir_deref",
     "ir_load_addr",
-    "ir_make_label",
+    "::", // makelabel
     "ir_asm",
     "ir_cmp_lt",
     "ir_cmp_gt",
@@ -65,6 +65,27 @@ static type_system* ts;
 static std::stack<ir_operand> operand_stack;
 static std::unordered_map<std::string, int> string_map;
 static std::optional<ir_ref> init_receiver;
+
+struct short_circuit_target {
+    std::string true_label;
+    std::string false_label;
+    bool invert_jump;
+};
+
+static std::stack<short_circuit_target> short_targets;
+
+static void push_short_circuit_target(const short_circuit_target& t) {
+    short_targets.push(t);
+}
+static std::optional<short_circuit_target> current_short_circuit_target() {
+    if (short_targets.empty()) {
+        return {};
+    }
+    return short_targets.top();
+}
+static void pop_short_circuit_target() {
+    short_targets.pop();
+}
 
 std::optional<ir_ref> get_init_receiver() {
     if (init_receiver) {
@@ -199,58 +220,15 @@ ir_operand fromref(const ir_ref& opr) {
 
 // Section: analysis
 
-std::string generate_label_for_short_circuit(ast_node& node) {
+std::string generate_label(ast_node& node, const std::string& name) {
     auto scope = ts->find_nearest_scope(scope_kind::func_body);
     auto& funcname = scope->self->tdef.mangled_name.str;
-    node.ir.bin_self_label = ".short" + std::to_string(node.node_id);
-    return node.ir.bin_self_label;
-}
 
-void set_bool_op_target(ast_node& node, bool invert_jump, const std::string& label) {
-    node.ir.bin_invert_jump = invert_jump;
-    node.ir.bin_target_label = label;
-}
-
-void distribute_bool_op_targets(ast_node& node, const std::string& true_label, const std::string& false_label) {
-    if (node.type == ast_type::binary_expr && node.op == token_type::andand) {
-        set_bool_op_target(*node.children[0], true, false_label);
-        if (is_logic_binary_op(*node.children[0])) {
-            if (node.children[0]->op == token_type::oror) {
-                auto right_label = generate_label_for_short_circuit(*node.children[1]);
-                distribute_bool_op_targets(*node.children[0], right_label, false_label);
-            }
-            else {
-                distribute_bool_op_targets(*node.children[0], true_label, false_label);
-            }
-        }
-        distribute_bool_op_targets(*node.children[1], true_label, false_label);
-    }
-    else if (node.type == ast_type::binary_expr && node.op == token_type::oror) {
-        set_bool_op_target(*node.children[0], false, true_label);
-        if (is_logic_binary_op(*node.children[0])) {
-            if (node.children[0]->op == token_type::andand) {
-                auto right_label = generate_label_for_short_circuit(*node.children[1]);
-                distribute_bool_op_targets(*node.children[0], true_label, right_label);
-            }
-            else {
-                distribute_bool_op_targets(*node.children[0], true_label, false_label);
-            }
-        }
-        distribute_bool_op_targets(*node.children[1], true_label, false_label);
-    }
-    else if (node.type == ast_type::unary_expr && node.op == token_type::not_) {
-        if (is_logic_binary_op(*node.children[0])) {
-            // invert the labels
-            distribute_bool_op_targets(*node.children[0], false_label, true_label);
-        }
-        else if (is_cmp_binary_op(*node.children[0])) {
-            // invert the jump
-            set_bool_op_target(*node.children[0], false, false_label);
-        }
-    }
-    else {
-        set_bool_op_target(node, true, false_label);
-    }
+    std::string label = ".";
+    label.append(name);
+    label.append("_");
+    label.append(std::to_string(node.node_id));
+    return label;
 }
 
 void send_locals_to_func_scope(ast_node& node) {
@@ -321,7 +299,7 @@ void analyse_node(ast_node& node) {
         node.ir.if_end_label = ".w" + std::to_string(node.node_id) + "$end";
         node.ir.while_cond_label = ".w" + std::to_string(node.node_id) + "$cond";
 
-        distribute_bool_op_targets(*node.children[0], node.ir.if_body_label, node.ir.if_end_label);
+        //distribute_bool_op_targets(*node.children[0], node.ir.if_body_label, node.ir.if_end_label);
 
         ts->enter_scope(node);
         send_locals_to_func_scope(node);
@@ -337,7 +315,7 @@ void analyse_node(ast_node& node) {
         node.ir.if_else_label = ".if" + std::to_string(node.node_id) + "$else";
         node.ir.if_end_label = ".if" + std::to_string(node.node_id) + "$end";
 
-        distribute_bool_op_targets(*node.children[0], node.ir.if_body_label, node.ir.if_else_label);
+        //distribute_bool_op_targets(*node.children[0], node.ir.if_body_label, node.ir.if_else_label);
 
         ts->enter_scope(node);
         send_locals_to_func_scope(node);
@@ -635,47 +613,62 @@ void generate_for_stmt(ast_node& node) {
     emit(ir_comment, ir_label{ " " });
 }
 
-void generate_while_stmt(ast_node& node) {
-    emit(ir_make_label, ir_label{ node.ir.while_cond_label });
+void generate_forcond_stmt(ast_node& node) {
+    auto begin_label = generate_label(node, "forcond_begin");
+    auto true_label = generate_label(node, "forcond_true");
+    auto false_label = generate_label(node, "forcond_false");
+    auto end_label = generate_label(node, "forcond_end");
+
+    emit(ir_make_label, ir_label{ begin_label });
+
+    push_short_circuit_target({ true_label, false_label, true });
     generate_ir_node(*node.children[0]);
+    pop_short_circuit_target();
 
-    push_control_labels({ node.ir.while_cond_label, node.ir.if_end_label });
+    push_control_labels({ begin_label, false_label });
 
-    emit(ir_make_label, ir_label{ node.ir.if_body_label });
+    emit(ir_make_label, ir_label{ true_label });
     generate_ir_node(*node.children[1]);
 
-    emit(ir_jmp, ir_label{ node.ir.while_cond_label });
+    emit(ir_jmp, ir_label{ begin_label });
 
-    emit(ir_make_label, ir_label{ node.ir.if_end_label });
+    emit(ir_make_label, ir_label{ false_label });
 
     pop_control_labels();
 }
 
 void generate_if_stmt(ast_node& node) {
+    auto true_label = generate_label(node, "if_true");
+    auto false_label = generate_label(node, "if_false");
+    auto end_label = generate_label(node, "if_end");
+    node.ir.if_end_label = end_label;
+
+    push_short_circuit_target({ true_label, false_label, true });
     generate_ir_node(*node.children[0]);
+    pop_short_circuit_target();
 
-    if (!node.ir.if_body_label.empty()) {
-        emit(ir_make_label, ir_label{ node.ir.if_body_label });
+    {
+        emit(ir_make_label, ir_label{ true_label });
+        generate_ir_node(*node.children[1]);
+        emit(ir_jmp, ir_label{ end_label });
     }
-    generate_ir_node(*node.children[1]);
-    if (node.children.size() == 3) {
-        auto& last_instr = currentfunc->instrs.back();
 
+    if (node.children.size() == 3) {
+#if 0
+        auto& last_instr = currentfunc->instrs.back();
         if (!(last_instr.op == ir_jmp
             && std::holds_alternative<ir_label>(last_instr.operands.front())
             && std::get<ir_label>(last_instr.operands.front()).name == node.ir.if_end_label)) {
             emit(ir_jmp, ir_label{ node.ir.if_end_label });
         }
-
-        emit(ir_make_label, ir_label{ node.ir.if_else_label });
+#endif
+        emit(ir_make_label, ir_label{ false_label });
         generate_ir_node(*node.children[2]);
-
-        emit(ir_make_label, ir_label{ node.ir.if_end_label });
     }
     else {
-        emit(ir_make_label, ir_label{ node.ir.if_else_label });
-        emit(ir_make_label, ir_label{ node.ir.if_end_label });
+        emit(ir_make_label, ir_label{ false_label });
     }
+    emit(ir_make_label, ir_label{ end_label });
 }
 
 void generate_ir_continue_stmt(ast_node& node) {
@@ -898,14 +891,80 @@ void generate_ir_assignment(ast_node& node) {
     }
 }
 
-void generate_ir_binary_expr(ast_node& node) {
-    if (!node.ir.bin_self_label.empty()) {
-        emit(ir_make_label, ir_label{ node.ir.bin_self_label });
+void generate_ir_and(ast_node& node) {
+    auto target = current_short_circuit_target();
+    assert(target.has_value());
+
+    auto true_label = generate_label(node, "and_true");
+    auto false_label = generate_label(node, "and_false");
+
+    push_short_circuit_target({ true_label, target->false_label, true });
+    generate_ir_node(*node.children[0]);
+    pop_short_circuit_target();
+
+    emit(ir_make_label, ir_label{ true_label });
+
+    push_short_circuit_target({ target->true_label, target->false_label, true });
+    generate_ir_node(*node.children[1]);
+    pop_short_circuit_target();
+
+    emit(ir_jmp, ir_label{ target->true_label });
+
+    //emit(ir_make_label, ir_label{ false_label });
+    //emit(ir_jmp, ir_label{ target->false_label });
+}
+
+void generate_ir_or(ast_node& node) {
+    auto target = current_short_circuit_target();
+    assert(target.has_value());
+
+    auto true_label = generate_label(node, "or_true");
+    auto false_label = generate_label(node, "or_false");
+
+    push_short_circuit_target({ target->true_label, false_label, false });
+    generate_ir_node(*node.children[0]);
+    pop_short_circuit_target();
+
+    emit(ir_make_label, ir_label{ false_label });
+
+    push_short_circuit_target({ target->true_label, target->false_label, false });
+    generate_ir_node(*node.children[1]);
+    pop_short_circuit_target();
+
+    emit(ir_jmp, ir_label{ target->false_label });
+
+    //emit(ir_make_label, ir_label{ true_label });
+    //emit(ir_jmp, ir_label{ target->true_label });
+}
+
+static void generate_cmp_op(ast_node& node, ir_op normaljmp_op, ir_op invjmp_op, ir_op normalcmp_op, ir_op invcmp_op, ir_operand a, ir_operand b) {
+    auto short_target = current_short_circuit_target();
+    if (short_target.has_value()) {
+        auto op = (short_target->invert_jump) ? invjmp_op : normaljmp_op;
+        auto& label = (short_target->invert_jump) ? short_target->false_label : short_target->true_label;
+        emit(op, a, b, ir_label{ label });
     }
+    else {
+        temit((node.ir.bin_invert_jump) ? invcmp_op : normalcmp_op, node.tid, a, b);
+        push(ir_stackpop{ node.tid });
+    }
+}
+
+void generate_ir_binary_expr(ast_node& node) {
+    /*if (!node.ir.bin_self_label.empty()) {
+        emit(ir_make_label, ir_label{ node.ir.bin_self_label });
+    }*/
 
     if (is_logic_binary_op(node)) {
-        generate_ir_node(*node.children[0]);
-        generate_ir_node(*node.children[1]);
+        if (node.op == token_type::andand) {
+            generate_ir_and(node);
+        }
+        else if (node.op == token_type::oror) {
+            generate_ir_or(node);
+        }
+        else {
+            assert(!"unreachable");
+        }
         return;
     }
 
@@ -914,7 +973,7 @@ void generate_ir_binary_expr(ast_node& node) {
 
     generate_ir_node(*node.children[1]);
     auto b = pop();
-    
+
     switch (token_to_char(node.op)) {
     case '+':
         temit(ir_add, node.tid, a, b);
@@ -933,22 +992,10 @@ void generate_ir_binary_expr(ast_node& node) {
         push(ir_stackpop{ node.tid });
         break;
     case '<':
-        if (!node.ir.bin_target_label.empty()) {
-            emit((node.ir.bin_invert_jump) ? ir_jmp_gte : ir_jmp_lt, a, b, ir_label{ node.ir.bin_target_label });
-        }
-        else {
-            temit((node.ir.bin_invert_jump) ? ir_cmp_gteq : ir_cmp_lt, node.tid, a, b);
-            push(ir_stackpop{ node.tid });
-        }
+        generate_cmp_op(node, ir_jmp_lt, ir_jmp_gte, ir_cmp_lt, ir_cmp_gteq, a, b);
         break;
     case '>':
-        if (!node.ir.bin_target_label.empty()) {
-            emit((node.ir.bin_invert_jump) ? ir_jmp_lte : ir_jmp_gt, a, b, ir_label{ node.ir.bin_target_label });
-        }
-        else {
-            temit((node.ir.bin_invert_jump) ? ir_cmp_lteq : ir_cmp_gt, node.tid, a, b);
-            push(ir_stackpop{ node.tid });
-        }
+        generate_cmp_op(node, ir_jmp_gt, ir_jmp_lte, ir_cmp_gt, ir_cmp_lteq, a, b);
         break;
     case '&':
         temit(ir_and, node.tid, a, b);
@@ -966,40 +1013,16 @@ void generate_ir_binary_expr(ast_node& node) {
 
     switch (node.op) {
     case token_type::eqeq:
-        if (!node.ir.bin_target_label.empty()) {
-            emit((node.ir.bin_invert_jump) ? ir_jmp_neq : ir_jmp_eq, a, b, ir_label{ node.ir.bin_target_label });
-        }
-        else {
-            temit((node.ir.bin_invert_jump) ? ir_cmp_neq : ir_cmp_eq, node.tid, a, b);
-            push(ir_stackpop{ node.tid });
-        }
+        generate_cmp_op(node, ir_jmp_eq, ir_jmp_neq, ir_cmp_eq, ir_cmp_neq, a, b);
         break;
     case token_type::neq:
-        if (!node.ir.bin_target_label.empty()) {
-            emit((node.ir.bin_invert_jump) ? ir_jmp_eq : ir_jmp_neq, a, b, ir_label{ node.ir.bin_target_label });
-        }
-        else {
-            temit((node.ir.bin_invert_jump) ? ir_cmp_eq : ir_cmp_neq, node.tid, a, b);
-            push(ir_stackpop{ node.tid });
-        }
+        generate_cmp_op(node, ir_jmp_neq, ir_jmp_eq, ir_cmp_neq, ir_cmp_eq, a, b);
         break;
     case token_type::lteq:
-        if (!node.ir.bin_target_label.empty()) {
-            emit((node.ir.bin_invert_jump) ? ir_jmp_gt : ir_jmp_lte, a, b, ir_label{ node.ir.bin_target_label });
-        }
-        else {
-            temit((node.ir.bin_invert_jump) ? ir_cmp_gt : ir_cmp_lteq, node.tid, a, b);
-            push(ir_stackpop{ node.tid });
-        }
+        generate_cmp_op(node, ir_jmp_lte, ir_jmp_gt, ir_cmp_lteq, ir_cmp_gt, a, b);
         break;
     case token_type::gteq:
-        if (!node.ir.bin_target_label.empty()) {
-            emit((node.ir.bin_invert_jump) ? ir_jmp_lt : ir_jmp_gte, a, b, ir_label{ node.ir.bin_target_label });
-        }
-        else {
-            temit((node.ir.bin_invert_jump) ? ir_cmp_lt : ir_cmp_gteq, node.tid, a, b);
-            push(ir_stackpop{ node.tid });
-        }
+        generate_cmp_op(node, ir_jmp_gte, ir_jmp_lt, ir_cmp_gteq, ir_cmp_lt, a, b);
         break;
     case token_type::shr:
         temit(ir_shr, node.tid, a, b);
@@ -1241,6 +1264,16 @@ void generate_ir_init_expr(ast_node& node) {
 
     // TODO: zero the rest of the aggregate
 
+    if (field_index < fields.size()) {
+        auto& next_field = fields[field_index];
+        emit(ir_store,
+            fromref(*receiver),
+            ir_int{ 0, ts->uint8_type },
+            ir_int{ (long long)next_field.offset, ts->usize_type },
+            ir_int{ comp_int_type(node.tid.get().size), ts->usize_type }
+        );
+    }
+
     if (is_receiver_temp) { push(fromref(*receiver)); }
 }
 
@@ -1340,7 +1373,7 @@ void generate_ir_node(ast_node& node) {
         break;
     case ast_type::for_cond_stmt:
         ts->enter_scope(node);
-        generate_while_stmt(node);
+        generate_forcond_stmt(node);
         ts->leave_scope();
         break;
     case ast_type::if_stmt:

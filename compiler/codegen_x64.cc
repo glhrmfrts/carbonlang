@@ -20,7 +20,7 @@ using local_index = int;
 using instr_dest = std::variant<gen_register, local_index>;
 
 struct instr_data {
-    instr_dest dest;
+    bool next_instr_consumes_stack;
 };
 
 struct var_data {
@@ -430,6 +430,7 @@ struct generator {
             ir_instr* next_instr = nullptr;
             if (i < fn->instrs.size() - 1) {
                 next_instr = &fn->instrs[i + 1];
+                fndata->instrdata[instr.index].next_instr_consumes_stack = instr_opstack_consumption(*next_instr) > 0;
             }
 
             int mysc = instr_opstack_consumption(instr);
@@ -437,10 +438,10 @@ struct generator {
                 free_temp_destination();
             }
 
-            fndata->instrdata[instr.index].dest = reg_result;
+            //fndata->instrdata[instr.index].dest = reg_result;
             if (next_instr) {
                 if (instr_pushes_to_stack(instr) && instr_opstack_consumption(*next_instr) == 0) {
-                    fndata->instrdata[instr.index].dest = use_temp_destination(instr.result_type);
+                    (void)use_temp_destination(instr.result_type);
                 }
             }
         }
@@ -548,6 +549,17 @@ struct generator {
         else {
             assert(!"generate_global_var: type not handled");
         }
+    }
+
+    gen_destination get_instr_dest(const ir_instr& instr) {
+        if (fndata->instrdata[instr.index].next_instr_consumes_stack) {
+            return rax;
+        }
+        if (opstack.size() < register_temp.size()) {
+            return register_temp[opstack.size()];
+        }
+        assert(!"unreachable");
+        return {};
     }
 
     void generate_error(const ir_error_data& err) {
@@ -760,7 +772,7 @@ struct generator {
             }
 
             if (instr.result_type != ts->discard_type) {
-                auto dest = adjust_for_type(instr_dest_to_gen_dest(idata.dest), instr.result_type);
+                auto dest = adjust_for_type(get_instr_dest(instr), instr.result_type);
                 auto arax = adjust_for_type(reg_result, instr.result_type);
                 if (!(dest == arax)) {
                     move(dest, instr.result_type, toop(arax), instr.result_type);
@@ -793,7 +805,7 @@ struct generator {
         case ir_index: {
             auto [b, btype] = transform_ir_operand(instr.operands[1]);
             auto [a, atype] = transform_ir_operand(instr.operands[0]);
-            auto dest = instr_dest_to_gen_dest(idata.dest);
+            auto dest = get_instr_dest(instr);
 
             move(reg_intermediate, ts->int_type, b, btype);
 
@@ -852,7 +864,7 @@ struct generator {
         }
         case ir_deref: {
             auto [a, atype] = transform_ir_operand(instr.operands[0]);
-            auto dest = adjust_for_type(instr_dest_to_gen_dest(idata.dest), ts->int_type);
+            auto dest = adjust_for_type(get_instr_dest(instr), ts->int_type);
 
             gen_destination op;
             bool needs_move = true;
@@ -875,7 +887,7 @@ struct generator {
         }
         case ir_load_addr: {
             auto [a, atype] = transform_ir_operand(instr.operands[0]);
-            auto dest = adjust_for_type(instr_dest_to_gen_dest(idata.dest), instr.result_type);
+            auto dest = adjust_for_type(get_instr_dest(instr), instr.result_type);
             load_address(dest, todest(a), atype);
             push(toop(dest));
             break;
@@ -995,7 +1007,7 @@ struct generator {
         case ir_xor: {
             auto [b, btype] = transform_ir_operand(instr.operands[1]);
             auto [a, atype] = transform_ir_operand(instr.operands[0]);
-            auto dest = adjust_for_type(instr_dest_to_gen_dest(idata.dest), instr.result_type);
+            auto dest = adjust_for_type(get_instr_dest(instr), instr.result_type);
 
             if (instr.op == ir_div) {
                 move(adjust_for_type(rax, atype), atype, a, atype);
@@ -1028,7 +1040,7 @@ struct generator {
         case ir_shl: {
             auto [b, btype] = transform_ir_operand(instr.operands[1]);
             auto [a, atype] = transform_ir_operand(instr.operands[0]);
-            auto dest = adjust_for_type(instr_dest_to_gen_dest(idata.dest), instr.result_type);
+            auto dest = adjust_for_type(get_instr_dest(instr), instr.result_type);
 
             gen_operand op = a;
 
@@ -1059,7 +1071,7 @@ struct generator {
         case ir_neg:
         case ir_not: {
             auto [a, atype] = transform_ir_operand(instr.operands[0]);
-            auto dest = adjust_for_type(instr_dest_to_gen_dest(idata.dest), instr.result_type);
+            auto dest = adjust_for_type(get_instr_dest(instr), instr.result_type);
 
             auto op = adjust_for_type(rax, atype);
 
@@ -1079,7 +1091,7 @@ struct generator {
         }
         case ir_cast: {
             auto [a, atype] = transform_ir_operand(instr.operands[0]);
-            auto dest = adjust_for_type(instr_dest_to_gen_dest(idata.dest), instr.result_type);
+            auto dest = adjust_for_type(get_instr_dest(instr), instr.result_type);
 
             if (is_mem(a) && is_mem(dest)) {
                 move(adjust_for_type(reg_intermediate, instr.result_type), instr.result_type, a, atype);
@@ -1174,7 +1186,7 @@ struct generator {
         auto [b, btype] = transform_ir_operand(instr.operands[1]);
         auto [a, atype] = transform_ir_operand(instr.operands[0]);
 
-        auto dest = instr_dest_to_gen_dest(idata.dest);
+        auto dest = get_instr_dest(instr);
         auto bytedest = adjust_for_type(dest, ts->uint8_type);
         auto realdest = adjust_for_type(dest, instr.result_type);
 

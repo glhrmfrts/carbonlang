@@ -681,6 +681,9 @@ bool is_bool_op(ast_node& node) {
     else if (node.type == ast_type::unary_expr) {
         return token_to_char(node.op) == '!';
     }
+    else if (node.type == ast_type::macro_instance) {
+        return is_bool_op(*node.children[0]);
+    }
     return false;
 }
 

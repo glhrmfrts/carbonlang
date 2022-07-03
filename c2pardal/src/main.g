@@ -1,7 +1,7 @@
 import "rt"
 
 fun read_entire_file(filename: string, contents: out string) => error = do
-    let file : file_handle
+    let file: file_handle
     defer close(file)
 
     if open(file, filename, open_flags.read, 0) then |err|
@@ -29,11 +29,14 @@ end
 
 fun main = do
     let contents : string
-    if read_entire_file("tasdest.c", contents) then |err|
+    if read_entire_file("test.c", contents) then |err|
         putln("cannot read input file: ", err)
         return
     end
 
-    let tokens = lex(contents)
-    putln(tokens.len)
+    let tokens = primitive_lex(contents)
+    for range 0, tokens.len do |i|
+        let tok = tokens[i]
+        print_token(tok)
+    end
 end

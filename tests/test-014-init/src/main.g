@@ -49,4 +49,11 @@ fun main = do
         write(" ")
     end
     writeln("")
+
+    -- Test zero initialization
+    let a : MyStruct
+    writeMyStruct(a) -- 0,0
+
+    let b : MyStruct = {24}
+    writeMyStruct(b) -- 24,0
 end

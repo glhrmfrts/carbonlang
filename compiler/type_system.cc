@@ -2009,7 +2009,7 @@ type_id resolve_func_type(type_system& ts, ast_node& f) {
     f.tdef.is_signed = false;
 
     type_id ret_type = invalid_type;
-    if (!f.func_ret_type()) {
+    if (!f.func_ret_type() && !f.func.is_body_expr) {
         f.children[2] = make_type_expr_node(*ts.ast_arena, f.pos, make_type_resolver_node(*ts.ast_arena, ts.discard_type));
     }
 
@@ -2048,8 +2048,10 @@ type_id resolve_func_type(type_system& ts, ast_node& f) {
             }
         }
     }
+    else if (f.func.is_body_expr) {
+        ret_type = deduce_func_return_type(ts, f);
+    }
     else {
-        //ret_type = deduce_func_return_type(ts, f);
         add_type_error(ts, f.pos, "function without return type");
     }
     
@@ -2165,8 +2167,12 @@ void register_func_declaration_node(type_system& ts, ast_node& node) {
         resolve_node_type(ts, node.func_ret_type());
     }
 
+    node.func.is_body_expr = node.func.is_body_expr || false;
+
     if (body) {
         if (body->type != ast_type::compound_stmt) {
+            node.func.is_body_expr = true;
+
             auto new_return = make_return_stmt_node(*ts.ast_arena, body->pos, std::move(node.children[ast_node::child_func_decl_body]));
 
             auto stmts = std::vector<arena_ptr<ast_node>>{};
@@ -3941,6 +3947,31 @@ void type_check_init_expr(type_system& ts, ast_node& node) {
     }
 }
 
+type_id type_check_func_decl(type_system& ts, ast_node& node) {
+    if (ts.pass == type_system_pass::resolve_literals_and_register_declarations) {
+        register_func_declaration_node(ts, node);
+    }
+    else {
+        auto funcname = node_to_string(*node.func_id());
+        resolve_func_args_type(ts, node);
+
+        auto body = node.func_body();
+        if (body) {
+            body->parent = &node;
+            enter_scope_local(ts, node);
+            visit_children(ts, *body);
+            leave_scope_local(ts);
+        }
+        else if (node.func.linkage == func_linkage::local_carbon) {
+            // TODO: error
+            assert(!"func linkage error");
+        }
+
+        resolve_func_type(ts, node);
+    }
+    return node.tid;
+}
+
 type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
     if (!nodeptr) return invalid_type;
 
@@ -4408,27 +4439,7 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
         break;
     }
     case ast_type::func_decl: {
-        if (ts.pass == type_system_pass::resolve_literals_and_register_declarations) {
-            register_func_declaration_node(ts, node);
-        }
-        else {
-            auto funcname = node_to_string(*node.func_id());
-            resolve_func_args_type(ts, node);
-
-            auto body = node.func_body();
-            if (body) {
-                body->parent = &node;
-                enter_scope_local(ts, node);
-                visit_children(ts, *body);
-                leave_scope_local(ts);
-            }
-            else if (node.func.linkage == func_linkage::local_carbon) {
-                // TODO: error
-                assert(!"func linkage error");
-            }
-
-            resolve_func_type(ts, node);
-        }
+        type_check_func_decl(ts, node);
         break;
     }
     case ast_type::func_expr: {
