@@ -1192,10 +1192,6 @@ void generate_ir_var(ast_node& node) {
 }
 
 void generate_ir_init_expr(ast_node& node) {
-    /*for (auto& assign : node.initlist.assignments) {
-        generate_ir_node(*assign);
-    }*/
-
     bool is_receiver_temp = false;
     auto receiver = get_init_receiver();
     bool needsderef = false;
@@ -1237,6 +1233,7 @@ void generate_ir_init_expr(ast_node& node) {
 
     auto& fields = node.tid.get().structure.fields;
     int field_index = 0;
+    bool is_designated = false;
 
     for (auto& item : node.children[1]->children) {
         auto field_receiver = *receiver;
@@ -1245,26 +1242,63 @@ void generate_ir_init_expr(ast_node& node) {
             field_receiver = ir_stackpop{ node.tid, emitindex() };
         }
 
-        auto fielddest = ir_field{ field_receiver, field_index };
-        if (item->type == ast_type::init_expr) {
-            set_init_receiver(toref(fielddest));
-            generate_ir_node(*item);
-            clear_init_receiver();
-        }
-        else if (item->tid.get().kind == type_kind::nil && is_aggregate_type(fields[field_index].type)) {
-            generate_store_zero(fields[field_index].type, fielddest);
+        if (item->type == ast_type::assign_stmt) {
+            is_designated = true;
+
+            auto& id = item->children[0];
+            auto& value = item->children[1];
+
+            int field_index = aggregate_find_field(node.tid, id->id_parts.front());
+            auto fielddest = ir_field{ field_receiver, field_index };
+            if (value->type == ast_type::init_expr) {
+                set_init_receiver(toref(fielddest));
+                generate_ir_node(*value);
+                clear_init_receiver();
+            }
+            else if (value->tid.get().kind == type_kind::nil && is_aggregate_type(fields[field_index].type)) {
+                generate_store_zero(fields[field_index].type, fielddest);
+            }
+            else {
+                generate_ir_node(*value);
+                auto valueop = pop();
+                temit(ir_load, value->tid, fielddest, valueop);
+            }
         }
         else {
-            generate_ir_node(*item);
-            auto value = pop();
-            temit(ir_load, item->tid, fielddest, value);
+            auto fielddest = ir_field{ field_receiver, field_index };
+            if (item->type == ast_type::init_expr) {
+                set_init_receiver(toref(fielddest));
+                generate_ir_node(*item);
+                clear_init_receiver();
+            }
+            else if (item->tid.get().kind == type_kind::nil && is_aggregate_type(fields[field_index].type)) {
+                generate_store_zero(fields[field_index].type, fielddest);
+            }
+            else {
+                generate_ir_node(*item);
+                auto value = pop();
+                temit(ir_load, item->tid, fielddest, value);
+            }
+            field_index++;
         }
-        field_index++;
     }
 
     // TODO: zero the rest of the aggregate
 
-    if (field_index < fields.size()) {
+    if (is_designated) {
+        for (int i = 0; i < fields.size(); i++) {
+            if (node.initlist.fields_touched[i] == 0) {
+                auto field_receiver = *receiver;
+                if (needsderef) {
+                    temit(ir_deref, node.tid, fromref(*receiver));
+                    field_receiver = ir_stackpop{ node.tid, emitindex() };
+                }
+                auto fielddest = ir_field{ field_receiver, i };
+                generate_store_zero(fields[i].type, fielddest);
+            }
+        }
+    }
+    else if (field_index < fields.size()) {
         auto& next_field = fields[field_index];
         emit(ir_store,
             fromref(*receiver),

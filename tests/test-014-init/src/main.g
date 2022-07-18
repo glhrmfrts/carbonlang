@@ -56,4 +56,17 @@ fun main = do
 
     let b : MyStruct = {24}
     writeMyStruct(b) -- 24,0
+
+    -- Test designated initializer
+    let c : MyStruct = {x=42, y=69}
+    writeMyStruct(c) -- 42,69
+
+    let d : MyStruct = {y=69, x=42}
+    writeMyStruct(d) -- 69,42
+
+    let e : MyStruct = {y=69}
+    writeMyStruct(e) -- 0,69
+
+    let f : MyStruct = {x=42}
+    writeMyStruct(f) -- 42,0
 end

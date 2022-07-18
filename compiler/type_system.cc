@@ -3902,35 +3902,90 @@ void type_check_init_expr(type_system& ts, ast_node& node) {
             receiver_type = execute_builtin_type_constructor(ts, *ts.static_array_type_constructor, args);
         }
 
+        int num_designated = 0;
+        int num_positional = 0;
+        for (size_t i = 0; i < node.children[1]->children.size(); i++) {
+            auto& child = node.children[1]->children[i];
+            if (child->type == ast_type::assign_stmt) {
+                num_designated++;
+            }
+            else {
+                num_positional++;
+            }
+        }
+        if (num_designated > 0 && num_positional > 0) {
+            add_type_error(ts, node.pos, "cannot mix positional and designated initializers in one init expression");
+            return;
+        }
+
         const auto& fields = receiver_type.get().structure.fields;
+        std::vector<int> fields_touched;
+        for (const auto& field : fields) {
+            fields_touched.push_back(0);
+        }
+
         int narg = 0;
         bool did_error = false;
         for (size_t i = 0; i < node.children[1]->children.size(); i++) {
             auto& child = node.children[1]->children[i];
             if (narg >= fields.size()) break;
 
-            push_receiver_type(ts, fields[narg].type);
-            resolve_node_type(ts, child.get());
-            pop_receiver_type(ts);
-
-            if (is_const_type(child->tid)) {
-                node.children[1]->children[i] = collapse_const_value(ts, *child, {});
-            }
-
-            {
-                generate_deref_for_input(ts, *node.children[1], child->tid, i);
-                auto& child = node.children[1]->children[i];
-
-                if (!is_assignable_to(ts, child->tid, fields[narg].type)) {
-                    add_type_error(ts, child->pos, "cannot assign value of type '%s' to '%s'",
-                        type_to_string(child->tid).c_str(), type_to_string(fields[narg].type).c_str());
+            if (child->type == ast_type::assign_stmt) {
+                // designated initializer
+                const auto& field_name = child->children[0]->id_parts.front();
+                int field_index = aggregate_find_field(receiver_type, field_name);
+                if (field_index == -1) {
                     did_error = true;
+                    add_type_error(ts, child->pos, "'%s' is not a field of type '%s'", field_name.c_str(), type_to_string(receiver_type).c_str());
+                    break;
+                }
+
+                fields_touched[field_index] = 1;
+
+                push_receiver_type(ts, fields[field_index].type);
+                resolve_node_type(ts, child->children[1].get());
+                pop_receiver_type(ts);
+
+                if (is_const_type(child->children[1]->tid)) {
+                    node.children[1]->children[i]->children[1] = collapse_const_value(ts, *child->children[1], {});
+                }
+
+                {
+                    generate_deref_for_input(ts, *child, child->children[1]->tid, 1);
+
+                    if (!is_assignable_to(ts, child->children[1]->tid, fields[field_index].type)) {
+                        add_type_error(ts, child->pos, "cannot assign value of type '%s' to '%s'",
+                            type_to_string(child->children[1]->tid).c_str(), type_to_string(fields[field_index].type).c_str());
+                        did_error = true;
+                    }
+                }
+            }
+            else {
+                push_receiver_type(ts, fields[narg].type);
+                resolve_node_type(ts, child.get());
+                pop_receiver_type(ts);
+
+                if (is_const_type(child->tid)) {
+                    node.children[1]->children[i] = collapse_const_value(ts, *child, {});
+                }
+
+                {
+                    generate_deref_for_input(ts, *node.children[1], child->tid, i);
+                    auto& child = node.children[1]->children[i];
+
+                    if (!is_assignable_to(ts, child->tid, fields[narg].type)) {
+                        add_type_error(ts, child->pos, "cannot assign value of type '%s' to '%s'",
+                            type_to_string(child->tid).c_str(), type_to_string(fields[narg].type).c_str());
+                        did_error = true;
+                    }
                 }
             }
 
             narg++;
         }
         if (did_error) return;
+
+        node.initlist.fields_touched = fields_touched;
 
         if (ts.current_scope->kind == scope_kind::module_) {
             for (int fi = narg; fi < fields.size(); fi++) {

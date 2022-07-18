@@ -15,7 +15,7 @@ build: gen
 install: build
 	install $(BUILD_DIR)/compiler/$(COMPILER_NAME) -t $(INSTALL_DIR)/bin
 
-CURRENT_TEST=tests/test-008-funcs
+CURRENT_TEST=tests/test-014-init
 
 com:
 	cd $(CURRENT_TEST) && \

@@ -9,3 +9,9 @@ array of nested...
 102,402
 500,900
 Hello World How Are You? 
+0,0
+24,0
+42,69
+42,69
+0,69
+42,0

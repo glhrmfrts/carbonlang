@@ -258,6 +258,7 @@ struct slice_info {
 struct init_list {
     ast_node* receiver;
     bool deduce_to_tuple = false;
+    std::vector<int> fields_touched;
 };
 
 enum class scope_import_type {
@@ -447,6 +448,8 @@ struct type_system {
 bool is_pointer_type(type_id tid);
 
 bool is_aggregate_type(type_id tid);
+
+int aggregate_find_field(type_id tid, const std::string& name);
 
 bool compare_types_exact(const type_def& a, const type_def& b);
 

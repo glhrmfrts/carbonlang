@@ -1472,33 +1472,21 @@ struct parser_impl {
         auto item_list = arena_ptr<ast_node>{ nullptr, nullptr };
         {
             item_list = parse_arg_list('}', [this]() {
-                if (TOK_CHAR == '.') {
-                    auto pos = lex->pos();
-
-                    lex->next();
-                    if (TOK != token_type::identifier) {
-                        throw parse_error(filename, lex->pos(), "expected identifier in designated initializer");
-                    }
-
-                    auto id = make_identifier_node(*ast_arena, lex->pos(), { lex->string_value() });
-                    lex->next();
-
+                auto pos = lex->pos();
+                auto expr = parse_expr();
+                if (expr && expr->type == ast_type::identifier) {
                     if (TOK_CHAR == '=') {
-                        throw parse_error(filename, lex->pos(), "expected '=' in designated initializer");
-                    }
-                    lex->next();
+                        lex->next();
 
-                    auto value = parse_expr();
-                    if (!value) {
-                        throw parse_error(filename, lex->pos(), "expected value in designated initializer");
-                    }
+                        auto value = parse_expr();
+                        if (!value) {
+                            throw parse_error(filename, lex->pos(), "expected value expression in designated initializer");
+                        }
 
-                    // TODO: specialized node type needed?
-                    return make_var_decl_node_single(*ast_arena, pos, token_type::let, std::move(id), { nullptr, nullptr }, std::move(value), {});
+                        return make_assign_stmt_node(*ast_arena, pos, std::move(expr), std::move(value));
+                    }
                 }
-                else {
-                    return parse_expr();
-                }
+                return expr;
             });
         }
 
