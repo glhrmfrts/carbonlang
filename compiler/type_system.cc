@@ -3468,20 +3468,34 @@ void type_check_return_stmt(type_system& ts, ast_node& node) {
         node.type_error = true;
     }
 
+    // TODO: check if scope / sanity check
+    auto scope = find_nearest_scope_local(ts, scope_kind::func_body);
+
     if (!node.children.front()) {
         node.tid = ts.discard_type;
     }
     else {
-        node.tid = resolve_node_type(ts, node.children.front().get());
+        auto func_ret_type = scope->self->tdef.func.ret_type;
+        if (func_ret_type.valid() && func_ret_type.get().kind != type_kind::discard) {
+            if (node.children.front()->type == ast_type::init_expr) {
+                push_receiver_type(ts, func_ret_type);
+                node.tid = resolve_node_type(ts, node.children.front().get());
+                pop_receiver_type(ts);
+            }
+            else {
+                node.tid = resolve_node_type(ts, node.children.front().get());
+            }
+        }
+        else {
+            node.tid = resolve_node_type(ts, node.children.front().get());
+        }
+
         if (is_const_type(node.children.front()->tid)) {
             // TODO: use function return type as target type
             node.children[0] = collapse_const_value(ts, *node.children[0], {});
         }
         node.tid = node.children.front()->tid;
     }
-
-    // TODO: check if scope / sanity check
-    auto scope = find_nearest_scope_local(ts, scope_kind::func_body);
 
     bool exists = false;
     for (auto ret : scope->self->func.return_statements) {

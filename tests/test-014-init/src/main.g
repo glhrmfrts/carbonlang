@@ -62,7 +62,7 @@ fun main = do
     writeMyStruct(c) -- 42,69
 
     let d : MyStruct = {y=69, x=42}
-    writeMyStruct(d) -- 69,42
+    writeMyStruct(d) -- 42,69
 
     let e : MyStruct = {y=69}
     writeMyStruct(e) -- 0,69

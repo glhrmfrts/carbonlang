@@ -1,0 +1,37 @@
+type NodeType = enum (
+    Invalid
+    StringLiteral
+    IntLiteral
+    CharLiteral
+    Identifier
+    VarDecl
+    FuncDecl
+)
+
+type Node = struct of
+    node_type : NodeType
+    token : Token
+    children : array of &Node
+end
+
+let node_arena : Arena
+
+fun make_string_literal_node(t : Token) => &Node = node_arena->make(Node{
+    node_type = NodeType.StringLiteral,
+    token = t,
+})
+
+fun make_int_literal_node(t : Token) => &Node = node_arena->make(Node{
+    node_type = NodeType.IntLiteral,
+    token = t,
+})
+
+fun make_char_literal_node(t : Token) => &Node = node_arena->make(Node{
+    node_type = NodeType.CharLiteral,
+    token = t,
+})
+
+fun make_identifier_node(t : Token) => &Node = node_arena->make(Node{
+    node_type = NodeType.Identifier,
+    token = t,
+})

@@ -1,0 +1,83 @@
+enumerror (
+    ParseError
+)
+
+let parser_tokens: array of Token
+let parser_curtok: int
+
+let parse_err_position : Position
+let parse_err_message : string
+
+-- TODO: Implicit Context
+-- TODO: Error handling
+-- TODO: Syntax sugar: thread first ->
+-- X - Add custom things to context
+
+macro get_pos = parser_tokens[parser_curtok].position
+
+macro tok = parser_tokens[parser_curtok]
+
+macro __error_handler_return__(fcall) = do
+    let val = fcall
+    if context.err /= nil then
+        return undefined
+    end
+    compute val
+end
+
+macro __error_handler_trycatch__(fcall) = do
+    let val = fcall
+    if context.err /= nil then
+        break : catch
+    end
+    compute val
+end
+
+macro __array_index__() = do
+    if outofbounds then
+        context.err = OutOfBoundsError
+        break : catch
+    end
+end
+
+macro error(err) = do
+    context.err = err
+    return undefined
+end
+
+fun parse_decl() ?=> &Node = do
+    if something then
+        parse_err_position = get_pos()
+        parse_err_message = ""
+        error ParseError
+    end
+
+    return node
+end
+
+fun parse_decl_list() ?=> &Node = do
+    let pos = get_pos()
+    let decls : array of &Node
+    for true do
+        let decl = parse_decl()
+        if decl /= nil then
+            decls->append(decl)
+        else
+            break
+        end
+    end
+    return make_decl_list_node(decls)
+end
+
+fun parse(ts : array of Token) ?=> &Node = do
+    tokens = ts
+    return parse_decl_list()
+end
+
+fun main = do
+    try
+        let node = parse(lex(contents))
+    catch |err|
+        print(parse_err_position, parse_err_message)
+    end
+end

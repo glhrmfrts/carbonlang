@@ -1260,8 +1260,14 @@ void generate_ir_init_expr(ast_node& node) {
             }
             else {
                 generate_ir_node(*value);
+
                 auto valueop = pop();
-                temit(ir_load, value->tid, fielddest, valueop);
+                if (is_aggregate_type(fields[field_index].type)) {
+                    emit(ir_copy, fielddest, valueop, ir_int{ comp_int_type(fields[field_index].type.get().size), ts->int_type });
+                }
+                else {
+                    temit(ir_load, value->tid, fielddest, valueop);
+                }
             }
         }
         else {
@@ -1276,8 +1282,13 @@ void generate_ir_init_expr(ast_node& node) {
             }
             else {
                 generate_ir_node(*item);
-                auto value = pop();
-                temit(ir_load, item->tid, fielddest, value);
+                auto valueop = pop();
+                if (is_aggregate_type(fields[field_index].type)) {
+                    emit(ir_copy, fielddest, valueop, ir_int{ comp_int_type(fields[field_index].type.get().size), ts->int_type });
+                }
+                else {
+                    temit(ir_load, item->tid, fielddest, valueop);
+                }
             }
             field_index++;
         }
@@ -1299,12 +1310,18 @@ void generate_ir_init_expr(ast_node& node) {
         }
     }
     else if (field_index < fields.size()) {
+        auto field_receiver = *receiver;
+        if (needsderef) {
+            temit(ir_deref, node.tid, fromref(*receiver));
+            field_receiver = ir_stackpop{ node.tid, emitindex() };
+        }
+
         auto& next_field = fields[field_index];
         emit(ir_store,
-            fromref(*receiver),
+            fromref(field_receiver),
             ir_int{ 0, ts->uint8_type },
             ir_int{ (long long)next_field.offset, ts->usize_type },
-            ir_int{ comp_int_type(node.tid.get().size), ts->usize_type }
+            ir_int{ comp_int_type(node.tid.get().size - next_field.offset), ts->usize_type }
         );
     }
 

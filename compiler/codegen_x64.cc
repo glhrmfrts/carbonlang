@@ -946,10 +946,14 @@ struct generator {
                 }
             }
             else {
+                // The 'rep stos' instructions use al/rax for the value,
+                // so move the operand to a intermediate register if it's in rax
                 em->push(rdi);
+                load_address(rdi, todest(a), atype);
                 move(adjust_for_type(rax, btype), btype, b, btype);
                 em->mov(rcx, comp_int_type(sz / btype.get().size));
-                load_address(rdi, todest(a), atype);
+                //load_address(rdi, todest(a), atype);
+                //em->mov(rdi, r10);
                 switch (btype.get().size) {
                 case 1:
                     em->emitln(" rep stosb");

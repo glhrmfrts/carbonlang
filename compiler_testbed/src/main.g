@@ -16,7 +16,10 @@ type Token = struct of
     stop : int
 end
 
+fun make_token => Token = do
+    return {3}
+end
+
 fun main = do
-    let t : Token = {1, 2}
-    discard write(t.length)
+    let t = make_token()
 end
