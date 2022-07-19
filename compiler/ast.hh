@@ -97,6 +97,8 @@ struct desugar_flag {
     static constexpr type bool_op_desugared = 1;
     static constexpr type ternary_desugared = 2;
     static constexpr type var_decl_unpacked = 4;
+    static constexpr type has_context_arg = 8;
+    static constexpr type generated_out_assignment = 16;
 };
 
 struct ast_node {

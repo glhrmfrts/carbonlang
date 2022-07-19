@@ -18,6 +18,7 @@ namespace carbon {
 constexpr auto MODULE_SEP = "/";
 
 constexpr int DESUGAR_SUBPASS = 2048;
+constexpr int DESUGAR_CALLS_SUBPASS = 2049;
 
 constexpr auto ARRAY_VIEW_PTR_MEMBER = "ptr";
 constexpr auto ARRAY_VIEW_LEN_MEMBER = "len";
@@ -233,6 +234,7 @@ struct call_info {
     string_hash mangled_name;
     type_id func_type_id{};
     std::vector<const_value> const_args{};
+    bool resolve_after_desugar = false;
 };
 
 struct func_overload_info {
@@ -346,6 +348,9 @@ enum class type_system_pass {
     // if no errors found, adjust func arguments for aggregate types, create temp variables for bool ops...
     desugar,
 
+    // resolve modified function calls after the desugar pass
+    resolve_desugar_calls,
+
     // if no errors found, provide fully-qualified mangled names
     remangle_names,
 
@@ -411,6 +416,8 @@ struct type_system {
     type_id uint32_type{};
     type_id uint64_type{};
     type_id uintptr_type{};
+    type_id context_type{};
+    type_id context_ptr_type{};
 
     type_constructor* in_type_constructor;
     type_constructor* out_type_constructor;

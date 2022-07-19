@@ -15,7 +15,7 @@ build: gen
 install: build
 	install $(BUILD_DIR)/compiler/$(COMPILER_NAME) -t $(INSTALL_DIR)/bin
 
-CURRENT_TEST=tests/test-014-init
+CURRENT_TEST=tests/test-026-errorhandling
 
 com:
 	cd $(CURRENT_TEST) && \
@@ -113,15 +113,15 @@ test:
 		$(COMPILER_NAME) -p ../.. -I runtime/linux -V -o a.out > compile.txt && \
 		./a.out > out.txt && diff out.txt expected.txt && echo "\033[1;32mtest-017-placeholder: OK\033[0m"
 
-	@echo "test-018-stat: ..." && \
-		cd tests/test-018-stat && \
+	@echo "test-018-errorstrings: ..." && \
+		cd tests/test-018-errorstrings && \
 		$(COMPILER_NAME) -p ../.. -I runtime/linux -V -o a.out > compile.txt && \
-		./a.out > out.txt && diff out.txt expected.txt && echo "\033[1;32mtest-018-stat: OK\033[0m"
+		./a.out > out.txt && diff out.txt expected.txt && echo "\033[1;32mtest-018-errorstrings: OK\033[0m"
 
-	@echo "test-019-errorstrings: ..." && \
-		cd tests/test-019-errorstrings && \
+	@echo "test-019-stat: ..." && \
+		cd tests/test-019-stat && \
 		$(COMPILER_NAME) -p ../.. -I runtime/linux -V -o a.out > compile.txt && \
-		./a.out > out.txt && diff out.txt expected.txt && echo "\033[1;32mtest-019-errorstrings: OK\033[0m"
+		./a.out > out.txt && diff out.txt expected.txt && echo "\033[1;32mtest-019-stat: OK\033[0m"
 
 	@echo "test-020-readfile: ..." && \
 		cd tests/test-020-readfile && \

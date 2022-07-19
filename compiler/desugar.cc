@@ -146,6 +146,32 @@ void check_func_return_aggregate_type(type_system& ts, ast_node& func) {
     }
 }
 
+void check_func_context_arg(type_system& ts, ast_node& func) {
+    bool cond_callconv = func.func.linkage == func_linkage::local_carbon || func.func.linkage == func_linkage::external_carbon;
+    if (cond_callconv && !(func.desugar_flags & desugar_flag::has_context_arg)) {
+        auto& args = func.func_args();
+        auto arg_decl = make_var_decl_of_type(ts, token_type::let, "context", ts.context_ptr_type);
+        args.insert(args.begin(), std::move(arg_decl));
+
+        declare_func_arguments(ts, func);
+        resolve_func_args_type(ts, func);
+        clear_func_resolved_state(func);
+
+        func.desugar_flags |= desugar_flag::has_context_arg;
+    }
+}
+
+void check_call_context_arg(type_system& ts, ast_node& call) {
+    bool cond_callconv = call.call.funcdef->linkage == func_linkage::local_carbon || call.call.funcdef->linkage == func_linkage::external_carbon;
+    if (cond_callconv && !(call.desugar_flags & desugar_flag::has_context_arg)) {
+        auto& args = call.children[ast_node::child_call_expr_arg_list]->children;
+        args.insert(args.begin(), make_identifier_node(*ts.ast_arena, call.pos, { "context" }));
+        //resolve_node_type_post(ts, &call);
+        call.call.resolve_after_desugar = true;
+        call.desugar_flags |= desugar_flag::has_context_arg;
+    }
+}
+
 void transform_aggregate_call_into_pointer_argument_helper(type_system& ts, ast_node& receiver, ast_node* call) {
     assert(call->tid.valid());
 
@@ -156,9 +182,10 @@ void transform_aggregate_call_into_pointer_argument_helper(type_system& ts, ast_
     addr->tid = get_ptr_type_to(ts, call->tid);
 
     call->call_args().insert(call->call_args().begin(), std::move(addr));
-
     call->tid = invalid_type;
-    resolve_node_type_post(ts, call);
+
+    //resolve_node_type_post(ts, call);
+    call->call.resolve_after_desugar = true;
 
     call->call.flags |= call_flag::is_aggregate_return;
 }
@@ -248,6 +275,8 @@ void desugar(type_system& ts, ast_node* nodeptr) {
         }
         check_func_return_aggregate_type(ts, node);
 
+        check_func_context_arg(ts, node);
+
         visit_children(ts, node);
         if (node.scope.body_node) { leave_scope_local(ts); }
 
@@ -268,6 +297,7 @@ void desugar(type_system& ts, ast_node* nodeptr) {
 
         if (ts.subpass == 2) {
             check_temp_aggregate_call(ts, node);
+            check_call_context_arg(ts, node);
         }
         break;
     }
@@ -275,6 +305,7 @@ void desugar(type_system& ts, ast_node* nodeptr) {
         if (ts.subpass < 1) { break; }
 
         visit_pre_nodes(ts, node);
+        visit_children(ts, node);
         break;
     }
     case ast_type::assign_stmt: {
@@ -282,6 +313,7 @@ void desugar(type_system& ts, ast_node* nodeptr) {
         check_assignment_logic_op(ts, node);
         check_assignment_ternary_expr(ts, node);
         check_assignment_aggregate_call(ts, node);
+        visit_pre_nodes(ts, node);
         visit_children(ts, node);
         break;
     }

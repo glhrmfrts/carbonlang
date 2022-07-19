@@ -7,6 +7,8 @@ namespace carbon {
 
 void resolve_node_type_post(type_system& ts, ast_node* nodeptr);
 
+void resolve_node_type_desugar_calls(type_system& ts, ast_node* nodeptr);
+
 arena_ptr<ast_node> make_var_decl_with_value(memory_arena& ast_arena, std::string varname, arena_ptr<ast_node> value);
 
 arena_ptr<ast_node> make_assignment(memory_arena& ast_arena, arena_ptr<ast_node> dest, arena_ptr<ast_node> value);

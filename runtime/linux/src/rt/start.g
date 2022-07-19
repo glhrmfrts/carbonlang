@@ -9,6 +9,9 @@ end
 extern(C) fun __gamma_start(argc: int, argv: & &byte) = do
     import "root"
 
+    let main_context : context_type
+    let context = &main_context
+
 if false then
     for range 0, argc do |i|
         let cstr = argv[i]

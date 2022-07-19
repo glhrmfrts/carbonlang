@@ -15,6 +15,18 @@ void resolve_node_type_post(type_system& ts, ast_node* nodeptr) {
     ts.subpass = prevsubpass;
 }
 
+void resolve_node_type_desugar_calls(type_system& ts, ast_node* nodeptr) {
+    auto prevpass = ts.pass;
+    ts.pass = type_system_pass::perform_checks;
+
+    int prevsubpass = ts.subpass;
+    ts.subpass = DESUGAR_CALLS_SUBPASS;
+
+    resolve_node_type(ts, nodeptr);
+    ts.pass = prevpass;
+    ts.subpass = prevsubpass;
+}
+
 arena_ptr<ast_node> make_var_decl_with_value(memory_arena& ast_arena, std::string varname, arena_ptr<ast_node> value) {
     // TODO: modifiers
     auto res = make_var_decl_node_single(ast_arena, {}, token_type::let, make_identifier_node(ast_arena, {}, { varname }), { nullptr, nullptr }, std::move(value), {});

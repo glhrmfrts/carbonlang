@@ -2,19 +2,19 @@ typealias string = array of byte
 
 typealias string_view = array of pure byte
 
-fun memcpy(dest: opaque, src: opaque, n: int) = do
-    asm%do
-        mov %rdx,%rcx
-        rep movsb
-    end%asm
+fun memcpy(dest: opaque, src: opaque, count: int) = do
+    let dest_ptr = cast(&byte) dest
+    let src_ptr = cast(&byte) src
+    for range 0, count do |i|
+        dest_ptr[i] = src_ptr[i]
+    end
 end
 
 fun memset(dest: opaque, value: byte, count: int) = do
-    asm%do
-        mov %rsi,%rax
-        mov %rdx,%rcx
-        rep stosb
-    end%asm
+    let dest_ptr = cast(&byte) dest
+    for range 0, count do |i|
+        dest_ptr[i] = value
+    end
 end
 
 fun cstr_equals(p1 : &pure byte, p2 : &pure byte) => bool = do

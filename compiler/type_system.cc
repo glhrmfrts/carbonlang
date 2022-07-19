@@ -1717,6 +1717,16 @@ bool check_convertible_and_cast_call_args(type_system& ts, ast_node& node, type_
 
         convertible = is_assignable_to(ts, node.tid, target);
         if (!convertible) {
+
+            // HACK to get rid of error after desugar pass
+            if (ts.subpass == DESUGAR_CALLS_SUBPASS) {
+                if (node.tid.get().kind == type_kind::ptr && target.get().kind == type_kind::ptr) {
+                    if (node.tid.get().elem_type.get().flags & type_flags::is_pure) {
+                        return is_assignable_to(ts, node.tid.get().elem_type.get().elem_type, target.get().elem_type);
+                    }
+                }
+            }
+
             if (target.get().flags & (type_flags::is_in | type_flags::is_out)) {
                 if ((target.get().flags & type_flags::is_out) && (node.tid.get().flags & type_flags::is_pure)) {
                     return false;
@@ -1739,6 +1749,11 @@ bool check_convertible_and_cast_call_args(type_system& ts, ast_node& node, type_
                 else if (node.tid.get().kind == type_kind::static_array && target.get().elem_type.get().kind == type_kind::array) {
                     if (is_assignable_to(ts, node.tid.get().elem_type, get_pure_alias_root(ts, target.get().elem_type.get().elem_type))) {
                         info.cast_needed_idxs.push_back(std::make_tuple(array_cast, target.get().elem_type, idx));
+                        return true;
+                    }
+                }
+                else if (ts.subpass == DESUGAR_CALLS_SUBPASS) {
+                    if (node.tid.get().kind == type_kind::ptr && is_assignable_to(ts, node.tid.get().elem_type, target.get().elem_type)) {
                         return true;
                     }
                 }
@@ -1982,7 +1997,7 @@ static void generate_init_for_out_arguments(type_system& ts, ast_node& f) {
         auto& arg = f.func_args()[idx];
         assert(arg->type == ast_type::var_decl);
 
-        if (arg->tid.get().kind == type_kind::output) {
+        if (arg->tid.get().kind == type_kind::output && !(arg->desugar_flags & desugar_flag::generated_out_assignment)) {
             auto ref = make_identifier_node(*ts.ast_arena, f.func_body()->pos, arg->var_id()->id_parts);
 
             auto zerovalue = get_zero_value_node_for_type(ts, arg->tid.get().elem_type);
@@ -1992,6 +2007,7 @@ static void generate_init_for_out_arguments(type_system& ts, ast_node& f) {
             resolve_node_type(ts, assign.get());
 
             f.func_body()->children.insert(f.func_body()->children.begin(), std::move(assign));
+            arg->desugar_flags |= desugar_flag::generated_out_assignment;
         }
     }
 
@@ -3128,6 +3144,7 @@ void generate_temp_for_field_expr(type_system& ts, ast_node& node, type_id ltype
         make_identifier_node(*ts.ast_arena, node.pos, { tempname }), // id
         make_type_expr_node(*ts.ast_arena, node.pos, make_type_resolver_node(*ts.ast_arena, ltype)), // type
         std::move(node.children[0]), {}); // value
+    temp->local.flags |= local_flag::dont_check_for_duplicates;
 
     resolve_node_type(ts, temp.get());
 
@@ -3186,6 +3203,7 @@ arena_ptr<ast_node> generate_temp_for_call_expr(type_system& ts, ast_node& node,
         make_identifier_node(*ts.ast_arena, node.pos, { tempname }), // id
         make_type_expr_node(*ts.ast_arena, node.pos, make_type_resolver_node(*ts.ast_arena, temp_type)), // type
         copy_node(ts, &node), {}); // value
+    temp->local.flags |= local_flag::dont_check_for_duplicates;
 
     resolve_node_type(ts, temp.get());
 
@@ -3203,6 +3221,7 @@ arena_ptr<ast_node> generate_temp_for_ternary_expr(type_system& ts, ast_node& no
         make_identifier_node(*ts.ast_arena, node.pos, { tempname }), // id
         make_type_expr_node(*ts.ast_arena, node.pos, make_type_resolver_node(*ts.ast_arena, node.tid)), // type
         make_init_tag_node(*ts.ast_arena, {}, token_type::noinit), {}); // value
+    temp->local.flags |= local_flag::dont_check_for_duplicates;
     resolve_node_type(ts, temp.get());
 
     auto ref = make_identifier_node(*ts.ast_arena, temp->pos, { tempname });
@@ -4797,6 +4816,7 @@ void remangle_names(type_system& ts, ast_node* nodeptr) {
     auto& node = *nodeptr;
     switch (node.type) {
     case ast_type::for_numeric_stmt: {
+        enter_scope_local(ts, node);
         for (auto& pn : node.pre_nodes) {
             visit_tree(ts, *pn);
         }
@@ -4810,6 +4830,23 @@ void remangle_names(type_system& ts, ast_node* nodeptr) {
             visit_tree(ts, *node.forinfo.elemref);
         }
         visit_tree(ts, *node.for_body());
+        leave_scope_local(ts);
+        break;
+    }
+    case ast_type::if_stmt:
+    case ast_type::for_cond_stmt:
+    case ast_type::macro_instance:
+    case ast_type::compound_stmt: {
+        if (node.scope.self) {
+            enter_scope_local(ts, node);
+            visit_pre_nodes(ts, node);
+            visit_children(ts, node);
+            leave_scope_local(ts);
+        }
+        else {
+            visit_pre_nodes(ts, node);
+            visit_children(ts, node);
+        }
         break;
     }
     case ast_type::func_decl: {
@@ -4866,6 +4903,73 @@ void remangle_names(type_system& ts, ast_node* nodeptr) {
                 auto local = get_symbol_local(*pair.second);
                 local->mangled_name = mangle_global_name(ts, node.scope.self_module_parts, local->name, local->self->func.linkage);
             }
+        }
+        visit_pre_nodes(ts, node);
+        visit_children(ts, node);
+        break;
+    }
+    case ast_type::block_parameter_list: {
+        break;
+    }
+    default: {
+        visit_pre_nodes(ts, node);
+        visit_children(ts, node);
+        break;
+    }
+    }
+}
+
+void resolve_desugar_calls(type_system& ts, ast_node* nodeptr) {
+    if (!nodeptr) return;
+
+    auto& node = *nodeptr;
+    switch (node.type) {
+    case ast_type::for_numeric_stmt: {
+        enter_scope_local(ts, node);
+        for (auto& pn : node.pre_nodes) {
+            visit_tree(ts, *pn);
+        }
+        if (node.forinfo.declare_elem_to_range_start) {
+            visit_tree(ts, *node.forinfo.declare_elem_to_range_start);
+        }
+        visit_tree(ts, *node.forinfo.iterstart);
+        visit_tree(ts, *node.forinfo.iterstep);
+        visit_tree(ts, *node.forinfo.iterend);
+        if (node.forinfo.elemref) {
+            visit_tree(ts, *node.forinfo.elemref);
+        }
+        visit_tree(ts, *node.for_body());
+        leave_scope_local(ts);
+        break;
+    }
+    case ast_type::if_stmt:
+    case ast_type::for_cond_stmt:
+    case ast_type::macro_instance:
+    case ast_type::compound_stmt: {
+        if (node.scope.self) {
+            enter_scope_local(ts, node);
+            visit_pre_nodes(ts, node);
+            visit_children(ts, node);
+            leave_scope_local(ts);
+        }
+        else {
+            visit_pre_nodes(ts, node);
+            visit_children(ts, node);
+        }
+        break;
+    }
+    case ast_type::func_decl: {
+        if (node.scope.body_node) {
+            enter_scope_local(ts, node);
+            visit_children(ts, node);
+            leave_scope_local(ts);
+        }
+        break;
+    }
+    case ast_type::call_expr: {
+        if (node.call.resolve_after_desugar) {
+            resolve_node_type_desugar_calls(ts, nodeptr);
+            node.call.resolve_after_desugar = false;
         }
         visit_pre_nodes(ts, node);
         visit_children(ts, node);
@@ -5001,6 +5105,9 @@ void visit_tree(type_system& ts, ast_node& node) {
         break;
     case type_system_pass::desugar:
         desugar(ts, &node);
+        break;
+    case type_system_pass::resolve_desugar_calls:
+        resolve_desugar_calls(ts, &node);
         break;
     case type_system_pass::remangle_names:
         remangle_names(ts, &node);
@@ -5414,6 +5521,19 @@ type_system::type_system(memory_arena& arena) {
         opaque_type = register_builtin_type(*this, std::move(node));
     }
 
+    {
+        auto node = make_in_arena<ast_node>(*ast_arena);
+        type_def& tf = node->tdef;
+        tf.kind = type_kind::structure;
+        tf.name = string_hash{ "context_type" };
+        tf.mangled_name = string_hash{ "context_type" };
+        tf.structure.fields.push_back(struct_field{ {"err"}, error_type, 0 });
+        compute_struct_size_alignment_offsets(tf);
+
+        context_type = register_builtin_type(*this, std::move(node));
+        context_ptr_type = get_ptr_type_to(*this, context_type);
+    }
+
     raw_string_type = register_pointer_type(*this, "$rawstring", "byte");
 
     declare_const_symbol(*this, string_hash{ "OS_WINDOWS" }, const_value{ 1 }, int_type);
@@ -5539,6 +5659,17 @@ void type_system::resolve_and_check() {
             update_symbols_pass_tokens(*this);
         }
         in_desugar = false;
+
+        for (int i = 0; i < 1; i++) {
+            this->pass = type_system_pass::resolve_desugar_calls;
+            this->subpass = i;
+            for (auto& mod : this->root->children) {
+                enter_scope(*mod);
+                visit_tree(*this, *mod);
+                leave_scope();
+            }
+            update_symbols_pass_tokens(*this);
+        }
 
         for (int i = 0; i < 2; i++) {
             this->pass = type_system_pass::remangle_names;

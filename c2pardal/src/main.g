@@ -1,6 +1,6 @@
 import "rt"
 
-fun read_entire_file(filename: string) => error = do
+fun read_entire_file(filename: string, contents: out string) => error = do
     let file : file_handle
     defer close(file)
 
@@ -22,6 +22,7 @@ fun read_entire_file(filename: string) => error = do
         return err
     end
 
+    contents = data
     return nil
 end
 
