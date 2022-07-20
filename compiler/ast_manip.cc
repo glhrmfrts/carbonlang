@@ -306,8 +306,8 @@ arena_ptr<ast_node> make_cast_to(type_system& ts, arena_ptr<ast_node> expr, type
 // TODO: obviously need better stuff here
 static int temp_count = 0;
 
-std::string generate_temp_name() {
-    return "$ast_temp" + std::to_string(temp_count++);
+std::string generate_temp_name(const std::string& from) {
+    return "$ast_temp_" + from + std::to_string(temp_count++);
 }
 
 arena_ptr<ast_node> transform_bool_op_into_if_statement(type_system& ts, arena_ptr<ast_node> bop, ast_node& destvar) {
@@ -335,7 +335,7 @@ arena_ptr<ast_node> transform_ternary_expr_into_if_statement(type_system& ts, as
 
 std::pair<arena_ptr<ast_node>, arena_ptr<ast_node>> make_temp_variable_for_call_resolved(type_system& ts, ast_node& call) {
     // generate the temp ID
-    std::string tempname = generate_temp_name();
+    std::string tempname = generate_temp_name("callresolved");
     auto id_node = make_identifier_node(*ts.ast_arena, {}, { tempname });
 
     auto val_node = make_call_expr_node(*ts.ast_arena, {}, std::move(call.children[ast_node::child_call_expr_callee]), std::move(call.children[ast_node::child_call_expr_arg_list]));
@@ -355,7 +355,7 @@ std::pair<arena_ptr<ast_node>, arena_ptr<ast_node>> make_temp_variable_for_call_
 
 std::pair<arena_ptr<ast_node>, arena_ptr<ast_node>> make_temp_variable_for_index_expr_resolved(type_system& ts, arena_ptr<ast_node> lhs) {
     // generate the temp ID
-    std::string tempname = generate_temp_name();
+    std::string tempname = generate_temp_name("indexresolved");
     auto id_node = make_identifier_node(*ts.ast_arena, {}, { tempname });
 
     // Generate and register the declaration of the temp
@@ -376,7 +376,7 @@ std::pair<arena_ptr<ast_node>, arena_ptr<ast_node>> make_temp_variable_for_index
 // returns the if statement and a reference to temp
 std::pair<arena_ptr<ast_node>, arena_ptr<ast_node>> make_temp_variable_for_bool_op_resolved(type_system& ts, arena_ptr<ast_node> expr) {
     // generate the temp ID
-    std::string tempname = generate_temp_name();
+    std::string tempname = generate_temp_name("boolop");
     auto id_node = make_identifier_node(*ts.ast_arena, {}, { tempname });
     auto type_node = make_type_expr_node(*ts.ast_arena, {}, make_identifier_node(*ts.ast_arena, {}, { "bool" }));
 
@@ -411,7 +411,7 @@ arena_ptr<ast_node> make_temp_variable_for_bool_op_resolved(type_system& ts, are
 
 std::pair<arena_ptr<ast_node>, arena_ptr<ast_node>> make_temp_variable_for_ternary_expr_resolved(type_system& ts, arena_ptr<ast_node> expr) {
     // generate the temp ID
-    std::string tempname = generate_temp_name();
+    std::string tempname = generate_temp_name("ternaryresolved");
     auto id_node = make_identifier_node(*ts.ast_arena, {}, { tempname });
     auto type_node = make_type_resolver_node(*ts.ast_arena, expr->tid);
 
@@ -453,7 +453,7 @@ arena_ptr<ast_node> make_var_decl_of_type(type_system& ts, token_type kind, cons
 
 std::pair<arena_ptr<ast_node>, arena_ptr<ast_node>> make_temp_variable_for_aggregate_type_resolved(type_system& ts, arena_ptr<ast_node> expr) {
     auto pos = expr->pos;
-    auto tempname = generate_temp_name();
+    auto tempname = generate_temp_name("aggtype");
     auto decl = make_var_decl_with_value(*ts.ast_arena, tempname, std::move(expr));
     resolve_node_type_post(ts, decl.get());
 

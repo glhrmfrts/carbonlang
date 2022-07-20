@@ -32,28 +32,28 @@ type stat_type = struct of
     size : int
 end
 
-fun stat(filename: string, buf: out stat_type) => error = do
+fun stat(filename: string) ?=> stat_type = do
     let cstat : c_stat
 
     let res = syscall.stat(filename.ptr, &cstat)
     if res < 0 then
-        return errno_to_error(-res)
+        raise errno_to_error(-res)
     end
 
+    let buf : stat_type
     buf.size = cast(int) cstat.st_size
-
-    return nil
+    return buf
 end
 
-fun stat(fd: file_handle, buf: out stat_type) => error = do
+fun stat(fd: file_handle) ?=> stat_type = do
     let cstat : c_stat
 
     let res = syscall.fstat(fd, &cstat)
     if res < 0 then
-        return errno_to_error(-res)
+        raise errno_to_error(-res)
     end
 
+    let buf : stat_type
     buf.size = cast(int) cstat.st_size
-
-    return nil
+    return buf
 end

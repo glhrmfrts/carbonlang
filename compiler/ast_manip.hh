@@ -25,7 +25,7 @@ arena_ptr<ast_node> copy_node(type_system& ts, ast_node* node);
 
 arena_ptr<ast_node> make_cast_to(type_system& ts, arena_ptr<ast_node> expr, type_id t);
 
-std::string generate_temp_name();
+std::string generate_temp_name(const std::string& from);
 
 arena_ptr<ast_node> transform_bool_op_into_if_statement(type_system& ts, arena_ptr<ast_node> bop, ast_node& destvar);
 

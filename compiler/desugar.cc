@@ -219,7 +219,7 @@ void check_var_decl_aggregate_call(type_system& ts, ast_node& node) {
 
 void check_temp_aggregate_call(type_system& ts, ast_node& node) {
     if (node.type == ast_type::call_expr && is_aggregate_type(node.tid) && !(node.call.flags & call_flag::is_aggregate_return)) {
-        auto tempname = generate_temp_name();
+        auto tempname = generate_temp_name("aggcall");
         auto temp = make_var_decl_node_single(*ts.ast_arena, node.pos, token_type::let, 
             make_identifier_node(*ts.ast_arena, node.pos, { tempname }), // id
             make_type_expr_node(*ts.ast_arena, node.pos, make_type_resolver_node(*ts.ast_arena, node.tid)), // type

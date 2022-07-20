@@ -492,6 +492,7 @@ void generate_ir_func(ast_node& node) {
     }
     for (auto& local : node.scope.local_defs) {
         if (local->flags & local_flag::is_argument) continue;
+        if (local->refs.empty()) continue;
 
         ir_local_data ilocal;
         ilocal.type = local->self->tid;

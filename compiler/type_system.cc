@@ -2555,7 +2555,7 @@ void register_for_declarations(type_system& ts, ast_node& node) {
                 elem_id = params->at(0)->id_parts.front();
             }
             else {
-                elem_id = generate_temp_name();
+                elem_id = generate_temp_name("for");
             }
 
             if (!elem_id.empty()) {
@@ -2720,7 +2720,7 @@ bool check_builtin_call(type_system& ts, ast_node& node) {
                 node.type = ast_type::identifier;
                 node.tid = node.children[1]->children[0]->tid;
 
-                auto tempid = string_hash{ generate_temp_name() };
+                auto tempid = string_hash{ generate_temp_name("typeof")};
                 const_value value = node.tid;
                 declare_const_symbol(ts, tempid, value, ts.type_type);
 
@@ -3140,7 +3140,7 @@ void generate_temp_for_compound_expr(type_system& ts, ast_node& node) {
     auto idx = find_child_index(parent, &node);
     auto self = std::move(parent->children[*idx]);
 
-    auto tempname = generate_temp_name();
+    auto tempname = generate_temp_name("compound");
     auto temp = make_var_decl_node_single(*ts.ast_arena, node.pos, token_type::let,
         make_identifier_node(*ts.ast_arena, node.pos, { tempname }), // id
         {nullptr, nullptr}, // type
@@ -3158,7 +3158,7 @@ void generate_temp_for_compound_expr(type_system& ts, ast_node& node) {
 }
 
 void generate_temp_for_field_expr(type_system& ts, ast_node& node, type_id ltype) {
-    auto tempname = generate_temp_name();
+    auto tempname = generate_temp_name("field");
     auto temp = make_var_decl_node_single(*ts.ast_arena, node.pos, token_type::let,
         make_identifier_node(*ts.ast_arena, node.pos, { tempname }), // id
         make_type_expr_node(*ts.ast_arena, node.pos, make_type_resolver_node(*ts.ast_arena, ltype)), // type
@@ -3178,7 +3178,7 @@ void generate_temp_for_field_expr(type_system& ts, ast_node& node, type_id ltype
 }
 
 void generate_temp_for_addr_expr(type_system& ts, ast_node& node, type_id ltype) {
-    auto tempname = generate_temp_name();
+    auto tempname = generate_temp_name("addr");
     auto temp = make_var_decl_node_single(*ts.ast_arena, node.pos, token_type::let,
         make_identifier_node(*ts.ast_arena, node.pos, { tempname }), // id
         { nullptr, nullptr }, // type
@@ -3216,8 +3216,8 @@ void transform_aggregate_call_into_pointer_argument_helper_ts(type_system& ts, a
 
 // Generates a temp variable for a call with aggregate return type, returns a ref to the temp variable
 arena_ptr<ast_node> generate_temp_for_call_expr(type_system& ts, ast_node& node, type_id ltype) {
-    auto tempname = generate_temp_name();
-    auto temp_type = get_pure_type_to(ts, node.tid);
+    auto tempname = generate_temp_name("call");
+    auto temp_type = node.tid;
     auto temp = make_var_decl_node_single(*ts.ast_arena, node.pos, token_type::let,
         make_identifier_node(*ts.ast_arena, node.pos, { tempname }), // id
         make_type_expr_node(*ts.ast_arena, node.pos, make_type_resolver_node(*ts.ast_arena, temp_type)), // type
@@ -3235,7 +3235,7 @@ arena_ptr<ast_node> generate_temp_for_call_expr(type_system& ts, ast_node& node,
 }
 
 arena_ptr<ast_node> generate_temp_for_ternary_expr(type_system& ts, ast_node& node) {
-    auto tempname = generate_temp_name();
+    auto tempname = generate_temp_name("ternary");
     auto temp = make_var_decl_node_single(*ts.ast_arena, node.pos, token_type::let,
         make_identifier_node(*ts.ast_arena, node.pos, { tempname }), // id
         make_type_expr_node(*ts.ast_arena, node.pos, make_type_resolver_node(*ts.ast_arena, node.tid)), // type
@@ -3502,30 +3502,36 @@ void type_check_call_expr(type_system& ts, ast_node& node) {
                     return;
                 }
 
+                std::string check_macro_name;
+
                 if (node.tid.get().kind == type_kind::discard) {
-                    auto parent = node.parent;
-                    auto idx = find_child_index(parent, &node);
-                    auto fcall = std::move(parent->children[*idx]);
-                    fcall->call.being_catched = true;
-
-                    std::vector<arena_ptr<ast_node>> args;
-                    args.push_back(std::move(fcall));
-
-                    auto newnode = make_in_arena<ast_node>(*ts.ast_arena);
-                    newnode->type = ast_type::call_expr;
-                    newnode->parent = parent;
-                    newnode->children.clear();
-                    newnode->children.push_back(make_identifier_node(*ts.ast_arena, node.pos, { "__check_err_call_discard__" }));
-                    newnode->children.push_back(make_arg_list_node(*ts.ast_arena, node.pos, std::move(args)));
-
-                    parent_tree(*newnode);
-                    resolve_node_type(ts, newnode.get());
-
-                    parent->children[*idx] = std::move(newnode);
+                    check_macro_name = "__check_err_call_discard__";
                 }
                 else {
-                    // TODO
+                    check_macro_name = "__check_err_call__";
                 }
+
+                auto parent = node.parent;
+                auto idx = find_child_index(parent, &node);
+                auto fcall = std::move(parent->children[*idx]);
+                fcall->call.being_catched = true;
+
+                std::vector<arena_ptr<ast_node>> args;
+                args.push_back(std::move(fcall));
+
+                auto newnode = make_in_arena<ast_node>(*ts.ast_arena);
+                newnode->type = ast_type::call_expr;
+                newnode->parent = parent;
+                newnode->pos = node.pos;
+                newnode->children.clear();
+                newnode->children.push_back(make_identifier_node(*ts.ast_arena, node.pos, { check_macro_name }));
+                newnode->children.push_back(make_arg_list_node(*ts.ast_arena, node.pos, std::move(args)));
+
+                parent->children[*idx] = std::move(newnode);
+
+                parent_tree(*parent->children[*idx]);
+                resolve_node_type(ts, parent->children[*idx].get());
+                return;
             }
         }
 

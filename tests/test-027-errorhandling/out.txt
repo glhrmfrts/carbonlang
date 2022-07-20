@@ -1,0 +1,4 @@
+main: InvalidValue
+do_something: 2
+succeeded doing something
+main: (error)nil

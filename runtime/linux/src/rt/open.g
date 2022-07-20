@@ -53,24 +53,18 @@ fun to_kernel_flags(flags: open_flags) => int = do
     return lflags
 end
 
-fun open(
-    file    : out file_handle,
-    path    : string,
-    flags   : open_flags,
-    mode    : int
-) => error = do
+fun open(path: string, flags: open_flags, mode: int) ?=> file_handle = do
     let path_cstr = to_cstr(path, array[PATH_MAX] of byte{})
     if path_cstr == nil then
-        return UNIX_ENAMETOOLONG
+        raise UNIX_ENAMETOOLONG
     end
 
     let fd = syscall.open(path_cstr, to_kernel_flags(flags), mode)
     if fd < 0 then
-        return errno_to_error(-fd)
+        raise errno_to_error(-fd)
     end
 
-    file = fd
-    return nil
+    return fd
 end
 
 fun close(fd: file_handle) => error = do
@@ -78,6 +72,5 @@ fun close(fd: file_handle) => error = do
     if res < 0 then
         return errno_to_error(-fd)
     end
-    --putln("close ", fd)
     return nil
 end

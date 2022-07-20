@@ -1,36 +1,26 @@
-import "rt"
-
-fun read_entire_file(filename: string) ?=> string = do
+fun read_entire_file(filename: string) ? => string = do
     let file = open(filename, open_flags.read, 0)
     defer close(file)
 
-    let statbuf = stat(file)
-    let data = make_array(byte, statbuf.size)
+    let data : array of byte; resize(data, stat(file).size)
     read(file, data)
     return data
 end
 
+fun temp_wrapper() ? = do
+    let contents = read_entire_file("tesdasst.c")
+    defer free_array(contents)
+
+    let tokens = primitive_lex(contents)
+    for range 0, tokens.len do |i|
+        let tok = tokens[i]
+        print_token(tok)
+    end
+end
+
 fun main = do
-    try
-        let contents = read_entire_file()
-        defer free_array(contents)
-
-        let tokens = primitive_lex(contents)
-        for range 0, tokens.len do |i|
-            let tok = tokens[i]
-            print_token(tok)
-        end
-
-        let root = parse(tokens)
-    catch |err|
-        if err == LexError then
-            print(lex_err_position, lex_err_message)
-            return
-        else if err == ParseError then
-            print(parse_err_position, parse_err_message)
-            return
-        else
-            panic(err)
-        end
+    let err = temp_wrapper()?
+    if err /= nil then
+        putln("error: ", err)
     end
 end

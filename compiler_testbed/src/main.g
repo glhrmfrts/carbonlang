@@ -14,6 +14,14 @@ macro __raise__(err) = do
     return undefined
 end
 
+macro __check_err_call__(fcall) = do
+    let res = fcall
+    if context.err /= nil then
+        return undefined
+    end
+    compute res
+end
+
 macro __check_err_call_discard__(fcall) = do
     discard fcall
     if context.err /= nil then
@@ -30,25 +38,14 @@ end
 
 enumerror ( SomeError )
 
-fun get_something => int = do
-    return 42
+fun get_something(x: string) ? => string = do
+    return "something"
 end
 
 fun do_something ? = do
-    let y = get_something()
-    if y > 3 then
-        --raise SomeError
-        __raise__(SomeError)
-    end
-    --putln("do_something: ", y)
-end
-
-fun call_do_something ? = do
-    __check_err_call_discard__(do_something())
-    --putln("succeeded doing something")
+    let y = get_something("args")
+    discard write(y)
 end
 
 fun main = do
-    let err : error = call_do_something()?
-    --putln("main: ", err)
 end

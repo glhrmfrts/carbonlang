@@ -3,10 +3,17 @@ macro __raise__(err) = do
     return undefined
 end
 
+macro __check_err_call__(fcall) = do
+    let res = fcall
+    if context.err /= nil then
+        return undefined
+    end
+    compute res
+end
+
 macro __check_err_call_discard__(fcall) = do
     discard fcall
     if context.err /= nil then
-        --putln("error: ", context.err)
         return undefined
     end
 end
