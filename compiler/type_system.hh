@@ -287,6 +287,7 @@ enum class scope_kind {
     func_body,
     block,
     type,
+    try_,
 };
 
 struct scope_def {
@@ -335,6 +336,14 @@ struct range_info {
     ast_node* start;
     ast_node* end;
     ast_node* step;
+};
+
+struct try_info {
+    ast_node* err_receiver;
+};
+
+struct errbreak_info {
+    scope_def* tryscope;
 };
 
 enum class type_system_pass {

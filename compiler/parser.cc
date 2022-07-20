@@ -312,6 +312,8 @@ struct parser_impl {
             return parse_break_stmt();
         case token_type::if_:
             return parse_if_stmt();
+        case token_type::errbreak:
+            return parse_errbreak_stmt();
         case token_type::raise:
             return parse_raise_stmt();
         case token_type::return_:
@@ -324,6 +326,8 @@ struct parser_impl {
             return parse_defer_stmt();
         case token_type::discard:
             return parse_discard_stmt();
+        case token_type::try_:
+            return parse_try_stmt();
 #if 0
         case token_type::catch_:
             return parse_catch_stmt();
@@ -342,6 +346,17 @@ struct parser_impl {
             return make_assign_stmt_node(*ast_arena, pos, std::move(lhs), std::move(rhs));
         }
         return lhs;
+    }
+
+    arena_ptr<ast_node> parse_try_stmt() {
+        auto pos = lex->pos();
+        auto body = parse_compound_stmt({ token_type::catch_ });
+
+        arena_ptr<ast_node> catch_body{ nullptr, nullptr };
+        if (TOK == token_type::catch_) {
+            catch_body = parse_compound_stmt({});
+        }
+        return make_try_stmt_node(*ast_arena, pos, std::move(body), std::move(catch_body));
     }
 
     arena_ptr<ast_node> parse_break_stmt() {
@@ -506,6 +521,14 @@ struct parser_impl {
         }
 
         return make_if_stmt_node(*ast_arena, pos, std::move(cond), std::move(body), std::move(elsebody), as_expr);
+    }
+
+    arena_ptr<ast_node> parse_errbreak_stmt() {
+        auto pos = lex->pos();
+        lex->next(); // eat the 'errbreak'
+
+        auto expr = parse_expr();
+        return make_errbreak_stmt_node(*ast_arena, pos, std::move(expr));
     }
 
     arena_ptr<ast_node> parse_raise_stmt() {

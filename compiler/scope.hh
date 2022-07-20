@@ -12,6 +12,8 @@ void add_block_scope(type_system& ts, ast_node& node, ast_node& body_node);
 
 void add_type_scope(type_system& ts, ast_node& node, ast_node& body_node);
 
+void add_try_scope(type_system& ts, ast_node& node, ast_node& body_node);
+
 // enter existing scope
 void enter_scope_local(type_system& ts, ast_node& node);
 

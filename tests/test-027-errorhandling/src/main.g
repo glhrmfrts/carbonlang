@@ -23,13 +23,14 @@ end
 
 fun main = do
     gvar = 42
-    do
-        let err = call_do_something()?
-        putln("main: ", err)
-    end
-    gvar = 2
-    do
-        let err = call_do_something()?
-        putln("main: ", err)
+
+    for range 0, 2 do
+        try
+            call_do_something()
+            putln("okay")
+        catch |err|
+            putln("error: ", err)
+        end
+        gvar = 2
     end
 end

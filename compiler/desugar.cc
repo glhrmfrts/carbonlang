@@ -253,6 +253,7 @@ void desugar(type_system& ts, ast_node* nodeptr) {
     }
     case ast_type::if_stmt:
     case ast_type::for_cond_stmt:
+    case ast_type::try_stmt:
     case ast_type::macro_instance:
     case ast_type::compound_stmt: {
         if (node.scope.self) {

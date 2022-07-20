@@ -63,9 +63,11 @@ enum class ast_type {
     for_numeric_stmt,
     defer_stmt,
     continue_stmt,
+    errbreak_stmt,
     break_stmt,
     assign_stmt,
     discard_stmt,
+    try_stmt,
 
     type_expr,
     struct_type,
@@ -176,6 +178,8 @@ struct ast_node {
     range_info range;
     field_access field;
     init_list initlist;
+    try_info tryinfo;
+    errbreak_info errbreak;
     bool type_error = false;
 
     ir_node_data ir;
@@ -300,6 +304,8 @@ arena_ptr<ast_node> make_assign_stmt_node(memory_arena& arena, const position& p
 
 arena_ptr<ast_node> make_catch_expr_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& expr);
 
+arena_ptr<ast_node> make_errbreak_stmt_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& expr);
+
 arena_ptr<ast_node> make_raise_stmt_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& expr);
 
 arena_ptr<ast_node> make_return_stmt_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& expr);
@@ -313,6 +319,8 @@ arena_ptr<ast_node> make_asm_stmt_node(memory_arena& arena, const position& pos,
 arena_ptr<ast_node> make_for_cond_stmt_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& cond, arena_ptr<ast_node>&& body);
 
 arena_ptr<ast_node> make_for_numeric_stmt_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& ids, arena_ptr<ast_node>&& iter, arena_ptr<ast_node>&& body);
+
+arena_ptr<ast_node> make_try_stmt_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& body, arena_ptr<ast_node>&& catch_body);
 
 arena_ptr<ast_node> make_if_stmt_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& cond, arena_ptr<ast_node>&& body, arena_ptr<ast_node>&& elsebody, bool as_expr);
 

@@ -8,7 +8,7 @@ fun read_entire_file(filename: string) ? => string = do
 end
 
 fun temp_wrapper() ? = do
-    let contents = read_entire_file("tesdasst.c")
+    let contents = read_entire_file("test.c")
     defer free_array(contents)
 
     let tokens = primitive_lex(contents)
@@ -19,8 +19,10 @@ fun temp_wrapper() ? = do
 end
 
 fun main = do
-    let err = temp_wrapper()?
-    if err /= nil then
-        putln("error: ", err)
+    try
+        temp_wrapper()
+        putln("okay")
+    catch |err|
+        putln("error: ", err, " ", context.err)
     end
 end

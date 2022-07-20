@@ -200,6 +200,9 @@ struct lexer_impl {
             if (!std::strcmp("not", l.string)) {
                 return token_type::not_;
             }
+            if (!std::strcmp("try", l.string)) {
+                return token_type::try_;
+            }
             break;
         case 4:
             if (!std::strcmp("true", l.string)) {
@@ -299,6 +302,9 @@ struct lexer_impl {
             }
             if (!std::strcmp("continue", l.string)) {
                 return token_type::continue_;
+            }
+            if (!std::strcmp("errbreak", l.string)) {
+                return token_type::errbreak;
             }
         case 9:
             if (!std::strcmp("typealias", l.string)) {

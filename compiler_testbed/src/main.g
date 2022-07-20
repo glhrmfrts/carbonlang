@@ -22,6 +22,15 @@ macro __check_err_call__(fcall) = do
     compute res
 end
 
+macro __try_err_call_discard__(fcall) = do
+    discard fcall
+    if context.err /= nil then
+        -- TODO: this is not generating the correct code
+        defer context.err = nil
+        errbreak context.err
+    end
+end
+
 macro __check_err_call_discard__(fcall) = do
     discard fcall
     if context.err /= nil then
@@ -48,4 +57,10 @@ fun do_something ? = do
 end
 
 fun main = do
+    try
+        do_something()
+    catch |err|
+        let x = err
+        discard write("error")
+    end
 end

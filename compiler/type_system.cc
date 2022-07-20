@@ -3493,8 +3493,9 @@ void type_check_call_expr(type_system& ts, ast_node& node) {
 
         if (node.tid.valid() && node.call.funcdef) {
             if (node.call.funcdef->raises && !node.call.being_catched) {
-                auto scope = find_nearest_scope_local(ts, scope_kind::func_body);
-                if (scope && !scope->self->func.raises) {
+                auto fscope = find_nearest_scope_local(ts, scope_kind::func_body);
+                auto tryscope = find_nearest_scope_local(ts, scope_kind::try_);
+                if (fscope && !fscope->self->func.raises && !tryscope) {
                     add_type_error(ts, node.pos, "cannot call a partial function in a non-partial function");
                     complement_error(ts, node.pos, "annotate the caller-function with '?' after it's parameter list to make it partial");
                     complement_error(ts, node.pos, "or use a try-catch block to handle the error locally");
@@ -3504,11 +3505,21 @@ void type_check_call_expr(type_system& ts, ast_node& node) {
 
                 std::string check_macro_name;
 
-                if (node.tid.get().kind == type_kind::discard) {
-                    check_macro_name = "__check_err_call_discard__";
+                if (tryscope) {
+                    if (node.tid.get().kind == type_kind::discard) {
+                        check_macro_name = "__try_err_call_discard__";
+                    }
+                    else {
+                        check_macro_name = "__try_err_call__";
+                    }
                 }
                 else {
-                    check_macro_name = "__check_err_call__";
+                    if (node.tid.get().kind == type_kind::discard) {
+                        check_macro_name = "__check_err_call_discard__";
+                    }
+                    else {
+                        check_macro_name = "__check_err_call__";
+                    }
                 }
 
                 auto parent = node.parent;
@@ -3591,6 +3602,34 @@ void type_check_catch_expr(type_system& ts, ast_node& node) {
     }
 }
 
+void type_check_errbreak_stmt(type_system& ts, ast_node& node) {
+    if (ts.inside_defer) {
+        add_type_error(ts, node.pos, "illegal use of errbreak statement inside of defer statement");
+        node.type_error = true;
+        return;
+    }
+
+    auto tryscope = find_nearest_scope_local(ts, scope_kind::try_);
+    if (!tryscope) {
+        add_type_error(ts, node.pos, "illegal use of errbreak statement outside of try block");
+        node.type_error = true;
+        return;
+    }
+
+    visit_pre_nodes(ts, node);
+    visit_children(ts, node);
+
+    auto tid = node.children.front()->tid;
+    if (get_alias_root(ts, tid) != ts.error_type) {
+        add_type_error(ts, node.pos, "errbreak statement can only be used with the 'error' type");
+        complement_error(ts, node.pos, "expression has type '%s'", type_to_string(tid).c_str());
+        node.type_error = true;
+        return;
+    }
+
+    node.errbreak.tryscope = tryscope;
+}
+
 void type_check_raise_stmt(type_system& ts, ast_node& node) {
     if (ts.inside_defer) {
         add_type_error(ts, node.pos, "illegal use of raise statement inside of defer statement");
@@ -3599,7 +3638,8 @@ void type_check_raise_stmt(type_system& ts, ast_node& node) {
     }
 
     auto scope = find_nearest_scope_local(ts, scope_kind::func_body);
-    if (!scope->self->func.raises) {
+    auto tryscope = find_nearest_scope_local(ts, scope_kind::try_);
+    if (!scope->self->func.raises && !tryscope) {
         add_type_error(ts, node.pos, "raise statement can only be used in partial functions");
         complement_error(ts, node.pos, "annotate the caller-function with '?' after it's parameter list to make it partial");
         complement_error(ts, node.pos, "or use a try-catch block to handle the error locally");
@@ -3618,14 +3658,21 @@ void type_check_raise_stmt(type_system& ts, ast_node& node) {
         }
     }
 
-    auto err = std::move(node.children[0]);
+    std::string raise_macro_name;
+    if (tryscope) {
+        raise_macro_name = "__try_raise__";
+    }
+    else {
+        raise_macro_name = "__raise__";
+    }
 
+    auto err = std::move(node.children[0]);
     std::vector<arena_ptr<ast_node>> args;
     args.push_back(std::move(err));
 
     node.type = ast_type::call_expr;
     node.children.clear();
-    node.children.push_back(make_identifier_node(*ts.ast_arena, node.pos, { "__raise__" }));
+    node.children.push_back(make_identifier_node(*ts.ast_arena, node.pos, { raise_macro_name }));
     node.children.push_back(make_arg_list_node(*ts.ast_arena, node.pos, std::move(args)));
     resolve_node_type(ts, &node);
 }
@@ -4569,12 +4616,50 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
         }
         break;
     }
+    case ast_type::try_stmt: {
+        check_for_unresolved = false;
+
+        auto& body = node.children[0];
+        auto& catch_body = node.children[1];
+
+        if (node.scope.kind == scope_kind::invalid) {
+            add_try_scope(ts, node, node);
+        }
+        else {
+            enter_scope_local(ts, node);
+        }
+        visit_tree(ts, *body);
+        leave_scope_local(ts);
+
+        if (catch_body) {
+            auto params = get_compound_block_params(*catch_body);
+            if (params && params->size() == 1 && !node.tryinfo.err_receiver) {
+                auto& errid = params->at(0)->id_parts.front();
+
+                auto var_decl = make_var_decl_node_single(*ts.ast_arena, catch_body->pos, token_type::let,
+                    make_identifier_node(*ts.ast_arena, catch_body->pos, { errid }),
+                    make_type_expr_node(*ts.ast_arena, catch_body->pos, make_type_resolver_node(*ts.ast_arena, ts.error_type)),
+                    make_undefined_expr_node(*ts.ast_arena, catch_body->pos), {});
+                node.tryinfo.err_receiver = var_decl.get();
+
+                catch_body->children.insert(catch_body->children.begin(), std::move(var_decl));
+            }
+            visit_tree(ts, *catch_body);
+        }
+        break;
+    }
     case ast_type::block_parameter_list: {
         check_for_unresolved = false;
         break;
     }
     case ast_type::raise_stmt: {
+        check_for_unresolved = false;
         type_check_raise_stmt(ts, node);
+        break;
+    }
+    case ast_type::errbreak_stmt: {
+        check_for_unresolved = false;
+        type_check_errbreak_stmt(ts, node);
         break;
     }
     case ast_type::return_stmt: {
@@ -4999,6 +5084,7 @@ void remangle_names(type_system& ts, ast_node* nodeptr) {
     case ast_type::if_stmt:
     case ast_type::for_cond_stmt:
     case ast_type::macro_instance:
+    case ast_type::try_stmt:
     case ast_type::compound_stmt: {
         if (node.scope.self) {
             enter_scope_local(ts, node);
@@ -5107,6 +5193,7 @@ void resolve_desugar_calls(type_system& ts, ast_node* nodeptr) {
     }
     case ast_type::if_stmt:
     case ast_type::for_cond_stmt:
+    case ast_type::try_stmt:
     case ast_type::macro_instance:
     case ast_type::compound_stmt: {
         if (node.scope.self) {

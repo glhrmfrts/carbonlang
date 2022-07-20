@@ -407,6 +407,15 @@ arena_ptr<ast_node> make_catch_expr_node(memory_arena& arena, const position& po
     return ptr;
 }
 
+arena_ptr<ast_node> make_errbreak_stmt_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& expr) {
+    auto ptr = make_in_arena<ast_node>(arena);
+    ptr->node_id = node_id_gen++;
+    ptr->type = ast_type::errbreak_stmt;
+    ptr->pos = pos;
+    ptr->children.push_back(std::move(expr));
+    return ptr;
+}
+
 arena_ptr<ast_node> make_raise_stmt_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& expr) {
     auto ptr = make_in_arena<ast_node>(arena);
     ptr->node_id = node_id_gen++;
@@ -468,6 +477,18 @@ arena_ptr<ast_node> make_if_stmt_node(memory_arena& arena, const position& pos, 
     if (elsebody) {
         ptr->children.push_back(std::move(elsebody));
     }
+    return ptr;
+}
+
+arena_ptr<ast_node> make_try_stmt_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& body, arena_ptr<ast_node>&& catch_body) {
+    auto ptr = make_in_arena<ast_node>(arena);
+    ptr->node_id = node_id_gen++;
+    ptr->type = ast_type::try_stmt;
+    ptr->pos = pos;
+    if (body) { body->parent = ptr.get(); }
+    if (catch_body) { catch_body->parent = ptr.get(); }
+    ptr->children.push_back(std::move(body));
+    ptr->children.push_back(std::move(catch_body));
     return ptr;
 }
 

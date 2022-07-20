@@ -333,6 +333,16 @@ void analyse_node(ast_node& node) {
         ts->leave_scope();
         break;
     }
+    case ast_type::try_stmt: {
+        ts->enter_scope(node);
+        send_locals_to_func_scope(node);
+        analyse_node(*node.children[0]);
+        if (node.children[1]) {
+            analyse_node(*node.children[1]);
+        }
+        ts->leave_scope();
+        break;
+    }
     case ast_type::macro_instance: {
         ts->enter_scope(node);
         send_locals_to_func_scope(node);
@@ -670,6 +680,48 @@ void generate_if_stmt(ast_node& node) {
         emit(ir_make_label, ir_label{ false_label });
     }
     emit(ir_make_label, ir_label{ end_label });
+}
+
+void generate_try_stmt(ast_node& node) {
+    auto& body = node.children[0];
+    auto& catch_body = node.children[1];
+
+    auto catch_label = generate_label(node, "try_catch");
+    auto end_label = generate_label(node, "try_end");
+
+    node.ir.if_else_label = catch_label;
+    node.ir.if_end_label = end_label;
+
+    ts->enter_scope(node);
+    generate_ir_node(*body);
+    ts->leave_scope();
+
+    if (catch_body) {
+        // if we reach here, no error ocurred, goto end
+        emit(ir_jmp, ir_label{ end_label });
+
+        emit(ir_make_label, ir_label{ catch_label });
+        generate_ir_node(*catch_body);
+
+        emit(ir_make_label, ir_label{ end_label });
+    }
+    else {
+        emit(ir_make_label, ir_label{ catch_label });
+    }
+}
+
+void generate_ir_errbreak_stmt(ast_node& node) {
+    auto tryscope = node.errbreak.tryscope;
+    assert(tryscope != nullptr);
+
+    generate_ir_node(*node.children[0]);
+
+    // Load the error into the catch parameter
+    if (tryscope->self->tryinfo.err_receiver) {
+        emit(ir_load, ir_local{ tryscope->self->tryinfo.err_receiver->local.ir_index, node.children[0]->tid }, pop());
+    }
+
+    emit(ir_jmp, ir_label{ tryscope->self->ir.if_else_label });
 }
 
 void generate_ir_continue_stmt(ast_node& node) {
@@ -1441,6 +1493,12 @@ void generate_ir_node(ast_node& node) {
         ts->enter_scope(node);
         generate_if_stmt(node);
         ts->leave_scope();
+        break;
+    case ast_type::try_stmt:
+        generate_try_stmt(node);
+        break;
+    case ast_type::errbreak_stmt:
+        generate_ir_errbreak_stmt(node);
         break;
     case ast_type::continue_stmt:
         generate_ir_continue_stmt(node);

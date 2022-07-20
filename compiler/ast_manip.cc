@@ -223,6 +223,12 @@ arena_ptr<ast_node> copy_node_helper(type_system& ts, ast_node& node) {
     else if (node.type == ast_type::discard_stmt) {
         return make_discard_stmt_node(*ts.ast_arena, node.pos, copy_node(ts, node.children[0].get()));
     }
+    else if (node.type == ast_type::try_stmt) {
+        return make_try_stmt_node(*ts.ast_arena, node.pos, copy_node(ts, node.children[0].get()), copy_node(ts, node.children[1].get()));
+    }
+    else if (node.type == ast_type::errbreak_stmt) {
+        return make_errbreak_stmt_node(*ts.ast_arena, node.pos, copy_node(ts, node.children[0].get()));
+    }
     else if (node.type == ast_type::raise_stmt) {
         return make_raise_stmt_node(*ts.ast_arena, node.pos, copy_node(ts, node.children[0].get()));
     }

@@ -1,6 +1,35 @@
+-- These macros are automatically placed by the compiler for error handling
+-- TODO: prevent them from being used standalone
+
+macro __try_raise__(err) = do
+    errbreak err
+end
+
 macro __raise__(err) = do
     context.err = err
     return undefined
+end
+
+macro __try_err_call__(fcall) = do
+    let res = fcall
+    if context.err /= nil then
+        let terr = context.err
+        context.err = nil
+        errbreak terr
+    end
+    compute res
+end
+
+macro __try_err_call_discard__(fcall) = do
+    fcall
+    if context.err /= nil then
+        -- TODO: this is not generating the correct code
+        -- defer context.err = nil
+
+        let terr = context.err
+        context.err = nil
+        errbreak terr
+    end
 end
 
 macro __check_err_call__(fcall) = do
@@ -12,16 +41,10 @@ macro __check_err_call__(fcall) = do
 end
 
 macro __check_err_call_discard__(fcall) = do
-    discard fcall
+    fcall
     if context.err /= nil then
         return undefined
     end
-end
-
-macro __catch_err_call_discard__(fcall) = do
-    discard fcall
-    defer context.err = nil
-    compute context.err
 end
 
 local const ALIGNMENT = 16
