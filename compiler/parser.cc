@@ -312,6 +312,8 @@ struct parser_impl {
             return parse_break_stmt();
         case token_type::if_:
             return parse_if_stmt();
+        case token_type::raise:
+            return parse_raise_stmt();
         case token_type::return_:
             return parse_return_stmt();
         case token_type::compute:
@@ -338,11 +340,6 @@ struct parser_impl {
             lex->next();
             auto rhs = parse_expr();
             return make_assign_stmt_node(*ast_arena, pos, std::move(lhs), std::move(rhs));
-        }
-        else if (lhs) {
-            if (lhs->type != ast_type::call_expr) {
-                throw parse_error(filename, pos, "naked expression is not a function call");
-            }
         }
         return lhs;
     }
@@ -509,6 +506,14 @@ struct parser_impl {
         }
 
         return make_if_stmt_node(*ast_arena, pos, std::move(cond), std::move(body), std::move(elsebody), as_expr);
+    }
+
+    arena_ptr<ast_node> parse_raise_stmt() {
+        auto pos = lex->pos();
+        lex->next(); // eat the 'raise'
+
+        auto expr = parse_expr();
+        return make_raise_stmt_node(*ast_arena, pos, std::move(expr));
     }
 
     arena_ptr<ast_node> parse_return_stmt() {
@@ -1171,32 +1176,7 @@ struct parser_impl {
     // Section: expressions
 
     arena_ptr<ast_node> parse_expr() {
-        return parse_ternary_expr();
-    }
-
-    arena_ptr<ast_node> parse_ternary_expr() {
-        auto expr = parse_binary_expr(parse_unary_expr(), 0);
-        if (false && TOK == token_type::then) {
-            lex->next();
-
-            auto then_expr = parse_expr();
-            if (!then_expr) {
-                throw parse_error(filename, expr->pos, "expected then-expression in ternary operator");
-            }
-
-            if (TOK != token_type::else_) {
-                throw parse_error(filename, expr->pos, "expected 'else' token in ternary operator");
-            }
-            lex->next();
-
-            auto else_expr = parse_expr();
-            if (!else_expr) {
-                throw parse_error(filename, expr->pos, "expected else-expression in ternary operator");
-            }
-
-            return make_ternary_expr_node(*ast_arena, expr->pos, std::move(expr), std::move(then_expr), std::move(else_expr));
-        }
-        return expr;
+        return parse_binary_expr(parse_unary_expr(), 0);
     }
 
     arena_ptr<ast_node> parse_binary_expr(arena_ptr<ast_node>&& lhs, int min_prec) {
@@ -1263,7 +1243,17 @@ struct parser_impl {
             return make_cast_expr_node(*ast_arena, pos, std::move(type_expr), std::move(value));
         }
 
-        return parse_init_expr();
+        return parse_postfix_expr();
+    }
+
+    arena_ptr<ast_node> parse_postfix_expr() {
+        auto pos = lex->pos();
+        auto expr = parse_init_expr();
+        if (TOK_CHAR == '?') {
+            lex->next();
+            return make_catch_expr_node(*ast_arena, pos, std::move(expr));
+        }
+        return expr;
     }
 
     // init_expr -> (type_expr '{' init_list '}') | call_or_index_or_field_expr
@@ -1359,7 +1349,6 @@ struct parser_impl {
             scope_guard _{ [this]() { lex->next(); } };
             return make_nil_node(*ast_arena, lex->pos());
         }
-        case token_type::noinit:
         case token_type::placeholder: {
             scope_guard _{ [this]() { lex->next(); } };
             return make_init_tag_node(*ast_arena, lex->pos(), TOK);
@@ -1504,7 +1493,11 @@ struct parser_impl {
         std::vector<std::string> id_parts = { lex->string_value() };
         lex->next();
         
-        return make_identifier_node(*ast_arena, pos, id_parts);
+        auto node = make_identifier_node(*ast_arena, pos, id_parts);
+        if (node->id_parts.front() == "undefined") {
+            node->type = ast_type::undefined_expr;
+        }
+        return node;
     }
 
     arena_ptr<ast_node> parse_arg_list(char end, std::function<arena_ptr<ast_node>()> parse_arg) {

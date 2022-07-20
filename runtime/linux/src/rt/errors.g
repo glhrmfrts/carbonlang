@@ -1,3 +1,22 @@
+macro __raise__(err) = do
+    context.err = err
+    return undefined
+end
+
+macro __check_err_call_discard__(fcall) = do
+    discard fcall
+    if context.err /= nil then
+        --putln("error: ", context.err)
+        return undefined
+    end
+end
+
+macro __catch_err_call_discard__(fcall) = do
+    discard fcall
+    defer context.err = nil
+    compute context.err
+end
+
 local const ALIGNMENT = 16
 
 local extern(C) let __error_array_start : int

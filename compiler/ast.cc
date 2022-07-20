@@ -398,6 +398,24 @@ arena_ptr<ast_node> make_assign_stmt_node(memory_arena& arena, const position& p
     return ptr;
 }
 
+arena_ptr<ast_node> make_catch_expr_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& expr) {
+    auto ptr = make_in_arena<ast_node>(arena);
+    ptr->node_id = node_id_gen++;
+    ptr->type = ast_type::catch_expr;
+    ptr->pos = pos;
+    ptr->children.push_back(std::move(expr));
+    return ptr;
+}
+
+arena_ptr<ast_node> make_raise_stmt_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& expr) {
+    auto ptr = make_in_arena<ast_node>(arena);
+    ptr->node_id = node_id_gen++;
+    ptr->type = ast_type::raise_stmt;
+    ptr->pos = pos;
+    ptr->children.push_back(std::move(expr));
+    return ptr;
+}
+
 arena_ptr<ast_node> make_return_stmt_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& expr) {
     auto ptr = make_in_arena<ast_node>(arena);
     ptr->node_id = node_id_gen++;
@@ -626,6 +644,14 @@ arena_ptr<ast_node> make_type_resolver_node(memory_arena& arena, type_id tid) {
     ptr->node_id = node_id_gen++;
     ptr->type = ast_type::type_resolver;
     ptr->tid = tid;
+    return ptr;
+}
+
+arena_ptr<ast_node> make_undefined_expr_node(memory_arena& arena, const position& pos) {
+    auto ptr = make_in_arena<ast_node>(arena);
+    ptr->pos = pos;
+    ptr->node_id = node_id_gen++;
+    ptr->type = ast_type::undefined_expr;
     return ptr;
 }
 

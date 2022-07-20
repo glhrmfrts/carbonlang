@@ -784,7 +784,7 @@ struct generator {
         case ir_return: {
             auto [a, atype] = transform_ir_operand(instr.operands[0]);
 
-            if (instr.result_type != ts->discard_type) {
+            if (instr.result_type != ts->discard_type && instr.result_type != ts->undefined_type) {
                 auto regres = adjust_for_type(reg_result, instr.result_type);
 
                 if (std::holds_alternative<gen_register>(a)) {

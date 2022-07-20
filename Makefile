@@ -15,7 +15,7 @@ build: gen
 install: build
 	install $(BUILD_DIR)/compiler/$(COMPILER_NAME) -t $(INSTALL_DIR)/bin
 
-CURRENT_TEST=tests/test-026-errorhandling
+CURRENT_TEST=tests/test-027-errorhandling
 
 com:
 	cd $(CURRENT_TEST) && \
@@ -152,5 +152,15 @@ test:
 		cd tests/test-025-compute && \
 		$(COMPILER_NAME) -p ../.. -I runtime/linux -V -o a.out > compile.txt && \
 		./a.out > out.txt && diff out.txt expected.txt && echo "\033[1;32mtest-025-compute: OK\033[0m"
+
+	@echo "test-026-undefined: ..." && \
+		cd tests/test-026-undefined && \
+		$(COMPILER_NAME) -p ../.. -I runtime/linux -V -o a.out > compile.txt && \
+		./a.out > out.txt && diff out.txt expected.txt && echo "\033[1;32mtest-026-undefined: OK\033[0m"
+
+	@echo "test-027-errorhandling: ..." && \
+		cd tests/test-027-errorhandling && \
+		$(COMPILER_NAME) -p ../.. -I runtime/linux -V -o a.out > compile.txt && \
+		./a.out > out.txt && diff out.txt expected.txt && echo "\033[1;32mtest-027-errorhandling: OK\033[0m"
 
 .PHONY: all

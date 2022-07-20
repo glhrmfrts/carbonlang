@@ -16,6 +16,8 @@
 namespace carbon {
 
 constexpr auto MODULE_SEP = "/";
+constexpr auto CONTEXT_SYMBOL = "$context";
+constexpr auto CONTEXT_SYMBOL_USER = "context";
 
 constexpr int DESUGAR_SUBPASS = 2048;
 constexpr int DESUGAR_CALLS_SUBPASS = 2049;
@@ -43,6 +45,7 @@ enum class type_qualifier {
 };
 
 enum class type_kind {
+    undefined,
     discard,
     module_,
     const_int,
@@ -60,7 +63,6 @@ enum class type_kind {
     real,
     static_array,
     array,
-    array_view,
     tuple,
     structure,
     c_structure,
@@ -113,6 +115,7 @@ struct type_def {
     struct func_type {
         std::vector<type_id> arg_types{};
         type_id ret_type{};
+        bool partial = false;
     };
 
     struct struct_type {
@@ -215,6 +218,7 @@ struct symbol_info {
 struct lvalue_info {
     ast_node* self = nullptr;
     symbol_info* symbol;
+    bool is_context_ref = false;
 };
 
 struct call_flag {
@@ -235,6 +239,7 @@ struct call_info {
     type_id func_type_id{};
     std::vector<const_value> const_args{};
     bool resolve_after_desugar = false;
+    bool being_catched = false;
 };
 
 struct func_overload_info {
@@ -392,6 +397,7 @@ struct type_system {
     type_id type_type{};
     type_id nil_type{};
     type_id discard_type{};
+    type_id undefined_type{};
     type_id opaque_type{};
     type_id intptr_type{};
     type_id byte_type{};

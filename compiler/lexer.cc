@@ -255,6 +255,9 @@ struct lexer_impl {
             if (!std::strcmp("macro", l.string)) {
                 return token_type::macro;
             }
+            if (!std::strcmp("raise", l.string)) {
+                return token_type::raise;
+            }
             break;
         case 6:
             if (!std::strcmp("return", l.string)) {
@@ -268,9 +271,6 @@ struct lexer_impl {
             }
             if (!std::strcmp("struct", l.string)) {
                 return token_type::struct_;
-            }
-            if (!std::strcmp("noinit", l.string)) {
-                return token_type::noinit;
             }
             if (!std::strcmp("assert", l.string)) {
                 return token_type::assert_;

@@ -723,6 +723,11 @@ void generate_ir_return_stmt(ast_node& node) {
     auto defer_stmts = collect_defer_statements_for_return();
     auto& expr = node.children[0];
     if (expr) {
+        if (expr->type == ast_type::undefined_expr) {
+            temit(ir_return, ts->undefined_type, 0);
+            return;
+        }
+
         generate_ir_node(*expr);
         auto val = pop();
         for (auto s : defer_stmts) { generate_ir_defer_stmt(*s->children[0]); }
@@ -840,6 +845,10 @@ void generate_ir_func_overload_selector_expr(ast_node& node) {
 
 void generate_ir_assignment(ast_node& node) {
     if (node.children[0] && node.children[1]) {
+        if (node.children[1]->type == ast_type::undefined_expr) {
+            return;
+        }
+
         if (is_aggregate_type(node.tid) && node.children[1]->type == ast_type::init_expr) {
             generate_ir_node(*node.children[0]);
 
@@ -1152,7 +1161,7 @@ void generate_ir_var(ast_node& node) {
     }
 
     if (node.var_value()) {
-        if (node.var_value()->type == ast_type::init_tag && node.var_value()->op == token_type::noinit) {
+        if (node.var_value()->type == ast_type::undefined_expr) {
             return;
         }
 

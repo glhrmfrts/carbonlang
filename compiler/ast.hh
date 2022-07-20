@@ -34,6 +34,8 @@ enum class ast_type {
     const_expr,
     rest_expr,
     range_expr,
+    undefined_expr,
+    catch_expr,
 
     type_decl,
     type_constructor_decl,
@@ -52,6 +54,7 @@ enum class ast_type {
     block_parameter_list,
 
     compound_stmt,
+    raise_stmt,
     return_stmt,
     compute_stmt,
     asm_stmt,
@@ -62,7 +65,6 @@ enum class ast_type {
     continue_stmt,
     break_stmt,
     assign_stmt,
-    catch_stmt,
     discard_stmt,
 
     type_expr,
@@ -282,6 +284,8 @@ arena_ptr<ast_node> make_macro_decl_node(memory_arena& arena, const position& po
 
 arena_ptr<ast_node> make_error_decl_node(memory_arena& arena, const position& pos, std::vector<arena_ptr<ast_node>>&& children);
 
+arena_ptr<ast_node> make_undefined_expr_node(memory_arena& arena, const position& pos);
+
 arena_ptr<ast_node> make_init_tag_node(memory_arena& arena, const position& pos, token_type tok);
 
 arena_ptr<ast_node> make_arg_list_node(memory_arena& arena, const position& pos, std::vector<arena_ptr<ast_node>>&& children);
@@ -293,6 +297,10 @@ arena_ptr<ast_node> make_stmt_list_node(memory_arena& arena, const position& pos
 arena_ptr<ast_node> make_compound_stmt_node(memory_arena& arena, const position& pos, std::vector<arena_ptr<ast_node>>&& children, bool as_expr);
 
 arena_ptr<ast_node> make_assign_stmt_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& lhs, arena_ptr<ast_node>&& rhs);
+
+arena_ptr<ast_node> make_catch_expr_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& expr);
+
+arena_ptr<ast_node> make_raise_stmt_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& expr);
 
 arena_ptr<ast_node> make_return_stmt_node(memory_arena& arena, const position& pos, arena_ptr<ast_node>&& expr);
 

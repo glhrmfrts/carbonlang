@@ -580,6 +580,10 @@ bool is_assignable_to(type_system& ts, type_id a, type_id b) {
     auto& tsrc = get_type(ts, a);
     auto& ttarget = get_type(ts, b);
 
+    if (tsrc.kind == type_kind::undefined) {
+        return true; // 'undefined' can be assigned to anything
+    }
+
     if (tsrc.alias_to == b || ttarget.alias_to == a) {
         return true;
     }
@@ -625,10 +629,6 @@ bool is_assignable_to(type_system& ts, type_id a, type_id b) {
     }
 
     if (tsrc.kind == type_kind::array && ttarget.kind == type_kind::array) {
-        return is_assignable_to(ts, tsrc.elem_type, ttarget.elem_type);
-    }
-
-    if (tsrc.kind == type_kind::array_view && ttarget.kind == type_kind::array_view) {
         return is_assignable_to(ts, tsrc.elem_type, ttarget.elem_type);
     }
 
@@ -780,10 +780,9 @@ bool is_aggregate(type_id id) {
     if (!id.valid()) return false;
 
     return id.get().kind == type_kind::structure ||
-           id.get().kind == type_kind::c_structure ||
-           id.get().kind == type_kind::static_array ||
-           id.get().kind == type_kind::array ||
-           id.get().kind == type_kind::array_view;
+        id.get().kind == type_kind::c_structure ||
+        id.get().kind == type_kind::static_array ||
+        id.get().kind == type_kind::array;
 }
 
 bool is_aggregate_root(type_id id) {
@@ -793,8 +792,7 @@ bool is_aggregate_root(type_id id) {
     return id.get().kind == type_kind::structure ||
         id.get().kind == type_kind::c_structure ||
         id.get().kind == type_kind::static_array ||
-        id.get().kind == type_kind::array ||
-        id.get().kind == type_kind::array_view;
+        id.get().kind == type_kind::array;
 }
 
 bool is_type_kind(type_id id, type_kind k) {
@@ -878,7 +876,7 @@ int aggregate_find_field(type_id tid, const std::string& name) {
 }
 
 arena_ptr<ast_node> make_assignment_for_init_list_item(type_system& ts, ast_node& node, ast_node& receiver, arena_ptr<ast_node>&& value, const struct_field& field, int idx) {
-    if (is_type_kind(node.tid, type_kind::structure) || is_type_kind(node.tid, type_kind::c_structure) || is_type_kind(node.tid, type_kind::array_view)) {
+    if (is_type_kind(node.tid, type_kind::structure) || is_type_kind(node.tid, type_kind::c_structure)) {
         auto fieldexpr = make_struct_field_access(*ts.ast_arena, copy_node(ts, &receiver), field.names[0]);
         return make_assignment(*ts.ast_arena, std::move(fieldexpr), std::move(value));
     }
@@ -1098,7 +1096,11 @@ std::string func_declaration_to_string(func_def* func) {
     std::string result = "fun ";
     result += func->self->func_id()->id_parts.front() + "(";
     result += type_list_to_string(func->self->tdef.func.arg_types);
-    result += ") => " + type_to_string(func->self->tdef.func.ret_type);
+    result += ") ";
+    if (func->raises) {
+        result += "?";
+    }
+    result += "=> " + type_to_string(func->self->tdef.func.ret_type);
     return result;
 }
 
@@ -2023,6 +2025,7 @@ type_id resolve_func_type(type_system& ts, ast_node& f) {
     f.tdef.size = sizeof(void*);
     f.tdef.alignment = sizeof(void*);
     f.tdef.is_signed = false;
+    f.tdef.func.partial = f.func.raises;
 
     type_id ret_type = invalid_type;
     if (!f.func_ret_type() && !f.func.is_body_expr) {
@@ -2272,6 +2275,13 @@ arena_ptr<ast_node> collapse_const_value(type_system& ts, ast_node& node, type_i
 }
 
 void resolve_and_declare_local_variables(type_system& ts, ast_node& node) {
+    // This allow us to declare a context variable
+    for (auto& idnode : node.var_decl_ids()) {
+        if (idnode->type == ast_type::identifier && idnode->id_parts.front() == CONTEXT_SYMBOL_USER) {
+            idnode->id_parts = { CONTEXT_SYMBOL };
+        }
+    }
+
     size_t num_new = 0;
     bool diderror = false;
     for (auto& idnode : node.var_decl_ids()) {
@@ -2771,6 +2781,14 @@ void separate_call_args(type_system& ts, ast_node& node) {
 
 void macro_pre_pass(type_system& ts, ast_node* node, const std::vector<std::string>& original_arg_names, const std::string& macro_prefix) {
     if (node->type == ast_type::identifier) {
+        if (node->parent->type == ast_type::field_expr) {
+            auto idx = find_child_index(node->parent, node);
+            if (*idx == 1) {
+                // This is the field of a struct field access
+                return;
+            }
+        }
+
         for (const auto& aname : original_arg_names) {
             std::string idname = node->id_parts.front();
             if (aname == node->id_parts.front()) {
@@ -2831,6 +2849,7 @@ void macro_instantiate(type_system& ts, ast_node& node, func_def* func) {
         arg_index++;
     }
 
+    parent_tree(*macro_instance->children[0]);
     macro_pre_pass(ts, macro_instance->children[0].get(), original_arg_names, macro_prefix);
 
     arg_index = 0;
@@ -3220,7 +3239,7 @@ arena_ptr<ast_node> generate_temp_for_ternary_expr(type_system& ts, ast_node& no
     auto temp = make_var_decl_node_single(*ts.ast_arena, node.pos, token_type::let,
         make_identifier_node(*ts.ast_arena, node.pos, { tempname }), // id
         make_type_expr_node(*ts.ast_arena, node.pos, make_type_resolver_node(*ts.ast_arena, node.tid)), // type
-        make_init_tag_node(*ts.ast_arena, {}, token_type::noinit), {}); // value
+        make_undefined_expr_node(*ts.ast_arena, node.pos), {}); // value
     temp->local.flags |= local_flag::dont_check_for_duplicates;
     resolve_node_type(ts, temp.get());
 
@@ -3244,6 +3263,18 @@ bool type_check_identifier(type_system& ts, ast_node& node) {
 
     if (node.lvalue.symbol && node.lvalue.symbol->kind == symbol_kind::overloaded_func_base) {
         return false;
+    }
+
+    if (ts.subpass != DESUGAR_CALLS_SUBPASS && (node.id_parts.size() > 0 && node.id_parts.front() == CONTEXT_SYMBOL_USER)) {
+        node.tid = ts.context_ptr_type;
+        node.lvalue.self = &node;
+        node.lvalue.is_context_ref = true;
+        return true;
+    }
+    else if (ts.subpass == DESUGAR_CALLS_SUBPASS) {
+        if (node.lvalue.is_context_ref) {
+            node.id_parts = { CONTEXT_SYMBOL };
+        }
     }
 
     resolve_identifier(ts, node);
@@ -3460,6 +3491,44 @@ void type_check_call_expr(type_system& ts, ast_node& node) {
             resolve_call_funcdef(ts, node);
         }
 
+        if (node.tid.valid() && node.call.funcdef) {
+            if (node.call.funcdef->raises && !node.call.being_catched) {
+                auto scope = find_nearest_scope_local(ts, scope_kind::func_body);
+                if (scope && !scope->self->func.raises) {
+                    add_type_error(ts, node.pos, "cannot call a partial function in a non-partial function");
+                    complement_error(ts, node.pos, "annotate the caller-function with '?' after it's parameter list to make it partial");
+                    complement_error(ts, node.pos, "or use a try-catch block to handle the error locally");
+                    node.type_error = true;
+                    return;
+                }
+
+                if (node.tid.get().kind == type_kind::discard) {
+                    auto parent = node.parent;
+                    auto idx = find_child_index(parent, &node);
+                    auto fcall = std::move(parent->children[*idx]);
+                    fcall->call.being_catched = true;
+
+                    std::vector<arena_ptr<ast_node>> args;
+                    args.push_back(std::move(fcall));
+
+                    auto newnode = make_in_arena<ast_node>(*ts.ast_arena);
+                    newnode->type = ast_type::call_expr;
+                    newnode->parent = parent;
+                    newnode->children.clear();
+                    newnode->children.push_back(make_identifier_node(*ts.ast_arena, node.pos, { "__check_err_call_discard__" }));
+                    newnode->children.push_back(make_arg_list_node(*ts.ast_arena, node.pos, std::move(args)));
+
+                    parent_tree(*newnode);
+                    resolve_node_type(ts, newnode.get());
+
+                    parent->children[*idx] = std::move(newnode);
+                }
+                else {
+                    // TODO
+                }
+            }
+        }
+
         if (!node.call.funcdef) {
             //printf("asda");
         }
@@ -3481,10 +3550,85 @@ void type_check_call_expr(type_system& ts, ast_node& node) {
     }
 }
 
+void type_check_catch_expr(type_system& ts, ast_node& node) {
+    visit_pre_nodes(ts, node);
+    visit_children(ts, node);
+
+    if (node.children[0]->type != ast_type::call_expr) {
+        add_type_error(ts, node.pos, "can only catch errors from function calls");
+        node.type_error = true;
+        return;
+    }
+
+    if (!node.children[0]->call.funcdef->raises) {
+        add_type_error(ts, node.pos, "trying to catch errors from a non-partial function call");
+        node.type_error = true;
+        return;
+    }
+
+    if (!node.children[0]->tid.valid()) {
+        return;
+    }
+
+    if (node.children[0]->tid == ts.discard_type) {
+        auto fcall = std::move(node.children[0]);
+        fcall->call.being_catched = true;
+
+        std::vector<arena_ptr<ast_node>> args;
+        args.push_back(std::move(fcall));
+
+        node.type = ast_type::call_expr;
+        node.children.clear();
+        node.children.push_back(make_identifier_node(*ts.ast_arena, node.pos, { "__catch_err_call_discard__" }));
+        node.children.push_back(make_arg_list_node(*ts.ast_arena, node.pos, std::move(args)));
+        resolve_node_type(ts, &node);
+    }
+}
+
+void type_check_raise_stmt(type_system& ts, ast_node& node) {
+    if (ts.inside_defer) {
+        add_type_error(ts, node.pos, "illegal use of raise statement inside of defer statement");
+        node.type_error = true;
+        return;
+    }
+
+    auto scope = find_nearest_scope_local(ts, scope_kind::func_body);
+    if (!scope->self->func.raises) {
+        add_type_error(ts, node.pos, "raise statement can only be used in partial functions");
+        complement_error(ts, node.pos, "annotate the caller-function with '?' after it's parameter list to make it partial");
+        complement_error(ts, node.pos, "or use a try-catch block to handle the error locally");
+        node.type_error = true;
+        return;
+    }
+
+    if (node.children.size() > 0) {
+        resolve_node_type(ts, node.children.front().get());
+        auto tid = node.children.front()->tid;
+        if (get_alias_root(ts, tid) != ts.error_type) {
+            add_type_error(ts, node.pos, "raise statement can only be used with the 'error' type");
+            complement_error(ts, node.pos, "expression has type '%s'", type_to_string(tid).c_str());
+            node.type_error = true;
+            return;
+        }
+    }
+
+    auto err = std::move(node.children[0]);
+
+    std::vector<arena_ptr<ast_node>> args;
+    args.push_back(std::move(err));
+
+    node.type = ast_type::call_expr;
+    node.children.clear();
+    node.children.push_back(make_identifier_node(*ts.ast_arena, node.pos, { "__raise__" }));
+    node.children.push_back(make_arg_list_node(*ts.ast_arena, node.pos, std::move(args)));
+    resolve_node_type(ts, &node);
+}
+
 void type_check_return_stmt(type_system& ts, ast_node& node) {
     if (ts.inside_defer) {
-        add_type_error(ts, node.pos, "illegal use of return statement inside defer statement");
+        add_type_error(ts, node.pos, "illegal use of return statement inside of defer statement");
         node.type_error = true;
+        return;
     }
 
     // TODO: check if scope / sanity check
@@ -4391,6 +4535,10 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
         break;
     }
     case ast_type::compound_stmt: {
+        if (node.parent->type == ast_type::stmt_list) {
+            node.as_expr = false;
+        }
+
         if (node.as_expr) {
             if (node.parent->type != ast_type::assign_stmt && node.parent->type != ast_type::var_decl) {
                 generate_temp_for_compound_expr(ts, node);
@@ -4417,6 +4565,10 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
     }
     case ast_type::block_parameter_list: {
         check_for_unresolved = false;
+        break;
+    }
+    case ast_type::raise_stmt: {
+        type_check_raise_stmt(ts, node);
         break;
     }
     case ast_type::return_stmt: {
@@ -4762,6 +4914,10 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
         }
         break;
     }
+    case ast_type::catch_expr: {
+        type_check_catch_expr(ts, node);
+        break;
+    }
     case ast_type::cast_expr:
         visit_children(ts, node);
         node.tid = get_value_node_type(ts, node);
@@ -4775,14 +4931,15 @@ type_id resolve_node_type(type_system& ts, ast_node* nodeptr) {
         }
         break;
     case ast_type::init_tag: {
-        if (node.op == token_type::noinit) {
-            node.tid = ts.nil_type;
-        }
-        else if (node.op == token_type::placeholder) {
+        if (node.op == token_type::placeholder) {
             ast_node* assignee = ts.assignee_stack.top();
             auto idx = find_child_index(node.parent, &node);
             node.parent->children[*idx] = copy_node(ts, assignee);
         }
+        break;
+    }
+    case ast_type::undefined_expr: {
+        node.tid = ts.undefined_type;
         break;
     }
     case ast_type::bool_literal:
@@ -4967,12 +5124,19 @@ void resolve_desugar_calls(type_system& ts, ast_node* nodeptr) {
         break;
     }
     case ast_type::call_expr: {
+        visit_pre_nodes(ts, node);
+        visit_children(ts, node);
         if (node.call.resolve_after_desugar) {
             resolve_node_type_desugar_calls(ts, nodeptr);
             node.call.resolve_after_desugar = false;
         }
+        break;
+    }
+    case ast_type::identifier: {
         visit_pre_nodes(ts, node);
-        visit_children(ts, node);
+        if (node.lvalue.is_context_ref) {
+            resolve_node_type_desugar_calls(ts, nodeptr);
+        }
         break;
     }
     case ast_type::block_parameter_list: {
@@ -5494,6 +5658,18 @@ type_system::type_system(memory_arena& arena) {
         tf.size = 0;
         tf.alignment = 0;
         discard_type = register_builtin_type(*this, std::move(node));
+    }
+
+    {
+        auto node = make_in_arena<ast_node>(*ast_arena);
+
+        type_def& tf = node->tdef;
+        tf.kind = type_kind::undefined;
+        tf.name = string_hash{ "undefined" };
+        tf.mangled_name = string_hash{ "undefined" };
+        tf.size = 0;
+        tf.alignment = 0;
+        undefined_type = register_builtin_type(*this, std::move(node));
     }
 
     {

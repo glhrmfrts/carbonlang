@@ -64,6 +64,9 @@ arena_ptr<ast_node> copy_node_helper(type_system& ts, ast_node& node) {
     else if (node.type == ast_type::init_tag) {
         return make_init_tag_node(*ts.ast_arena, node.pos, node.op);
     }
+    else if (node.type == ast_type::undefined_expr) {
+        return make_undefined_expr_node(*ts.ast_arena, node.pos);
+    }
     else if (node.type == ast_type::nil_literal) {
         return make_nil_node(*ts.ast_arena, node.pos);
     }
@@ -216,6 +219,12 @@ arena_ptr<ast_node> copy_node_helper(type_system& ts, ast_node& node) {
         auto as = make_assign_stmt_node(*ts.ast_arena, node.pos, copy_node(ts, node.children[0].get()), copy_node(ts, node.children[1].get()));
         as->as_expr = node.as_expr;
         return as;
+    }
+    else if (node.type == ast_type::discard_stmt) {
+        return make_discard_stmt_node(*ts.ast_arena, node.pos, copy_node(ts, node.children[0].get()));
+    }
+    else if (node.type == ast_type::raise_stmt) {
+        return make_raise_stmt_node(*ts.ast_arena, node.pos, copy_node(ts, node.children[0].get()));
     }
     else if (node.type == ast_type::return_stmt) {
         return make_return_stmt_node(*ts.ast_arena, node.pos, copy_node(ts, node.children[0].get()));

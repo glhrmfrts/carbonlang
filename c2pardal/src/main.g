@@ -1,40 +1,36 @@
 import "rt"
 
-fun read_entire_file(filename: string, contents: out string) => error = do
-    let file : file_handle
+fun read_entire_file(filename: string) ?=> string = do
+    let file = open(filename, open_flags.read, 0)
     defer close(file)
 
-    if open(file, filename, open_flags.read, 0) then |err|
-        putln("open error: ", err)
-        return err
-    end
-
-    let statbuf : stat_type
-    if stat(file, statbuf) then |err|
-        putln("stat error: ", err)
-        return err
-    end
-
-    let data : string; resize(data, statbuf.size)
-
-    if read(file, data) then |err|
-        putln("read error: ", err)
-        return err
-    end
-
-    contents = data
-    return nil
+    let statbuf = stat(file)
+    let data = make_array(byte, statbuf.size)
+    read(file, data)
+    return data
 end
 
 fun main = do
-    let contents : string
-    defer free_array(contents)
+    try
+        let contents = read_entire_file()
+        defer free_array(contents)
 
-    if read_entire_file("test.c", contents) then return end
+        let tokens = primitive_lex(contents)
+        for range 0, tokens.len do |i|
+            let tok = tokens[i]
+            print_token(tok)
+        end
 
-    let tokens = primitive_lex(contents)
-    for range 0, tokens.len do |i|
-        let tok = tokens[i]
-        print_token(tok)
+        let root = parse(tokens)
+    catch |err|
+        if err == LexError then
+            print(lex_err_position, lex_err_message)
+            return
+        else if err == ParseError then
+            print(parse_err_position, parse_err_message)
+            return
+        else
+            panic(err)
+        end
     end
 end
