@@ -23,8 +23,7 @@ end
 -- TODO: validate all paths return something
 
 fun is_identifier_starter(c: byte) => bool = do
-    let res = (c >= 'A' and c <= 'Z') or (c >= 'a' and c <= 'z') or (c == '_')
-    return res
+    return (c >= 'A' and c <= 'Z') or (c >= 'a' and c <= 'z') or (c == '_')
 end
 
 fun is_identifier_char(c: byte) => bool = do

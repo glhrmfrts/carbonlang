@@ -1,6 +1,8 @@
 import "rt"
 
-enumerror ( InvalidValue )
+enumerror (
+    InvalidValue
+)
 
 let gvar : int
 
@@ -29,7 +31,7 @@ fun main = do
             call_do_something()
             putln("okay")
         catch |err|
-            putln("error: ", err)
+            putln("error: ", err, " ", context.err)
         end
         gvar = 2
     end

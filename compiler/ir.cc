@@ -420,6 +420,70 @@ void analyse_node(ast_node& node) {
 
 // Section: generators
 
+std::vector<ast_node*> collect_defer_statements_for_return() {
+    std::vector<ast_node*> result;
+    auto scope = ts->current_scope;
+    while (scope) {
+        for (std::size_t i = scope->self->ir.scope_defer_statements.size(); i > 0; i--) {
+            auto dstmt = scope->self->ir.scope_defer_statements[i - 1];
+            result.push_back(dstmt);
+        }
+
+        if (scope->kind == scope_kind::func_body) { break; }
+
+        scope = scope->parent;
+    }
+    return result;
+}
+
+std::vector<ast_node*> collect_defer_statements_for_compute() {
+    std::vector<ast_node*> result;
+    auto scope = ts->current_scope;
+    while (scope) {
+        for (std::size_t i = scope->self->ir.scope_defer_statements.size(); i > 0; i--) {
+            auto dstmt = scope->self->ir.scope_defer_statements[i - 1];
+            result.push_back(dstmt);
+        }
+
+        if (scope->self->as_expr) { break; }
+
+        scope = scope->parent;
+    }
+    return result;
+}
+
+std::vector<ast_node*> collect_defer_statements_for_errbreak() {
+    std::vector<ast_node*> result;
+    auto scope = ts->current_scope;
+    while (scope) {
+        for (std::size_t i = scope->self->ir.scope_defer_statements.size(); i > 0; i--) {
+            auto dstmt = scope->self->ir.scope_defer_statements[i - 1];
+            result.push_back(dstmt);
+        }
+
+        if (scope->kind == scope_kind::try_) { break; }
+
+        scope = scope->parent;
+    }
+    return result;
+}
+
+std::vector<ast_node*> collect_defer_statements_for_continue_or_break() {
+    std::vector<ast_node*> result;
+    auto scope = ts->current_scope;
+    while (scope) {
+        for (std::size_t i = scope->self->ir.scope_defer_statements.size(); i > 0; i--) {
+            auto dstmt = scope->self->ir.scope_defer_statements[i - 1];
+            result.push_back(dstmt);
+        }
+
+        if (scope->self->type == ast_type::for_cond_stmt || scope->self->type == ast_type::for_numeric_stmt) { break; }
+
+        scope = scope->parent;
+    }
+    return result;
+}
+
 void generate_store_zero(type_id agg_type, ir_operand dest) {
     ir_int value = ir_int{ 0, ts->uint8_type };
     if (agg_type.get().size % 8 == 0) {
@@ -721,49 +785,31 @@ void generate_ir_errbreak_stmt(ast_node& node) {
         emit(ir_load, ir_local{ tryscope->self->tryinfo.err_receiver->local.ir_index, node.children[0]->tid }, pop());
     }
 
+    auto defer_stmts = collect_defer_statements_for_errbreak();
+    for (auto s : defer_stmts) { generate_ir_defer_stmt(*s->children[0]); }
+    ts->current_scope->defer_handled = true;
+
     emit(ir_jmp, ir_label{ tryscope->self->ir.if_else_label });
 }
 
 void generate_ir_continue_stmt(ast_node& node) {
     assert(!ctrl_labels.empty());
+
+    auto defer_stmts = collect_defer_statements_for_continue_or_break();
+    for (auto s : defer_stmts) { generate_ir_defer_stmt(*s->children[0]); }
+    ts->current_scope->defer_handled = true;
+
     emit(ir_jmp, ir_label{ ctrl_labels.top().continue_label });
 }
 
 void generate_ir_break_stmt(ast_node& node) {
     assert(!ctrl_labels.empty());
+
+    auto defer_stmts = collect_defer_statements_for_continue_or_break();
+    for (auto s : defer_stmts) { generate_ir_defer_stmt(*s->children[0]); }
+    ts->current_scope->defer_handled = true;
+
     emit(ir_jmp, ir_label{ ctrl_labels.top().break_label });
-}
-
-std::vector<ast_node*> collect_defer_statements_for_return() {
-    std::vector<ast_node*> result;
-    auto scope = ts->current_scope;
-    while (scope) {
-        for (std::size_t i = scope->self->ir.scope_defer_statements.size(); i > 0; i--) {
-            auto dstmt = scope->self->ir.scope_defer_statements[i - 1];
-            result.push_back(dstmt);
-        }
-
-        if (scope->kind == scope_kind::func_body) { break; }
-
-        scope = scope->parent;
-    }
-    return result;
-}
-
-std::vector<ast_node*> collect_defer_statements_for_compute() {
-    std::vector<ast_node*> result;
-    auto scope = ts->current_scope;
-    while (scope) {
-        for (std::size_t i = scope->self->ir.scope_defer_statements.size(); i > 0; i--) {
-            auto dstmt = scope->self->ir.scope_defer_statements[i - 1];
-            result.push_back(dstmt);
-        }
-
-        if (scope->self->as_expr) { break; }
-
-        scope = scope->parent;
-    }
-    return result;
 }
 
 void generate_ir_defer_stmt(ast_node& node) {
@@ -773,6 +819,7 @@ void generate_ir_defer_stmt(ast_node& node) {
 }
 
 void generate_ir_return_stmt(ast_node& node) {
+    ts->current_scope->defer_handled = true;
     auto defer_stmts = collect_defer_statements_for_return();
     auto& expr = node.children[0];
     if (expr) {
@@ -946,6 +993,7 @@ void generate_ir_assignment(ast_node& node) {
         if (node.as_expr) {
             auto defer_stmts = collect_defer_statements_for_compute();
             for (auto s : defer_stmts) { generate_ir_defer_stmt(*s->children[0]); }
+            ts->current_scope->defer_handled = true;
 
             auto cmpd = find_first_compound_expr(node);
             emit(ir_jmp, ir_label{ cmpd->ir.if_end_label });

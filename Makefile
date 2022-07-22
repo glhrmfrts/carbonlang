@@ -15,7 +15,7 @@ build: gen
 install: build
 	install $(BUILD_DIR)/compiler/$(COMPILER_NAME) -t $(INSTALL_DIR)/bin
 
-CURRENT_TEST=tests/test-027-errorhandling
+CURRENT_TEST=tests/test-022-arraydyncast
 
 com:
 	cd $(CURRENT_TEST) && \

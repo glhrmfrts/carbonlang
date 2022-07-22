@@ -3,28 +3,18 @@
 import "rt"
 
 fun main = do
-    let file : file_handle
-    defer close(file)
+    try
+        let file = open("file.txt", open_flags.read, 0)
+        defer close(file)
 
-    if open(file, "file.txt", open_flags.read, 0) then |err|
-        putln("open error: ", err)
-        return
+        let statbuf = file->stat()
+
+        let data : array of byte; resize(data, statbuf.size)
+        defer data->free_array()
+        file->read(data)
+
+        putln(data)
+    catch |err|
+        putln("error: ", err)
     end
-
-    let statbuf : stat_type
-    if stat(file, statbuf) then |err|
-        putln("stat error: ", err)
-        return
-    end
-
-    let data : array of byte
-    resize(data, statbuf.size)
-    defer free_array(data)
-
-    if read(file, data) then |err|
-        putln("read error: ", err)
-        return
-    end
-
-    putln(data)
 end

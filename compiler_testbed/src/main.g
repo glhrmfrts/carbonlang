@@ -8,7 +8,6 @@ fun write(x: array of pure byte) = do end
 
 fun write(x: int) => int = do return 5 end
 
-
 macro __raise__(err) = do
     context.err = err
     return undefined
@@ -52,15 +51,14 @@ fun get_something(x: string) ? => string = do
 end
 
 fun do_something ? = do
-    let y = get_something("args")
+    let y : string = "args"->get_something()
     discard write(y)
 end
 
 fun main = do
     try
         do_something()
-    catch |err|
-        let x = err
+    catch
         discard write("error")
     end
 end

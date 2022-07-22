@@ -3106,6 +3106,8 @@ void process_thread_first_expr(type_system& ts, ast_node& node) {
 
     node.type = ast_type::call_expr;
     node.call.flags |= call_flag::is_method_sugar_call;
+
+    visit_tree(ts, node);
 }
 
 std::vector<arena_ptr<ast_node>>* get_compound_block_params(ast_node& compound) {

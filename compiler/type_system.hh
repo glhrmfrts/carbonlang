@@ -306,6 +306,9 @@ struct scope_def {
     scope_def* parent = nullptr;
     ast_node* self = nullptr;
     ast_node* body_node = nullptr;
+
+    // Were the defer statements in this scope were handled by return, compute et al?
+    bool defer_handled = false;
 };
 
 struct func_def {

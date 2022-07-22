@@ -1,3 +1,41 @@
+enumerror ( OutOfBoundsError )
+
+macro __get_index_panic__(p_arr, p_idx) = do
+    let arr = &(p_arr)
+    let idx = p_idx
+    if idx >= arr.len then
+        panic(OutOfBoundsError)
+    end
+    compute arr.ptr[idx]
+end
+
+macro __set_index_panic__(p_arr, p_idx, p_val) = do
+    let arr = &(p_arr)
+    let idx = p_idx
+    if idx >= arr.len then
+        panic(OutOfBoundsError)
+    end
+    arr.ptr[idx] = p_val
+end
+
+macro __get_index_raise__(p_arr, p_idx) = do
+    let arr = &(p_arr)
+    let idx = p_idx
+    if idx >= arr.len then
+        raise OutOfBoundsError
+    end
+    compute arr.ptr[idx]
+end
+
+macro __set_index_raise__(p_arr, p_idx, p_val) = do
+    let arr = &(p_arr)
+    let idx = p_idx
+    if idx >= arr.len then
+        raise OutOfBoundsError
+    end
+    arr.ptr[idx] = p_val
+end
+
 local macro resize_ptr(rp_parr, rp_len, rp_cap) = do
     let ptr = alloc(rp_cap * #sizeof(@rp_parr.ptr))
     if ptr == nil then
@@ -28,6 +66,8 @@ end
 macro free_array(arr) = do
     let larr = &arr
     free(larr.ptr)
+    larr.len = 0
+    larr.cap = 0
 end
 
 local macro ensure_capacity(ec_parr) = do

@@ -7,23 +7,23 @@ assembly file: rt_x86_64_start.s
 pardalc - running assembler: as _carbon/build_debug/rt_x86_64_start.s -o _carbon/build_debug/rt_x86_64_start.o
 carbonc - compiling module: rt
 carbonc - compiling module: root
-pardalc - parsing time: 378ms
+pardalc - parsing time: 388ms
 
 pardalc - type checking 
 unresolved types
 pardalc - type checking time: 127ms
 
 pardalc - generating IR 
-pardalc - IR generation time: 24ms
+pardalc - IR generation time: 26ms
 
 pardalc - generating assembly 
 pardalc - running assembler: as _carbon/build_debug/rt_syscall.asm -o _carbon/build_debug/rt_syscall.o
 pardalc - running assembler: as _carbon/build_debug/rt.asm -o _carbon/build_debug/rt.o
 pardalc - running assembler: as _carbon/build_debug/root.asm -o _carbon/build_debug/root.o
-pardalc - assembly generation time: 125ms
+pardalc - assembly generation time: 129ms
 
 pardalc - running linker command: ld  -e _start -o _carbon/build_debug/test-026-undefined _carbon/build_debug/rt_syscall_calls.o _carbon/build_debug/rt_x86_64_start.o _carbon/build_debug/rt_syscall.o _carbon/build_debug/rt.o _carbon/build_debug/root.o -T ../../res/carbon.sc
 pardalc - output: a.out
 
-pardalc - total lines parsed: 1548
-pardalc - total compilation time: 718ms
+pardalc - total lines parsed: 1602
+pardalc - total compilation time: 734ms

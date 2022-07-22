@@ -1,5 +1,5 @@
 -- These macros are automatically placed by the compiler for error handling
--- TODO: prevent them from being used standalone
+-- TODO: prevent them from being used as standalone
 
 macro __try_raise__(err) = do
     errbreak err
@@ -13,9 +13,8 @@ end
 macro __try_err_call__(fcall) = do
     let res = fcall
     if context.err /= nil then
-        let terr = context.err
-        context.err = nil
-        errbreak terr
+        defer context.err = nil
+        errbreak context.err
     end
     compute res
 end
@@ -24,11 +23,8 @@ macro __try_err_call_discard__(fcall) = do
     fcall
     if context.err /= nil then
         -- TODO: this is not generating the correct code
-        -- defer context.err = nil
-
-        let terr = context.err
-        context.err = nil
-        errbreak terr
+        defer context.err = nil
+        errbreak context.err
     end
 end
 
